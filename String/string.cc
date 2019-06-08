@@ -3,8 +3,8 @@
 
 //use _t for size guarantees/
 
-// stretchy_buffer
-//allocator_traits?
+// Vector
+// Allocator_traits?
 // vector with allocator?
 
 struct Mesh
@@ -12,8 +12,6 @@ struct Mesh
     vector<Vertex> vertices;
     vector<size_t> indices;
 }
-
-
 
 class SString //: public stretchy buffer?
 {

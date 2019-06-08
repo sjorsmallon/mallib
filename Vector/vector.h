@@ -1,7 +1,7 @@
 #ifndef INCLUDED_VECTOR_
 #define INCLUDED_VECTOR_
 #include <cstddef> // only introduces types & no functions.
-
+#include <type_traits>
 // what this is:
 // - a replacement for std::vector.  
 // - other allocation patterns?
@@ -11,18 +11,14 @@
 // what it is not:
 // - reallocating for a larger capacity will invalidate previously held pointers. don't do it.
 // - don't store pointers. I think.
-//  
-
-
 
 template<typename Type>
-
-
-
 class Vector 
 {
-	Type* m_data;
-	char *buffer;  // does not have constructor. nice?
+
+	Type* m_data; // using operator new requires constructors.
+	char *buffer;  // does not require constructors, but requires casting.
+	typename std::aligned_storage<sizeof(Type), alignof(T)>::type m_data[];
 	Type* m_front; // first?
 	Type* m_back;  // last?
 
@@ -47,7 +43,7 @@ class Vector
 
 		//index operators
 		Type const &operator[](int index) const;
-		Type 	   &operator[](size_t index);
+		Type 	   &operator[](size_t inx dex);
 		Type &at(size_t index);
 
 		// insertion / removal.
@@ -169,10 +165,7 @@ Type 	   &operator[](size_t index)
 template<class Type>
 Type &at(size_t index)
 {
-	if (index >= size)
-	{
-		throw out_of_range("index requested beyond size.");
-	}
+	assert(!(index >= size))
 	return m_data[index];
 } 
 
