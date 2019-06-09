@@ -13,8 +13,6 @@ class Array
     size_t m_size;
     size_t m_capacity;
     Type*  m_data; // char* m_data?
-
-
     
     public:
     typedef Type* iterator;
@@ -33,10 +31,6 @@ class Array
 
 
         size_t first_free_index() const;
-
-
-
-
 
 };
 

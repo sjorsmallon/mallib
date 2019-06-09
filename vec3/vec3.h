@@ -25,7 +25,7 @@ struct Vec3
     Vec3 operator-(const Vec3& rhs) const;
     bool operator==( const Vec3 &rhs) const;
     bool operator!=( const Vec3 &rhs) const;
-    void set(float x, float y, float z);
+    // void set(float x, float y, float z);
     float *data();
 
 

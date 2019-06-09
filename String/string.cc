@@ -18,7 +18,6 @@ class SString //: public stretchy buffer?
     size_t length;
     size_t capacity;
     char  *data;
-
 }
 
 struct SString_Memory_Pool
