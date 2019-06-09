@@ -1,8 +1,17 @@
 #ifndef INCLUDE_FILE_HANDLER_
 #define INCLUDE_FILE_HANDLER_
 
-class File_Handler
+struct File_Handler
 {
+    size_t m_length;
+    
+    public:
+        ~File()
+        {
+            free(static_cast<void *>(data));
+            munmap(static_cast<void *>(data),m_length);
+        };
+
 
 };
 

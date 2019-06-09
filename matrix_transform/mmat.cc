@@ -3,8 +3,8 @@
 Mat4 mmat::translate(const Mat4& matrix, const Vec3& vector)
 {
     Mat4 new_matrix{matrix}; // copy construction;
-    
-    matrix[3][0] = x; // should be +=?
+
+    matrix[3][0] = x; // should be +=? // doesn't work that way!
     matrix[3][1] = y; // should be +=?
     matrix[3][2] = z; // should be +=?
 

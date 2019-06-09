@@ -1,20 +1,14 @@
 #include "renderer.ih"
 
-void Renderer::shader_from_file(GLuint &shader, GLenum shaderType, const string& filename)
+void Renderer::shader_from_file(Shader &shader, const string& filename)
 {
-    // sanity check?
-    if (shaderType != GL_VERTEX_SHADER && shaderType != GL_FRAGMENT_SHADER)
-    {
-        //SDL_Log("addShaderFromFile: invalid shader Type.");
-    }
-    
+
     //set Shader
-    shader = glCreateShader(shaderType);
+    shader.shader_ID = glCreateShader(shader.shaderType);
 
     //@cleanup: maybe directly transfer to string?
-    std::ifstream ifs("shaders/" + filename);
-    std::string content( (std::istreambuf_iterator<char>(ifs) ),
-                       (std::istreambuf_iterator<char>()    ) );
+    file_handler handler;
+    handler.file_to_buffer("shaders/" + filename);
 
     char *shader_data = content.data();
     glShaderSource(shader, 1, &shader_data, NULL);
