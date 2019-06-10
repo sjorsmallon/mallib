@@ -1,19 +1,18 @@
-#ifndef INCLUDE_FILE_HANDLER_
-#define INCLUDE_FILE_HANDLER_
+#ifndef INCLUDED_FILE_HANDLER
+#define INCLUDED_FILE_HANDLER
+#include <string>
 
-struct File_Handler
+class File_Handler
 {
-    size_t m_length;
-    
+  char *buffer;
+  std::string filename;
+
     public:
-        ~File()
-        {
-            free(static_cast<void *>(data));
-            munmap(static_cast<void *>(data),m_length);
-        };
+      File_Handler();
+      File_Handler(const std::string& filename);
+      File_Handler(char* filename);
+      File_Handler(const char* filename);
 
 
-};
 
-#endif
-
+}

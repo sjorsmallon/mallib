@@ -12,20 +12,18 @@ struct Vec3
     float y = 0;
     float z = 0;
 
-    Vec3() {}
+    Vec3() = default;
     explicit Vec3(float x, float y, float z);
     explicit Vec3(float x);
 
     float  operator[](const int index) const;
     float &operator[](const int index);
-    //float const &operator[](const int index) const; // help?
-
     Vec3 operator+(const Vec3&rhs) const;
     Vec3 operator-() const;
     Vec3 operator-(const Vec3& rhs) const;
-    bool operator==( const Vec3 &rhs) const;
-    bool operator!=( const Vec3 &rhs) const;
-    // void set(float x, float y, float z);
+    bool operator==(const Vec3& rhs) const;
+    bool compare(const Vec3& rhs) const;
+    bool operator!=( const Vec3& rhs) const;
     float *data();
 
 
