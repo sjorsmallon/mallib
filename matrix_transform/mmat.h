@@ -17,7 +17,6 @@ namespace mmat
     void scaleSelf(Mat4&  matrix, const float scale_factor);
     void rotateSelf(Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z);
 
-
     Mat4 perspective(const float fov_y,
                      const float aspect_ratio,
                      const float near_plane,
