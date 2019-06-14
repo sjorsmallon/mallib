@@ -8,10 +8,9 @@ void Renderer::shader_from_file(Shader &shader, const string& filename)
     //@cleanup: maybe directly transfer to string?
     File_Handler handler;
     handler.file_to_buffer("shaders/" + filename);
-
-    char *shader_data = content.data();
-    glShaderSource(shader, 1, &shader_data, NULL);
+    glShaderSource(shader, 1, &handler.buffer, NULL);
     glCompileShader(shader);
+    handler.free_buffer(); // make this RAII?
 
     GLint vShaderCompiled = GL_FALSE;
 

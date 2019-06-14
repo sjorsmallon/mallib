@@ -11,16 +11,20 @@ namespace mmat
     Mat4 translate(const Mat4& matrix, const Vec3& vector);
     Mat4 scale(const Mat4& matrix, const float scale_factor);
     Mat4 rotate(const Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z); //expects identity
+    
+    Mat4 from_xform_state(const Xform_State& state);
 
     // following functions cannot return a reference to *this because it is outside of the class now.
-    void translateSelf(Mat4& matrix, const Vec3& vector);
-    void scaleSelf(Mat4&  matrix, const float scale_factor);
-    void rotateSelf(Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z);
+    // void translateSelf(Mat4& matrix, const Vec3& vector);
+    // void scaleSelf(Mat4&  matrix, const float scale_factor);
+    // void rotateSelf(Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z);
 
     Mat4 perspective(const float fov_y,
                      const float aspect_ratio,
                      const float near_plane,
                      const float far_plane);
+
+
     // Mat4 orthographic3D( const float left,
     //                      const float right,
     //                      const float top,

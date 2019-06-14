@@ -59,6 +59,16 @@ Mat4 mmat::rotate(const Mat4& matrix, const int degrees_x, const int degrees_y, 
     return matrix;
 }
 
+Mat4 mmat::from_xform_state(const Xform_State& xform_state)
+{
+  Mat4 model_matrix;
+
+  model_matrix *= xform_state.scale;
+  model_matrix *= xform_state.orientation;
+  model_matrix *= xform_state.position;
+}
+
+
 Mat4 mmat::perspective(const float fov_y,
                        const float aspect_ratio,
                        const float near_plane,

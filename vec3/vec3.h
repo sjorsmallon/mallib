@@ -3,7 +3,9 @@
 
 // math: invsqrt
 
-// support aggregate initialization, POD type. cannot specify constructors.
+// supports aggregate initialization, POD type
+// cannot specify constructors.
+// helper functions are in vector_transform.
 struct Vec3
 {
     float x = 0;
@@ -18,9 +20,11 @@ struct Vec3
     bool operator==(const Vec3& rhs) const;
     bool compare(const Vec3& rhs) const;
     bool operator!=( const Vec3& rhs) const;
-    float *data();
-};
 
+    float *data();
+
+    // free function operator* and operator+ for float
+};
 
 
 inline bool Vec3::compare( const Vec3 &rhs) const
@@ -52,12 +56,6 @@ inline Vec3 Vec3::operator-(const Vec3 &rhs) const
 }
 
 
-// inline Vec3 Vec3::operator/(const float rhs) const
-// {
-//     float inv_rhs = 1.0f / rhs;
-//     return Vec3(x * inv_rhs, y * inv_rhs, z * inv_rhs);
-// }
-
 inline bool Vec3::operator==(const Vec3 &rhs) const
 {
     return compare(rhs);
@@ -74,7 +72,16 @@ inline float *Vec3::data()
     return &x;
 }
 
+// free functions
+inline Vec3f operator*(const float lhs, const Vec3& rhs) const
+{
+    return {lhs * rhs.x, lhs * rhs.y, lhs * rhs.z};
+}
 
+inline Vec3f operator+(const float lhs, const Vec3& rhs) const
+{
+    return { lhs + rhs.x, lhs + rhs.y, lhs + rhs.z};
+}
 
 #endif
 

@@ -14,32 +14,34 @@
 
 // internal column major, but behaves as row major from outside perspective.
 // is a class for that exact reason.
-
-class Mat4
+// @Performance: this could be SIMD optimized, I think.
+struct Mat4
 {
     Vec4 d_matrix[4];
 
     public:
-        Mat4() = default;
-        // identity constructor?
-        explicit Mat4(const Vec4f &x, const Vec4f &y, const Vec4f &z, const Vec4f &w);
-        explicit Mat4(const float xx, const float xy, const float xz, const float xw,
-                      const float yx, const float yy, const float yz, const float yw,
-                      const float zx, const float zy, const float zz, const float zw,
-                      const float wx, const float wy, const float wz, const float ww);
-       
-
-        // explicit Mat4(const  Mat3 &rotation, const Vec3 &translation); we'll see how to fix this!
-        explicit Mat4(const float source[4][4]);
+        // Mat4() = default;
+        // // identity constructor?
+        // //explicit Mat4(const Vec4f &x, const Vec4f &y, const Vec4f &z, const Vec4f &w);
+        // explicit Mat4(const float xx, const float xy, const float xz, const float xw,
+        //               const float yx, const float yy, const float yz, const float yw,
+        //               const float zx, const float zy, const float zz, const float zw,
+        //               const float wx, const float wy, const float wz, const float ww);
+    
+        // // explicit Mat4(const  Mat3 &rotation, const Vec3 &translation); we'll see how to fix this!
+        // explicit Mat4(const float source[4][4]);
 
         const Vec4f &operator[](int index) const;
         Vec4f& operator[](int index);
         Mat4   operator*(const float rhs) const;
-        Vec4f  operator*(const Vec4f &rhs) const;
-        Vec3f  operator*(const Vec3f &rhs) const;
+        Vec4f  operator*(const Vec4 &rhs) const;
+        Vec3f  operator*(const Vec3 &rhs) const;
         Mat4   operator*(const Mat4 &rhs) const;
         Mat4   operator+(const Mat4 &rhs) const;
         Mat4   operator-(const Mat4 &rhs) const;
+
+        Mat4  operator*=(const Mat4 &rhs);
+
 
         bool compare(const Mat4 &rhs) const;
         bool operator==(const Mat4 &rhs) const;
@@ -53,30 +55,32 @@ class Mat4
 
 // this behavior is not yet correct. Do we want to feed column vectors here too?
 
-inline Mat4::Mat4(const Vec4f &x, const Vec4f &y, const Vec4f &z, const Vec4f &w)
-{
-    d_matrix[0] = x;
-    d_matrix[1] = y;
-    d_matrix[2] = z;
-    d_matrix[3] = w;
-}
+// inline Mat4::Mat4(const Vec4f &x, const Vec4f &y, const Vec4f &z, const Vec4f &w)
+// :
+
+// {
+//     d_matrix[0] = x;
+//     d_matrix[1] = y;
+//     d_matrix[2] = z;
+//     d_matrix[3] = w;
+// }
 
 // note: the internal data is thus "transposed".
-inline  Mat4::Mat4(   const float xx, const float xy, const float xz, const float xw,
-                      const float yx, const float yy, const float yz, const float yw,
-                      const float zx, const float zy, const float zz, const float zw,
-                      const float wx, const float wy, const float wz, const float ww)
-:
-    d_matrix(Vec4{xx, yx, zx, wx},
-             Vec4{xy, yy, zy, wy},
-             Vec4{xz, yz, zz, wz},
-             VEc4{xw, yw, zw, ww})
-{
-    // d_matrix[0][0]= xx; d_matrix[1][0] =xy; d_matrix[2][0] =xz; d_matrix[3][0] =xw;
-    // d_matrix[0][1]= yx; d_matrix[1][1] =yy; d_matrix[2][1] =yz; d_matrix[3][1] =yw; 
-    // d_matrix[0][2]= zx; d_matrix[1][2] =zy; d_matrix[2][2] =zz; d_matrix[3][2] =zw;
-    // d_matrix[0][3]= wx; d_matrix[1][3] =wy; d_matrix[2][3] =wz; d_matrix[3][3] =ww;
-}
+// inline  Mat4::Mat4(   const float xx, const float xy, const float xz, const float xw,
+//                       const float yx, const float yy, const float yz, const float yw,
+//                       const float zx, const float zy, const float zz, const float zw,
+//                       const float wx, const float wy, const float wz, const float ww)
+// :
+//     d_matrix(Vec4{xx, yx, zx, wx},
+//              Vec4{xy, yy, zy, wy},
+//              Vec4{xz, yz, zz, wz},
+//              VEc4{xw, yw, zw, ww})
+// {
+//     // d_matrix[0][0]= xx; d_matrix[1][0] =xy; d_matrix[2][0] =xz; d_matrix[3][0] =xw;
+//     // d_matrix[0][1]= yx; d_matrix[1][1] =yy; d_matrix[2][1] =yz; d_matrix[3][1] =yw; 
+//     // d_matrix[0][2]= zx; d_matrix[1][2] =zy; d_matrix[2][2] =zz; d_matrix[3][2] =zw;
+//     // d_matrix[0][3]= wx; d_matrix[1][3] =wy; d_matrix[2][3] =wz; d_matrix[3][3] =ww;
+// }
 
 
 inline bool Mat4::compare(const Mat4 &rhs) const
@@ -113,22 +117,22 @@ inline Vec4f &Mat4::operator[](int index)
 
 inline Mat4 Mat4::operator*(const float rhs) const
 {
-    return Mat4 (
+    return  {
                     d_matrix[0][0] * rhs, d_matrix[1][0] * rhs, d_matrix[2][0] * rhs, d_matrix[3][0] * rhs,
                     d_matrix[0][1] * rhs, d_matrix[1][1] * rhs, d_matrix[2][1] * rhs, d_matrix[3][1] * rhs,
                     d_matrix[0][2] * rhs, d_matrix[1][2] * rhs, d_matrix[2][2] * rhs, d_matrix[3][2] * rhs,
                     d_matrix[0][3] * rhs, d_matrix[1][3] * rhs, d_matrix[2][3] * rhs, d_matrix[3][3] * rhs
-                );
+            };
 }
 
 inline Vec4f Mat4::operator*(const Vec4f &rhs) const
 {
-    return Vec4f(
-                    d_matrix[0][0] * rhs.x + d_matrix[1][0] * rhs.y + d_matrix[2][0] * rhs.z + d_matrix[3][0] * rhs.w,
-                    d_matrix[0][1] * rhs.x + d_matrix[1][1] * rhs.y + d_matrix[2][1] * rhs.z + d_matrix[3][1] * rhs.w,
-                    d_matrix[0][2] * rhs.x + d_matrix[1][2] * rhs.y + d_matrix[2][2] * rhs.z + d_matrix[3][2] * rhs.w,
-                    d_matrix[0][3] * rhs.x + d_matrix[1][3] * rhs.y + d_matrix[2][3] * rhs.z + d_matrix[3][3] * rhs.w
-                );
+    return {
+                d_matrix[0][0] * rhs.x + d_matrix[1][0] * rhs.y + d_matrix[2][0] * rhs.z + d_matrix[3][0] * rhs.w,
+                d_matrix[0][1] * rhs.x + d_matrix[1][1] * rhs.y + d_matrix[2][1] * rhs.z + d_matrix[3][1] * rhs.w,
+                d_matrix[0][2] * rhs.x + d_matrix[1][2] * rhs.y + d_matrix[2][2] * rhs.z + d_matrix[3][2] * rhs.w,
+                d_matrix[0][3] * rhs.x + d_matrix[1][3] * rhs.y + d_matrix[2][3] * rhs.z + d_matrix[3][3] * rhs.w
+            };
 }
 
 inline Mat4 Mat4::operator*(const Mat4 &rhs) const
@@ -158,39 +162,39 @@ inline Mat4 Mat4::operator*(const Mat4 &rhs) const
 
 inline Mat4 Mat4::operator+(const Mat4 &rhs) const
 {
-    return Mat4(
+    return  {
                 d_matrix[0][0] + rhs[0][0], d_matrix[1][0] + rhs[1][0], d_matrix[2][0] + rhs[2][0], d_matrix[3][0] + rhs[3][0],
                 d_matrix[0][1] + rhs[0][1], d_matrix[1][1] + rhs[1][1], d_matrix[2][1] + rhs[2][1], d_matrix[3][1] + rhs[3][1],
                 d_matrix[0][2] + rhs[0][2], d_matrix[1][2] + rhs[1][2], d_matrix[2][2] + rhs[2][2], d_matrix[3][2] + rhs[3][2],
                 d_matrix[0][3] + rhs[0][3], d_matrix[1][3] + rhs[1][3], d_matrix[2][3] + rhs[2][3], d_matrix[3][3] + rhs[3][3]
-               );
+            };
 } 
 
 inline Mat4 Mat4::operator-(const Mat4 &rhs) const
 {
-    return Mat4(
+    return  {
                 d_matrix[0][0] - rhs[0][0], d_matrix[1][0] - rhs[1][0], d_matrix[2][0] - rhs[2][0], d_matrix[3][0] - rhs[3][0],
                 d_matrix[0][1] - rhs[0][1], d_matrix[1][1] - rhs[1][1], d_matrix[2][1] - rhs[2][1], d_matrix[3][1] - rhs[3][1],
                 d_matrix[0][2] - rhs[0][2], d_matrix[1][2] - rhs[1][2], d_matrix[2][2] - rhs[2][2], d_matrix[3][2] - rhs[3][2],
                 d_matrix[0][3] - rhs[0][3], d_matrix[1][3] - rhs[1][3], d_matrix[2][3] - rhs[2][3], d_matrix[3][3] - rhs[3][3]
-               );
+            };
 }
 
-// inline Mat4 &Mat4::operator*=(const float rhs) 
-// {
-//     d_matrix[0][0] *= rhs; d_matrix[1][0] *= rhs; d_matrix[2][0] *= rhs; d_matrix[3][0] *= rhs;
-//     d_matrix[0][1] *= rhs; d_matrix[1][1] *= rhs; d_matrix[2][1] *= rhs; d_matrix[3][1] *= rhs;
-//     d_matrix[0][2] *= rhs; d_matrix[1][2] *= rhs; d_matrix[2][2] *= rhs; d_matrix[3][2] *= rhs;
-//     d_matrix[0][3] *= rhs; d_matrix[1][3] *= rhs; d_matrix[2][3] *= rhs; d_matrix[3][3] *= rhs;
+inline Mat4 &Mat4::operator*=(const float rhs) 
+{
+    d_matrix[0][0] *= rhs; d_matrix[1][0] *= rhs; d_matrix[2][0] *= rhs; d_matrix[3][0] *= rhs;
+    d_matrix[0][1] *= rhs; d_matrix[1][1] *= rhs; d_matrix[2][1] *= rhs; d_matrix[3][1] *= rhs;
+    d_matrix[0][2] *= rhs; d_matrix[1][2] *= rhs; d_matrix[2][2] *= rhs; d_matrix[3][2] *= rhs;
+    d_matrix[0][3] *= rhs; d_matrix[1][3] *= rhs; d_matrix[2][3] *= rhs; d_matrix[3][3] *= rhs;
     
-//     return *this;
-// }
+    return *this;
+}
 
-// inline Mat4 &Mat4::operator*=(const Mat4 &rhs)
-// {
-//      *this = (*this) * rhs;
-//      return *this;
-// }
+inline Mat4 &Mat4::operator*=(const Mat4 &rhs)
+{
+     *this = (*this) * rhs;
+     return *this;
+}
 
 // inline Mat4 &Mat4::operator+=(const Mat4 &rhs)
 // {

@@ -1,8 +1,6 @@
 
 //megabytes as int? make explicit?
 //explicit in mmem
-
-
 int main()
 {
     // set of memory blocks?
