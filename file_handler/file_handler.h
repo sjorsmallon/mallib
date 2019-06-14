@@ -12,7 +12,4 @@ class File_Handler
       File_Handler(const std::string& filename);
       File_Handler(char* filename);
       File_Handler(const char* filename);
-
-
-
 }

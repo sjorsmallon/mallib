@@ -1,20 +1,14 @@
 #ifndef INCLUDED_VEC3F_
 #define INCLUDED_VEC3F_
-#include "../math.h"
-// #include <string>
-// #include <sstream>
 
 // math: invsqrt
+
+// support aggregate initialization, POD type. cannot specify constructors.
 struct Vec3
 {
-    public:
     float x = 0;
     float y = 0;
     float z = 0;
-
-    Vec3() = default;
-    explicit Vec3(float x, float y, float z);
-    explicit Vec3(float x);
 
     float  operator[](const int index) const;
     float &operator[](const int index);
@@ -25,9 +19,9 @@ struct Vec3
     bool compare(const Vec3& rhs) const;
     bool operator!=( const Vec3& rhs) const;
     float *data();
-
-
 };
+
+
 
 inline bool Vec3::compare( const Vec3 &rhs) const
 {
@@ -39,9 +33,7 @@ inline bool Vec3::compare( const Vec3 &rhs) const
 
 inline float Vec3::operator[](int index) const
 {
-    return ( &x )[index]; //this is dangerous.
-    
-
+    return ( &x )[index]; //this is less dangerous but still dangerous.
 }
 
 inline float &Vec3::operator[](int index)
@@ -51,20 +43,20 @@ inline float &Vec3::operator[](int index)
 
 inline Vec3 Vec3::operator-() const
 {
-    return Vec3(-x,-y,-z);
+    return {-x,-y,-z};
 }
 
 inline Vec3 Vec3::operator-(const Vec3 &rhs) const
 {
-    return Vec3(x - rhs.x, y - rhs.y, z - rhs.z);
+    return {x - rhs.x, y - rhs.y, z - rhs.z};
 }
 
 
-inline Vec3 Vec3::operator/(const float rhs) const
-{
-    float inv_rhs = 1.0f / rhs;
-    return Vec3(x * inv_rhs, y * inv_rhs, z * inv_rhs);
-}
+// inline Vec3 Vec3::operator/(const float rhs) const
+// {
+//     float inv_rhs = 1.0f / rhs;
+//     return Vec3(x * inv_rhs, y * inv_rhs, z * inv_rhs);
+// }
 
 inline bool Vec3::operator==(const Vec3 &rhs) const
 {

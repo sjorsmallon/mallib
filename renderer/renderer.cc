@@ -2,12 +2,11 @@
 
 void Renderer::shader_from_file(Shader &shader, const string& filename)
 {
-
     //set Shader
     shader.shader_ID = glCreateShader(shader.shaderType);
 
     //@cleanup: maybe directly transfer to string?
-    file_handler handler;
+    File_Handler handler;
     handler.file_to_buffer("shaders/" + filename);
 
     char *shader_data = content.data();
