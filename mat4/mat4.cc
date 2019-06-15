@@ -10,9 +10,6 @@
         // friend Vec3f  operator*(const Vec3f &lhs, const Mat4 &rhs);
         // friend Vec4f& operator*=(Vec4f &lhs, const Mat4 &rhs);
         // friend Vec3f& operator*=(Vec3f &lhs, const Mat4 &rhs);
-
-
-
 // inline void Mat4::zero()
 // {
 //   memset( d_matrix, 0, sizeof( Mat4 ) );

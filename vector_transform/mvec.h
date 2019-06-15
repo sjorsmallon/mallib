@@ -14,8 +14,6 @@ namespace mvec
   Vec3 lerp(const Vec3& lhs, const Vec3& rhs, const float ratio);
   //vec4
 
-
-
 };
 
 #endif

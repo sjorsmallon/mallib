@@ -24,6 +24,9 @@ namespace mmat
                      const float near_plane,
                      const float far_plane);
 
+    Mat4 view(const Vec3& eye, const Vec3& center, const Vec& up);
+    Mat4 look_at(const Vec3& eye, const Vec3& center, const Vec& up);
+
 
     // Mat4 orthographic3D( const float left,
     //                      const float right,

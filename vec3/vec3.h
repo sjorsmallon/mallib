@@ -6,6 +6,8 @@
 // supports aggregate initialization, POD type
 // cannot specify constructors.
 // helper functions are in vector_transform.
+// some operator overloading in order to facilitate 
+// many-used operations.
 struct Vec3
 {
     float x = 0;
@@ -17,8 +19,8 @@ struct Vec3
     Vec3 operator+(const Vec3&rhs) const;
     Vec3 operator-() const;
     Vec3 operator-(const Vec3& rhs) const;
-    bool operator==(const Vec3& rhs) const;
-    bool compare(const Vec3& rhs) const;
+    bool compare(const Vec3& rhs)   const;
+    bool operator==(const Vec3& rhs) const;   
     bool operator!=( const Vec3& rhs) const;
 
     float *data();
@@ -54,7 +56,6 @@ inline Vec3 Vec3::operator-(const Vec3 &rhs) const
 {
     return {x - rhs.x, y - rhs.y, z - rhs.z};
 }
-
 
 inline bool Vec3::operator==(const Vec3 &rhs) const
 {

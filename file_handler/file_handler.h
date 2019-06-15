@@ -4,12 +4,14 @@
 
 class File_Handler
 {
-  char *buffer;
-  std::string filename;
+  char *m_buffer;
+  std::string m_filename;
 
     public:
-      File_Handler();
-      File_Handler(const std::string& filename);
+      // File_Handler() = delete;
       File_Handler(char* filename);
+      File_Handler(const std::string& filename);
       File_Handler(const char* filename);
+      ~File_Handler();
+
 }

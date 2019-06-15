@@ -1,7 +1,8 @@
-#include "vector_transform/mvec.h"
+#include "../vector_transform/mvec.h"
 #include <array>
 #include <chrono>
 #include <iostream>
+
 using namespace std::chrono;
 
 int main()
@@ -11,7 +12,7 @@ int main()
 	std::array<Vec3, size> test2;
 	auto start = high_resolution_clock::now();
 
-	for(size_t idx = 0; idx != size; ++ idx)
+	for (size_t idx = 0; idx != size; ++ idx)
 	{
 		mvec::cross_by_value(test1[idx], test2[idx]);
 		//mvec::cross_by_ref(test1[idx], test2[idx]);

@@ -1,5 +1,16 @@
 #include "mmat.ih"
 
+
+//@Incomplete:[4][4] is 1, should be zero?
+Mat4 mmat::identity()
+{
+  return {1, 0, 0, 0,
+          0, 1, 0, 0,
+          0, 0, 1, 0,
+          0, 0, 0, 1}
+}
+
+
 Mat4 mmat::translate(const Mat4& matrix, const Vec3& vector)
 {
     Mat4 new_matrix{matrix}; // copy construction;
@@ -69,6 +80,7 @@ Mat4 mmat::from_xform_state(const Xform_State& xform_state)
 }
 
 
+//@Incomplete: inline assignment instead of creating and returning?
 Mat4 mmat::perspective(const float fov_y,
                        const float aspect_ratio,
                        const float near_plane,
@@ -89,5 +101,31 @@ Mat4 mmat::perspective(const float fov_y,
   return matrix;
 }
 
+Mat4 mmat::view(const Vec3& eye, const Vec3& center, const Vec& up)
+{
+   // modeled after gluLookAt. 
 
+   Vec3 f = center - eye; // f = coord_system
+   mvec::normalize(f);
+   Vec3 up_norm = up;
+   mvec::normalize(up);
+
+   Vec3 s = mvec::cross(f, up_norm);
+   Vec3 u = mvec::cross(mvec::normalize(s),f);
+   // The up vector must not be parallel to the line of sight from the
+   //           eye point to the reference point.
+           
+
+    return {
+             s.x, s.y, s.z, 0,
+             u.x, u.y, y.z, 0,
+             -f.x, -f.y, -f.z, 0
+               0,   0,   0, 1
+           };
+}
+
+Mat4 mmat::look_at(const Vec3& eye, const Vec3& center, const Vec& up)
+{
+    mmat::view(eye, center, up);
+}
 

@@ -2,6 +2,12 @@
 #define INCLUDE_RENDERER_
 #include <string>
 #include <vector>
+#include <GL.h>
+
+namespace mdraw
+{
+    GLenum shader_type_from_extension(const std::string& filename);
+}
 
 struct Renderer
 {
@@ -12,8 +18,7 @@ struct Renderer
 struct Shader
 {
     GLuint shader_ID; 
-    GLenum shader_type; // resolve shader type from filename? vertex / pixel?
-    // std::string data; is this necessary?
+    GLenum shader_type; // resolve shader type from filename
 };
 
 class ShaderProgram

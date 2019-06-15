@@ -5,6 +5,8 @@
 namespace file
 {
   bool file_to_buffer(const std::string& filename, char *buffer);
+
+  
 }
 
 #endif
