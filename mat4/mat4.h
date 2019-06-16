@@ -29,7 +29,9 @@ struct Mat4
         // Mat4   operator+(const Mat4 &rhs) const;
         // Mat4   operator-(const Mat4 &rhs) const;
 
-        Mat4 operator*=(const Mat4 &rhs); //useful in scale/rotate/translate.
+        Mat4& operator*=(const Mat4& rhs); //useful in scale/rotate/translate.
+        Mat4& operator*=(const float scale);
+        Mat4& operator*=(const Quaternion& rhs);
 
 
         // bool compare(const Mat4 &rhs) const;
@@ -41,6 +43,151 @@ struct Mat4
         float *data();
 
 };
+
+
+
+inline const Vec4f &Mat4::operator[](int index) const
+{
+    if (index < 0 || index > 4) {}
+    return d_matrix[index];
+}
+
+inline Vec4f &Mat4::operator[](int index)
+{
+    return d_matrix[index];
+}
+
+
+
+inline Mat4 Mat4::operator*(const Mat4 &rhs) const
+{
+    // int i, j;
+    const float *m1Ptr, *m2Ptr;
+    float *dstPtr;
+    Mat4 dst;
+
+    m1Ptr = reinterpret_cast<const float *>(this);
+    m2Ptr = reinterpret_cast<const float *>(&rhs);
+    dstPtr = reinterpret_cast<float *>(&dst);
+
+    for (int i = 0; i < 4; i++ ) {
+        for (int j = 0; j < 4; j++ ) {
+            *dstPtr = m1Ptr[0] * m2Ptr[ 0 * 4 + j ]
+            + m1Ptr[1] * m2Ptr[ 1 * 4 + j ]
+            + m1Ptr[2] * m2Ptr[ 2 * 4 + j ]
+            + m1Ptr[3] * m2Ptr[ 3 * 4 + j ];
+            dstPtr++;
+        }
+        m1Ptr += 4;
+    }
+    return dst;
+}
+
+inline Mat4& Mat4::operator*=(const float rhs) 
+{
+    d_matrix[0][0] *= rhs; d_matrix[1][0] *= rhs; d_matrix[2][0] *= rhs; d_matrix[3][0] *= rhs;
+    d_matrix[0][1] *= rhs; d_matrix[1][1] *= rhs; d_matrix[2][1] *= rhs; d_matrix[3][1] *= rhs;
+    d_matrix[0][2] *= rhs; d_matrix[1][2] *= rhs; d_matrix[2][2] *= rhs; d_matrix[3][2] *= rhs;
+    d_matrix[0][3] *= rhs; d_matrix[1][3] *= rhs; d_matrix[2][3] *= rhs; d_matrix[3][3] *= rhs;
+    
+    return *this;
+}
+
+inline Mat4& Mat4::operator*=(const Mat4 &rhs)
+{
+     *this = (*this) * rhs;
+     return *this;
+}
+
+inline Mat4& Mat4::operator*=(const Quaternion& rhs)
+{
+    //@Incomplete: help.
+}
+
+inline Mat4 operator*(const float lhs, const Mat4 &rhs)
+{
+    return rhs * lhs; //matrix * float
+}
+
+// inline bool Mat4::operator==(const Mat4 &rhs) const 
+// {
+//   return compare(rhs);
+// }
+
+// inline bool Mat4::operator!=(const Mat4 &rhs) const 
+// {
+//   return !compare(rhs);
+// }
+
+inline float *Mat4::data()
+{
+    return d_matrix[0].data();
+}
+
+inline const float *Mat4::data() const
+{
+    return d_matrix[0].data();
+}
+
+// inline Mat4 Mat4::operator+(const Mat4 &rhs) const
+// {
+//     return  {
+//                 d_matrix[0][0] + rhs[0][0], d_matrix[1][0] + rhs[1][0], d_matrix[2][0] + rhs[2][0], d_matrix[3][0] + rhs[3][0],
+//                 d_matrix[0][1] + rhs[0][1], d_matrix[1][1] + rhs[1][1], d_matrix[2][1] + rhs[2][1], d_matrix[3][1] + rhs[3][1],
+//                 d_matrix[0][2] + rhs[0][2], d_matrix[1][2] + rhs[1][2], d_matrix[2][2] + rhs[2][2], d_matrix[3][2] + rhs[3][2],
+//                 d_matrix[0][3] + rhs[0][3], d_matrix[1][3] + rhs[1][3], d_matrix[2][3] + rhs[2][3], d_matrix[3][3] + rhs[3][3]
+//             };
+// } 
+
+// inline Mat4 Mat4::operator-(const Mat4 &rhs) const
+// {
+//     return  {
+//                 d_matrix[0][0] - rhs[0][0], d_matrix[1][0] - rhs[1][0], d_matrix[2][0] - rhs[2][0], d_matrix[3][0] - rhs[3][0],
+//                 d_matrix[0][1] - rhs[0][1], d_matrix[1][1] - rhs[1][1], d_matrix[2][1] - rhs[2][1], d_matrix[3][1] - rhs[3][1],
+//                 d_matrix[0][2] - rhs[0][2], d_matrix[1][2] - rhs[1][2], d_matrix[2][2] - rhs[2][2], d_matrix[3][2] - rhs[3][2],
+//                 d_matrix[0][3] - rhs[0][3], d_matrix[1][3] - rhs[1][3], d_matrix[2][3] - rhs[2][3], d_matrix[3][3] - rhs[3][3]
+//             };
+// }
+
+// inline Mat4 &Mat4::operator+=(const Mat4 &rhs)
+// {
+//     d_matrix[0][0] += rhs[0][0]; d_matrix[1][0] += rhs[1][0]; d_matrix[2][0] += rhs[2][0]; d_matrix[3][0] += rhs[3][0];
+//     d_matrix[0][1] += rhs[0][1]; d_matrix[1][1] += rhs[1][1]; d_matrix[2][1] += rhs[2][1]; d_matrix[3][1] += rhs[3][1];
+//     d_matrix[0][2] += rhs[0][2]; d_matrix[1][2] += rhs[1][2]; d_matrix[2][2] += rhs[2][2]; d_matrix[3][2] += rhs[3][2];
+//     d_matrix[0][3] += rhs[0][3]; d_matrix[1][3] += rhs[1][3]; d_matrix[2][3] += rhs[2][3]; d_matrix[3][3] += rhs[3][3];
+    
+//     return *this;
+// }
+
+// inline Mat4 &Mat4::operator-=(const Mat4 &rhs)
+// {
+//     d_matrix[0][0] -= rhs[0][0]; d_matrix[1][0] -= rhs[1][0]; d_matrix[2][0] -= rhs[2][0]; d_matrix[3][0] -= rhs[3][0];
+//     d_matrix[0][1] -= rhs[0][1]; d_matrix[1][1] -= rhs[1][1]; d_matrix[2][1] -= rhs[2][1]; d_matrix[3][1] -= rhs[3][1];
+//     d_matrix[0][2] -= rhs[0][2]; d_matrix[1][2] -= rhs[1][2]; d_matrix[2][2] -= rhs[2][2]; d_matrix[3][2] -= rhs[3][2];
+//     d_matrix[0][3] -= rhs[0][3]; d_matrix[1][3] -= rhs[1][3]; d_matrix[2][3] -= rhs[2][3]; d_matrix[3][3] -= rhs[3][3];
+
+//     return *this;
+// }
+
+// inline Mat4 Mat4::operator*(const float rhs) const
+// {
+//     return  {
+//                     d_matrix[0][0] * rhs, d_matrix[1][0] * rhs, d_matrix[2][0] * rhs, d_matrix[3][0] * rhs,
+//                     d_matrix[0][1] * rhs, d_matrix[1][1] * rhs, d_matrix[2][1] * rhs, d_matrix[3][1] * rhs,
+//                     d_matrix[0][2] * rhs, d_matrix[1][2] * rhs, d_matrix[2][2] * rhs, d_matrix[3][2] * rhs,
+//                     d_matrix[0][3] * rhs, d_matrix[1][3] * rhs, d_matrix[2][3] * rhs, d_matrix[3][3] * rhs
+//             };
+// }
+
+// inline Vec4f Mat4::operator*(const Vec4f &rhs) const
+// {
+//     return {
+//                 d_matrix[0][0] * rhs.x + d_matrix[1][0] * rhs.y + d_matrix[2][0] * rhs.z + d_matrix[3][0] * rhs.w,
+//                 d_matrix[0][1] * rhs.x + d_matrix[1][1] * rhs.y + d_matrix[2][1] * rhs.z + d_matrix[3][1] * rhs.w,
+//                 d_matrix[0][2] * rhs.x + d_matrix[1][2] * rhs.y + d_matrix[2][2] * rhs.z + d_matrix[3][2] * rhs.w,
+//                 d_matrix[0][3] * rhs.x + d_matrix[1][3] * rhs.y + d_matrix[2][3] * rhs.z + d_matrix[3][3] * rhs.w
+//             };
+// }
 
 // this behavior is not yet correct. Do we want to feed column vectors here too?
 
@@ -92,124 +239,7 @@ struct Mat4
 //   memcpy( d_matrix, source, 4 * 4 * sizeof( float ) );
 // }
 
-inline const Vec4f &Mat4::operator[](int index) const
-{
-    if (index < 0 || index > 4) {}
-    return d_matrix[index];
-}
 
-inline Vec4f &Mat4::operator[](int index)
-{
-    return d_matrix[index];
-}
-
-inline Mat4 Mat4::operator*(const float rhs) const
-{
-    return  {
-                    d_matrix[0][0] * rhs, d_matrix[1][0] * rhs, d_matrix[2][0] * rhs, d_matrix[3][0] * rhs,
-                    d_matrix[0][1] * rhs, d_matrix[1][1] * rhs, d_matrix[2][1] * rhs, d_matrix[3][1] * rhs,
-                    d_matrix[0][2] * rhs, d_matrix[1][2] * rhs, d_matrix[2][2] * rhs, d_matrix[3][2] * rhs,
-                    d_matrix[0][3] * rhs, d_matrix[1][3] * rhs, d_matrix[2][3] * rhs, d_matrix[3][3] * rhs
-            };
-}
-
-// inline Vec4f Mat4::operator*(const Vec4f &rhs) const
-// {
-//     return {
-//                 d_matrix[0][0] * rhs.x + d_matrix[1][0] * rhs.y + d_matrix[2][0] * rhs.z + d_matrix[3][0] * rhs.w,
-//                 d_matrix[0][1] * rhs.x + d_matrix[1][1] * rhs.y + d_matrix[2][1] * rhs.z + d_matrix[3][1] * rhs.w,
-//                 d_matrix[0][2] * rhs.x + d_matrix[1][2] * rhs.y + d_matrix[2][2] * rhs.z + d_matrix[3][2] * rhs.w,
-//                 d_matrix[0][3] * rhs.x + d_matrix[1][3] * rhs.y + d_matrix[2][3] * rhs.z + d_matrix[3][3] * rhs.w
-//             };
-// }
-
-inline Mat4 Mat4::operator*(const Mat4 &rhs) const
-{
-
-
-    // int i, j;
-    // const float *m1Ptr, *m2Ptr;
-    // float *dstPtr;
-    // Mat4 dst;
-
-    // m1Ptr = reinterpret_cast<const float *>(this);
-    // m2Ptr = reinterpret_cast<const float *>(&rhs);
-    // dstPtr = reinterpret_cast<float *>(&dst);
-
-    // for ( i = 0; i < 4; i++ ) {
-    //     for ( j = 0; j < 4; j++ ) {
-    //         *dstPtr = m1Ptr[0] * m2Ptr[ 0 * 4 + j ]
-    //         + m1Ptr[1] * m2Ptr[ 1 * 4 + j ]
-    //         + m1Ptr[2] * m2Ptr[ 2 * 4 + j ]
-    //         + m1Ptr[3] * m2Ptr[ 3 * 4 + j ];
-    //         dstPtr++;
-    //     }
-    //     m1Ptr += 4;
-    // }
-    // return dst;
-}
-
-
-inline Mat4 Mat4::operator+(const Mat4 &rhs) const
-{
-    return  {
-                d_matrix[0][0] + rhs[0][0], d_matrix[1][0] + rhs[1][0], d_matrix[2][0] + rhs[2][0], d_matrix[3][0] + rhs[3][0],
-                d_matrix[0][1] + rhs[0][1], d_matrix[1][1] + rhs[1][1], d_matrix[2][1] + rhs[2][1], d_matrix[3][1] + rhs[3][1],
-                d_matrix[0][2] + rhs[0][2], d_matrix[1][2] + rhs[1][2], d_matrix[2][2] + rhs[2][2], d_matrix[3][2] + rhs[3][2],
-                d_matrix[0][3] + rhs[0][3], d_matrix[1][3] + rhs[1][3], d_matrix[2][3] + rhs[2][3], d_matrix[3][3] + rhs[3][3]
-            };
-} 
-
-inline Mat4 Mat4::operator-(const Mat4 &rhs) const
-{
-    return  {
-                d_matrix[0][0] - rhs[0][0], d_matrix[1][0] - rhs[1][0], d_matrix[2][0] - rhs[2][0], d_matrix[3][0] - rhs[3][0],
-                d_matrix[0][1] - rhs[0][1], d_matrix[1][1] - rhs[1][1], d_matrix[2][1] - rhs[2][1], d_matrix[3][1] - rhs[3][1],
-                d_matrix[0][2] - rhs[0][2], d_matrix[1][2] - rhs[1][2], d_matrix[2][2] - rhs[2][2], d_matrix[3][2] - rhs[3][2],
-                d_matrix[0][3] - rhs[0][3], d_matrix[1][3] - rhs[1][3], d_matrix[2][3] - rhs[2][3], d_matrix[3][3] - rhs[3][3]
-            };
-}
-
-inline Mat4 &Mat4::operator*=(const float rhs) 
-{
-    d_matrix[0][0] *= rhs; d_matrix[1][0] *= rhs; d_matrix[2][0] *= rhs; d_matrix[3][0] *= rhs;
-    d_matrix[0][1] *= rhs; d_matrix[1][1] *= rhs; d_matrix[2][1] *= rhs; d_matrix[3][1] *= rhs;
-    d_matrix[0][2] *= rhs; d_matrix[1][2] *= rhs; d_matrix[2][2] *= rhs; d_matrix[3][2] *= rhs;
-    d_matrix[0][3] *= rhs; d_matrix[1][3] *= rhs; d_matrix[2][3] *= rhs; d_matrix[3][3] *= rhs;
-    
-    return *this;
-}
-
-inline Mat4 &Mat4::operator*=(const Mat4 &rhs)
-{
-     *this = (*this) * rhs;
-     return *this;
-}
-
-// inline Mat4 &Mat4::operator+=(const Mat4 &rhs)
-// {
-//     d_matrix[0][0] += rhs[0][0]; d_matrix[1][0] += rhs[1][0]; d_matrix[2][0] += rhs[2][0]; d_matrix[3][0] += rhs[3][0];
-//     d_matrix[0][1] += rhs[0][1]; d_matrix[1][1] += rhs[1][1]; d_matrix[2][1] += rhs[2][1]; d_matrix[3][1] += rhs[3][1];
-//     d_matrix[0][2] += rhs[0][2]; d_matrix[1][2] += rhs[1][2]; d_matrix[2][2] += rhs[2][2]; d_matrix[3][2] += rhs[3][2];
-//     d_matrix[0][3] += rhs[0][3]; d_matrix[1][3] += rhs[1][3]; d_matrix[2][3] += rhs[2][3]; d_matrix[3][3] += rhs[3][3];
-    
-//     return *this;
-// }
-
-// inline Mat4 &Mat4::operator-=(const Mat4 &rhs)
-// {
-//     d_matrix[0][0] -= rhs[0][0]; d_matrix[1][0] -= rhs[1][0]; d_matrix[2][0] -= rhs[2][0]; d_matrix[3][0] -= rhs[3][0];
-//     d_matrix[0][1] -= rhs[0][1]; d_matrix[1][1] -= rhs[1][1]; d_matrix[2][1] -= rhs[2][1]; d_matrix[3][1] -= rhs[3][1];
-//     d_matrix[0][2] -= rhs[0][2]; d_matrix[1][2] -= rhs[1][2]; d_matrix[2][2] -= rhs[2][2]; d_matrix[3][2] -= rhs[3][2];
-//     d_matrix[0][3] -= rhs[0][3]; d_matrix[1][3] -= rhs[1][3]; d_matrix[2][3] -= rhs[2][3]; d_matrix[3][3] -= rhs[3][3];
-
-//     return *this;
-// }
-
-inline Mat4 operator*(const float lhs, const Mat4 &rhs)
-{
-    return rhs * lhs; //matrix * float
-}
 
 // inline Vec4f operator*(const Vec4f &lhs, const Mat4 &rhs)
 // {
@@ -226,31 +256,6 @@ inline Mat4 operator*(const float lhs, const Mat4 &rhs)
 //     lhs = rhs * lhs;
 //     return lhs;
 // }
-
-inline bool Mat4::operator==(const Mat4 &rhs) const 
-{
-  return compare(rhs);
-}
-
-inline bool Mat4::operator!=(const Mat4 &rhs) const 
-{
-  return !compare(rhs);
-}
-
-
-inline float *Mat4::data()
-{
-    return d_matrix[0].data();
-}
-
-inline const float *Mat4::data() const
-{
-    return d_matrix[0].data();
-}
-
-
-
-
 
           
 #endif

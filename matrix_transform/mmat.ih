@@ -2,5 +2,6 @@
 #include "../vec3/vec3.h"
 #include "../vector_transform/vector_transform.h"
 #include "../xform_state/xform_state.h"
+#include "../quaternion/quaternion.h"
 
 using namespace std;
