@@ -13,6 +13,12 @@ Mat4 mmat::identity()
          };
 }
 
+//@Refactor: this creates a copy. better to do in place? or does it not matter?
+void mmat::to_identity(Mat4& matrix)
+{
+   matrix = mmat::identity();
+}
+
 //@Incomplete: keep confusing myself about column vs row major
 Mat4 mmat::from_quaternion(const Quaternion& quaternion)
 {
@@ -28,7 +34,6 @@ Mat4 mmat::from_quaternion(const Quaternion& quaternion)
     float wx = quaternion.w * x2;
     float wy = quaternion.w * y2;
     float wz = quaternion.w * z2;
-
 
     return { 1.0f - (yy + zz), xy - wz, xz + wy, 0.0f,
              xy + wz, 1.0f - (xx + zz), yz - wx, 0.0f,
@@ -67,8 +72,6 @@ Mat4 mmat::translation(const Vec3& position)
             0, 0, 0, 1
             };
 }
-
-
 
 //@Incomplete: inline assignment instead of creating and returning?
 //@Incomplete: is this inverted because of the column vs row major?
