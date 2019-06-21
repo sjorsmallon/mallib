@@ -1,12 +1,9 @@
 #ifndef INCLUDED_MAT4_
 #define INCLUDED_MAT4_
 #include "../vec4/vec4.h"
-#include "../vector/vec3.h"
-#include <string> //for toString
-#include <cstring> //memcpy
-#include <cmath> //tanh
-#include <sstream> // for toString
-// #include "mat3.h"
+#include "../vec3/vec3.h"
+#include "../quaternion/quaternion.h"
+#include "../xform_state/xform_state.h"
 
 #define PI 3.14159265358979323846f //@Cleanup: move these to math
 #define DEG2RAD  PI / 180.0f
@@ -20,43 +17,43 @@ struct Mat4
     Vec4 d_matrix[4];
 
     public:
-        const Vec4f &operator[](int index) const;
-        Vec4f& operator[](int index);
-        // Mat4   operator*(const float rhs) const;
-        // Vec4f  operator*(const Vec4 &rhs) const;
-        // Vec3f  operator*(const Vec3 &rhs) const;
-        // Mat4   operator*(const Mat4 &rhs) const; 
-        // Mat4   operator+(const Mat4 &rhs) const;
-        // Mat4   operator-(const Mat4 &rhs) const;
+        const Vec4 &operator[](int index) const;
+        Vec4& operator[](const int index);
+
+
+        Mat4   operator*(const float rhs) const;
+        Vec4   operator*(const Vec4 &rhs) const;
+        Vec3   operator*(const Vec3 &rhs) const;
+        Mat4   operator*(const Mat4 &rhs) const; 
+        Mat4   operator+(const Mat4 &rhs) const;
+        Mat4   operator-(const Mat4 &rhs) const;
 
         Mat4& operator*=(const Mat4& rhs); //useful in scale/rotate/translate.
         Mat4& operator*=(const float scale);
         Mat4& operator*=(const Quaternion& rhs);
 
 
-        // bool compare(const Mat4 &rhs) const;
-        // bool operator==(const Mat4 &rhs) const;
-        // bool operator!=(const Mat4 &rhs) const;
+        bool compare(const Mat4 &rhs) const;
+        bool operator==(const Mat4 &rhs) const;
+        bool operator!=(const Mat4 &rhs) const;
 
         //Hacky stuff here.
-        const float *data() const;
         float *data();
 
 };
 
 
 
-inline const Vec4f &Mat4::operator[](int index) const
+inline const Vec4 &Mat4::operator[](const int index) const
 {
     if (index < 0 || index > 4) {}
     return d_matrix[index];
 }
 
-inline Vec4f &Mat4::operator[](int index)
+inline Vec4 &Mat4::operator[](const int index)
 {
     return d_matrix[index];
 }
-
 
 
 inline Mat4 Mat4::operator*(const Mat4 &rhs) const
@@ -102,6 +99,8 @@ inline Mat4& Mat4::operator*=(const Mat4 &rhs)
 inline Mat4& Mat4::operator*=(const Quaternion& rhs)
 {
     //@Incomplete: help.
+
+    return *this;
 }
 
 inline Mat4 operator*(const float lhs, const Mat4 &rhs)
@@ -109,25 +108,25 @@ inline Mat4 operator*(const float lhs, const Mat4 &rhs)
     return rhs * lhs; //matrix * float
 }
 
-// inline bool Mat4::operator==(const Mat4 &rhs) const 
-// {
-//   return compare(rhs);
-// }
+inline bool Mat4::operator==(const Mat4 &rhs) const 
+{
+  return compare(rhs);
+}
 
-// inline bool Mat4::operator!=(const Mat4 &rhs) const 
-// {
-//   return !compare(rhs);
-// }
+inline bool Mat4::operator!=(const Mat4 &rhs) const 
+{
+  return !compare(rhs);
+}
 
-inline float *Mat4::data()
+inline float* Mat4::data()
 {
     return d_matrix[0].data();
 }
 
-inline const float *Mat4::data() const
-{
-    return d_matrix[0].data();
-}
+// inline const float *Mat4::data() const
+// {
+//     return d_matrix[0].data();
+// }
 
 // inline Mat4 Mat4::operator+(const Mat4 &rhs) const
 // {
@@ -219,37 +218,25 @@ inline const float *Mat4::data() const
 // }
 
 
-// inline bool Mat4::compare(const Mat4 &rhs) const
-// {
-//     const float *ptr1, *ptr2;
-//     ptr1 = reinterpret_cast<const float *>(d_matrix);
-//     ptr2 = reinterpret_cast<const float *>(rhs.d_matrix);
-//     for (int idx = 0; idx != 4 * 4; ++i)
-//     {
-//         if ( ptr1[i] != ptr2[i] )
-//         {
-//             return false;
-//         }
-//     }
-//     return true;
-// }
+inline bool Mat4::compare(const Mat4 &rhs) const
+{
+    const float *ptr1, *ptr2;
+    ptr1 = reinterpret_cast<const float *>(d_matrix);
+    ptr2 = reinterpret_cast<const float *>(rhs.d_matrix);
+    for (int idx = 0; idx != 4 * 4; ++idx)
+    {
+        if ( ptr1[idx] != ptr2[idx] )
+        {
+            return false;
+        }
+    }
+    return true;
+}
 
-// inline Mat4::Mat4( const float source[ 4 ][ 4 ] )
-// {
-//   memcpy( d_matrix, source, 4 * 4 * sizeof( float ) );
-// }
-
-
-
-// inline Vec4f operator*(const Vec4f &lhs, const Mat4 &rhs)
-// {
-//     return rhs * lhs; //matrix * vector4;
-// }
-
-// inline Vec3 operator*(const Vec3f lhs, const Mat4 rhs)
-// {
-//     return rhs * lhs; //matrix * vector3;
-// }
+inline Vec3 operator*(const Vec3 lhs, const Mat4 rhs)
+{
+    return rhs * lhs; //matrix * vector3;
+}
 
 // inline Vec4f &operator*=(Vec4f &lhs, const Mat4 &rhs)
 // {

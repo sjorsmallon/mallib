@@ -95,7 +95,7 @@ Mat4 mmat::perspective(const float fov_y,
   return matrix;
 }
 
-Mat4 mmat::view(const Vec3& eye, const Vec3& center, const Vec& up)
+Mat4 mmat::view(const Vec3& eye, const Vec3& center, const Vec3& up)
 {
    // modeled after gluLookAt. 
 

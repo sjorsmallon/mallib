@@ -25,10 +25,10 @@ namespace mmat
 
     Mat4 mat4_identity();
 
-    Mat4 view(const Vec3& eye, const Vec3& center, const Vec& up);
-    Mat4 look_at(const Vec3& eye, const Vec3& center, const Vec& up);
+    Mat4 view(const Vec3& eye, const Vec3& center, const Vec3& up);
+    Mat4 look_at(const Vec3& eye, const Vec3& center, const Vec3& up);
 
-    void to_identity(mat4 &matrix);
+    void to_identity(Mat4 &matrix);
 
 
     // following functions cannot return a reference to *this because it is outside of the class now.

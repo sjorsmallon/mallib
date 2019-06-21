@@ -8,11 +8,11 @@ namespace mvec
   // vec3
 	void normalize(Vec3& vector);
 
-  float dot(const Vec3& lhs, const Vec3& rhs);
+ 	float dot(const Vec3& lhs, const Vec3& rhs);
 
 	Vec3 cross(const Vec3& lhs, const Vec3& rhs);
-  Vec3 lerp(const Vec3& lhs, const Vec3& rhs, const float ratio);
-  //vec4
+ 	Vec3 lerp(const Vec3& lhs, const Vec3& rhs, const float ratio);
+ 	//vec4
 
 };
 
