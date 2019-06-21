@@ -5,12 +5,15 @@
 #include "../quaternion/quaternion.h"
 #include "../xform_state/xform_state.h"
 
+// what this is: a subpart of the rendering library.
+// this is not meant to be a linalg library. it only supports the bare minimum.
+// extra functionality can be found in mmat.h.
+
 #define PI 3.14159265358979323846f //@Cleanup: move these to math
 #define DEG2RAD  PI / 180.0f
 #define RAD2DEG  180.f / PI
 
-// internal column major, but behaves as row major from outside perspective.
-// is a class for that exact reason.
+// column major
 // @Performance: this could be SIMD optimized, I think.
 struct Mat4
 {
@@ -20,18 +23,17 @@ struct Mat4
         const Vec4 &operator[](int index) const;
         Vec4& operator[](const int index);
 
-
+        Mat4   operator*(const Mat4 &rhs) const; 
         Mat4   operator*(const float rhs) const;
         Vec4   operator*(const Vec4 &rhs) const;
         Vec3   operator*(const Vec3 &rhs) const;
-        Mat4   operator*(const Mat4 &rhs) const; 
+
         Mat4   operator+(const Mat4 &rhs) const;
         Mat4   operator-(const Mat4 &rhs) const;
 
         Mat4& operator*=(const Mat4& rhs); //useful in scale/rotate/translate.
         Mat4& operator*=(const float scale);
-        Mat4& operator*=(const Quaternion& rhs);
-
+        // Mat4& operator*=(const Quaternion& rhs);
 
         bool compare(const Mat4 &rhs) const;
         bool operator==(const Mat4 &rhs) const;
@@ -96,17 +98,13 @@ inline Mat4& Mat4::operator*=(const Mat4 &rhs)
      return *this;
 }
 
-inline Mat4& Mat4::operator*=(const Quaternion& rhs)
-{
-    //@Incomplete: help.
+// inline Mat4& Mat4::operator*=(const Quaternion& rhs)
+// {
+//     //@Incomplete: help.
 
-    return *this;
-}
+//     return *this;
+// }
 
-inline Mat4 operator*(const float lhs, const Mat4 &rhs)
-{
-    return rhs * lhs; //matrix * float
-}
 
 inline bool Mat4::operator==(const Mat4 &rhs) const 
 {
@@ -233,16 +231,16 @@ inline bool Mat4::compare(const Mat4 &rhs) const
     return true;
 }
 
-inline Vec3 operator*(const Vec3 lhs, const Mat4 rhs)
+inline Vec3 operator*(const Vec3 lhs, const Mat4& rhs)
 {
     return rhs * lhs; //matrix * vector3;
 }
 
-// inline Vec4f &operator*=(Vec4f &lhs, const Mat4 &rhs)
-// {
-//     lhs = rhs * lhs;
-//     return lhs;
-// }
+
+inline Mat4 operator*(const float lhs, const Mat4& rhs)
+{
+    return rhs * lhs; //matrix * float
+}
 
           
 #endif
