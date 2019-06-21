@@ -20,7 +20,7 @@ class SString //: public stretchy buffer?
     char  *data;
 }
 
-struct SString_Memory_Pool
+class SString_Memory_Pool
 {
     char *memory_pool;
     size_t capacity; // maximum number of characters this thing can fit?
