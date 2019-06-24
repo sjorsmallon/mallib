@@ -40,29 +40,17 @@ void msound::load_wav_file(const char* filename)
 	FILE* wav_file = fopen(filePath, "r");
 	if (wav_file == nullptr)
 	{
-	    fprintf(stderr, "Unable to open wave file: %s\n", filePath);
+	    fprintf(stderr, "Unable to open wav file: %s\n", filePath);
 	    return;
 	}
 
 	//Read the header
 	size_t bytes_read = fread(&wav_header, 1, header_size, wav_file);
-	cout << "Header Read " << bytes_read << " bytes." << '\n';
 	if (bytes_read > 0)
 	{
 	    //Read the data
 	    uint16_t bytes_per_sample = wav_header.bits_per_sample / 8;      //Number     of bytes per sample
 	    uint64_t num_samples = wav_header.chunk_size / bytes_per_sample; //How many samples are in the wav file?
-	    static const uint16_t BUFFER_SIZE = 4096;
-	    int8_t* buffer = new int8_t[BUFFER_SIZE];
-
-	    while ((bytes_read = fread(buffer, sizeof buffer[0], BUFFER_SIZE / (sizeof buffer[0]), wav_file)) > 0)
-	    {
-	        // plot the data while reading?
-	        cout << "Read " << bytes_read << " bytes." << '\n';
-	    }
-	    delete [] buffer;
-	    buffer = nullptr;
-	    filelength = getFileSize(wav_file);
 
 	    cout << "File is                    :" << filelength << " bytes." << '\n';
 	    cout << "RIFF header                :" << wav_header.RIFF[0] << wav_header.RIFF[1] << wav_header.RIFF[2] << wav_header.RIFF[3] <<  '\n';
@@ -81,6 +69,30 @@ void msound::load_wav_file(const char* filename)
 
 	    cout << "Block align                :" << wav_header.block_align << '\n';
 	    cout << "Data string                :" << wav_header.sub_chunk_2_ID[0] << wav_header.sub_chunk_2_ID[1] << wav_header.sub_chunk_2_ID[2] << wav_header.sub_chunk_2_ID[3] << '\n';
+
+	    static const uint16_t BUFFER_SIZE = 4096;
+	    int8_t* buffer = new int8_t[BUFFER_SIZE];
+	    filelength = getFileSize(wav_file);
+
+	    const int buffer_size = filelength - sizeof(wav_header);
+	    cout  << "buffer size: " << buffer_size; 
+	    /* mine
+	    const int buffer_size = wav_header.sub_chunk_2_size;
+	    int8_t* buffer = new int8_t[buffer_size];
+	    filelength -= header_size;
+	    fread(buffer,sizeof buffer[0], buffer_size, wav_file)
+		*/
+
+	    while ((bytes_read = fread(buffer, sizeof buffer[0], BUFFER_SIZE / (sizeof buffer[0]), wav_file)) > 0)
+	    {
+	        // plot the data while reading?
+	        cout << "Read " << bytes_read << " bytes." << '\n';
+	    }
+
+
+	    delete [] buffer;
+	    buffer = nullptr;
+
     }
     fclose(wav_file);
     return;
@@ -138,13 +150,6 @@ Sound_Device::Sound_Device()
 // 		return;
 // 	}
 // }
-
-
-
-void Sound_Device::data_to_buffer()
-{
-
-}
 
 void Sound_Device::play_sound(const char* filename)
 { 
