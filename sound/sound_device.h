@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #ifndef INCLUDED_SOUND_DEVICE_
 #define INCLUDED_SOUND_DEVICE_
 
@@ -88,3 +89,30 @@ struct Wav_File
 #endif
 
 
+=======
+#ifndef INCLUDED_SOUND_DEVICE
+#define INCLUDED_SOUND_DEVICE
+
+//@Incomplete: look at openAL
+
+
+namespace msound
+{
+    
+}
+
+
+class Sound_Device
+{
+
+
+    public:
+        Sound_Device();
+
+        void play_sound(const char* filename);
+        void play_music(const char* filename);
+
+};
+
+#endif
+>>>>>>> 4caea8383ba20c228c05c28f753e18e7682868df

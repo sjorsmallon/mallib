@@ -1,5 +1,4 @@
 #include "sound_device.h"
-
 #ifdef __APPLE__
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
@@ -139,3 +138,20 @@ Sound_Device::Sound_Device()
 // 		return;
 // 	}
 // }
+
+
+
+void Sound_Device::data_to_buffer()
+{
+
+}
+
+void Sound_Device::play_sound(const char* filename)
+{ 
+    
+}
+
+void Sound_Device::play_music(const char* filename)
+{
+
+}

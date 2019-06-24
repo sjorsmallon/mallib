@@ -44,8 +44,8 @@ Mat4 mmat::from_quaternion(const Quaternion& quaternion)
 
 Mat4 mmat::from_xform_state(const Xform_State& xform_state) // so this is the model matrix?
 {
-  Mat4 model_matrix    = mmat::mat4_identity();
-  Mat4 rotation_matrix = mmat::from_quaternion(xform.orientation);
+  Mat4 model_matrix       = mmat::mat4_identity();
+  Mat4 rotation_matrix    = mmat::from_quaternion(xform.orientation);
   Mat4 translation_matrix = mmat::translation(xform.position);
 
   model_matrix *= xform_state.scale;
@@ -108,13 +108,12 @@ Mat4 mmat::view(const Vec3& eye, const Vec3& center, const Vec3& up)
    Vec3 u = mvec::cross(mvec::normalize(s),f);
    // The up vector must not be parallel to the line of sight from the
    //           eye point to the reference point.
-           
 
     return {
-             s.x, s.y, s.z, 0,
-             u.x, u.y, y.z, 0,
-             -f.x, -f.y, -f.z, 0
-               0,   0,   0, 1
+              s.x,  s.y,  s.z, 0,
+              u.x,  u.y,  y.z, 0,
+             -f.x, -f.y, -f.z, 0,
+                0,    0,    0, 1
            };
 }
 
