@@ -3,10 +3,13 @@
 #include <string>
 #include <vector>
 #include <GL.h>
+#include <GLEW.h>
 
 namespace mdraw
 {
     GLenum shader_type_from_extension(const std::string& filename);
+    
+    void init_opengl();
 }
 
 struct Renderer

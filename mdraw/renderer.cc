@@ -1,5 +1,11 @@
 #include "renderer.ih"
 
+void mdraw::init_openGL()
+{
+    Window *platform_window = platform_create_window();
+}
+
+
 GLenum mdraw::shader_type_from_extension(const string& filename)
 {
     std::string_view view(filename);

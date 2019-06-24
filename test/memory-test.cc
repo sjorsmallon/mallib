@@ -29,7 +29,7 @@ int main()
 
 void init_opengl() //bool?
 {
-    Window *platform_window = platform_create_window();
+
 
 
 }
