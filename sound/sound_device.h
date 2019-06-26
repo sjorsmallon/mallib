@@ -23,11 +23,7 @@
 // to see if something went wrong. how we deal with something
 // going wrong is something we have to come up with later.
 
-namespace msound
-{
-	void load_wav_file(const char* filename); //Wav_File 
-	int getFileSize(FILE* inFile);
-};
+
 
 class Sound_Device
 {
@@ -68,7 +64,7 @@ struct Wav_Header
     uint8_t         fmt[4];            // FMT header
     uint32_t        sub_chunk_1_size;  // Size of the fmt chunk
     uint16_t        audio_format;      // Audio format 1=PCM,6=mulaw,7=alaw,     257=IBM Mu-Law, 258=IBM A-Law, 259=ADPCM
-    uint16_t        num_of_chan;       // Number of channels 1=Mono 2=Sterio
+    uint16_t        num_channels;       // Number of channels 1=Mono 2=Sterio
     uint32_t        samples_per_sec;   // Sampling Frequency in Hz
     uint32_t        bytes_per_sec;     // bytes per second
     uint16_t        block_align;       // 2=16-bit mono, 4=16-bit stereo
@@ -80,9 +76,17 @@ struct Wav_Header
 
 struct Wav_File
 {
+    std::string filename;
 	Wav_Header header;
-	uint8_t *data;
-	size_t size;
+	// uint8_t *data;
+	// size_t data_size;
+    std::vector<std::vector<uint8_t>> data; // maybe multiple channels?
+};
+
+namespace msound
+{
+    Wav_File load_wav_file(const char* filename); //Wav_File 
+    int getFileSize(FILE* inFile);
 };
 
 #endif
