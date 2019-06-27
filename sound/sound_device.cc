@@ -19,7 +19,7 @@ using std::string;
 
 
 // find the file size
-int msound::getFileSize(FILE* inFile)
+int msound::get_file_size(FILE* inFile)
 {
     int fileSize = 0;
     fseek(inFile, 0, SEEK_END);
@@ -43,7 +43,7 @@ Wav_File msound::load_wav_file(const char* filename)
 	    fprintf(stderr, "Unable to open wav file: %s\n", file_path);
 	    return {};
 	}
-	const size_t filelength = getFileSize(wav_file);
+	const size_t filelength = get_file_size(wav_file);
 
 	//Read the header
 	const size_t bytes_read = fread(&wav_header, 1, header_size, wav_file);
@@ -52,38 +52,22 @@ Wav_File msound::load_wav_file(const char* filename)
 	    //Read the data
 	    uint16_t bytes_per_sample = wav_header.bits_per_sample / 8;      //Number     of bytes per sample
 	    uint64_t num_samples = wav_header.chunk_size / bytes_per_sample; //How many samples are in the wav file?
-
-	    cout << "File is                    :" << filelength << " bytes." << '\n';
-	    cout << "RIFF header                :" << wav_header.RIFF[0] << wav_header.RIFF[1] << wav_header.RIFF[2] << wav_header.RIFF[3] <<  '\n';
-	    cout << "WAVE header                :" << wav_header.WAVE[0] << wav_header.WAVE[1] << wav_header.WAVE[2] << wav_header.WAVE[3] << '\n';
-	    cout << "FMT                        :" << wav_header.fmt[0] << wav_header.fmt[1] << wav_header.fmt[2] << wav_header.fmt[3] <<  '\n';
-	    cout << "Data size                  :" << wav_header.chunk_size << '\n';
-	    // Display the sampling Rate from the header
-	    cout << "Sampling Rate              :" << wav_header.samples_per_sec <<  '\n';
-	    cout << "Number of bits used        :" << wav_header.bits_per_sample <<  '\n';
-	    cout << "Number of channels         :" << wav_header.num_channels <<  '\n';
-	    cout << "Number of bytes per second :" << wav_header.bytes_per_sec <<  '\n';
-	    cout << "Data length                :" << wav_header.sub_chunk_2_size <<  '\n';
-	    cout << "Audio Format               :" << wav_header.audio_format <<  '\n';
-	    // Audio format 1=PCM,6=mulaw,7=alaw, 257=IBM Mu-Law, 258=IBM A-Law, 259=ADPCM
-
-	    cout << "Block align                :" << wav_header.block_align << '\n';
-	    cout << "Data string                :" << wav_header.sub_chunk_2_ID[0] << wav_header.sub_chunk_2_ID[1] << wav_header.sub_chunk_2_ID[2] << wav_header.sub_chunk_2_ID[3] << '\n';
-
-
-	    const size_t filelength = getFileSize(wav_file);
+	    const int filelength = msound::get_file_size(wav_file);
   		const size_t buffer_size = filelength - sizeof(wav_header);
 
-
   		file_to_return.header = wav_header;
-  		file_to_return.data.push_back({});
+  		file_to_return.data.push_back({}); // one channel.
   		file_to_return.data[0].resize(buffer_size);
 
 	    const size_t data_bytes_read = fread(file_to_return.data[0].data(), sizeof(uint8_t), buffer_size / sizeof(uint8_t), wav_file);
 	    if (data_bytes_read > 0)
 	    {
-	    	cout << "read " << data_bytes_read << "bytes" << '\n';
+	    	// cout << "read " << data_bytes_read << "bytes" << '\n';
 	    }
+	    else
+	    {
+	    	cout << "read 0 bytes in sound_device. exiting.." << '\n';
+    	}
 
     }
     fclose(wav_file);
@@ -94,31 +78,44 @@ Wav_File msound::load_wav_file(const char* filename)
 Sound_Device::Sound_Device()
 //:
 {
-	// Device = alcOpenDevice(nullptr);
-	// if (Device)
-	// {
-	// 	Context = alcCreateContext(Device, nullptr);
-	// 	alcMakeContextcurrent(Context);
-	// }
+	m_device = alcOpenDevice(nullptr);
+	if (m_device)
+	{
+		m_context = alcCreateContext(m_device, nullptr);
+		alcMakeContextCurrent(m_context);
+	}
 
-	// g_bEAX = alIsExtensionPresent("EAX2.0");
-	// alGetError();
+	//@Move: separate the data here.
+	m_num_buffers = 1; 
+	m_buffers.reserve(m_num_buffers);
 
-	// alGenBuffers(NUM_BUFFERS, g_Buffers);
+	alGenBuffers(m_num_buffers, buffers.data());
+	if ((error = alGetError()) != AL_NO_ERROR)
+	{
+		printf("errortjeee");
+		// DisplayALError("alGenBuffers: ", error);
+	}
 
-	// if ((error = alGetError()) != AL_NO_ERROR)
-	// {
-	// 	DisplayAlError("alGenBuffers: ", error);
-	// }
+	//@Incomplete: this is 32 sound sources.
+	m_num_sound_sources = 32;
+	m_sound_sources.reserve(m_num_sound_sources);
 
+	alGenSources(m_num_sound_sources, m_sound_sources.data());
+
+	// bind buffers to sound sources.
+	alSourcei(sound_source, AL_BUFFER, buffers[0]);
 }
 
 
-// void alBufferData(ALuint buffer,
-// 				  ALenum format,
-// 				  const ALvoid *data,
-// 				  ALsizei size,
-// 				  ALsizei freq);
+
+
+Sound_Device::~Sound_Device()
+{
+	alDeleteSources(m_num_sound_sources, m_sound_sources.data());
+    alDeleteBuffers(m_num_buffers, m_buffers.data());
+    alcDestroyContext(m_context);
+    alcCloseDevice(m_device);
+}
 
 // void Sound_Device::load_wav_file(const char* filename)
 // {

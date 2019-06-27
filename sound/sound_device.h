@@ -9,7 +9,6 @@
 #include <AL/alc.h>
 #endif
 
-#include "wav.h"
 #include <vector>
 
 
@@ -23,36 +22,44 @@
 // to see if something went wrong. how we deal with something
 // going wrong is something we have to come up with later.
 
+//TODO: pool pattern.
+// maximum of (32) sound sources. at startup, create 32 ALsources.
+// ask pool for a source.
+// if no free sources, stop longest playing(????)
+// classify pool into groupes:
+// 1-8 unit sfx
+// 8-12 explosions
+// you name it.
+
 
 
 class Sound_Device
 {
-	std::vector<ALuint> m_buffers;
-	// actually horrible design, but whatever.
-	ALenum error;
+    ALDevice *m_device;
+    ALContext *m_context; // multiple contexts?
+    Alenum m_error;
+
+
+    int32_t m_num_buffers; // create a fixed amount of buffers?
+    std::vector<ALuint> m_buffers;
+    std::vector<ALuint> m_sound_sources; // std::array<ALuint, ????> 
+    std::vector<Wav_File> m_wav_files;
+	
+    // horrible idea, but whatever.
 	bool m_EAX;
 
 	public:
 		Sound_Device();
+        ~Sound_Device();
 
-		void play_sound(const char* filename);
+		void play_sound(const char* filename); // provide overloads for these?
 		void play_music(const char* filename);
-		void load_wav_file(const char* filename);
-};
 
+    private:
+        uint32_t first_free_sound_source(); //ALuint
 
-struct Sound_File
-{
-	//format, data , size, freq, loop?
-	size_t size;
-	float freq; 
 
 };
-
-// const int NUM_BUFFERS = 1;
-// 	ALuint g_buffers[NUM_BUFFERS];
-// 	ALenum error;
-
 
 struct Wav_Header
 {
@@ -81,12 +88,13 @@ struct Wav_File
 	// uint8_t *data;
 	// size_t data_size;
     std::vector<std::vector<uint8_t>> data; // maybe multiple channels?
+    ALenum format; //AL_FORMAT_MONO8, STEREO8, MONO16, STEREO16
 };
 
 namespace msound
 {
     Wav_File load_wav_file(const char* filename); //Wav_File 
-    int getFileSize(FILE* inFile);
+    int get_file_size(FILE* inFile);
 };
 
 #endif
