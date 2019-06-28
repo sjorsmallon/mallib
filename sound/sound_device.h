@@ -15,8 +15,10 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-
 #include <chrono>
+
+// typedef uint32_t buffer;
+// typedef uint32_t sound_source;
 
 
 // using this class:
@@ -24,14 +26,6 @@
 // to see if something went wrong. how we deal with something
 // going wrong is something we have to come up with later.
 
-//TODO: pool pattern.
-// maximum of (32) sound sources. at startup, create 32 ALsources.
-// ask pool for a source.
-// if no free sources, stop longest playing(????)
-// classify pool into groupes:
-// 1-8 unit sfx
-// 8-12 explosions
-// you name it.
 
 struct Wav_Header
 {
@@ -69,14 +63,16 @@ class Sound_Device
     ALCcontext *m_context; // multiple contexts?
     ALenum m_error;
 
-
+    //@Move: this is data.
     int32_t m_num_buffers; // create a fixed amount of buffers?
+    std::vector<uint32_t> m_buffers;
+    std::vector<uint8_t> m_buffers_occupied; 
+
+    // sound sources can stay here.
     int32_t m_num_sound_sources;
-    std::vector<ALuint> m_buffers;
-    std::vector<ALuint> m_sound_sources; // std::array<ALuint, ????> 
-    // std::vector<Wav_File> m_wav_files;
+    std::vector<uint32_t> m_sound_sources; 
+    std::vector<uint8_t> m_sound_sources_occupied; //which sound sources are occupied.
 	
-    // horrible idea, but whatever.
 	bool m_EAX;
 
 	public:
@@ -84,13 +80,14 @@ class Sound_Device
         ~Sound_Device();
 
 		void play_sound(const char* filename); // provide overloads for these?
-        void play_sound(uint32_t sound_source);
+        void play_sound(const uint32_t sound_source);
 		void play_music(const char* filename);
         uint32_t data_to_buffer(const Wav_File& wav_file); // this is unclear! maybe typedef uint32_t to sound_source?
+        uint32_t buffer_to_source(const uint32_t buffer); // this is unclear too.
 
     private:
-        ALuint find_free_source(); //uint32_t
-        ALuint find_free_buffer(); //uint32_t
+        uint32_t find_free_source();        //uint32_t
+        uint32_t find_free_buffer();       //uint32_t
 };
 
 
