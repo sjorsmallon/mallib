@@ -10,6 +10,8 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include "../file_handler/file_handler.h"
+
 
 using std::cin;
 using std::cout;
@@ -17,49 +19,131 @@ using std::cerr;
 using std::fstream;
 using std::string;
 
+Sound_Device::Sound_Device()
+{
+	m_device = alcOpenDevice(nullptr);
+	if (m_device)
+	{
+		m_context = alcCreateContext(m_device, nullptr);
+		alcMakeContextCurrent(m_context);
+	}
+
+	//@Move: separate the data here.
+	m_num_buffers = 32; 
+	m_buffers.reserve(m_num_buffers);
+
+	alGenBuffers(m_num_buffers, m_buffers.data());
+	if ((m_error = alGetError()) != AL_NO_ERROR)
+	{
+		printf("alGenBuffers");
+		alDeleteBuffers(m_num_buffers, m_buffers.data());
+		exit(1);
+	}
+
+	//@Incomplete: this is 32 sound sources.
+	m_num_sound_sources = 32;
+	m_sound_sources.reserve(m_num_sound_sources);
+
+	alGenSources(m_num_sound_sources, m_sound_sources.data());
+	if ((m_error = alGetError()) != AL_NO_ERROR)
+	{
+		printf("alGenSources");
+		alDeleteSources(m_num_sound_sources, m_sound_sources.data());
+		exit(1);
+	}
+
+	// bind buffers to sound sources.
+	// @Incomplete: initially 1:1? do we need to keep track of which 
+	// buffer is bound to what source? or what buffers are actually filled?
+	// are all buffers always filled? are there as many buffers as there
+	// are sound files? or are they streamed in? help
+
+	// for (size_t idx = 0; idx != m_num_sound_sources; ++idx)
+	// 	alSourcei(m_sound_sources[idx], AL_BUFFER, m_buffers[idx]);
+
+
+}
+
+Sound_Device::~Sound_Device()
+{
+	alDeleteSources(m_num_sound_sources, m_sound_sources.data());
+    alDeleteBuffers(m_num_buffers, m_buffers.data());
+    alcDestroyContext(m_context);
+    alcCloseDevice(m_device);
+}
+
+uint32_t Sound_Device::data_to_buffer(const Wav_File& wav_file) // returns source
+{
+	ALuint buffer_ID = find_free_buffer();	
+	alBufferData(buffer_ID,  wav_file.format, wav_file.data[0].data(), wav_file.data[0].size() * sizeof(uint8_t), wav_file.header.samples_per_sec);
+	// alBufferData(m_buffers[0],  wav_file.format, wav_file.data[0].data(), wav_file.data[0].size() * sizeof(uint8_t), wav_file.header.samples_per_sec);
+
+	ALuint source_ID = find_free_source();
+	alSourcei(source_ID, AL_BUFFER, buffer_ID);
+	// alSourcei(m_sound_sources[0], AL_BUFFER, m_buffers[0]);
+
+	return source_ID;
+}
+
+ALuint Sound_Device::find_free_buffer()
+{
+	return m_buffers[0];
+}
+
+ALuint Sound_Device::find_free_source()
+{
+	return m_sound_sources[0];
+}
+
 
 // find the file size
-int msound::get_file_size(FILE* inFile)
-{
-    int fileSize = 0;
-    fseek(inFile, 0, SEEK_END);
 
-    fileSize = ftell(inFile);
 
-    fseek(inFile, 0, SEEK_SET);
-    return fileSize;
-}
 
 Wav_File msound::load_wav_file(const char* filename)
 {
 	Wav_Header wav_header;
-	Wav_File file_to_return;
 	const int header_size = sizeof(wav_header);
-	const char* file_path = "chicken.wav";
+	// const char* file_path = "chicken.wav";
 
-	FILE* wav_file = fopen(file_path, "r");
-	if (wav_file == nullptr)
-	{
-	    fprintf(stderr, "Unable to open wav file: %s\n", file_path);
-	    return {};
-	}
-	const size_t filelength = get_file_size(wav_file);
+	File_Handler file_handler(filename);
+	Wav_File file_to_return;
+	const int filelength = file_handler.file_size();
 
 	//Read the header
-	const size_t bytes_read = fread(&wav_header, 1, header_size, wav_file);
+	const size_t bytes_read = fread(&wav_header, 1, header_size, file_handler.file());
 	if (bytes_read > 0)
 	{
+		
+		if (wav_header.bits_per_sample == 8)
+		{
+			cerr << "8 bits\n";
+			if (wav_header.num_channels == 1)
+				file_to_return.format = AL_FORMAT_MONO8;
+			else
+				file_to_return.format = AL_FORMAT_STEREO8;
+		}
+		else if(wav_header.bits_per_sample == 16)
+		{
+			if (wav_header.num_channels == 1)
+				file_to_return.format = AL_FORMAT_MONO16;
+			else 
+				file_to_return.format = AL_FORMAT_STEREO16;
+		}
+
 	    //Read the data
 	    uint16_t bytes_per_sample = wav_header.bits_per_sample / 8;      //Number     of bytes per sample
 	    uint64_t num_samples = wav_header.chunk_size / bytes_per_sample; //How many samples are in the wav file?
-	    const int filelength = msound::get_file_size(wav_file);
-  		const size_t buffer_size = filelength - sizeof(wav_header);
+  		const int buffer_size = filelength - sizeof(wav_header);
+  		file_to_return.duration = static_cast<float>(num_samples) / static_cast<float>(wav_header.samples_per_sec);
+	    file_to_return.duration *= 1000; //1000 milliseconds in a second.
+	    cerr << "file duration: " << file_to_return.duration;
 
   		file_to_return.header = wav_header;
   		file_to_return.data.push_back({}); // one channel.
   		file_to_return.data[0].resize(buffer_size);
 
-	    const size_t data_bytes_read = fread(file_to_return.data[0].data(), sizeof(uint8_t), buffer_size / sizeof(uint8_t), wav_file);
+	    const size_t data_bytes_read = fread(file_to_return.data[0].data(), sizeof(uint8_t), buffer_size / sizeof(uint8_t), file_handler.file());
 	    if (data_bytes_read > 0)
 	    {
 	    	// cout << "read " << data_bytes_read << "bytes" << '\n';
@@ -70,75 +154,15 @@ Wav_File msound::load_wav_file(const char* filename)
     	}
 
     }
-    fclose(wav_file);
     return file_to_return;
 }
 
 
-Sound_Device::Sound_Device()
-//:
+
+void Sound_Device::play_sound(uint32_t sound_source)
 {
-	m_device = alcOpenDevice(nullptr);
-	if (m_device)
-	{
-		m_context = alcCreateContext(m_device, nullptr);
-		alcMakeContextCurrent(m_context);
-	}
-
-	//@Move: separate the data here.
-	m_num_buffers = 1; 
-	m_buffers.reserve(m_num_buffers);
-
-	alGenBuffers(m_num_buffers, buffers.data());
-	if ((error = alGetError()) != AL_NO_ERROR)
-	{
-		printf("errortjeee");
-		// DisplayALError("alGenBuffers: ", error);
-	}
-
-	//@Incomplete: this is 32 sound sources.
-	m_num_sound_sources = 32;
-	m_sound_sources.reserve(m_num_sound_sources);
-
-	alGenSources(m_num_sound_sources, m_sound_sources.data());
-
-	// bind buffers to sound sources.
-	alSourcei(sound_source, AL_BUFFER, buffers[0]);
+	alSourcePlay(sound_source);
 }
-
-
-
-
-Sound_Device::~Sound_Device()
-{
-	alDeleteSources(m_num_sound_sources, m_sound_sources.data());
-    alDeleteBuffers(m_num_buffers, m_buffers.data());
-    alcDestroyContext(m_context);
-    alcCloseDevice(m_device);
-}
-
-// void Sound_Device::load_wav_file(const char* filename)
-// {
-// 	// format, data , size, freq, loop?
-// 	// g_Buffers & num_buffers
-// 	// error?
-// 	loadWAVFile(filename &format, &data, &size, &freq, &loop);
-
-// 	if ((error = alGetError()) = AL_NO_ERROR)
-// 	{
-// 		DisplayAlError("aluitloadWAVFILe error:", error);
-// 		alDeleteBuffers(NUM_BUFFERS, g_Buffers);
-// 		return;
-// 	}
-
-// 	alBufferData(g_Buffers[0], format, data, size, freq);
-// 	if ((error = alGetError()) != AL_NO_ERROR)
-// 	{
-// 		DisplayAlError("alutLoadWavFILE error:", error);
-// 		alDeleteBuffers(NUM_BUFFERS, g_Buffers);
-// 		return;
-// 	}
-// }
 
 void Sound_Device::play_sound(const char* filename)
 { 

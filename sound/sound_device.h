@@ -10,11 +10,13 @@
 #endif
 
 #include <vector>
-
+#include <variant>
 
 #include <iostream>
 #include <string>
 #include <fstream>
+
+#include <chrono>
 
 
 // using this class:
@@ -30,36 +32,6 @@
 // 1-8 unit sfx
 // 8-12 explosions
 // you name it.
-
-
-
-class Sound_Device
-{
-    ALDevice *m_device;
-    ALContext *m_context; // multiple contexts?
-    Alenum m_error;
-
-
-    int32_t m_num_buffers; // create a fixed amount of buffers?
-    std::vector<ALuint> m_buffers;
-    std::vector<ALuint> m_sound_sources; // std::array<ALuint, ????> 
-    std::vector<Wav_File> m_wav_files;
-	
-    // horrible idea, but whatever.
-	bool m_EAX;
-
-	public:
-		Sound_Device();
-        ~Sound_Device();
-
-		void play_sound(const char* filename); // provide overloads for these?
-		void play_music(const char* filename);
-
-    private:
-        uint32_t first_free_sound_source(); //ALuint
-
-
-};
 
 struct Wav_Header
 {
@@ -84,17 +56,50 @@ struct Wav_Header
 struct Wav_File
 {
     std::string filename;
-	Wav_Header header;
-	// uint8_t *data;
-	// size_t data_size;
+    Wav_Header header;
     std::vector<std::vector<uint8_t>> data; // maybe multiple channels?
     ALenum format; //AL_FORMAT_MONO8, STEREO8, MONO16, STEREO16
+    float duration; // miliseconds?
 };
+
+
+class Sound_Device
+{
+    ALCdevice *m_device;
+    ALCcontext *m_context; // multiple contexts?
+    ALenum m_error;
+
+
+    int32_t m_num_buffers; // create a fixed amount of buffers?
+    int32_t m_num_sound_sources;
+    std::vector<ALuint> m_buffers;
+    std::vector<ALuint> m_sound_sources; // std::array<ALuint, ????> 
+    // std::vector<Wav_File> m_wav_files;
+	
+    // horrible idea, but whatever.
+	bool m_EAX;
+
+	public:
+		Sound_Device();
+        ~Sound_Device();
+
+		void play_sound(const char* filename); // provide overloads for these?
+        void play_sound(uint32_t sound_source);
+		void play_music(const char* filename);
+        uint32_t data_to_buffer(const Wav_File& wav_file); // this is unclear! maybe typedef uint32_t to sound_source?
+
+    private:
+        ALuint find_free_source(); //uint32_t
+        ALuint find_free_buffer(); //uint32_t
+};
+
 
 namespace msound
 {
-    Wav_File load_wav_file(const char* filename); //Wav_File 
-    int get_file_size(FILE* inFile);
+    Wav_File load_wav_file(const char* filename); //Wav_File
+
+
+    // int get_file_size(FILE* inFile);
 };
 
 #endif
