@@ -1,3 +1,5 @@
+
+
 #include <string>
 #include <vector>
 
@@ -7,18 +9,20 @@
 // Allocator_traits?
 // vector with allocator?
 
+
+
 struct Mesh
 {
     vector<Vertex> vertices;
     vector<size_t> indices;
 }
 
-class SString //: public stretchy buffer?
-{
-    size_t length;
-    size_t capacity;
-    char  *data;
-}
+// class SString //: public stretchy buffer?
+// {
+//     size_t length;
+//     size_t capacity;
+//     char  *data;
+// }
 
 class SString_Memory_Pool
 {

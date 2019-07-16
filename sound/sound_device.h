@@ -17,15 +17,19 @@
 #include <fstream>
 #include <chrono>
 
-// typedef uint32_t buffer;
-// typedef uint32_t sound_source;
-
-
 // using this class:
 // after invoking openAL function, request the error status
 // to see if something went wrong. how we deal with something
 // going wrong is something we have to come up with later.
 
+struct Wav_File
+{
+    std::string filename;
+    Wav_Header header;
+    std::vector<std::vector<uint8_t>> data; // maybe multiple channels?
+    ALenum format; //AL_FORMAT_MONO8, STEREO8, MONO16, STEREO16
+    float duration; // miliseconds?
+};
 
 struct Wav_Header
 {
@@ -47,39 +51,30 @@ struct Wav_Header
     uint32_t        sub_chunk_2_size;  // Sampled data length
 };
 
-struct Wav_File
-{
-    std::string filename;
-    Wav_Header header;
-    std::vector<std::vector<uint8_t>> data; // maybe multiple channels?
-    ALenum format; //AL_FORMAT_MONO8, STEREO8, MONO16, STEREO16
-    float duration; // miliseconds?
-};
-
-
 class Sound_Device
 {
+    ALenum m_error;
     ALCdevice *m_device;
     ALCcontext *m_context; // multiple contexts?
-    ALenum m_error;
 
-    //@Move: this is data.
-    int32_t m_num_buffers; // create a fixed amount of buffers?
+    //@NOTE: this is not data, these are just indices.
     std::vector<uint32_t> m_buffers;
-    std::vector<uint8_t> m_buffers_occupied; 
+    int32_t m_num_buffers; // = as many as we have files?
+    std::vector<uint8_t>  m_buffers_occupied; 
 
     // sound sources can stay here.
-    int32_t m_num_sound_sources;
+    int32_t m_num_sound_sources; // 16? 32?
+    std::vector<uint8_t>  m_sound_sources_occupied; //which sound sources are occupied.
     std::vector<uint32_t> m_sound_sources; 
-    std::vector<uint8_t> m_sound_sources_occupied; //which sound sources are occupied.
-	
+
+
 	bool m_EAX;
 
 	public:
 		Sound_Device();
         ~Sound_Device();
 
-		void play_sound(const char* filename); // provide overloads for these?
+		// void play_sound(const char* filename); // provide overloads for these?
         void play_sound(const uint32_t sound_source);
 		void play_music(const char* filename);
         uint32_t data_to_buffer(const Wav_File& wav_file); // this is unclear! maybe typedef uint32_t to sound_source?
@@ -91,13 +86,9 @@ class Sound_Device
 };
 
 
-namespace msound
-{
-    Wav_File load_wav_file(const char* filename); //Wav_File
 
 
-    // int get_file_size(FILE* inFile);
-};
+
 
 #endif
 
