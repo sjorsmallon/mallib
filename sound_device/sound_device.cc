@@ -71,15 +71,12 @@ uint32_t Sound_Device::data_to_buffer(const Wav_File& wav_file) // returns sourc
 {
 	ALuint buffer_ID = find_free_buffer();	
 	cerr << "buffer_ID: " << buffer_ID << '\n';
-	size_t size = wav_file.data[0].size() * sizeof(uint8_t);
 
-	if (wav_file.format == AL_FORMAT_MONO16 || wav_file.format == AL_FORMAT_STEREO16)
-		size /= 2; 	
+	// if (wav_file.format == AL_FORMAT_MONO16 || wav_file.format == AL_FORMAT_STEREO16)
+	// 	size /= 2; 	
+	 // this worked: wav_file.data[0].size() * sizeof(uint8_t) * 2;
 
-	cerr << "my size: " << size << " , wav_file.size: " << wav_file.header.sub_chunk_2_size << '\n';
-
-
-	alBufferData(buffer_ID,  wav_file.format, wav_file.data[0].data(), wav_file.data[0].size() * sizeof(uint8_t), wav_file.header.samples_per_sec);
+	alBufferData(buffer_ID, wav_file.format, wav_file.data[0].data(), wav_file.data[0].size(), wav_file.header.samples_per_sec);
 	if ((m_error = alGetError()) != AL_NO_ERROR)
 	{
 		if (m_error == AL_INVALID_VALUE)

@@ -16,11 +16,14 @@ namespace msound
     extern std::map<uint32_t, uint32_t> buffer_to_sources;
 
 	extern std::map<std::string, std::vector<uint32_t>> music_buffers;
+
     
 
     Wav_File load_wav_file(const char* filename); //Wav_File
     uint32_t register_wav_file(const char* filename); // Wav_File?
     uint32_t buffer_to_source(const uint32_t buffer);
+
+
 
     void     play_sound(const char* soundname);
     void     play_music(const char* musicname);
