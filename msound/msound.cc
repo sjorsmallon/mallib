@@ -7,6 +7,9 @@
 #include "../sound_device/sound_device.h"
 using std::cerr;
 
+//@BUG: to be removed.
+#include <assert.h>
+
 
 
 namespace msound
@@ -73,8 +76,6 @@ Wav_File msound::load_wav_file(const char* filename)
 
 	if (bytes_read > 0)
 	{
-		cerr << wav_header.sub_chunk_2_ID[0]  << '\n';
-
 		
 		if (wav_header.bits_per_sample == 8)
 		{
@@ -105,9 +106,8 @@ Wav_File msound::load_wav_file(const char* filename)
 			}
 		}
 
-		cerr << "sub chunk size: " <<  wav_header.sub_chunk_2_size << '\n'; //@Bug: is this little or big endian?
-
-		//@TODO: remove stereo stuff, not necessary (i think?)
+		cerr << "sub chunk 1 size:" << wav_header.sub_chunk_1_size << '\n'; 
+		//@TODO: remove stereo channel, not necessary (at least for openAL.)
 		file_to_return.header = wav_header;
 		file_to_return.data.push_back({});
 		uint32_t buffer_size = filelength - sizeof(wav_header);

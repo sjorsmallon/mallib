@@ -19,6 +19,7 @@ using std::cerr;
 using std::fstream;
 using std::string;
 
+//////////////////////////////////////////////
 
 Sound_Device::Sound_Device()
 {
@@ -59,6 +60,8 @@ Sound_Device::Sound_Device()
 }
 
 
+//////////////////////////////////////////////
+
 Sound_Device::~Sound_Device()
 {
 	alDeleteSources(m_num_sound_sources, m_sound_sources.data());
@@ -67,14 +70,11 @@ Sound_Device::~Sound_Device()
     alcCloseDevice(m_device);
 }
 
+//////////////////////////////////////////////
+
 uint32_t Sound_Device::data_to_buffer(const Wav_File& wav_file) // returns source
 {
-	ALuint buffer_ID = find_free_buffer();	
-	cerr << "buffer_ID: " << buffer_ID << '\n';
-
-	// if (wav_file.format == AL_FORMAT_MONO16 || wav_file.format == AL_FORMAT_STEREO16)
-	// 	size /= 2; 	
-	 // this worked: wav_file.data[0].size() * sizeof(uint8_t) * 2;
+	ALuint buffer_ID = get_free_buffer();	
 
 	alBufferData(buffer_ID, wav_file.format, wav_file.data[0].data(), wav_file.data[0].size(), wav_file.header.samples_per_sec);
 	if ((m_error = alGetError()) != AL_NO_ERROR)
@@ -86,18 +86,19 @@ uint32_t Sound_Device::data_to_buffer(const Wav_File& wav_file) // returns sourc
 	return buffer_ID;
 }
 
+//////////////////////////////////////////////
 
 uint32_t Sound_Device::buffer_to_source(const uint32_t buffer)
 {
-	ALuint source_ID = find_free_source();
+	ALuint source_ID = get_free_source();
 	cerr << "source ID:  " << source_ID;
-	// source_ID = m_sound_sources[0];
 	alSourcei(source_ID, AL_BUFFER, buffer);
-
 	return source_ID;
 }
 
-ALuint Sound_Device::find_free_buffer()
+//////////////////////////////////////////////
+
+ALuint Sound_Device::get_free_buffer()
 {
 	auto result = std::find(m_buffers_occupied.begin(), m_buffers_occupied.end(), 0);
 	size_t idx = std::distance(m_buffers_occupied.begin(), result);
@@ -106,7 +107,9 @@ ALuint Sound_Device::find_free_buffer()
 	return m_buffers[idx];
 }
 
-ALuint Sound_Device::find_free_source()
+//////////////////////////////////////////////
+
+ALuint Sound_Device::get_free_source()
 {
 	auto result = std::find(m_sound_sources_occupied.begin(), m_sound_sources_occupied.end(), 0);
 	size_t idx = std::distance(m_sound_sources_occupied.begin(), result);
@@ -115,17 +118,14 @@ ALuint Sound_Device::find_free_source()
 	return m_sound_sources[idx];
 }
 
-
-// find the file size
-
-
+//////////////////////////////////////////////
 
 void Sound_Device::play_sound(const uint32_t sound_source)
 {
 	alSourcePlay(sound_source);
 }
 
-
+//////////////////////////////////////////////
 
 void Sound_Device::play_music(const char* filename)
 {
