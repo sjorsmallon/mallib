@@ -34,7 +34,7 @@ File_Handler::File_Handler(const char* filename)
 File_Handler::~File_Handler()
 {
     fclose(file_ptr);
-    // delete[] m_buffer;
+    //@Leak: delete[] m_buffer;
 }
 
 void File_Handler::file_to_buffer()

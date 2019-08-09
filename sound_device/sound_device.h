@@ -93,8 +93,8 @@ class Sound_Device
         uint32_t buffer_to_source(const uint32_t buffer); // this is unclear too.
 
     private:
-        uint32_t find_free_source();        //uint32_t
-        uint32_t find_free_buffer();       //uint32_t
+        uint32_t get_free_source();        //uint32_t
+        uint32_t get_free_buffer();       //uint32_t
 };
 
 
