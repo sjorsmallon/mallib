@@ -3,13 +3,12 @@
 
 struct Vec4
 {
-	float x;
+    float x;
     float y;
     float z;
     float w;
     public:
     	float& operator[](const int index);
-
     	float* data();
 };
 
