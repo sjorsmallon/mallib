@@ -8,81 +8,55 @@
 // helper functions are in vector_transform.
 // some operator overloading in order to facilitate 
 // many-used operations.
-struct Vec3
+// struct Vec3
+
+// {
+
+// }
+
+union Vec3
 {
-    float x; // = 0;
-    float y; // = 0;
-    float z; // = 0;
-    
-    float  operator[](const int index) const;
-    float &operator[](const int index);
-    Vec3 operator+(const Vec3& rhs) const;
-    Vec3 operator-() const;
-    Vec3 operator-(const Vec3& rhs) const;
-    bool compare(const Vec3& rhs)   const;
-    bool operator==(const Vec3& rhs) const;   
-    bool operator!=( const Vec3& rhs) const;
-
-    float *data();
-
-    Vec3& operator+=(const Vec3& rhs);
-   // Vec3 operator*(const Mat4& rhs);
-
-    // free function operator* and operator+ for float
+    struct
+    {
+        float x;
+        float y;
+        float z;
+    }
+    struct 
+    {
+        float r;
+        float g;
+        float b;
+    }
+    float data[3];
 };
 
-inline Vec3& Vec3::operator+=(const Vec3& rhs)
+// we can do a vec3 fuzzycompare, since we're dealing with floating point
+// numbers.
+// equality operator makes no sense here, as it is ill-defined.
+
+inline Vec3 operator+(const Vec3 lhs, const Vec3 rhs)
 {
-    this->x += rhs.x;
-    this->y += rhs.y;
-    this->z += rhs.z;
-    return *this;
+    Vec3 result;
+    result.x = lhs.x + rhs.x;
+    result.y = lhs.y + rhs.y;
+    result.z = lhs.z + rhs.z;
+
+    return result;
 }
 
+inline Vec3 operator-(const Vec3 lhs, const Vec3 rhs)
+{
+    Vec3 result;
+    result.x = lhs.x - rhs.x;
+    result.y = lhs.y - rhs.y;
+    result.z = lhs.z - rhs.z;
 
-inline bool Vec3::compare( const Vec3 &rhs) const
-{
-    return ( (x == rhs.x) &&
-             (y == rhs.y) &&
-             (z == rhs.z)
-            );
-}
-inline bool Vec3::operator==(const Vec3 &rhs) const
-{
-    return compare(rhs);
-}
-
-inline bool Vec3::operator!=(const Vec3 &rhs) const
-{
-    return !compare(rhs);
-}
-
-inline float Vec3::operator[](const int index) const
-{
-    return ( &x )[index]; //this is less dangerous but still dangerous.
-}
-
-inline float &Vec3::operator[](const int index)
-{
-    return ( &x )[index];
-}
-
-inline Vec3 Vec3::operator-() const
-{
-    return {-x,-y,-z};
-}
-
-inline Vec3 Vec3::operator-(const Vec3 &rhs) const
-{
-    return {x - rhs.x, y - rhs.y, z - rhs.z};
-}
-
-inline float *Vec3::data()
-{
-    return &x;
+    return result;
 }
 
 // free functions
+
 inline Vec3 operator*(const float lhs, const Vec3& rhs)
 {
     return {lhs * rhs.x, lhs * rhs.y, lhs * rhs.z};
@@ -92,6 +66,8 @@ inline Vec3 operator+(const float lhs, const Vec3& rhs)
 {
     return { lhs + rhs.x, lhs + rhs.y, lhs + rhs.z};
 }
+
+
 
 #endif
 
