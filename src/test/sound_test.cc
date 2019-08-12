@@ -16,6 +16,7 @@ using std::cerr;
 
 int main()
 {	
+
 	Sound_Device sound_device;
 	SString chicken = "chicken.wav";
 	std::string chicken = "chicken.wav";

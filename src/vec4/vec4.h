@@ -1,25 +1,24 @@
 #ifndef INCLUDED_VEC4_
 #define INCLUDED_VEC4_
 
-struct Vec4
+union Vec4
 {
-	float x;
-    float y;
-    float z;
-    float w;
-    public:
-    	float& operator[](const int index);
-
-    	float* data();
+    struct
+    {
+        float x;
+        float y;
+        float z;
+        float w;
+    }
+    struct 
+    {
+        float r;
+        float g;
+        float b;
+        float a;
+    }
+    float data[4];
 };
 
-inline float& Vec4::operator[](const int index)
-{
-	return ( &x )[index];
-}
-inline float* Vec4::data()
-{
-	return &x;
-}
 
 #endif
