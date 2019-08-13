@@ -19,39 +19,39 @@ void mmat::to_identity(Mat4& matrix)
    matrix = mmat::identity();
 }
 
-//@Incomplete: keep confusing myself about column vs row major
-Mat4 mmat::from_quaternion(const Quaternion& quaternion)
-{
-    float x2 = quaternion.x + quaternion.x;
-    float y2 = quaternion.y + quaternion.y;
-    float z2 = quaternion.z + quaternion.z;
-    float xx = quaternion.x * x2;
-    float xy = quaternion.x * y2;
-    float xz = quaternion.x * z2;
-    float yy = quaternion.y * y2;
-    float yz = quaternion.y * z2;
-    float zz = quaternion.z * z2;
-    float wx = quaternion.w * x2;
-    float wy = quaternion.w * y2;
-    float wz = quaternion.w * z2;
+// //@Incomplete: keep confusing myself about column vs row major
+// Mat4 mmat::from_quaternion(const Quaternion& quaternion)
+// {
+//     float x2 = quaternion.x + quaternion.x;
+//     float y2 = quaternion.y + quaternion.y;
+//     float z2 = quaternion.z + quaternion.z;
+//     float xx = quaternion.x * x2;
+//     float xy = quaternion.x * y2;
+//     float xz = quaternion.x * z2;
+//     float yy = quaternion.y * y2;
+//     float yz = quaternion.y * z2;
+//     float zz = quaternion.z * z2;
+//     float wx = quaternion.w * x2;
+//     float wy = quaternion.w * y2;
+//     float wz = quaternion.w * z2;
 
-    return { 1.0f - (yy + zz), xy - wz, xz + wy, 0.0f,
-             xy + wz, 1.0f - (xx + zz), yz - wx, 0.0f,
-             xz - wy, yz + wx, 1.0f - (xx + yy), 0.0f,
-             0.0f, 0.0f, 0.0f, 1.0f
-           };
-}
+//     return { 1.0f - (yy + zz), xy - wz, xz + wy, 0.0f,
+//              xy + wz, 1.0f - (xx + zz), yz - wx, 0.0f,
+//              xz - wy, yz + wx, 1.0f - (xx + yy), 0.0f,
+//              0.0f, 0.0f, 0.0f, 1.0f
+//            };
+// }
 
-Mat4 mmat::from_xform_state(const Xform_State& xform_state) // so this is the model matrix?
-{
-  Mat4 model_matrix       = mmat::mat4_identity();
-  Mat4 rotation_matrix    = mmat::from_quaternion(xform.orientation);
-  Mat4 translation_matrix = mmat::translation(xform.position);
+// Mat4 mmat::from_xform_state(const Xform_State& xform_state) // so this is the model matrix?
+// {
+//   Mat4 model_matrix       = mmat::mat4_identity();
+//   Mat4 rotation_matrix    = mmat::from_quaternion(xform.orientation);
+//   Mat4 translation_matrix = mmat::translation(xform.position);
 
-  model_matrix *= xform_state.scale;
-  model_matrix *= rotation_matrix;
-  model_matrix *= translation_matrix;
-}
+//   model_matrix *= xform_state.scale;
+//   model_matrix *= rotation_matrix;
+//   model_matrix *= translation_matrix;
+// }
 
 
 // Mat4 mmat::translate(const Mat4& matrix, const Vec3& vector)

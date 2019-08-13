@@ -35,20 +35,18 @@ struct Mat4
         Mat4& operator*=(const float scale);
         // Mat4& operator*=(const Quaternion& rhs);
 
-        bool compare(const Mat4 &rhs) const;
-        bool operator==(const Mat4 &rhs) const;
-        bool operator!=(const Mat4 &rhs) const;
+        // bool compare(const Mat4 &rhs) const;
+        // bool operator==(const Mat4 &rhs) const;
+        // bool operator!=(const Mat4 &rhs) const;
 
         //Hacky stuff here.
         float *data();
 
 };
 
-
-
 inline const Vec4 &Mat4::operator[](const int index) const
 {
-    if (index < 0 || index > 4) {}
+    // if (index < 0 || index > 4) {}
     return d_matrix[index];
 }
 
@@ -106,20 +104,25 @@ inline Mat4& Mat4::operator*=(const Mat4 &rhs)
 // }
 
 
-inline bool Mat4::operator==(const Mat4 &rhs) const 
-{
-  return compare(rhs);
-}
 
-inline bool Mat4::operator!=(const Mat4 &rhs) const 
-{
-  return !compare(rhs);
-}
 
 inline float* Mat4::data()
 {
     return d_matrix[0].data();
 }
+
+
+
+// inline bool Mat4::operator==(const Mat4 &rhs) const 
+// {
+//   return compare(rhs);
+// }
+
+// inline bool Mat4::operator!=(const Mat4 &rhs) const 
+// {
+//   return !compare(rhs);
+// }
+
 
 // inline const float *Mat4::data() const
 // {
