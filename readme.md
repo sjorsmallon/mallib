@@ -1,4 +1,21 @@
 
+# CMake
+CMake is not a build tool, but cmake is a build generator. It can generate platform specific build files (i.e. make or a VS solution).
+
+the build directory is used to generate all the necessary files in order to build the application. it is not as complex as it sounds.
+We can use cmake to select 32 or 64 bit file generation (which is kind of weird, but ok). It selects a different compiler on the VS side.
+unsure what happens on the linux side.
+
+usage: 'cmake  -DCMAKE_GENERATOR_PLATFORM=x64 ..'
+
+using other code is weird though.
+
+# Visual studio settings
+Cmake generates a 64 bit solution (????), but we need to change the build settings to build a lib instead of a DLL. furthermore, we need to change
+the `code generation -> runtime library` field to either Multithreaded or multithreaded DLL (we're building libs, so that does not apply here).
+
+
+
 # TODO
 
 ## platform Task Queue

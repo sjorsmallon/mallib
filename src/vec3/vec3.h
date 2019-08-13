@@ -1,5 +1,5 @@
-#ifndef INCLUDED_VEC3F_
-#define INCLUDED_VEC3F_
+#ifndef INCLUDED_VEC3_
+#define INCLUDED_VEC3_
 
 // math: invsqrt
 
@@ -21,13 +21,13 @@ union Vec3
         float x;
         float y;
         float z;
-    }
+    };
     struct 
     {
         float r;
         float g;
         float b;
-    }
+    };
     float data[3];
 };
 
@@ -66,8 +66,6 @@ inline Vec3 operator+(const float lhs, const Vec3& rhs)
 {
     return { lhs + rhs.x, lhs + rhs.y, lhs + rhs.z};
 }
-
-
 
 #endif
 
