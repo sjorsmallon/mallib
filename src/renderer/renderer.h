@@ -4,6 +4,20 @@
 #include <vector>
 
 
+
+struct Platform_Renderer_Limits
+{
+	uint32_t max_quads_per_frame;
+}
+
+
+
+struct Platform_Renderer
+{
+	Renderer_Texture_Queue texture_queue;
+}
+
+
 // namespace window; // i think
 
 // namespace renderer

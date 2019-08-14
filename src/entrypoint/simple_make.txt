@@ -1,0 +1,4 @@
+cl /EHsc src/entrypoint/*.cc /I include/ /link libs/fmt.lib opengl32.lib user32.lib Gdi32.lib
+
+// user32 for some random error?
+#pragma comment(lib, "Gdi32.lib") // for blit.
