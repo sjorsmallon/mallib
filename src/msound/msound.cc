@@ -11,7 +11,7 @@ using std::cerr;
 #include <assert.h>
 
 
-
+ //@TODO: static inline?
 namespace msound
 {
 	Sound_Device sound_device;
