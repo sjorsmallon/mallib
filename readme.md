@@ -1,3 +1,22 @@
+# Long Term Goals
+This repository should contain a set of classes and structures that allow any user
+to easily construct a game engine. This is very work-in-progress; don't expect things to stay the same for very long.
+
+## Writing as we go
+I'll keep updating `main_test.cc` as we go along. I have a habit of writing code I may or may not use. Keeping the YAGNI principle in mind, I'll just write what I need. I do want to think about APIs for these tools that I will need (such as the renderer or the audio player), but superficial substitutions will do.
+
+
+## sound API Design
+the sound_player is a global namespace. It contains a map with string names and sound files. we can register a sound through the filename (no paths, just the filename), and play it by invoking the filename as well. Maybe I want to change this to some sort of sound ID (enum?) but I would want to generate the enum at compile time. We will see how this works out.
+
+## renderer API design
+I have no idea how to properly write a renderer API. I'll try to look at how Ogre does it.
+
+# Entrypoints
+
+
+
+
 
 # CMake
 CMake is not a build tool, but cmake is a build generator. It can generate platform specific build files (i.e. make or a VS solution).
@@ -14,6 +33,9 @@ using other code is weird though.
 Cmake generates a 64 bit solution (????), but we need to change the build settings to build a lib instead of a DLL. furthermore, we need to change
 the `code generation -> runtime library` field to either Multithreaded or multithreaded DLL (we're building libs, so that does not apply here).
 
+# use of FMT 
+FMT is only used in the glue parts of the engine, not in the classes / other files.
+any error reporting there is done using `cerr` (for now).
 
 
 # TODO
@@ -21,14 +43,14 @@ the `code generation -> runtime library` field to either Multithreaded or multit
 ## platform Task Queue
 read about task queueing, work stealing and multithreading.
 
-##`Vec3` 
+## `Vec3` 
 Perform the `POD` test again with the union vec3. 
 
-##`sound_device`
+## `sound_device`
 only allow valid wav files (not compressed!). See how HHH handles the file reading.
 It's very similar.
 
-typedef uint32_t to buffer / sound_source. But does that coerce ALuint to uint32_t?
+typedef uint32_t to buffer / sound_source. But does that coerce `ALuint` to `uint32_t`?
 
 Move the buffers to outside of the class. Should be in data storage. Play sound via string? or via enum name? <- this is annoying, as user needs to add enums. better to instantiate map based on filenames.
 
@@ -42,7 +64,6 @@ classify pool into groups:
 1. 1-8 unit sfx
 2. 8-12 explosions
 3. you name it.
-
 
 # HAVE DONE
 

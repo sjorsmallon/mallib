@@ -60,6 +60,10 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance, PWSTR command_l
 	        TranslateMessage(&message);
 	        DispatchMessage(&message);
 	    }
+
+        // enter the main loop for one cycle?
+
+        game::main_loop();
     }
     else
     {
@@ -68,9 +72,6 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance, PWSTR command_l
     }
 
  	
-
-
-
     return 0;
 }
 
