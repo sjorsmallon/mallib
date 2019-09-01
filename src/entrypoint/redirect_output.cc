@@ -8,7 +8,7 @@ void redirect::output_to_console()
 	// Create the console window and set the window title.
 	if (AllocConsole() == 0)
 	{
-		fmt::printf("win32_renderer::redirect_output: allocConsole failed.");
+		fmt::printf("redirect_output: allocConsole failed.");
 		// Handle error here. Use ::GetLastError() to get the error.
 	}
 

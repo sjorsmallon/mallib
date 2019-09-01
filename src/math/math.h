@@ -1,7 +1,7 @@
 #ifndef INCLUDED_MATH_
 #define INCLUDED_MATH_
 #include <cmath>
-#define IEEE_FLT_MANTISSA_BITS  23
+// #define IEEE_FLT_MANTISSA_BITS  23
 
 
 class Math
@@ -11,19 +11,20 @@ class Math
 
         static float invSqrt(const float x);
 
-        static const float PI;
+        static inline const float PI = 3.14159265358979323846f;
 
-        static const float DEG2RAD;
+        static inline const float INF = 1e30f;
 
-        static const float RAD2DEG;
+        static inline const float DEG2RAD = PI / 180.0f;
 
-        static const float SEC2MS;
+        static inline const float RAD2DEG = 180.f / PI;
 
-        static const float MS2SEC;
+        static inline const float SEC2MS = 1000.0f;
 
-        static const float INF;
+        static inline const float MS2SEC = 0.001f;
 
-        static const float FLT_SMALLEST_NON_DENORMAL;
+
+        // static inline const float FLT_SMALLEST_NON_DENORMAL;
 
 };
 
