@@ -1,16 +1,21 @@
 #ifndef INCLUDED_MSTRING_
 #define INCLUDED_MSTRING_
+#include <string> 
 
-//@refactor: for now, always allocate 256 characters and see how that works.
+//@TODO: sensible defaults?
+
 class MString
 {
-	char m_data[256];
-	size_t m_capacity = 256;
-	size_t m_size; // undefined? what do we do with this?
+	char *m_data;
+	size_t m_capacity;
+	size_t m_size; //undefined? what do we do with this?
+
 	public:
-		MString() = delete; // what does this do?
+		MString() = delete; // while not necessary if other constructor is 
+		// provided, this is a declaration of intention (i.e. do NOT use this)
+		// that the compiler understands.
 		MString(const char* string_literal); // constructs from string literal;
-		MString(const string& string);
+		MString(const std::string& string);
 		~MString() = default; // no need for me to do anything about it.
 
 		// need copy constructor? or assignment operator?
@@ -20,6 +25,8 @@ class MString
 		size_t capacity() const;
 
 };
+
+
 
 inline char* MString::data()
 {

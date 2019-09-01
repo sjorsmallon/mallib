@@ -9,33 +9,25 @@
 
 namespace mmat
 {
+    Mat4 from_xform_state(const Xform_State& state);
+    Mat4 from_quaternion(const Quaternion& quaternion);
+    Mat4 mat4_identity();
+
     Mat4 translate(const Mat4& matrix, const Vec3& vector);
     Mat4 scale(const Mat4& matrix, const float scale_factor);
     Mat4 rotate(const Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z); //expects identity
+
+    void to_identity(Mat4 &matrix);
     
-    Mat4 from_xform_state(const Xform_State& state);
-
-
     Mat4 perspective(const float fov_y,
                      const float aspect_ratio,
                      const float near_plane,
                      const float far_plane);
 
-    Mat4 from_quaternion(const Quaternion& quaternion);
-
-    Mat4 mat4_identity();
 
     Mat4 view(const Vec3& eye, const Vec3& center, const Vec3& up);
     Mat4 look_at(const Vec3& eye, const Vec3& center, const Vec3& up);
 
-    void to_identity(Mat4 &matrix);
-
-
-    // following functions cannot return a reference to *this because it is outside of the class now.
-    // void translateSelf(Mat4& matrix, const Vec3& vector);
-    // void scaleSelf(Mat4&  matrix, const float scale_factor);
-    // void rotateSelf(Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z);
-        // Mat4 projection();
 
     // Mat4 orthographic3D( const float left,
     //                      const float right,

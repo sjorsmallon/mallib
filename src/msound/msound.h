@@ -7,14 +7,14 @@
 
 struct Playing_Sound
 {
-    Vec2 current_volume; // left, right
+    Vec2 current_volume; // left, right. normalized?
     Vec2 dCurrent_volume;
-    Vec2 target_volume;
+    Vec2 target_volume; // 
 
     float dSample; // current sample that is playing?
     Sound_ID id;
     float samples_played;
-    // playing_sound* next_sound;
+    // playing_sound* next_sound; non-owning pointer.
 }
 
 struct Audio_State
@@ -27,7 +27,6 @@ struct Audio_State
 namespace msound
 {
 
-
 	extern Sound_Device sound_device;
     extern std::map<std::string, Wav_File> wav_files;
     extern std::map<std::string, uint32_t> sound_sources; // not for msound?
@@ -39,8 +38,6 @@ namespace msound
     Wav_File load_wav_file(const char* filename); //Wav_File
     uint32_t register_wav_file(const char* filename); // Wav_File?
     uint32_t buffer_to_source(const uint32_t buffer);
-
-
 
     void     play_sound(const char* soundname);
     void     play_music(const char* musicname);

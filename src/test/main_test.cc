@@ -14,7 +14,6 @@ int main()
 
 	Window* window =  mdraw::platform_create_window();
 	mdraw::init_opengl(window);
-
-
+  
 
 }

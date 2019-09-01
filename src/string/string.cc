@@ -5,11 +5,9 @@
 
 //use _t for size guarantees/
 
-// Vector
+// Vectorz
 // Allocator_traits?
 // vector with allocator?
-
-
 
 struct Mesh
 {
@@ -100,8 +98,9 @@ void eat_all_spaces(char *string_to_eat)
     // first stays in place ,second advances until the next character is not a space.
     // this does not alter the allocated memory, just places a \0 earlier 
     // in the size. does this leak memory? 
-    //  no, there is a difference betwee sizeof() and strlen. sizeof will return the buffer size,
+    // no, there is a difference betwee sizeof() and strlen. sizeof will return the buffer size,
     // while strlen will return the amount of characters in the buffer.
+    
     while(*second != '\0')
     {
         *first = *second;
