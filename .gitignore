@@ -1,2 +1,5 @@
 **/.DS_Store
 /.DS_Store
+
+/*.exe
+/src/tests/*.exe
