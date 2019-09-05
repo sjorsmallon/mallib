@@ -11,9 +11,9 @@ int main()
 {
 	Sound_Device* sound_device = msound::platform_create_sound_device();
 	auto sound_device = std::make_unique<Sound_Device>;
-
 	Window* window =  mdraw::platform_create_window();
 	mdraw::init_opengl(window);
-  
 
+	
+ 
 }

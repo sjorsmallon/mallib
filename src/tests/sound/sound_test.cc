@@ -18,7 +18,7 @@ int main()
 {	
 
 	Sound_Device sound_device;
-	SString chicken = "chicken.wav";
+	// SString chicken = "chicken.wav";
 	std::string chicken = "chicken.wav";
 
 	//msound::register_wav_file("chicken.wav");
@@ -28,10 +28,6 @@ int main()
 
 	msound::register_wav_file("chicken.wav");
 	
-
-
-
-
 
 
 	const uint32_t buffer = sound_device.data_to_buffer(wav_file);
