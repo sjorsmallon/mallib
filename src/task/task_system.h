@@ -4,19 +4,19 @@
 #include <thread>
 #include "notification_queue.h"
 #include <stdint.h>
-
+#include <utility> // forward.
 
 class Task_System 
 {
-    const unsigned      m_count
+    const uint64_t      m_count
     {
         std::thread::hardware_concurrency();
     };
 
-    std::vector<thread> m_threads;
-    notification_queue  m_queue;
+    std::vector<std::thread> m_threads;
+    Notification_Queue  m_queue;
 
-    void run(uint32_t task_id)
+    void run(uint64_t task_id)
     {
         while (true)
         {
@@ -25,7 +25,27 @@ class Task_System
             func();
         }
     }
+    public:
+        Task_System() 
+        {
+            for (uint64_t count = 0; count != m_count; ++count)
+            {
+                m_threads.emplace_back([&,count]{ run(count)});
+            }
+        }
+        ~Task_System()
+        {
+            for (auto &thread : m_threads)
+            {
+                thread.join();
+            }
+        }
 
+        template <typename Function>
+        void async(Function&& function)
+        {
+            m_queue.push(std::forward<Function>(function))
+        }
 
 
 }

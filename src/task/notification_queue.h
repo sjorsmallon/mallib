@@ -10,13 +10,22 @@ class Notification_Queue
 {
     std::deque<function<void()>> m_queue;
     std::mutex                   m_mutex;
-    std::condition_variable      m_ready; // bool?
+    std::condition_variable      m_ready; 
+    bool                         m_done{false}; 
 
     public:
+        void done()
+        {
+            {
+                lock_t lock{m_mutex};
+                m_done = true;
+            }
+            m_ready.notify_all();
+        }
         void pop(function<void()>& func)
         {
             lock_t lock(m_mutex);
-            while (m_queue empty())
+            while (m_queue.empty() && !m_done)
             {
                 m_ready.wait(lock);
             }
