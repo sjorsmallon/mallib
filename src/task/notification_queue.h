@@ -22,25 +22,32 @@ class Notification_Queue
             }
             m_ready.notify_all();
         }
-        void pop(function<void()>& func)
+
+        bool try_pop(function<void()>& func)
         {
-            lock_t lock(m_mutex);
-            while (m_queue.empty() && !m_done)
+            lock_t lock{m_mutex, try_to_lock};
+            if (!lock || m_queue.empty())
             {
-                m_ready.wait(lock);
-            }
-            func = std::move(m_queue.front());
+                return false;
+            }j
+            func = move(m_queue.front());
             m_queue.pop_front();
+            return true;
         }
 
         template<typename Function>
-        void push(Function&& function)
+        bool try_push(Function&& function)
         {
             {                
-                lock_t lock(m_mutex);
+                lock_t lock{m_mutex, try_to_lock};
+                if (!lock)
+                {
+                    return false;
+                }
                 m_queue.emplace_back(std::forward<Function>(function));
             } // lock disappears here.
             m_ready.notify_one();
+            return true;
         }  
 
 
