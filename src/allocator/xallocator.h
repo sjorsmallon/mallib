@@ -2,7 +2,7 @@
 #define _XALLOCATOR_H
 
 #include <stddef.h>
-#include "DataTypes.h"
+#include "datatypes.h"
 
 // See http://www.codeproject.com/Articles/1084801/Replace-malloc-free-with-a-Fast-Fixed-Block-Memory
 
@@ -20,17 +20,18 @@
 /// will occur in the reverse order so xallocInitDestroy is called last. This way,
 /// any static user objects relying on xallocator will be destroyed first before 
 /// xalloc_destroy() is called. 
+/// Embedded systems that never exit can remove the XallocInitDestroy class entirely. 
 class XallocInitDestroy
 {
 public:
-	XallocInitDestroy();
-	~XallocInitDestroy();
+    XallocInitDestroy();
+    ~XallocInitDestroy();
 private:
-	static INT refCount;
+    static INT refCount;
 };
 static XallocInitDestroy xallocInitDestroy;
-#endif	// AUTOMATIC_XALLOCATOR_INIT_DESTROY
-#endif	// __cplusplus
+#endif  // AUTOMATIC_XALLOCATOR_INIT_DESTROY
+#endif  // __cplusplus
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,7 +64,7 @@ void xfree(void* ptr);
 /// Reallocates an existing xalloc block to a new size
 /// @param[in] ptr - a pointer to a previously allocated memory using xalloc.
 /// @param[in] size - the size of the new block
-void *xrealloc(void *ptr, size_t size);	
+void *xrealloc(void *ptr, size_t size); 
 
 /// Output allocator statistics to the standard output
 void xalloc_stats();

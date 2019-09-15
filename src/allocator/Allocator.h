@@ -1,10 +1,11 @@
 #ifndef __ALLOCATOR_H
 #define __ALLOCATOR_H
 
-#include "DataTypes.h"
+#include "datatypes.h"
 #include <stddef.h>
 
 /// See http://www.codeproject.com/Articles/1083210/An-efficient-Cplusplus-fixed-block-memory-allocato
+
 class Allocator
 {
 public:
@@ -88,12 +89,14 @@ private:
 template <class T, UINT Objects>
 class AllocatorPool : public Allocator
 {
-public:
-	AllocatorPool() : Allocator(sizeof(T), Objects, m_memory)
-	{
-	}
-private:
-	CHAR m_memory[sizeof(T) * Objects];
+    public:
+    	AllocatorPool()
+        :
+          Allocator(sizeof(T), Objects, m_memory)
+    	{
+	    }
+    private:
+	   CHAR m_memory[sizeof(T) * Objects];
 };
 
 // macro to provide header file interface

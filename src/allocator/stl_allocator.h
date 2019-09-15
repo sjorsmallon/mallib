@@ -2,9 +2,8 @@
 #define _STL_ALLOCATOR_H
 
 // See http://www.codeproject.com/Articles/1089905/A-Custom-STL-std-allocator-Replacement-Improves-Performance-
-
 #include "xallocator.h"
-#include "Fault.h"
+#include "fault.h"
 
 template <typename T> class stl_allocator;
 template <> class stl_allocator<void>

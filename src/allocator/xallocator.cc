@@ -1,6 +1,7 @@
+#include "allocator.h"
 #include "xallocator.h"
-#include "Allocator.h"
-#include "Fault.h"
+#include "fault.h"
+#include <cstring>
 #include <iostream>
 
 using namespace std;
@@ -9,7 +10,14 @@ using namespace std;
 #define CHAR_BIT	8 
 #endif
 
-static CRITICAL_SECTION _criticalSection; 
+#if WIN32
+	static CRITICAL_SECTION _criticalSection;
+#elif __GNUC__ >= 5
+	#include <mutex>
+	static std::mutex _mutex;
+#else
+	#error Must implement software lock if using xallocator
+#endif
 static BOOL _xallocInitialized = FALSE;
 
 // Define STATIC_POOLS to switch from heap blocks mode to static pools mode
@@ -88,15 +96,19 @@ T nexthigher(T k)
 /// Create the xallocator lock. Call only one time at startup. 
 static void lock_init()
 {
+#if WIN32
 	BOOL success = InitializeCriticalSectionAndSpinCount(&_criticalSection, 0x00000400);
 	ASSERT_TRUE(success != 0);
+#endif
 	_xallocInitialized = TRUE;
 }
 
 /// Destroy the xallocator lock.
 static void lock_destroy()
 {
+#if WIN32
 	DeleteCriticalSection(&_criticalSection);
+#endif
 	_xallocInitialized = FALSE;
 }
 
@@ -106,7 +118,11 @@ static inline void lock_get()
 	if (_xallocInitialized == FALSE)
 		return;
 
-	EnterCriticalSection(&_criticalSection); 
+#if WIN32
+	EnterCriticalSection(&_criticalSection);
+#elif __GNUC__ >= 5
+	_mutex.lock();
+#endif
 }
 
 /// Unlock the shared resource. 
@@ -115,7 +131,11 @@ static inline void lock_release()
 	if (_xallocInitialized == FALSE)
 		return;
 
+#if WIN32
 	LeaveCriticalSection(&_criticalSection);
+#elif __GNUC__ >= 5
+	_mutex.unlock();
+#endif
 }
 
 /// Stored a pointer to the allocator instance within the block region. 

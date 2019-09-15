@@ -9,7 +9,7 @@ class File_Handler
 	std::string m_filename;
 
     public:
-		File_Handler(char* filename);
+		File_Handler(char* filename); 
 		File_Handler(const std::string& filename);
 		File_Handler(const char* filename);
 		void file_to_buffer();

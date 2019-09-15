@@ -1,5 +1,5 @@
-#include "Allocator.h"
-#include "DataTypes.h"
+#include "allocator.h"
+#include "datatypes.h"
 #include <new>
 #include <assert.h>
 

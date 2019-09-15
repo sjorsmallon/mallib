@@ -1,5 +1,5 @@
-#include "Fault.h"
-#include "DataTypes.h"
+#include "fault.h"
+#include "datatypes.h"
 #include <assert.h>
 
 //----------------------------------------------------------------------------
