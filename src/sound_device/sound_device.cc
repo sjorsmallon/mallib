@@ -64,7 +64,7 @@ Sound_Device::Sound_Device()
 
 Sound_Device::~Sound_Device()
 {
-	alDeleteSources(m_num_sound_sources, m_sound_sources.data());
+		alDeleteSources(m_num_sound_sources, m_sound_sources.data());
     alDeleteBuffers(m_num_buffers, m_buffers.data());
     alcDestroyContext(m_context);
     alcCloseDevice(m_device);

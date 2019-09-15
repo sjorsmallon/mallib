@@ -11,16 +11,16 @@ using std::cerr;
 #include <assert.h>
 
 
- //@TODO: static inline?
-namespace msound
-{
-		Sound_Device sound_device;
-		std::map<std::string, Wav_File> wav_files;
-    std::map<std::string, uint32_t> sound_sources; 
-    std::map<std::string, uint32_t> buffers;
-    std::map<uint32_t, uint32_t> buffer_to_sources;
-		std::map<std::string, std::vector<uint32_t>> music_buffers;
-}
+//@Remove: uses static inline now.
+// namespace msound
+// {
+// 		Sound_Device sound_device;
+// 		std::map<std::string, Wav_File> wav_files;
+//     std::map<std::string, uint32_t> sound_sources; 
+//     std::map<std::string, uint32_t> buffers;
+//     std::map<uint32_t, uint32_t> buffer_to_sources;
+// 		std::map<std::string, std::vector<uint32_t>> music_buffers;
+// }
 
 // 
 //	load wav file,

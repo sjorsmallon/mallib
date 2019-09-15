@@ -19,7 +19,7 @@ struct Playing_Sound
 
 struct Audio_State
 {
-    Memory_Arena perm_arena;
+    Memory_Arena permanent_arena;
     //Playing_Sound* first_playing_sound; // linked list of playing sounds
     Playing_Sound;
 }
@@ -27,12 +27,21 @@ struct Audio_State
 namespace msound
 {
 
-	extern Sound_Device sound_device;
-    extern std::map<std::string, Wav_File> wav_files;
-    extern std::map<std::string, uint32_t> sound_sources; // not for msound?
-    extern std::map<std::string, uint32_t> buffers; // for msound?
-    extern std::map<uint32_t, uint32_t> buffer_to_sources;
-	extern std::map<std::string, std::vector<uint32_t>> music_buffers;
+	inline static Sound_Device sound_device = {};
+    inline static std::map<std::string, Wav_File> wav_files = {};
+    inline static std::map<std::string, uint32_t> sound_sources;
+    inline static std::map<std::string, uint32_t> buffers;
+    inline static std::map<std::string, uint32_t> buffer_to_sources;
+    inline static std::map<std::string, std::vector<uint32_t>> music_buffers;
+
+    
+
+
+ //    extern std::map<std::string, Wav_File> wav_files;
+ //    extern std::map<std::string, uint32_t> sound_sources; // not for msound?
+ //    extern std::map<std::string, uint32_t> buffers; // for msound?
+ //    extern std::map<uint32_t, uint32_t> buffer_to_sources;
+	// extern std::map<std::string, std::vector<uint32_t>> music_buffers;
     
 
     Wav_File load_wav_file(const char* filename); //Wav_File

@@ -38,7 +38,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance, PWSTR command_l
     HWND window = CreateWindowEx(
         CS_OWNDC,                              // Optional window styles. 0 for standard, but CS_OWNDC for
         CLASS_NAME,                     // Window class
-        L"Draw Something!",  		    // Window text
+        L"game",  		    // Window text
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,            // Window style
         // position (x, y) and size (x,y)
         CW_USEDEFAULT,
@@ -53,17 +53,20 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance, PWSTR command_l
 
     if (window)
     {
+        // start loading everything.
+        game::load_audio();
+        game::load_models();
+
         // Run the message loop.
 	    MSG message = {};
 	    while (GetMessage(&message, NULL, 0, 0)) // null here means we get all messages on this tread.
 	    {
 	        TranslateMessage(&message);
 	        DispatchMessage(&message);
+            game::main_loop(); // enter game loop for one cycle
 	    }
 
-        // enter the main loop for one cycle?
 
-        game::main_loop();
     }
     else
     {
