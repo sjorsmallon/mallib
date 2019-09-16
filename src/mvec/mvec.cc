@@ -12,6 +12,12 @@ Vec3 mvec::cross(const Vec3& lhs, const Vec3& rhs)
 		     };
 }
 
+void mvec::normalize(Vec3 &lhs)
+{
+	float inv_size = 1.0f / lhs.x + lhs.y + lhs.z;
+	return {lhs.x * inv_size, lhs.y * inv_size, lhs.z * inv_size};
+}
+
 float mvec::dot(const Vec3& lhs, const vec3& rhs)
 {
 	return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
@@ -23,8 +29,3 @@ Vec3 mvec::lerp(const Vec3& lhs, const Vec3& rhs, const float ratio)
     return lhs + delta;
 }
 
-void mvec::normalize(Vec3 &lhs)
-{
-	float inv_size = 1.0f / lhs.x + lhs.y + lhs.z;
-	return {lhs.x * inv_size, lhs.y * inv_size, lhs.z * inv_size};
-}

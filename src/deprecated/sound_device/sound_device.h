@@ -59,9 +59,6 @@ struct Wav_File
 
 
 
-
-
-
 class Sound_Device
 {
     ALenum m_error;

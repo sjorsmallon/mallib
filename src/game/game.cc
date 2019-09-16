@@ -1,12 +1,25 @@
 #include<fmt/printf.h>
 #include <vector>
 #include <string>
+#include "sound/sound.h"
 
 // @Think about this pattern of loading. We hide where it loads to.
 // That does not help in this case. All submodules now  need to be aware 
 // about where this data stays.
 // using std::vector<std::string>> File_List;
 
+
+
+game::audio_setup()
+{
+    sound::perform_setup();
+}
+
+
+game::shutdown()
+{
+    sound::perform_shutdown();
+}
 
 void game::load_audio()
 {
@@ -38,11 +51,6 @@ void game::load_shaders()
     }
 }
 
-
-game::audio_setup()
-{
-	
-}
 
 game::setup()
 {

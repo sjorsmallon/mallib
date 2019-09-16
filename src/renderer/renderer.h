@@ -3,6 +3,10 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+	#include <windows.h>
+	#include <GL/GL.h>
+#endif
 
 
 struct Platform_Renderer_Limits
@@ -10,11 +14,13 @@ struct Platform_Renderer_Limits
 	uint32_t max_quads_per_frame;
 }
 
-
-
 struct Platform_Renderer
 {
 	Renderer_Texture_Queue texture_queue;
+	#ifdef _WIN32
+		static inline HGLRC gl_context;
+	#endif
+
 }
 
 

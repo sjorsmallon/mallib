@@ -54,8 +54,9 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance, PWSTR command_l
     if (window)
     {
         // start loading everything.
-        game::load_audio();
-        game::load_models();
+        game::audio_setup();
+        // game::video_setup(); cannot do this here. need to do in the getmessage
+        // part?
 
         // Run the message loop.
 	    MSG message = {};
@@ -65,11 +66,12 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance, PWSTR command_l
 	        DispatchMessage(&message);
             game::main_loop(); // enter game loop for one cycle
 	    }
-
-
     }
     else
     {
+        game::shutdown();
+
+
     	return 0;
     	//@Log:
     }
@@ -93,6 +95,7 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window, UINT message, WP
     {
         case WM_CREATE:
         {
+
             PIXELFORMATDESCRIPTOR pixel_format_descriptor = 
             {
                 sizeof(PIXELFORMATDESCRIPTOR),
@@ -119,6 +122,7 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window, UINT message, WP
 
             HGLRC gl_context = wglCreateContext(device_context);
             wglMakeCurrent(device_context, gl_context);
+            renderer::gl_context = gl_context;
 
             MessageBoxA(0,(char*)glGetString(GL_VERSION), "OPENGL VERSION",0);
 
@@ -141,6 +145,10 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window, UINT message, WP
     	}
     	case WM_DESTROY:
 	    {
+            wglMakeCurrent(nullptr, nullptr);
+            wglDeleteContext(renderer::current_context);
+              // wglDeleteContext ();
+
 	        PostQuitMessage(0);
 	        break;
 	    }

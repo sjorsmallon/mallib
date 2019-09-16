@@ -1,4 +1,4 @@
-#include "msound.h"
+#include "sound.h"
 #include <map>
 #include <vector>
 #include <utility>
@@ -48,7 +48,7 @@ uint32_t msound::buffer_to_source(const uint32_t buffer)
 	
 
 
-void msound::play_sound( const char* soundname )
+uint32_t msound::play_sound( const char* soundname )
 {
 	//@Todo:
 	// is the file bound to a buffer?
@@ -58,6 +58,16 @@ void msound::play_sound( const char* soundname )
 	uint32_t source = msound::buffer_to_sources.at(buffer);
 
 	sound_device.play_sound(source);
+	return source;
+}
+
+uint32_t msound::play_music( const char* musicname)
+{
+	uint32_t buffer = msound::buffers.at(soundname);
+	uint32_t source = msound::buffer_to_sources.at(buffer);
+	sound_device.play_music(source);
+
+	return source;
 }
 
 
