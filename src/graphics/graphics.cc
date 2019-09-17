@@ -22,9 +22,6 @@ void graphics::swap_buffers()
 // }
 
 
-
-
-
 // GLenum mdraw::shader_type_from_extension(const string& filename)
 // {
 //     std::string_view view(filename);

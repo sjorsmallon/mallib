@@ -64,7 +64,7 @@ typedef char GLchar;
 typedef ptrdiff_t GLintptr;
 typedef ptrdiff_t GLsizeiptr;
 
-#define PAPAYA_GL_LIST_WIN32 \
+#define MALLIB_GL_LIST_WIN32 \
     /* ret, name, params */ \
     GLE(void,      BlendEquation,           GLenum mode) \
     GLE(void,      ActiveTexture,           GLenum texture) \

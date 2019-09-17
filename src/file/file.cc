@@ -6,6 +6,8 @@ using std::filesystem fs;
 
 // using std::vector<std::string> string_array; // what are conventions here?
 
+
+
 bool file::file_to_buffer(const string& filename, char *buffer)
 {
     std::ifstream ifs(filename);
@@ -23,7 +25,7 @@ bool file::file_to_buffer(const string& filename, char *buffer)
 
 }
 
-std::vector<std::string> file::list_files_in_dir(const string& dir_name)
+std::vector<std::string> file::list_files_in_dir(const char* dir_name)
 {
     fs::path active_dir = {dir_name};
     std::vector<std::string> file_names = {}; //@TODO: prealloc?

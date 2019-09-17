@@ -12,13 +12,12 @@
 struct Platform_Renderer_Limits
 {
 	uint32_t max_quads_per_frame;
-}
+};
 
 struct Platform_Graphics
 {
-	Renderer_Texture_Queue texture_queue;
-
-}
+	// Renderer_Texture_Queue texture_queue;
+};
 
 namespace graphics
 {
@@ -30,7 +29,7 @@ namespace graphics
 		static inline HGLRC gl_context;
 		static inline HDC	device_context;
 	#endif
-}
+};
 
 // namespace window; // i think
 

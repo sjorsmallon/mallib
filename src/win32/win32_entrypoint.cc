@@ -6,7 +6,10 @@
 #include <windows.h>
 #include <GL/GL.h>
 #define GL_LITE_IMPLEMENTATION
-#include "gl_lite.h"
+#include "../graphics/gl_lite.h"
+
+#include "../game/game.h"
+#include "../graphics/graphics.h"
 
 #include <Wingdi.h>
 #undef max
@@ -73,7 +76,7 @@ int WINAPI wWinMain(HINSTANCE instance,
 	    {
 	        TranslateMessage(&message);
 	        DispatchMessage(&message);
-            game::main_loop(); // enter game loop for one cycle
+            game::main_loop(); // enter game loop for one cycle ( float dt?)
 	    }
     }
     else
@@ -105,6 +108,34 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window,
 	LRESULT result = 0;
     switch (message)
     {
+        // all  keyboard nonsense
+        case WM_KEYUP:
+        {
+            switch (wParam)
+            {
+                case VK_LEFT:
+                {
+                    break;
+                }
+                case VK_RIGHT:
+                {
+                    break;
+                }
+                case VK_UP:
+                {
+                    break;
+                }
+                case VK_DOWN:
+                {
+                    break; 
+                }
+            }
+        }
+        case WM_CHAR:
+        {
+
+        }
+
 
         case WM_CREATE:
         {
@@ -198,4 +229,34 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window,
 
     return result;
     // this is for all messages that are not handled. the default is returned.
+}
+
+
+void toggle_fullscreen(HWND window_handle)
+{
+
+    DWORD style = GetWindowLong(window_handle, GWL_STYLE);
+    WINDOWPLACEMENT window_position = {};
+    if(style & WS_OVERLAPPEDWINDOW)
+    {
+        MONITORINFO monitor_info = {sizeof(monitor_info)};
+        
+
+        if(GetWindowPlacement(window_handle, &window_position) &&
+           GetMonitorInfo(MonitorFromWindow(window_handle, MONITOR_DEFAULTTOPRIMARY), &monitor_info))
+        {
+            SetWindowPos(window_handle, HWND_TOP,
+                         monitor_info.rcMonitor.left, monitor_info.rcMonitor.top,
+                         monitor_info.rcMonitor.right - monitor_info.rcMonitor.left,
+                         monitor_info.rcMonitor.bottom - monitor_info.rcMonitor.top,
+                         SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+        }
+    }
+    else
+    {
+        SetWindowPlacement(window_handle, &window_position);
+        SetWindowPos(window_handle, 0, 0, 0, 0, 0,
+                     SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+                     SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+    }
 }
