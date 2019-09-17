@@ -1,9 +1,12 @@
 #ifndef UNICODE
 #define UNICODE
 #endif 
+
 // if platform == windows, include this file.
 #include <windows.h>
 #include <GL/GL.h>
+#define GL_LITE_IMPLEMENTATION
+#include "gl_lite.h"
 
 #include <Wingdi.h>
 #undef max
@@ -14,8 +17,14 @@
 #include "redirect_output.h" // for redirecting output to console window.
 
 
-LRESULT CALLBACK win32_main_window_callback(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
-int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance, PWSTR command_line, int command_show)
+LRESULT CALLBACK win32_main_window_callback(HWND window,
+                                            UINT message,
+                                            WPARAM wParam,
+                                            LPARAM lParam);
+int WINAPI wWinMain(HINSTANCE instance,
+                    HINSTANCE prev_instance,
+                    PWSTR command_line,
+                    int command_show)
 {
     // output redirection for a new console. This calls AllocConsole().
     redirect::output_to_console();
@@ -88,11 +97,15 @@ static void on_size_changed(HWND hwnd, UINT flag, const int width, const int hei
 
 }
 
-static LRESULT CALLBACK win32_main_window_callback(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK win32_main_window_callback(HWND window,
+                                                   UINT message, 
+                                                   WPARAM wParam,
+                                                   LPARAM lParam)
 {
 	LRESULT result = 0;
     switch (message)
     {
+
         case WM_CREATE:
         {
 
@@ -119,10 +132,12 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window, UINT message, WP
             HDC device_context = GetDC(window); // @Todo: getDCEx? 
             int letWindowsChooseThisPixelFormat = ChoosePixelFormat(device_context, &pixel_format_descriptor); 
             SetPixelFormat(device_context, letWindowsChooseThisPixelFormat, &pixel_format_descriptor);
-
             HGLRC gl_context = wglCreateContext(device_context);
             wglMakeCurrent(device_context, gl_context);
-            renderer::gl_context = gl_context;
+
+            gl_lite_init();
+            graphics::gl_context = gl_context;
+            graphics::device_context = device_context;
 
             MessageBoxA(0,(char*)glGetString(GL_VERSION), "OPENGL VERSION",0);
 
@@ -146,7 +161,7 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window, UINT message, WP
     	case WM_DESTROY:
 	    {
             wglMakeCurrent(nullptr, nullptr);
-            wglDeleteContext(renderer::current_context);
+            wglDeleteContext(graphics::gl_context);
               // wglDeleteContext ();
 
 	        PostQuitMessage(0);

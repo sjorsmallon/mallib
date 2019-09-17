@@ -1,12 +1,29 @@
-// #include "renderer.ih"
+#include "graphics.h"
 
+#include <GL/GL.h>
+#include <Wingdi.h>
 
+void graphics::draw_frame()
+{
+	glClearColor(0, 0.5, 1, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+	graphics::swap_buffers();
+}
+
+void graphics::swap_buffers()
+{
+	SwapBuffers(device_context);
+}
 
 // void mdraw::init_openGL()
 // {
 //     Window *platform_window = platform_create_window();
 
 // }
+
+
+
+
 
 // GLenum mdraw::shader_type_from_extension(const string& filename)
 // {

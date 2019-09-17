@@ -21,6 +21,21 @@ game::shutdown()
     sound::perform_shutdown();
 }
 
+
+game::setup()
+{
+
+}
+
+game::main_loop()
+{
+
+    graphics::draw_frame();
+}
+
+
+
+
 void game::load_audio()
 {
     std::vector<std::string> file_names = file::list_files_in_dir("../data/audio");
@@ -49,15 +64,4 @@ void game::load_shaders()
         fmt::printf("[game] loading shader {}", file_name)
         renderer::load_shader(file_name);
     }
-}
-
-
-game::setup()
-{
-
-}
-
-game::main_loop()
-{
-
 }

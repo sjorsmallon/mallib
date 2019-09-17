@@ -1,5 +1,5 @@
-#ifndef INCLUDE_RENDERER_
-#define INCLUDE_RENDERER_
+#ifndef INCLUDE_GRAPHICS
+#define INCLUDE_GRAPHICS_
 #include <string>
 #include <vector>
 
@@ -14,15 +14,23 @@ struct Platform_Renderer_Limits
 	uint32_t max_quads_per_frame;
 }
 
-struct Platform_Renderer
+struct Platform_Graphics
 {
 	Renderer_Texture_Queue texture_queue;
-	#ifdef _WIN32
-		static inline HGLRC gl_context;
-	#endif
 
 }
 
+namespace graphics
+{
+	void draw_frame();
+	void swap_buffers();
+
+	// platform graphics?
+	#ifdef _WIN32
+		static inline HGLRC gl_context;
+		static inline HDC	device_context;
+	#endif
+}
 
 // namespace window; // i think
 
