@@ -29,7 +29,7 @@ class Notification_Queue
             if (!lock || m_queue.empty())
             {
                 return false;
-            }j
+            }
             func = move(m_queue.front());
             m_queue.pop_front();
             return true;

@@ -22,7 +22,6 @@ void game::shutdown()
     sound::perform_shutdown();
 }
 
-
 void game::main_loop()
 {
     graphics::render_frame();
@@ -46,5 +45,6 @@ void game::load_shaders()
     {
         fmt::printf("[game] loading shader {}", file_name);
         // renderer::load_shader(file_name);
+        graphics::load_and_compile_shader(file_name);
     }
 }

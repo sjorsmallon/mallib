@@ -32,24 +32,17 @@ wglChoosePixelFormatARB_type *wglChoosePixelFormatARB;
 #define WGL_FULL_ACCELERATION_ARB                 0x2027
 #define WGL_TYPE_RGBA_ARB                         0x202B
 
-
 #define GL_LITE_IMPLEMENTATION
 #include "../graphics/gl_lite.h"
-
 
 #include "../game/game.h"
 #include "../graphics/graphics.h"
 
 #include <Wingdi.h>
-#undef max
-#undef min
-#include <fmt/core.h>
-#include <fmt/printf.h>
-#include <limits> // for fmt error
-#include "redirect_output.h" // for redirecting output to console window.
+#include <iostream> // redirect output
 
 static void
-fatal_error(char *msg)
+fatal_error(const char *msg)
 {
     MessageBoxA(NULL, msg, "Error", MB_OK | MB_ICONEXCLAMATION);
     exit(EXIT_FAILURE);
@@ -60,6 +53,38 @@ LRESULT CALLBACK win32_main_window_callback(HWND window,
                                             UINT message,
                                             WPARAM wParam,
                                             LPARAM lParam);
+
+static void redirect_output_to_console()
+{
+    // Create the console window and set the window title.
+    if (AllocConsole() == 0)
+    {
+        fatal_error("redirect_output: allocConsole failed.");
+    }
+
+    // Redirect CRT standard input, output and error handles to the console window.
+    FILE * pNewStdout = nullptr;
+    FILE * pNewStderr = nullptr;
+    FILE * pNewStdin = nullptr;
+
+    ::freopen_s(&pNewStdout, "CONOUT$", "w", stdout);
+    ::freopen_s(&pNewStderr, "CONOUT$", "w", stderr);
+    ::freopen_s(&pNewStdin, "CONIN$", "r", stdin);
+
+    // Clear the error state for all of the C++ standard streams. Attempting to accessing the streams before they refer
+    // to a valid target causes the stream to enter an error state. Clearing the error state will fix this problem,
+    // which seems to occur in newer version of Visual Studio even when the console has not been read from or written
+    // to yet.
+    std::cout.clear();
+    std::cerr.clear();
+    std::cin.clear();
+
+    std::wcout.clear();
+    std::wcerr.clear();
+    std::wcin.clear();
+
+}
+
 
 static void init_opengl_extensions()
 {
@@ -75,7 +100,8 @@ static void init_opengl_extensions()
     window_class.lpszClassName = "Dummy_WGL_djuasiodwa";
 
 
-    if (!RegisterClassA(&window_class)) {
+    if (!RegisterClassA(&window_class))
+    {
         fatal_error("Failed to register dummy OpenGL window.");
     }
 
@@ -247,14 +273,17 @@ int WINAPI wWinMain(HINSTANCE instance,
                     PWSTR command_line,
                     int command_show)
 {
-    // output redirection for a new console. This calls AllocConsole().
-    redirect::output_to_console();
-    fmt::printf("redirected output");
+    
+    redirect_output_to_console(); // output redirection for a new console. This calls AllocConsole().
+   
+
     HWND window = create_window(instance);
     HDC  device_context = GetDC(window);
     HGLRC gl_context = init_opengl(device_context);
-    graphics::gl_context = gl_context;
-    graphics::device_context = device_context;
+    graphics::global_Win32_context().gl_context = gl_context;
+    graphics::global_Win32_context().device_context = device_context;
+    // context.gl_context = gl_context;
+    // context.device_context = device_context;
     // gl_lite_init();
 
     ShowWindow(window, command_show);
@@ -264,8 +293,6 @@ int WINAPI wWinMain(HINSTANCE instance,
     {
         // start loading everything.
         game::audio_setup();
-        // game::video_setup(); cannot do this here. need to do in the getmessage
-        // part?
 
         // Run the message loop.
         bool running = true;
@@ -278,27 +305,18 @@ int WINAPI wWinMain(HINSTANCE instance,
                 {
                     running = false;
                 }
-                // else if (message.message == WM_PAINT)
-                // {
-                //     // fmt::printf(" paint");
-                // }
                 else
                 {
-               
                  TranslateMessage(&message);
                  DispatchMessage(&message);
-                // fmt::printf("after dispatch");
                 }
             }
-                fmt::printf("out of the while loop!");
-                graphics::render_frame();
-                // game::main_loop(); // enter game loop for one cycle ( float dt?)
-        }
-        // glClearColor(1.0f, 0.5f, 0.5f, 1.0f);
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            graphics::render_frame();
 
-        // SwapBuffers();
-	    
+            // glClearColor(1.0f, 0.5f, 0.5f, 1.0f);
+            // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            // SwapBuffers(graphics::device_context);
+        }        	    
     }
  	
     return 0;
@@ -307,9 +325,7 @@ int WINAPI wWinMain(HINSTANCE instance,
 
 static void on_size_changed(HWND hwnd, UINT flag, const int width, const int height)
 {
-	// handle resize.
 	// fmt::printf("Hello, %s!", "world");
-
 }
 
 static LRESULT CALLBACK win32_main_window_callback(HWND window,
@@ -350,11 +366,7 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window,
         }
         case WM_CREATE:
         {
-
-
-
             // MessageBoxA(0,(char*)glGetString(GL_VERSION), "OPENGL VERSION",0);
-
             break;
         }
 
@@ -375,8 +387,8 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window,
     	case WM_DESTROY:
 	    {
             wglMakeCurrent(nullptr, nullptr);
-            wglDeleteContext(graphics::gl_context);
-              // wglDeleteContext ();
+            graphics::Win32_Context& context = graphics::global_Win32_context();
+            wglDeleteContext(context.gl_context);
 
 	        PostQuitMessage(0);
 	        break;
@@ -384,17 +396,18 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window,
 	    
 	    case WM_PAINT:
         {
-            // do nothing.
-            glClearColor(1.0f, 0.5f, 0.5f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            SwapBuffers(graphics::device_context);
+            // we need to start painting here, otherwise WM_PAINT stays
+            // in the message queue, and we can never break the peekMessage loop.
+            // sigh. 
+            PAINTSTRUCT ps = {};
+            HDC dc = BeginPaint(window,&ps);
+            // do drawing to 'dc' here -- or don't
+            EndPaint(window,&ps);
 
             break;
         }
         case WM_ACTIVATEAPP:
         {
-        	fmt::printf("WM_ACTIVATEAPP");
-
         	break;
         }
         default: 

@@ -6,8 +6,7 @@
 #ifdef _WIN32
 	#include <windows.h>
 	#include <GL/GL.h>
-#endif
-
+#endif=
 
 struct Platform_Renderer_Limits
 {
@@ -24,11 +23,21 @@ namespace graphics
 	void render_frame();
 	void swap_buffers();
 
+	bool load_and_compile_shader(Shader& shader, const std::string& filename);
+	GLenum graphics::shader_type_from_extension(const std::string& filename);
+
 	// platform graphics?
 	#ifdef _WIN32
-		static inline HGLRC gl_context;
-		static inline HDC	device_context;
+	struct Win32_Context
+	{
+		HGLRC gl_context;
+		HDC	device_context;
+	};
+	Win32_Context& global_Win32_context();
 	#endif
+
+
+	
 };
 
 // namespace window; // i think

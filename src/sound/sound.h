@@ -12,8 +12,8 @@ using wav_file  = SoLoud::Wav;
 
 namespace sound
 {
-	inline Handle Active_Music;
-	inline static SoLoud::Soloud soloud{};
+	// Handle Active_Music = {};
+	SoLoud::Soloud& soloud(); 
 
 	void perform_setup();
 	void perform_shutdown();
