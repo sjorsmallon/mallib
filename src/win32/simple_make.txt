@@ -1,4 +1,6 @@
 cl /EHsc src/entrypoint/*.cc /I include/ /link libs/fmt.lib opengl32.lib user32.lib Gdi32.lib
 
+cl.exe /std:c++17 redirect_output.cc win32_entrypoint.cc ../game/game.cc ../sound/sound.cc ../file/file.cc ../graphics/graphics.cc /I ../../include/ /link ../../libs/fmt.lib ../../libs/soloud_x64.lib Opengl32.lib user32.lib Gdi32.lib
+
 // user32 for some random error?
 #pragma comment(lib, "Gdi32.lib") // for blit.
