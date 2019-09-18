@@ -1,12 +1,15 @@
 #include "graphics.h"
-
+#undef max
+#undef min
+#include <fmt/printf.h>
 #include <GL/GL.h>
 #include <Wingdi.h>
 
-void graphics::draw_frame()
+void graphics::render_frame()
 {
-	glClearColor(0, 0.5, 1, 1);
-	glClear(GL_COLOR_BUFFER_BIT);
+	fmt::printf("render frame");
+	glClearColor(1.0f, 0.5f, 0.5f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	graphics::swap_buffers();
 }
 

@@ -21,7 +21,7 @@ struct Platform_Graphics
 
 namespace graphics
 {
-	void draw_frame();
+	void render_frame();
 	void swap_buffers();
 
 	// platform graphics?

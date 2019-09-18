@@ -25,7 +25,7 @@ void game::shutdown()
 
 void game::main_loop()
 {
-    graphics::draw_frame();
+    graphics::render_frame();
 }
 
 
