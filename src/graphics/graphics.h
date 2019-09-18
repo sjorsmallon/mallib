@@ -36,7 +36,7 @@ namespace graphics
 	Win32_Context& global_Win32_context();
 	#endif
 
-
+	
 	
 };
 
