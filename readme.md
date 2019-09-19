@@ -2,6 +2,15 @@
 This repository should contain a set of classes and structures that allow any user
 to easily construct a game engine. This is very work-in-progress; don't expect things to stay the same for very long.
 
+
+## openGL extension loading
+openGL on windows is convoluted. windows' `Gl\Gl.h` only includes the basic openGL stuff. In order for it to be usable, we perform some black magic. In order to set context flags for openGl > 3.3, we need an openGl context. We create a dummy window, through which we are able to init a proper openGl context, as the context needs to be set before opening a window (but we can only change the context through a window, which is insane). Furthermore, openGL extension loading is also tricky. Normally, libraries like GLEW handle these type of things. The problem with those libraries is distribution: it is one more thing to deploy and link against, etc. The way we do it now is sort of manually: using `gl_lite.h`, we can define and include types and functions, specified in `gl_ext.h`(the official gl_extensions header). This will result in lower compile times & less code bloat overall. It feels archaic, but it works.
+
+The way it works is we need to include "gl_lite.h" everywhere we would use openGL functions. In one of the source files, we need a `#define`. I would suggest putting this define in the entrypoint of your application.
+
+
+
+
 ## Writing as we go
 I'll keep updating `main_test.cc` as we go along. I have a habit of writing code I may or may not use. Keeping the YAGNI principle in mind, I'll just write what I need. I do want to think about APIs for these tools that I will need (such as the renderer or the audio player), but superficial substitutions will do.
 
