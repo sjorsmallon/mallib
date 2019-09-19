@@ -18,7 +18,7 @@ void file::file_to_string(const string& filename, string& target)
     target.reserve(file.tellg());
     file.seekg(0, std::ios::beg);
 
-    target.assign((std::istreambuf_iterator<char>(t)),
+    target.assign((std::istreambuf_iterator<char>(file)),
                    std::istreambuf_iterator<char>());
 }
 

@@ -1,23 +1,17 @@
 /*
     gl_lite.h - Single-header multi-platform OpenGL function loader
-
     ----------------------------------------------------------------------------
     USAGE
     ----------------------------------------------------------------------------
     1) Add the following lines in exactly one of your cpp files to compile the
        implementation:
-
            #define GL_LITE_IMPLEMENTATION
            #include "gl_lite.h"
-
     2) In all other files in which you want to use OpenGL functions, simply 
        include this header file as follows:
-
            #include "gl_lite.h"
-
     3) Call gl_lite_init() before using any OpenGL function and after you have a
        valid OpenGL context.
-
     ----------------------------------------------------------------------------
     LICENSE
     ----------------------------------------------------------------------------
@@ -31,7 +25,7 @@
 #if defined(__linux__)
 #include <dlfcn.h>
 #define GLDECL // Empty define
-#define MALLIB_GL_LIST_WIN32 // Empty define
+#define PAPAYA_GL_LIST_WIN32 // Empty define
 #endif // __linux__
 
 #if defined(_WIN32)
@@ -60,11 +54,18 @@
 #define GL_TEXTURE0                       0x84C0
 #define GL_VERTEX_SHADER                  0x8B31
 
+#define GL_GEOMETRY_SHADER                0x8DD9
+#define GL_TESS_EVALUATION_SHADER         0x8E87
+#define GL_TESS_CONTROL_SHADER            0x8E88
+#define GL_INFO_LOG_LENGTH                0x8B84
+#define GL_COMPUTE_SHADER                 0x91B9
+
+
 typedef char GLchar;
 typedef ptrdiff_t GLintptr;
 typedef ptrdiff_t GLsizeiptr;
 
-#define MALLIB_GL_LIST_WIN32 \
+#define PAPAYA_GL_LIST_WIN32 \
     /* ret, name, params */ \
     GLE(void,      BlendEquation,           GLenum mode) \
     GLE(void,      ActiveTexture,           GLenum texture) \
@@ -75,7 +76,7 @@ typedef ptrdiff_t GLsizeiptr;
 #include <GL/gl.h>
 
 
-#define MALLIB_GL_LIST \
+#define PAPAYA_GL_LIST \
     /* ret, name, params */ \
     GLE(void,      AttachShader,            GLuint program, GLuint shader) \
     GLE(void,      BindBuffer,              GLenum target, GLuint buffer) \
@@ -107,11 +108,14 @@ typedef ptrdiff_t GLsizeiptr;
     GLE(void,      UniformMatrix4fv,        GLint location, GLsizei count, GLboolean transpose, const GLfloat *value) \
     GLE(void,      UseProgram,              GLuint program) \
     GLE(void,      VertexAttribPointer,     GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid * pointer) \
+    GLE(void,      DeleteShader,            GLuint shader) \
+    GLE(void,      DetachShader,            GLuint program, GLuint shader) \
+
     /* end */
 
 #define GLE(ret, name, ...) typedef ret GLDECL name##proc(__VA_ARGS__); extern name##proc * gl##name;
-MALLIB_GL_LIST
-MALLIB_GL_LIST_WIN32
+PAPAYA_GL_LIST
+PAPAYA_GL_LIST_WIN32
 #undef GLE
 
 bool gl_lite_init();
@@ -123,8 +127,8 @@ bool gl_lite_init();
 #ifdef GL_LITE_IMPLEMENTATION
 
 #define GLE(ret, name, ...) name##proc * gl##name;
-MALLIB_GL_LIST
-MALLIB_GL_LIST_WIN32
+PAPAYA_GL_LIST
+PAPAYA_GL_LIST_WIN32
 #undef GLE
 
 bool gl_lite_init()
@@ -163,8 +167,8 @@ bool gl_lite_init()
                 OutputDebugStringA("Function gl" #name " couldn't be loaded from opengl32.dll\n"); \
                 return false;                                                                      \
             }
-        MALLIB_GL_LIST
-        MALLIB_GL_LIST_WIN32
+        PAPAYA_GL_LIST
+        PAPAYA_GL_LIST_WIN32
     #undef GLE
 
 #else

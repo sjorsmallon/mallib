@@ -2,6 +2,14 @@
 #define INCLUDED_GAME_
 
 
+enum class Program_Mode
+{
+	GAME,
+	EDITOR,
+	PAUSED,
+	MENU
+};
+
 namespace game
 {
 

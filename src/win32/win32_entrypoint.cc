@@ -4,7 +4,11 @@
 
 // if platform == windows, include this file.
 #include <windows.h>
-#include <GL/GL.h>
+
+#define GL_LITE_IMPLEMENTATION
+#include "../graphics/gl_lite.h"
+
+// #include <GL/GL.h>
 
 typedef HGLRC WINAPI wglCreateContextAttribsARB_type(HDC hdc, HGLRC hShareContext,
         const int *attribList);
@@ -31,9 +35,6 @@ wglChoosePixelFormatARB_type *wglChoosePixelFormatARB;
 
 #define WGL_FULL_ACCELERATION_ARB                 0x2027
 #define WGL_TYPE_RGBA_ARB                         0x202B
-
-#define GL_LITE_IMPLEMENTATION
-#include "../graphics/gl_lite.h"
 
 #include "../game/game.h"
 #include "../graphics/graphics.h"

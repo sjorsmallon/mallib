@@ -24,7 +24,21 @@ void game::shutdown()
 
 void game::main_loop()
 {
-    graphics::render_frame();
+
+    // if (game::global_program_mode() == Program_Mode::GAME)
+    // {
+    //     simulate_gameplay();
+    //     update_game_camera();
+    // }
+    // else if(game::global_program_mode() == Program_Mode::EDITOR)
+    // {
+    //     update_editor();            
+    // }
+    // update_audio();
+
+    // graphics::render_frame();
+
+    
 }
 
 
@@ -45,6 +59,6 @@ void game::load_shaders()
     {
         fmt::printf("[game] loading shader {}", file_name);
         // renderer::load_shader(file_name);
-        graphics::load_and_compile_shader(file_name);
+        // graphics::load_and_compile_shader(file_name);
     }
 }
