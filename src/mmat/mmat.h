@@ -39,6 +39,33 @@ namespace mmat
 
 }
 
+inline mat4 mmat::scale(const float s)
+{
+    return {
+              s, 0, 0, 0,
+              0, s, 0, 0,
+              0, 0, s, 0,
+              0, 0, 0, 1
+           }
+}
+
+inline Mat4 mmat::mat4_identity()
+{
+  return {
+          1, 0, 0, 0,
+          0, 1, 0, 0,
+          0, 0, 1, 0,
+          0, 0, 0, 1
+         };
+}
+
+
+
+
+
+
+
+
 // inline void Mat4::toPerspective(float fov, float aspectRatio, float nearPlane, float farPlane)
 // {
 //   float rad_fov = fov * DEG2RAD;

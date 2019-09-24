@@ -39,3 +39,9 @@ std::vector<std::string> file::list_files_in_dir(const char* dir_name)
 
     return file_names;
 }
+
+
+void file::reload_file()
+{
+    // different function per file extension type?
+}

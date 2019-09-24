@@ -3,15 +3,6 @@
  
 //@Incomplete: when do we need identity? keep a static const identity matrix
 // in the namespace? (see id's implementation)
-Mat4 mmat::identity()
-{
-  return {
-          1, 0, 0, 0,
-          0, 1, 0, 0,
-          0, 0, 1, 0,
-          0, 0, 0, 1
-         };
-}
 
 //@Refactor: this creates a copy. better to do in place? or does it not matter?
 void mmat::to_identity(Mat4& matrix)
@@ -99,13 +90,15 @@ Mat4 mmat::view(const Vec3& eye, const Vec3& center, const Vec3& up)
 {
    // modeled after gluLookAt. 
 
-   Vec3 f = center - eye; // f = coord_system
-   mvec::normalize(f);
+   Vec3 forward = center - eye; // f = coord_system
+   mvec::normalize(forward);
+   Vec3 tmp  = {0,1,0};
+   Vec3 right = mvec::cross(mvec::normalize(tmp),f);
    Vec3 up_norm = up;
    mvec::normalize(up);
 
-   Vec3 s = mvec::cross(f, up_norm);
-   Vec3 u = mvec::cross(mvec::normalize(s),f);
+    
+
    // The up vector must not be parallel to the line of sight from the
    //           eye point to the reference point.
 

@@ -14,7 +14,6 @@
 
 namespace graphics
 {
-	
 	enum class Shader_Type
 	{
 		SHADER_TEXT,
@@ -25,7 +24,6 @@ namespace graphics
 
 	struct Shaders
 	{
-
 		uint32_t bomb_shader_program;
 		uint32_t text_shader_program;
 		uint32_t normals_shader_program;
@@ -37,18 +35,19 @@ namespace graphics
 		// GLuint default_shader_program;
 	};
 
-	Shaders& shaders();
-	void set_shader(Shader_Type shader);
-
-
 	void init_opengl(); //@Purpose: does that also mean to load all the shaders etc?
 	void render_frame();
 	void draw_game_3d();
 	void swap_buffers();
 
-
+	Shaders& shaders();
+	void set_shader(Shader_Type shader);
 	bool load_compile_attach_shader(uint32_t program, const char* file_name);
 	uint32_t shader_type_from_extension(const std::string& filename);
+
+	// text
+	void gl_text_mode();
+	void draw_text();
 
 
 
