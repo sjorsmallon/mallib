@@ -276,7 +276,7 @@ int WINAPI wWinMain(HINSTANCE instance,
 {
     
     redirect_output_to_console(); // output redirection for a new console. This calls AllocConsole().
-   
+    // AttachConsole(-1); // attach to parent process
 
     HWND window = create_window(instance);
     HDC  device_context = GetDC(window);
@@ -293,7 +293,7 @@ int WINAPI wWinMain(HINSTANCE instance,
     if (window)
     {
         // start loading everything.
-        game::audio_setup();
+        game::init_everything();
 
         // Run the message loop.
         bool running = true;
@@ -312,7 +312,7 @@ int WINAPI wWinMain(HINSTANCE instance,
                  DispatchMessage(&message);
                 }
             }
-            graphics::render_frame();
+            game::main_loop();
 
             // glClearColor(1.0f, 0.5f, 0.5f, 1.0f);
             // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

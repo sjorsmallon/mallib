@@ -5,16 +5,32 @@
 #include "../sound/sound.h"
 #include "../graphics/graphics.h"
 #include "../file/file.h"
-
-// @Think about this pattern of loading. We hide where it loads to.
-// That does not help in this case. All submodules now  need to be aware 
-// about where this data stays.
-// using std::vector<std::string>> File_List;
+#include "../font/font.h"
+#include "../vec3/vec3.h"
 
 
-void game::audio_setup()
+void game::init_font()
 {
-    sound::perform_setup();
+    font::init_font();
+}
+
+void game::init_audio()
+{
+    sound::init_sound();
+}
+
+void game::init_graphics()
+{
+    graphics::init_opengl();
+}
+
+
+void game::init_everything()
+{
+    game::init_audio();
+    game::init_graphics();
+    game::init_font();
+    graphics::clear_buffers();
 }
 
 void game::shutdown()
@@ -24,7 +40,18 @@ void game::shutdown()
 
 void game::main_loop()
 {
-
+    graphics::clear_buffers();
+    std::string text = "sample text";
+    uint32_t start_x = 500;
+    uint32_t start_y = 500;
+    Vec3 color;
+    color.r = 1.0f;
+    color.g = 0.0f;
+    color.b = 0.0f;
+    float scale = 1.0f;
+    font::draw_text(text, start_x, start_y, scale, color);//, Text_Effect effect);
+    
+    // graphics::render_frame();
     // if (game::global_program_mode() == Program_Mode::GAME)
     // {
     //     simulate_gameplay();
@@ -36,9 +63,9 @@ void game::main_loop()
     // }
     // update_audio();
 
-    // graphics::render_frame();
+    graphics::render_frame();
 
-    
+  
 }
 
 

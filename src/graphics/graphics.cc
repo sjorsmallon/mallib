@@ -14,15 +14,16 @@
 // #include "tinyobjloader.h"
 #include "../file/file.h"
 
+
 void graphics::init_opengl()
-{
-    // gl_lite_init();
+{ 
+    gl_lite_init();
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
     glDepthFunc(GL_LEQUAL);
-    glClearColor(1.0f, 1.0f, 0.0f, 0.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 
     graphics::Shaders& shader_programs = graphics::shaders();
 
@@ -31,10 +32,13 @@ void graphics::init_opengl()
     shader_programs.normals_shader_program = glCreateProgram(); 
     shader_programs.bomb_shader_program    = glCreateProgram();
 
-    graphics::load_compile_attach_shader(shader_programs.normals_shader_program,"../../resources/shaders/normal.fragment");
-    graphics::load_compile_attach_shader(shader_programs.normals_shader_program,"../../resources/shaders/normal.vertex");
+    // graphics::load_compile_attach_shader(shader_programs.normals_shader_program,"../../resources/shaders/normal.vertex");
+    // graphics::load_compile_attach_shader(shader_programs.normals_shader_program,"../../resources/shaders/normal.fragment");
 
-    set_shader(graphics::Shader_Type::SHADER_NORMALS);
+    graphics::load_compile_attach_shader(shader_programs.text_shader_program, "../shaders/text.vertex");
+    graphics::load_compile_attach_shader(shader_programs.text_shader_program, "../shaders/text.fragment");
+
+    set_shader(graphics::Shader_Type::SHADER_TEXT);
 }
 
 graphics::Shaders& graphics::shaders()
@@ -51,7 +55,7 @@ graphics::Win32_Context& graphics::global_Win32_context()
 
 void graphics::set_shader(Shader_Type shader_type)
 {
-    using namespace graphics;
+    // using namespace graphics;
 
     graphics::Shaders& shader_programs = graphics::shaders();
     if (shader_type == Shader_Type::SHADER_TEXT)
@@ -78,11 +82,14 @@ void graphics::draw_game_3d()
     // draw all buffers?
 }
 
+void graphics::clear_buffers()
+{
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
 void graphics::render_frame()
 {
-    glClearColor(0.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     graphics::draw_game_3d();
     graphics::swap_buffers();
 }
@@ -107,62 +114,11 @@ uint32_t graphics::shader_type_from_extension(const std::string& filename)
         return GL_TESS_CONTROL_SHADER;
     else if (view == "tess_evaluation")
         return GL_TESS_EVALUATION_SHADER;
-    else if (view == "compute")
-        return GL_COMPUTE_SHADER;
+    // else if (view == "compute")
+    //     return GL_COMPUTE_SHADER;
     else
         return 0;
 }
-
-void graphics::gl_text_mode()
-{
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-}
-
-void graphics::draw_text(std::string& text, Font font, uint32_t start_x, uint32_t start_y, Vec3f color, Text_Effect effect)
-{
-    //@Todo:
-    glUniform3f(glGetUniformLocation(s.Program, "textColor"), color.x, color.y, color.z);
-    
-    glActiveTexture(GL_TEXTURE0);
-    glBindVertexArray(VAO);
-
-    // Iterate through all characters
-    for (auto& single_char: text)
-    {
-        Character ch = graphics::characters().[single_char];
-
-        GLfloat xpos = x + single_char.Bearing.x * scale;
-        GLfloat ypos = y - (single_char.Size.y - single_char.Bearing.y) * scale;
-
-        GLfloat w = single_char.Size.x * scale;
-        GLfloat h = single_char.Size.y * scale;
-        // Update VBO for each character
-        GLfloat vertices[6][4] = {
-            { xpos,     ypos + h,   0.0, 0.0 },            
-            { xpos,     ypos,       0.0, 1.0 },
-            { xpos + w, ypos,       1.0, 1.0 },
-
-            { xpos,     ypos + h,   0.0, 0.0 },
-            { xpos + w, ypos,       1.0, 1.0 },
-            { xpos + w, ypos + h,   1.0, 0.0 }           
-        };
-        // Render glyph texture over quad
-        glBindTexture(GL_TEXTURE_2D, single_char.textureID);
-        // Update content of VBO memory
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        // Render quad
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-        x += (single_char.Advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
-    }
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-
 
 bool graphics::load_compile_attach_shader(uint32_t program, const char* file_name)
 {
@@ -205,6 +161,7 @@ bool graphics::load_compile_attach_shader(uint32_t program, const char* file_nam
     }
     else
     {
+        fmt::print("shader_from_file: successfully compiled {}\n", filename);
         glAttachShader(program, shader_id);
         glLinkProgram(program);
         glDetachShader(program, shader_id); // can also postpone, but lower memory footprint

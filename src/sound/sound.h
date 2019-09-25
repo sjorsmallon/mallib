@@ -15,7 +15,7 @@ namespace sound
 	// Handle Active_Music = {};
 	SoLoud::Soloud& soloud(); 
 
-	void perform_setup();
+	void init_sound();
 	void perform_shutdown();
 
 }

@@ -52,13 +52,14 @@
 #define GL_STATIC_DRAW                    0x88E4
 #define GL_STREAM_DRAW                    0x88E0
 #define GL_TEXTURE0                       0x84C0
+#define GL_CLAMP_TO_EDGE                  0x812F
 #define GL_VERTEX_SHADER                  0x8B31
 
 #define GL_GEOMETRY_SHADER                0x8DD9
 #define GL_TESS_EVALUATION_SHADER         0x8E87
 #define GL_TESS_CONTROL_SHADER            0x8E88
 #define GL_INFO_LOG_LENGTH                0x8B84
-#define GL_COMPUTE_SHADER                 0x91B9
+#define GL_COMPUTE_SHADER                 0x91B9z
 
 
 typedef char GLchar;
@@ -110,6 +111,9 @@ typedef ptrdiff_t GLsizeiptr;
     GLE(void,      VertexAttribPointer,     GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid * pointer) \
     GLE(void,      DeleteShader,            GLuint shader) \
     GLE(void,      DetachShader,            GLuint program, GLuint shader) \
+    GLE(void,      GenVertexArrays,         GLsizei n, GLuint *arrays) \
+    GLE(void,      BindVertexArray,         GLuint array) \
+    GLE(void,      Uniform3f,               GLint location, GLfloat v0, GLfloat v1, GLfloat v2) \
 
     /* end */
 

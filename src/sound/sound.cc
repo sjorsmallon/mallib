@@ -6,7 +6,7 @@ SoLoud::Soloud& sound::soloud()
 	return so_loud;
 }
 
-void sound::perform_setup()
+void sound::init_sound()
 {
 	sound::soloud().init();
 }

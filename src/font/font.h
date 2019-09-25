@@ -1,25 +1,50 @@
 #ifndef INCLUDED_FONT_
 #define INCLUDED_FONT_
-
 #include <ft2build.h>
 #include FT_FREETYPE_H 
+
 #include <map>
+
+#include "../graphics/gl_lite.h"
+#include "../vec2/vec2.h"
+#include "../vec3/vec3.h"
+
+//@Todo: implement a font selector for draw_text?
+// Character is now a set of glyphs for one particular font.
+
 
 struct Character
 {
 	GLuint textureID;
-	Vec2 Size;
-	Vec2 Bearing;
+	Vec2 size;
+	Vec2 bearing;
 	GLuint advance;
 };
 
 namespace font
 {
+	struct gl_Objects
+	{
+		GLuint VAO;
+		GLuint VBO;
+	};
 
-	std::map<GLchar, Character>& characters();
+	gl_Objects& gl_objects();
 
-	void init_freetype();
+	std::map<char, Character>& characters();
+
 	void init_font();
+	void init_font_gl_objects();
+	void gl_text_mode();
+	void draw_text(std::string& text,
+				   // Font font,
+				   uint32_t start_x,
+				   uint32_t start_y,
+				   float scale,
+				   Vec3 color);
+					   // Text_Effect effect);
+
+
 	
 	
 };

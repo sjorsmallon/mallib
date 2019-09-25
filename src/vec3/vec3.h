@@ -35,37 +35,37 @@ union Vec3
 // numbers.
 // equality operator makes no sense here, as it is ill-defined.
 
-inline Vec3 operator+(const Vec3 lhs, const Vec3 rhs)
-{
-    Vec3 result;
-    result.x = lhs.x + rhs.x;
-    result.y = lhs.y + rhs.y;
-    result.z = lhs.z + rhs.z;
+// inline Vec3 operator+(const Vec3 lhs, const Vec3 rhs)
+// {
+//     Vec3 result;
+//     result.x = lhs.x + rhs.x;
+//     result.y = lhs.y + rhs.y;
+//     result.z = lhs.z + rhs.z;
 
-    return result;
-}
+//     return result;
+// }
 
-inline Vec3 operator-(const Vec3 lhs, const Vec3 rhs)
-{
-    Vec3 result;
-    result.x = lhs.x - rhs.x;
-    result.y = lhs.y - rhs.y;
-    result.z = lhs.z - rhs.z;
+// inline Vec3 operator-(const Vec3 lhs, const Vec3 rhs)
+// {
+//     Vec3 result;
+//     result.x = lhs.x - rhs.x;
+//     result.y = lhs.y - rhs.y;
+//     result.z = lhs.z - rhs.z;
 
-    return result;
-}
+//     return result;
+// }
 
-// free functions
+// // free functions
 
-inline Vec3 operator*(const float lhs, const Vec3& rhs)
-{
-    return {lhs * rhs.x, lhs * rhs.y, lhs * rhs.z};
-}
+// inline Vec3 operator*(const float lhs, const Vec3& rhs)
+// {
+//     return {lhs * rhs.x, lhs * rhs.y, lhs * rhs.z};
+// }
 
-inline Vec3 operator+(const float lhs, const Vec3& rhs)
-{
-    return { lhs + rhs.x, lhs + rhs.y, lhs + rhs.z};
-}
+// inline Vec3 operator+(const float lhs, const Vec3& rhs)
+// {
+//     return { lhs + rhs.x, lhs + rhs.y, lhs + rhs.z};
+// }
 
 #endif
 

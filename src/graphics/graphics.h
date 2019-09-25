@@ -38,6 +38,7 @@ namespace graphics
 	void init_opengl(); //@Purpose: does that also mean to load all the shaders etc?
 	void render_frame();
 	void draw_game_3d();
+	void clear_buffers();
 	void swap_buffers();
 
 	Shaders& shaders();
