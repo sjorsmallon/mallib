@@ -29,6 +29,7 @@ void font::init_font()
 		fmt::print("new_face: failed to create new font face.");
 
 	FT_Set_Pixel_Sizes(face, 0, 48);
+
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction?
 
 	for (uint8_t char_index = 0; char_index != 128;  ++char_index)
@@ -68,6 +69,8 @@ void font::init_font()
 
 		font::characters().insert(std::pair<GLchar, Character>(char_index, character_glyph));
 	}
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 	FT_Done_Face(face);
 	FT_Done_FreeType(ft);
 
@@ -117,37 +120,38 @@ void font::gl_text_mode()
 
 void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32_t start_y, float scale, Vec3 color)//, Text_Effect effect)
 {
-	float top   = 600.0f;
+	graphics::set_shader(graphics::Shader_Type::SHADER_TEXT);
+	glUniform3f(glGetUniformLocation(graphics::shaders().text_shader_program, "text_color"), color.x, color.y, color.z);
+    
+    font::gl_Objects& gl_font = font::gl_objects();
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(gl_font.VAO);
+	glViewport(0, 0, 1280, 1024);
+    
+	float top   = 1280.0f;
 	float bot   = 0.0f;
 	float left  = 0.0f;
-	float right = 800.0f;
+	float right = 1024.0f;
 	float near_  = 0.0f;
-	float far_   = -1.0f; // near and far are reserved by windows???
+	float far_   = 10.0f; // near and far are reserved by windows???
 
-	float projectionmatrix[16] = {2 / right - left, 0, 0, - (right + left / right - left),
-								    0,  2 / top - bot, 0, - ( top + bot / top - bot),
-									0, 0, (-2 / (far_ - near_)), -(far_ + near_ / far_ - near_),
-									0,  0,  0,  1};
+	float projectionmatrix[16] =   {2.0f / right - left, 0.0f, 0.0f, - (right + left / right - left),
+								    0.0f,  2.0f / top - bot, 0.0f, - ( top + bot / top - bot),
+									0.0f, 0.0f, (-2.0f / (far_ - near_)), -(far_ + near_ / far_ - near_),
+									0.0f,  0.0f,  0.0f,  1};
 
-    // float projectionmatrix[16] = {  2 / right - left,                0,                       0,                               0,
-				// 				    0,                              2 / top - bot,            0,                               0,
-				// 					0,                                0,                       (-2 / (far_ - near_)),          0,
-				// 				 - (right + left / right - left),  - ( top + bot / top - bot),  -(far_ + near_ / far_ - near_),  1};
 
 
 	//gl_text_mode?
 	glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    font::gl_Objects& gl_font = font::gl_objects();
+    
 
     //@Todo:
-    glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text_shader_program, "projection"), 1, false, projectionmatrix);
-    glUniform3f(glGetUniformLocation(graphics::shaders().text_shader_program, "text_color"), color.x, color.y, color.z);
-    
-    glActiveTexture(GL_TEXTURE0);
-    glBindVertexArray(gl_font.VAO);
+    glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text_shader_program, "projection"), 1, false, &projectionmatrix[0]);
+   
 	auto character_map = font::characters();
-
+	
     // Iterate through all characters
     for (auto& single_char: text)
     {
@@ -160,7 +164,8 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
         GLfloat w = char_glyph.size.x * scale;
         GLfloat h = char_glyph.size.y * scale;
         // Update VBO for each character
-        GLfloat vertices[6][4] = {
+        GLfloat vertices[6][4] =
+        {
             { xpos,     ypos + h,   0.0, 0.0 },            
             { xpos,     ypos,       0.0, 1.0 },
             { xpos + w, ypos,       1.0, 1.0 },

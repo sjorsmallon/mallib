@@ -292,6 +292,21 @@ int WINAPI wWinMain(HINSTANCE instance,
 
     if (window)
     {
+        // change window size
+        int width = 1280; // @hardcoded
+        int height = 1024;
+
+        SetWindowPos(
+          window,
+          HWND_TOP,
+          500,
+          500,
+          width,
+          height,
+          SWP_NOMOVE
+        );
+
+
         // start loading everything.
         game::init_everything();
 
