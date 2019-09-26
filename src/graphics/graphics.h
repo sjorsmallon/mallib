@@ -40,6 +40,7 @@ namespace graphics
 	void draw_game_3d();
 	void clear_buffers();
 	void swap_buffers();
+	void get_shader_info(uint32_t program);
 
 	Shaders& shaders();
 	void set_shader(Shader_Type shader);

@@ -23,7 +23,7 @@ void graphics::init_opengl()
     glEnable(GL_CULL_FACE);
 
     glDepthFunc(GL_LEQUAL);
-    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+    glClearColor(0.2f, 0.3f, 0.3f, 0.0f);
 
     graphics::Shaders& shader_programs = graphics::shaders();
 
@@ -84,7 +84,7 @@ void graphics::draw_game_3d()
 
 void graphics::clear_buffers()
 {
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    // glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -119,6 +119,44 @@ uint32_t graphics::shader_type_from_extension(const std::string& filename)
     else
         return 0;
 }
+
+
+void graphics::get_shader_info(uint32_t prog)
+{
+    GLint numActiveAttribs = 0;
+    GLint numActiveUniforms = 0;
+    // glGetProgramInterfaceiv(prog, GL_PROGRAM_INPUT, GL_ACTIVE_RESOURCES, &numActiveAttribs);
+    glGetProgramInterfaceiv(prog, GL_UNIFORM, GL_ACTIVE_RESOURCES, &numActiveUniforms);
+    std::vector<GLchar> nameData(256);
+    std::vector<GLenum> properties;
+    properties.push_back(GL_NAME_LENGTH​);
+    properties.push_back(GL_TYPE​);
+    properties.push_back(GL_ARRAY_SIZE​);
+    // std::vector<GLint> values(properties.size());
+    // for(int attrib = 0; attrib < numActiveAttribs; ++attrib)
+    // {
+    //     glGetProgramResourceiv(prog, GL_PROGRAM_INPUT, attrib, properties.size(),
+    //     &properties[0], values.size(), NULL, &values[0]);
+
+    //     nameData.resize(values[0]); //The length of the name.
+    //     glGetProgramResourceName(prog, GL_PROGRAM_INPUT, attrib, nameData.size(), NULL, &nameData[0]);
+    //     std::string name((char*)&nameData[0], nameData.size() - 1);
+    // }
+    for(int unif = 0; unif < numActiveUniforms; ++unif)
+    {
+        glGetProgramResourceiv(prog, GL_UNIFORM, unif, properties.size(),
+        &properties[0], values.size(), NULL, &values[0]);
+
+        nameData.resize(values[0]); //The length of the name.
+        glGetProgramResourceName(prog, GL_UNIFORM, unif, nameData.size(), NULL, &nameData[0]);
+        std::string name((char*)&nameData[0], nameData.size() - 1);
+        fmt::print("uniform: {}", name);
+    }
+
+
+
+}
+
 
 bool graphics::load_compile_attach_shader(uint32_t program, const char* file_name)
 {

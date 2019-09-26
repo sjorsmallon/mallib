@@ -121,12 +121,12 @@ void font::gl_text_mode()
 void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32_t start_y, float scale, Vec3 color)//, Text_Effect effect)
 {
 	graphics::set_shader(graphics::Shader_Type::SHADER_TEXT);
-	glUniform3f(glGetUniformLocation(graphics::shaders().text_shader_program, "text_color"), color.x, color.y, color.z);
     
     font::gl_Objects& gl_font = font::gl_objects();
+    
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(gl_font.VAO);
-	glViewport(0, 0, 1280, 1024);
+
     
 	float top   = 1280.0f;
 	float bot   = 0.0f;
@@ -145,11 +145,25 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
 	//gl_text_mode?
 	glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
-
+    glViewport(0, 0, 1280, 1024);
     //@Todo:
+    GLint success =       glGetUniformLocation(graphics::shaders().text_shader_program, "projection");    
+    GLint color_success = glGetUniformLocation(graphics::shaders().text_shader_program, "text_color");
+
+    graphics::get_shader_info(graphics::shaders().text_shader_program);
+    
+    if (success == GL_INVALID_VALUE || success == GL_INVALID_OPERATION)
+    {
+    	fmt::print("glGetUniformLocation doesn't work.");
+    }
+    else
+    {
+    	fmt::print("matrix succes is {}", success);
+    	fmt::print("color_succes is {}", color_success);
+    }
     glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text_shader_program, "projection"), 1, false, &projectionmatrix[0]);
-   
+	glUniform3f(glGetUniformLocation(graphics::shaders().text_shader_program, "text_color"), color.x, color.y, color.z);
+    
 	auto character_map = font::characters();
 	
     // Iterate through all characters
