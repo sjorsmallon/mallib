@@ -147,6 +147,7 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glViewport(0, 0, 1280, 1024);
     //@Todo:
+    
     GLint success =       glGetUniformLocation(graphics::shaders().text_shader_program, "projection");    
     GLint color_success = glGetUniformLocation(graphics::shaders().text_shader_program, "text_color");
 

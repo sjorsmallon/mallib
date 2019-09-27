@@ -179,7 +179,6 @@ bool graphics::load_compile_attach_shader(uint32_t program, const char* file_nam
     const char* c_str = target.c_str();
 
     glShaderSource(shader_id, 1, &c_str, NULL);
-
     glCompileShader(shader_id);
 
 
@@ -207,6 +206,7 @@ bool graphics::load_compile_attach_shader(uint32_t program, const char* file_nam
     {
         fmt::print("shader_from_file: successfully compiled {}\n", filename);
         glAttachShader(program, shader_id);
+        // i think this is causing the problem?
         glLinkProgram(program);
         glDetachShader(program, shader_id); // can also postpone, but lower memory footprint
         // this way.
