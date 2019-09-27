@@ -59,7 +59,14 @@
 #define GL_TESS_EVALUATION_SHADER         0x8E87
 #define GL_TESS_CONTROL_SHADER            0x8E88
 #define GL_INFO_LOG_LENGTH                0x8B84
-#define GL_COMPUTE_SHADER                 0x91B9z
+#define GL_COMPUTE_SHADER                 0x91B9
+#define GL_UNIFORM                        0x92E1
+#define GL_ACTIVE_RESOURCES               0x92F5
+
+#define GL_NAME_LENGTH                    0x92F9
+#define GL_TYPE                           0x92FA
+#define GL_ARRAY_SIZE                     0x92FB
+
 
 
 typedef char GLchar;
@@ -114,6 +121,11 @@ typedef ptrdiff_t GLsizeiptr;
     GLE(void,      GenVertexArrays,         GLsizei n, GLuint *arrays) \
     GLE(void,      BindVertexArray,         GLuint array) \
     GLE(void,      Uniform3f,               GLint location, GLfloat v0, GLfloat v1, GLfloat v2) \
+    GLE(void,      GetProgramInterfaceiv,   GLuint program, GLenum programInterface, GLenum pname, GLint *params)\
+    GLE(void,      GetProgramiv,            GLuint program, GLenum pname, GLint *params)\
+    GLE(void,      GetProgramResourceiv,    GLuint program, GLenum programInterface, GLuint index, GLsizei propCount, const GLenum *props, GLsizei bufSize, GLsizei *length, GLint *params)\
+    GLE(void,      GetProgramResourceName,  GLuint program, GLenum programInterface, GLuint index, GLsizei bufSize, GLsizei *length, GLchar *name)\
+
 
     /* end */
 

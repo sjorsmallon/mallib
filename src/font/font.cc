@@ -160,6 +160,8 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
     {
     	fmt::print("matrix succes is {}", success);
     	fmt::print("color_succes is {}", color_success);
+    	graphics::get_shader_info(graphics::shaders().text_shader_program);
+    	while(true) {}
     }
     glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text_shader_program, "projection"), 1, false, &projectionmatrix[0]);
 	glUniform3f(glGetUniformLocation(graphics::shaders().text_shader_program, "text_color"), color.x, color.y, color.z);
