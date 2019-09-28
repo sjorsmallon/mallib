@@ -10,8 +10,7 @@
 #include <Wingdi.h>
 #include <stdlib.h>
 #include <string>
-// #define TINYOBJLOADER_IMPLEMENTATION
-// #include "tinyobjloader.h"
+
 #include "../file/file.h"
 
 
@@ -21,22 +20,22 @@ void graphics::init_opengl()
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-
     glDepthFunc(GL_LEQUAL);
     glClearColor(0.2f, 0.3f, 0.3f, 0.0f);
 
+
     graphics::Shaders& shader_programs = graphics::shaders();
 
-    shader_programs.default_shader_program = glCreateProgram();
-    shader_programs.text_shader_program    = glCreateProgram();
-    shader_programs.normals_shader_program = glCreateProgram(); 
-    shader_programs.bomb_shader_program    = glCreateProgram();
+    shader_programs.default = glCreateProgram();
+    shader_programs.text    = glCreateProgram();
+    shader_programs.normals = glCreateProgram(); 
+    shader_programs.bomb    = glCreateProgram();
 
-    // graphics::load_compile_attach_shader(shader_programs.normals_shader_program,"../../resources/shaders/normal.vertex");
-    // graphics::load_compile_attach_shader(shader_programs.normals_shader_program,"../../resources/shaders/normal.fragment");
-
-    graphics::load_compile_attach_shader(shader_programs.text_shader_program, "../shaders/text.vertex");
-    graphics::load_compile_attach_shader(shader_programs.text_shader_program, "../shaders/text.fragment");
+    uint32_t text_vertex   = graphics::load_compile_attach_shader(shader_programs.text, "../shaders/text.vertex");
+    uint32_t text_fragment = graphics::load_compile_attach_shader(shader_programs.text, "../shaders/text.fragment");
+    glLinkProgram(shader_programs.text);
+    glDetachShader(shader_programs.text, text_vertex);
+    glDetachShader(shader_programs.text, text_fragment);
 
     set_shader(graphics::Shader_Type::SHADER_TEXT);
 }
@@ -47,7 +46,7 @@ graphics::Shaders& graphics::shaders()
     return shaders;
 }
 
-graphics::Win32_Context& graphics::global_Win32_context()
+graphics::Win32_Context& graphics::global_Win32_context() //@cleanup: i don't like this.
 {
 	static Win32_Context context;
 	return context;
@@ -60,19 +59,19 @@ void graphics::set_shader(Shader_Type shader_type)
     graphics::Shaders& shader_programs = graphics::shaders();
     if (shader_type == Shader_Type::SHADER_TEXT)
     {
-        glUseProgram(shader_programs.text_shader_program);
+        glUseProgram(shader_programs.text);
     }
     else if(shader_type == Shader_Type::SHADER_BOMB)
     {
-        glUseProgram(shader_programs.bomb_shader_program);
+        glUseProgram(shader_programs.bomb);
     }
     else if(shader_type == Shader_Type::SHADER_DEFAULT)
     {
-        glUseProgram(shader_programs.default_shader_program);
+        glUseProgram(shader_programs.default);
     }
     else if(shader_type == Shader_Type::SHADER_NORMALS)
     {
-        glUseProgram(shader_programs.normals_shader_program);
+        glUseProgram(shader_programs.normals);
     }
 }
 
@@ -154,14 +153,11 @@ void graphics::get_shader_info(uint32_t prog)
         fmt::print("uniform: {}\n", name);
     }
 
-
-
 }
 
-
-bool graphics::load_compile_attach_shader(uint32_t program, const char* file_name)
+uint32_t graphics::load_compile_attach_shader(uint32_t program, const char* file_name)
 {
-    bool success = true;
+
     // set shader type based on the extension. maybe change shader_type to take const char*
     std::string filename = file_name;
     GLenum shader_type = shader_type_from_extension(filename);
@@ -169,11 +165,11 @@ bool graphics::load_compile_attach_shader(uint32_t program, const char* file_nam
     //set Shader
     GLuint shader_id = glCreateShader(shader_type);
     if (shader_id == 0)
-        fmt::print("glCreateShader borked. sigh.");
+        fmt::print("glCreateShader failed.\n");
     else
-        fmt::print("glCreateShader succeeded. created shader ID {}", shader_id);
+        fmt::print("glCreateShader succeeded. created shader ID {}\n", shader_id);
 
-    //@cleanup: maybe directly transfer to string?
+    //@Cleanup:to const char* buffer?
     std::string target = {};
     file::file_to_string(filename, target);
     const char* c_str = target.c_str();
@@ -181,14 +177,12 @@ bool graphics::load_compile_attach_shader(uint32_t program, const char* file_nam
     glShaderSource(shader_id, 1, &c_str, NULL);
     glCompileShader(shader_id);
 
-
     GLint shader_compiled = GL_FALSE;
     glGetShaderiv(shader_id, GL_COMPILE_STATUS, &shader_compiled);
 
     if (shader_compiled != GL_TRUE)
     {
-        success = false;
-        fmt::print("shader_from_file: unable to compile vertex shader {}\n", filename);
+        fmt::print("shader_from_file: unable to compile shader {}\n", filename);
         GLint max_length = 0;
         glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &max_length);
 
@@ -197,7 +191,8 @@ bool graphics::load_compile_attach_shader(uint32_t program, const char* file_nam
         glGetShaderInfoLog(shader_id, max_length, &max_length, &error_log[0]);
 
         // Provide the infolog in whatever manor you deem best.
-
+        auto string_log = std::string(error_log.begin(), error_log.end());
+        fmt::print("shader error log: {}\n", string_log);
         // Exit with failure.
         glDeleteShader(shader_id); // Don't leak the shader.
         // printShaderLog(shader);
@@ -207,14 +202,13 @@ bool graphics::load_compile_attach_shader(uint32_t program, const char* file_nam
         fmt::print("shader_from_file: successfully compiled {}\n", filename);
         glAttachShader(program, shader_id);
         // i think this is causing the problem?
-        glLinkProgram(program);
-        glDetachShader(program, shader_id); // can also postpone, but lower memory footprint
+        // glLinkProgram(program);
+        // glDetachShader(program, shader_id); // can also postpone, but lower memory footprint
         // this way.
-        success = true;
     }
 
 
-    return success;
+    return shader_id;
 }
 
 static void load_obj(const char* filename)
@@ -287,6 +281,6 @@ static void load_obj(const char* filename)
 
 //     graphics::draw_hud(hud);
 
-//  graphics::swap_buffers();
+//     graphics::swap_buffers();
 
 // }

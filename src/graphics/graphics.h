@@ -22,20 +22,15 @@ namespace graphics
 		SHADER_BOMB
 	};
 
-	struct Shaders
+	struct Shaders //@Noteshader_programs?
 	{
-		uint32_t bomb_shader_program;
-		uint32_t text_shader_program;
-		uint32_t normals_shader_program;
-		uint32_t default_shader_program;
-
-		// GLuint bomb_shader_program;
-		// GLuint text_shader_program;
-		// GLuint normals_shader_program;
-		// GLuint default_shader_program;
+		uint32_t bomb;
+		uint32_t text;
+		uint32_t normals;
+		uint32_t default;
 	};
 
-	void init_opengl(); //@Purpose: does that also mean to load all the shaders etc?
+	void init_opengl(); //@Note: does that also mean to load all the shaders etc?
 	void render_frame();
 	void draw_game_3d();
 	void clear_buffers();
@@ -44,7 +39,7 @@ namespace graphics
 
 	Shaders& shaders();
 	void set_shader(Shader_Type shader);
-	bool load_compile_attach_shader(uint32_t program, const char* file_name);
+	uint32_t load_compile_attach_shader(uint32_t program, const char* file_name);
 	uint32_t shader_type_from_extension(const std::string& filename);
 
 	// text
