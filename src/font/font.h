@@ -13,16 +13,18 @@
 // Character is now a set of glyphs for one particular font.
 
 
-struct Character
-{
-	GLuint textureID;
-	Vec2 size;
-	Vec2 bearing;
-	GLuint advance;
-};
+
 
 namespace font
 {
+	struct Character
+	{
+		GLuint textureID;
+		Vec2 size;
+		Vec2 bearing;
+		GLuint advance;
+	};
+	
 	struct gl_Objects
 	{
 		GLuint VAO;

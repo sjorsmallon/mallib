@@ -1,4 +1,4 @@
-#include "mat4.ih"
+#include "mat4.h"
 
 // inline void Mat4::zero()
 // {

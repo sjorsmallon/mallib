@@ -1,6 +1,7 @@
 #ifndef INCLUDED_VEC4_
 #define INCLUDED_VEC4_
 
+//@Note: is this a problem with matrices?
 union Vec4
 {
     struct

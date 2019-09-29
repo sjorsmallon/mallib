@@ -28,14 +28,13 @@ namespace mmat
     Mat4 view(const Vec3& eye, const Vec3& center, const Vec3& up);
     Mat4 look_at(const Vec3& eye, const Vec3& center, const Vec3& up);
 
-
-    // Mat4 orthographic3D( const float left,
-    //                      const float right,
-    //                      const float top,
-    //                      const float bottom,
-    //                      const float z_near,
-    //                      const float z_far
-    //                     );
+    Mat4 orthographic3D( const float left,
+                         const float right,
+                         const float top,
+                         const float bottom,
+                         const float z_near,
+                         const float z_far
+                        );
 
 }
 
@@ -59,8 +58,19 @@ inline Mat4 mmat::mat4_identity()
          };
 }
 
-
-
+inline Mat4 mmat::orthographic3D(const float left,
+                           const float right,
+                           const float top,
+                           const float bottom,
+                           const float z_near,
+                           const float z_far
+                           )
+{
+    return mat4{2.0f / right - left, 0.0f, 0.0f, - (right + left / right - left),
+                                    0.0f,  2.0f / top - bot, 0.0f, - ( top + bot / top - bot),
+                                    0.0f, 0.0f, (-2.0f / (z_far - z_near)), -(z_far + z_near / z_far - z_near),
+                                    0.0f,  0.0f,  0.0f,  1};
+}
 
 
 

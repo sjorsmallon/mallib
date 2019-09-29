@@ -5,96 +5,58 @@
 #include "../quaternion/quaternion.h"
 #include "../xform_state/xform_state.h"
 
-// what this is: a subpart of the rendering library.
-// this is not meant to be a linalg library. it only supports the bare minimum.
-// extra functionality can be found in mmat.h.
-
 #define PI 3.14159265358979323846f //@Cleanup: move these to math
 #define DEG2RAD  PI / 180.0f
 #define RAD2DEG  180.f / PI
 
 // column major
-// @Performance: this could be SIMD optimized, I think.
 struct Mat4
 {
-    Vec4 d_matrix[4];
-
-    public:
-        const Vec4 &operator[](int index) const;
-        Vec4& operator[](const int index);
-
-        Mat4   operator*(const Mat4 &rhs) const; 
-        Mat4   operator*(const float rhs) const;
-        Vec4   operator*(const Vec4 &rhs) const;
-        Vec3   operator*(const Vec3 &rhs) const;
-
-        Mat4   operator+(const Mat4 &rhs) const;
-        Mat4   operator-(const Mat4 &rhs) const;
-
-        Mat4& operator*=(const Mat4& rhs); //useful in scale/rotate/translate.
-        Mat4& operator*=(const float scale);
-        // Mat4& operator*=(const Quaternion& rhs);
-
-        // bool compare(const Mat4 &rhs) const;
-        // bool operator==(const Mat4 &rhs) const;
-        // bool operator!=(const Mat4 &rhs) const;
-
-        //Hacky stuff here.
-        float *data();
-
+    // Vec4 d_matrix[4];
+    float data[4][4]; // we can always change this. for now, let's do this.
 };
 
-inline const Vec4 &Mat4::operator[](const int index) const
-{
-    // if (index < 0 || index > 4) {}
-    return d_matrix[index];
-}
-
-inline Vec4 &Mat4::operator[](const int index)
-{
-    return d_matrix[index];
-}
 
 
-inline Mat4 Mat4::operator*(const Mat4 &rhs) const
-{
-    // int i, j;
-    const float *m1Ptr, *m2Ptr;
-    float *dstPtr;
-    Mat4 dst;
+// inline Mat4 Mat4::operator*(const Mat4 &rhs) const
+// {
+//     // int i, j;
+//     const float *m1Ptr, *m2Ptr;
+//     float *dstPtr;
+//     Mat4 dst;
 
-    m1Ptr = reinterpret_cast<const float *>(this);
-    m2Ptr = reinterpret_cast<const float *>(&rhs);
-    dstPtr = reinterpret_cast<float *>(&dst);
+//     m1Ptr = reinterpret_cast<const float *>(this);
+//     m2Ptr = reinterpret_cast<const float *>(&rhs);
+//     dstPtr = reinterpret_cast<float *>(&dst);
 
-    for (int i = 0; i < 4; i++ ) {
-        for (int j = 0; j < 4; j++ ) {
-            *dstPtr = m1Ptr[0] * m2Ptr[ 0 * 4 + j ]
-            + m1Ptr[1] * m2Ptr[ 1 * 4 + j ]
-            + m1Ptr[2] * m2Ptr[ 2 * 4 + j ]
-            + m1Ptr[3] * m2Ptr[ 3 * 4 + j ];
-            dstPtr++;
-        }
-        m1Ptr += 4;
-    }
-    return dst;
-}
+//     for (int i = 0; i < 4; i++ ) {
+//         for (int j = 0; j < 4; j++ ) {
+//             *dstPtr = m1Ptr[0] * m2Ptr[ 0 * 4 + j ]
+//             + m1Ptr[1] * m2Ptr[ 1 * 4 + j ]
+//             + m1Ptr[2] * m2Ptr[ 2 * 4 + j ]
+//             + m1Ptr[3] * m2Ptr[ 3 * 4 + j ];
+//             dstPtr++;
+//         }
+//         m1Ptr += 4;
+//     }
+//     return dst;
+// }
 
-inline Mat4& Mat4::operator*=(const float rhs) 
-{
-    d_matrix[0][0] *= rhs; d_matrix[1][0] *= rhs; d_matrix[2][0] *= rhs; d_matrix[3][0] *= rhs;
-    d_matrix[0][1] *= rhs; d_matrix[1][1] *= rhs; d_matrix[2][1] *= rhs; d_matrix[3][1] *= rhs;
-    d_matrix[0][2] *= rhs; d_matrix[1][2] *= rhs; d_matrix[2][2] *= rhs; d_matrix[3][2] *= rhs;
-    d_matrix[0][3] *= rhs; d_matrix[1][3] *= rhs; d_matrix[2][3] *= rhs; d_matrix[3][3] *= rhs;
+// inline Mat4& Mat4::operator*=(const float rhs) 
+// {
+//     d_matrix[0][0] *= rhs; d_matrix[1][0] *= rhs; d_matrix[2][0] *= rhs; d_matrix[3][0] *= rhs;
+//     d_matrix[0][1] *= rhs; d_matrix[1][1] *= rhs; d_matrix[2][1] *= rhs; d_matrix[3][1] *= rhs;
+//     d_matrix[0][2] *= rhs; d_matrix[1][2] *= rhs; d_matrix[2][2] *= rhs; d_matrix[3][2] *= rhs;
+//     d_matrix[0][3] *= rhs; d_matrix[1][3] *= rhs; d_matrix[2][3] *= rhs; d_matrix[3][3] *= rhs;
     
-    return *this;
-}
+//     return *this;
+// }
 
-inline Mat4& Mat4::operator*=(const Mat4 &rhs)
-{
-     *this = (*this) * rhs;
-     return *this;
-}
+// inline Mat4& Mat4::operator*=(const Mat4 &rhs)
+// {
+//      *this = (*this) * rhs;
+//      return *this;
+// }
 
 // inline Mat4& Mat4::operator*=(const Quaternion& rhs)
 // {
@@ -108,9 +70,21 @@ inline Mat4& Mat4::operator*=(const Mat4 &rhs)
 
 inline float* Mat4::data()
 {
-    return d_matrix[0].data();
+    return &data[0];
 }
 
+
+
+// inline const Vec4 &Mat4::operator[](const int index) const
+// {
+//     // if (index < 0 || index > 4) {}
+//     return d_matrix[index];
+// }
+
+// inline Vec4 &Mat4::operator[](const int index)
+// {
+//     return d_matrix[index];
+// }
 
 
 // inline bool Mat4::operator==(const Mat4 &rhs) const 
@@ -219,31 +193,31 @@ inline float* Mat4::data()
 // }
 
 
-inline bool Mat4::compare(const Mat4 &rhs) const
-{
-    const float *ptr1, *ptr2;
-    ptr1 = reinterpret_cast<const float *>(d_matrix);
-    ptr2 = reinterpret_cast<const float *>(rhs.d_matrix);
-    for (int idx = 0; idx != 4 * 4; ++idx)
-    {
-        if ( ptr1[idx] != ptr2[idx] )
-        {
-            return false;
-        }
-    }
-    return true;
-}
+// inline bool Mat4::compare(const Mat4 &rhs) const
+// {
+//     const float *ptr1, *ptr2;
+//     ptr1 = reinterpret_cast<const float *>(d_matrix);
+//     ptr2 = reinterpret_cast<const float *>(rhs.d_matrix);
+//     for (int idx = 0; idx != 4 * 4; ++idx)
+//     {
+//         if ( ptr1[idx] != ptr2[idx] )
+//         {
+//             return false;
+//         }
+//     }
+//     return true;
+// }
 
-inline Vec3 operator*(const Vec3 lhs, const Mat4& rhs)
-{
-    return rhs * lhs; //matrix * vector3;
-}
+// inline Vec3 operator*(const Vec3 lhs, const Mat4& rhs)
+// {
+//     return rhs * lhs; //matrix * vector3;
+// }
 
 
-inline Mat4 operator*(const float lhs, const Mat4& rhs)
-{
-    return rhs * lhs; //matrix * float
-}
+// inline Mat4 operator*(const float lhs, const Mat4& rhs)
+// {
+//     return rhs * lhs; //matrix * float
+// }
 
           
 #endif

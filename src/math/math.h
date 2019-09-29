@@ -17,6 +17,8 @@ namespace math
     static inline const float SEC2MS = 1000.0f;
 
     static inline const float MS2SEC = 0.001f;
+
+    
 };
 
 inline float Math::invSqrt(const float x)

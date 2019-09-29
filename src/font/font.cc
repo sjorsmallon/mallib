@@ -101,6 +101,7 @@ std::map<char, Character>& font::characters() // does this constitute a font the
 	return characters;
 }
 
+
 font::gl_Objects& font::gl_objects()
 {
 	static gl_Objects objects;
@@ -117,11 +118,10 @@ void font::gl_text_mode()
 }
 
 
-
 void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32_t start_y, float scale, Vec3 color)//, Text_Effect effect)
 {
-	graphics::set_shader(graphics::Shader_Type::SHADER_TEXT);
-    
+    // set the text shader.
+	graphics::set_shader(graphics::Shader_Type::SHADER_TEXT); 
     font::gl_Objects& gl_font = font::gl_objects();
     
     glActiveTexture(GL_TEXTURE0);
@@ -141,12 +141,15 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
 									0.0f,  0.0f,  0.0f,  1};
 
 
-
 	//gl_text_mode?
-	glEnable(GL_BLEND);
+	 glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glViewport(0, 0, 1280, 1024);
     //@Todo:
+
+
+
+
     
     GLint success =       glGetUniformLocation(graphics::shaders().text_shader_program, "projection");    
     GLint color_success = glGetUniformLocation(graphics::shaders().text_shader_program, "text_color");
@@ -204,6 +207,7 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
     }
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
+    
 }
 
 
