@@ -237,27 +237,24 @@ static HWND create_window(HINSTANCE instance)
     WNDCLASS window_class = {};
     window_class.lpfnWndProc   = win32_main_window_callback; // application defined function. forward reference.
     window_class.hInstance     = instance;  // handle to application instance
-    // wc.hIcon          =         // handle to the class icon
-    //wc.hCursor         =         // handle to the cursor resource.
-    //wc.hBrush          =         // handle to the background brush (?)
 
     window_class.lpszClassName = CLASS_NAME; // string that identifies the window class. 
     RegisterClass(&window_class); //@Log: can this fail?
 
     // Create the window.
     HWND window = CreateWindowEx(
-        CS_OWNDC,                              // Optional window styles. 0 for standard, but CS_OWNDC for
-        CLASS_NAME,                     // Window class
-        L"game",            // Window text
-        WS_OVERLAPPEDWINDOW | WS_VISIBLE,            // Window style
-        // position (x, y) and size (x,y)
+        CS_OWNDC,   // Optional window styles. 0 for standard, but CS_OWNDC for
+        CLASS_NAME, // Window class
+        L"game",    // Window text
+        WS_OVERLAPPEDWINDOW | WS_VISIBLE, // Window style
+        // position (x, y) and size (x,y). we use the default.
         CW_USEDEFAULT,
         CW_USEDEFAULT, 
         CW_USEDEFAULT,
         CW_USEDEFAULT,
         NULL,       // Parent window    
         NULL,       // Menu
-        instance,  // Instance handle
+        instance,   // Instance handle
         NULL        // Additional application data
         );
 
@@ -306,7 +303,6 @@ int WINAPI wWinMain(HINSTANCE instance,
           SWP_NOMOVE
         );
 
-
         // start loading everything.
         game::init_everything();
 
@@ -328,10 +324,6 @@ int WINAPI wWinMain(HINSTANCE instance,
                 }
             }
             game::main_loop();
-
-            // glClearColor(1.0f, 0.5f, 0.5f, 1.0f);
-            // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            // SwapBuffers(graphics::device_context);
         }        	    
     }
  	
@@ -341,7 +333,7 @@ int WINAPI wWinMain(HINSTANCE instance,
 
 static void on_size_changed(HWND hwnd, UINT flag, const int width, const int height)
 {
-	// fmt::printf("Hello, %s!", "world");
+	fmt::print("on_size_changed is not yet implemented.\n");
 }
 
 static LRESULT CALLBACK win32_main_window_callback(HWND window,
@@ -432,11 +424,9 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window,
         	break;
         }
     }
-
-    return result;
     // this is for all messages that are not handled. the default is returned.
+    return result;
 }
-
 
 void toggle_fullscreen(HWND window_handle)
 {

@@ -110,6 +110,7 @@ void font::gl_text_mode()
 {
     // glEnable(GL_BLEND);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glViewport(0, 0, 1280, 1024);
 }
 
 
@@ -122,13 +123,12 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(gl_font.VAO);
 
-    float window_height = 1280.0f;
-    float window_width = 1024.0f;
+    auto settings  = graphics::window_settings();
     
-	float top   = window_height; // viewport 
+	float top   = settings.height; // viewport 
 	float bot   = 0.0f;
 	float left  = 0.0f;
-	float right = window_width; // viewport
+	float right = settings.width; // viewport
 	float near_  = 0.0f;
 	float far_   = 10.0f; // near and far are reserved by windows???
 
@@ -172,24 +172,24 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
     // Iterate through all characters
     for (auto& single_char: text)
     {
-    	//@Copy
-        Character char_glyph = character_map[single_char];
+        //@Note: what if the character is not found?
+        auto char_glyph = character_map[single_char]; //Character&?
 
         GLfloat xpos = start_x + char_glyph.bearing.x * scale;
         GLfloat ypos = start_y - (char_glyph.size.y - char_glyph.bearing.y) * scale;
 
-        GLfloat w = char_glyph.size.x * scale;
-        GLfloat h = char_glyph.size.y * scale;
+        GLfloat width = char_glyph.size.x * scale;
+        GLfloat height = char_glyph.size.y * scale;
         // Update VBO for each character
         GLfloat vertices[6][4] =
         {
-            { xpos,     ypos + h,   0.0, 0.0 },            
-            { xpos,     ypos,       0.0, 1.0 },
-            { xpos + w, ypos,       1.0, 1.0 },
+            { xpos,     ypos + height,   0.0, 0.0 },            
+            { xpos,          ypos,       0.0, 1.0 },
+            { xpos + width,  ypos,       1.0, 1.0 },
 
-            { xpos,     ypos + h,   0.0, 0.0 },
-            { xpos + w, ypos,       1.0, 1.0 },
-            { xpos + w, ypos + h,   1.0, 0.0 }           
+            { xpos,         ypos + height,   0.0, 0.0 },
+            { xpos + width,      ypos,       1.0, 1.0 },
+            { xpos + width, ypos + height,   1.0, 0.0 }           
         };
         // Render glyph texture over quad
         glBindTexture(GL_TEXTURE_2D, char_glyph.textureID);

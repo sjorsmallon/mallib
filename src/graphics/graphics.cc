@@ -46,6 +46,13 @@ graphics::Shaders& graphics::shaders()
     return shaders;
 }
 
+graphics::Window_Settings& graphics::window_settings()
+{
+    static Window_Settings settings;
+    return settings;
+}
+
+
 graphics::Win32_Context& graphics::global_Win32_context() //@cleanup: i don't like this.
 {
 	static Win32_Context context;

@@ -9,7 +9,6 @@
 // some operator overloading in order to facilitate 
 // many-used operations.
 // struct Vec3
-
 // {
 
 // }

@@ -22,7 +22,14 @@ namespace graphics
 		SHADER_BOMB
 	};
 
-	struct Shaders //@Noteshader_programs?
+	struct Window_Settings
+	{
+		float width;
+		float height;
+		bool v_sync;
+	}
+
+	struct Shaders //@Note: shader_programs?
 	{
 		uint32_t bomb;
 		uint32_t text;
@@ -38,6 +45,9 @@ namespace graphics
 	void get_shader_info(uint32_t program);
 
 	Shaders& shaders();
+	Window_Settings& window_settings();
+
+	
 	void set_shader(Shader_Type shader);
 	uint32_t load_compile_attach_shader(uint32_t program, const char* file_name);
 	uint32_t shader_type_from_extension(const std::string& filename);
@@ -45,6 +55,7 @@ namespace graphics
 	// text
 	void gl_text_mode();
 	void draw_text();
+
 
 
 

@@ -58,6 +58,11 @@ inline Mat4 mmat::mat4_identity()
          };
 }
 
+// inline void mmat::to_identity(Mat4& lhs)
+// {
+//    // nothing happens.
+// }
+
 inline Mat4 mmat::orthographic3D(const float left,
                            const float right,
                            const float top,
