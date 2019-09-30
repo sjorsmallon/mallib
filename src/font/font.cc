@@ -8,11 +8,8 @@
 #include "../graphics/graphics.h"
 
 #include "../vec2/vec2.h"
-
-
-// init_font ->
-// init_font_gl_objects
-// draw_text
+#include "../mat4/mat4.h"
+#include "../mmat/mmat.h"
 
 void font::init_font()
 {
@@ -25,6 +22,7 @@ void font::init_font()
 	}
 
 	FT_Face face;
+
 	if (FT_New_Face(ft, "../fonts/karminabold.otf", 0, &face))
 		fmt::print("new_face: failed to create new font face.");
 
@@ -74,7 +72,7 @@ void font::init_font()
 	FT_Done_Face(face);
 	FT_Done_FreeType(ft);
 
-	font::init_font_gl_objects();
+	// font::init_font_gl_objects();
 }
 
 void font::init_font_gl_objects()
@@ -92,9 +90,6 @@ void font::init_font_gl_objects()
 	glBindVertexArray(0);      
 }
 
-
-
-
 std::map<char, Character>& font::characters() // does this constitute a font then?
 {
 	static std::map<char, Character> characters;
@@ -102,7 +97,7 @@ std::map<char, Character>& font::characters() // does this constitute a font the
 }
 
 
-font::gl_Objects& font::gl_objects()
+font::gl_Objects& font::gl_objects() //@Note:VAO & VBO
 {
 	static gl_Objects objects;
 	return objects;
@@ -121,17 +116,19 @@ void font::gl_text_mode()
 void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32_t start_y, float scale, Vec3 color)//, Text_Effect effect)
 {
     // set the text shader.
-	graphics::set_shader(graphics::Shader_Type::SHADER_TEXT); 
+    graphics::set_shader(graphics::Shader_Type::SHADER_TEXT); 
     font::gl_Objects& gl_font = font::gl_objects();
     
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(gl_font.VAO);
 
+    float window_height = 1280.0f;
+    float window_width = 1024.0f;
     
-	float top   = 1280.0f;
+	float top   = window_height; // viewport 
 	float bot   = 0.0f;
 	float left  = 0.0f;
-	float right = 1024.0f;
+	float right = window_width; // viewport
 	float near_  = 0.0f;
 	float far_   = 10.0f; // near and far are reserved by windows???
 
@@ -140,20 +137,19 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
 									0.0f, 0.0f, (-2.0f / (far_ - near_)), -(far_ + near_ / far_ - near_),
 									0.0f,  0.0f,  0.0f,  1};
 
+    //@refactor: this projection matrix does not ever change.
+    // do we want to store this somewhere?
+    Mat4 projection_matrix = mmat:ortho(left, right, top, bot, near_, far_);
 
-	//gl_text_mode?
-	 glEnable(GL_BLEND);
+
+	//gl_text_mode? do we need viewport?
+	glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glViewport(0, 0, 1280, 1024);
-    //@Todo:
-
-
-
 
     
     GLint success =       glGetUniformLocation(graphics::shaders().text_shader_program, "projection");    
     GLint color_success = glGetUniformLocation(graphics::shaders().text_shader_program, "text_color");
-
     graphics::get_shader_info(graphics::shaders().text_shader_program);
     
     if (success == GL_INVALID_VALUE || success == GL_INVALID_OPERATION)
@@ -167,6 +163,7 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
     	graphics::get_shader_info(graphics::shaders().text_shader_program);
     	while(true) {}
     }
+
     glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text_shader_program, "projection"), 1, false, &projectionmatrix[0]);
 	glUniform3f(glGetUniformLocation(graphics::shaders().text_shader_program, "text_color"), color.x, color.y, color.z);
     
