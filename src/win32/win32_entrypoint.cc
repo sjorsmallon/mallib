@@ -62,6 +62,7 @@ static void redirect_output_to_console()
     {
         fatal_error("redirect_output: allocConsole failed.");
     }
+    // AttachConsole(ATTACH_PARENT_PROCESS);
 
     // Redirect CRT standard input, output and error handles to the console window.
     FILE * pNewStdout = nullptr;
@@ -273,6 +274,7 @@ int WINAPI wWinMain(HINSTANCE instance,
 {
     
     redirect_output_to_console(); // output redirection for a new console. This calls AllocConsole().
+
     // AttachConsole(-1); // attach to parent process
 
     HWND window = create_window(instance);
@@ -292,6 +294,9 @@ int WINAPI wWinMain(HINSTANCE instance,
         // change window size
         int width = 1280; // @hardcoded
         int height = 1024;
+        auto& settings = graphics::window_settings();
+        settings.width = width;
+        settings.height = height;
 
         SetWindowPos(
           window,
@@ -333,7 +338,7 @@ int WINAPI wWinMain(HINSTANCE instance,
 
 static void on_size_changed(HWND hwnd, UINT flag, const int width, const int height)
 {
-	fmt::print("on_size_changed is not yet implemented.\n");
+	// fmt::print("on_size_changed is not yet implemented.\n");
 }
 
 static LRESULT CALLBACK win32_main_window_callback(HWND window,

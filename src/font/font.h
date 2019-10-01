@@ -20,8 +20,8 @@ namespace font
 	struct Character
 	{
 		GLuint textureID;
-		Vec2 size;
-		Vec2 bearing;
+		Vec2i size;
+		Vec2i bearing;
 		GLuint advance;
 	};
 	

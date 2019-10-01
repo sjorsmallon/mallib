@@ -48,7 +48,7 @@ void game::main_loop()
     color.r = 1.0f;
     color.g = 0.0f;
     color.b = 0.0f;
-    float scale = 1.0f;
+    float scale = 2.0f;
     font::draw_text(text, start_x, start_y, scale, color);//, Text_Effect effect);
     
     // graphics::render_frame();

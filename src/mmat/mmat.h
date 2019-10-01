@@ -15,6 +15,7 @@ namespace mmat
 
     Mat4 translate(const Mat4& matrix, const Vec3& vector);
     Mat4 scale(const Mat4& matrix, const float scale_factor);
+    Mat4 scale(const float s);
     Mat4 rotate(const Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z); //expects identity
 
     void to_identity(Mat4 &matrix);
@@ -28,24 +29,24 @@ namespace mmat
     Mat4 view(const Vec3& eye, const Vec3& center, const Vec3& up);
     Mat4 look_at(const Vec3& eye, const Vec3& center, const Vec3& up);
 
-    Mat4 orthographic3D( const float left,
-                         const float right,
-                         const float top,
-                         const float bottom,
-                         const float z_near,
-                         const float z_far
-                        );
+    Mat4 ortho( const float left,
+                const float right,
+                const float top,
+                const float bottom,
+                const float z_near,
+                const float z_far
+              );
 
-}
+};
 
-inline mat4 mmat::scale(const float s)
+inline Mat4 mmat::scale(const float s)
 {
     return {
               s, 0, 0, 0,
               0, s, 0, 0,
               0, 0, s, 0,
               0, 0, 0, 1
-           }
+           };
 }
 
 inline Mat4 mmat::mat4_identity()
@@ -63,18 +64,19 @@ inline Mat4 mmat::mat4_identity()
 //    // nothing happens.
 // }
 
-inline Mat4 mmat::orthographic3D(const float left,
+inline Mat4 mmat::ortho(const float left,
                            const float right,
                            const float top,
-                           const float bottom,
+                           const float bot,
                            const float z_near,
                            const float z_far
                            )
 {
-    return mat4{2.0f / right - left, 0.0f, 0.0f, - (right + left / right - left),
+
+    return Mat4{2.0f / right - left, 0.0f, 0.0f, - (right + left / right - left),
                                     0.0f,  2.0f / top - bot, 0.0f, - ( top + bot / top - bot),
                                     0.0f, 0.0f, (-2.0f / (z_far - z_near)), -(z_far + z_near / z_far - z_near),
-                                    0.0f,  0.0f,  0.0f,  1};
+                                    0.0f,  0.0f,  0.0f,  1};  
 }
 
 

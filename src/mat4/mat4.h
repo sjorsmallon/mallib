@@ -68,10 +68,10 @@ struct Mat4
 
 
 
-inline float* Mat4::data()
-{
-    return &data[0];
-}
+// inline float* Mat4::data()
+// {
+//     return &data[0];
+// }
 
 
 

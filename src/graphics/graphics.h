@@ -27,7 +27,7 @@ namespace graphics
 		float width;
 		float height;
 		bool v_sync;
-	}
+	};
 
 	struct Shaders //@Note: shader_programs?
 	{

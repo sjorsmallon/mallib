@@ -14,22 +14,19 @@
 void font::init_font()
 {
 	FT_Library ft;
-
 	if (FT_Init_FreeType(&ft))
-	{
 		fmt::print("init_freetype: failed to init freetype.");
-		while(true){}
-	}
 
 	FT_Face face;
-
-	if (FT_New_Face(ft, "../fonts/karminabold.otf", 0, &face))
-		fmt::print("new_face: failed to create new font face.");
+	// if (FT_New_Face(ft, "../fonts/karminabold.otf", 0, &face))
+	// 	fmt::print("new_face: failed to create new font face.\n");
+	if (FT_New_Face(ft, "../fonts/opensans.ttf",0, &face))
+		fmt::print("new_face: failed to create new font face.\n");
 
 	FT_Set_Pixel_Sizes(face, 0, 48);
-
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction?
 
+	// create character glyphs and store them in a map.
 	for (uint8_t char_index = 0; char_index != 128;  ++char_index)
 	{
 		if (FT_Load_Char(face, char_index, FT_LOAD_RENDER))
@@ -42,17 +39,17 @@ void font::init_font()
 		glGenTextures(1, &texture);
 		glBindTexture(GL_TEXTURE_2D, texture);
 		glTexImage2D(
-			GL_TEXTURE_2D,
-			0,
-			GL_RED,
-			face->glyph->bitmap.width,
-			face->glyph->bitmap.rows,
-			0,
-			GL_RED,
-			GL_UNSIGNED_BYTE,
-			face->glyph->bitmap.buffer
-			);
-		
+        GL_TEXTURE_2D,
+        0,
+        GL_RED,
+        face->glyph->bitmap.width,
+        face->glyph->bitmap.rows,
+        0,
+        GL_RED,
+        GL_UNSIGNED_BYTE,
+        face->glyph->bitmap.buffer
+    	);
+
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -72,13 +69,12 @@ void font::init_font()
 	FT_Done_Face(face);
 	FT_Done_FreeType(ft);
 
-	// font::init_font_gl_objects();
+	font::init_font_gl_objects();
 }
 
 void font::init_font_gl_objects()
 {
 	font::gl_Objects& objects = font::gl_objects();
-
 	glGenVertexArrays(1, &objects.VAO);
 	glGenBuffers(1, &objects.VBO);
 	glBindVertexArray(objects.VAO);
@@ -90,9 +86,9 @@ void font::init_font_gl_objects()
 	glBindVertexArray(0);      
 }
 
-std::map<char, Character>& font::characters() // does this constitute a font then?
+std::map<char, font::Character>& font::characters() // does this constitute a font then?
 {
-	static std::map<char, Character> characters;
+	static std::map<char, font::Character> characters;
 	return characters;
 }
 
@@ -103,82 +99,81 @@ font::gl_Objects& font::gl_objects() //@Note:VAO & VBO
 	return objects;
 }
 
-
-
-
 void font::gl_text_mode()
 {
     // glEnable(GL_BLEND);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glViewport(0, 0, 1280, 1024);
+    // glViewport(0, 0, 1280, 1024);
 }
-
 
 void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32_t start_y, float scale, Vec3 color)//, Text_Effect effect)
 {
-    // set the text shader.
+	//gl_text_mode? do we need viewport?
+	// glDisable(GL_DEPTH_TEST); // need to re-enable?
+	glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    auto settings  = graphics::window_settings();
+    glViewport(0, 0,static_cast<int>(settings.width),static_cast<int>(settings.height));
     graphics::set_shader(graphics::Shader_Type::SHADER_TEXT); 
+
     font::gl_Objects& gl_font = font::gl_objects();
     
     glActiveTexture(GL_TEXTURE0);
-    glBindVertexArray(gl_font.VAO);
+    glBindVertexArray(gl_font.VAO);   
 
-    auto settings  = graphics::window_settings();
-    
 	float top   = settings.height; // viewport 
 	float bot   = 0.0f;
 	float left  = 0.0f;
 	float right = settings.width; // viewport
 	float near_  = 0.0f;
-	float far_   = 10.0f; // near and far are reserved by windows???
+	float far_   = 1.0f; // near and far are reserved by windows???
 
-	float projectionmatrix[16] =   {2.0f / right - left, 0.0f, 0.0f, - (right + left / right - left),
-								    0.0f,  2.0f / top - bot, 0.0f, - ( top + bot / top - bot),
-									0.0f, 0.0f, (-2.0f / (far_ - near_)), -(far_ + near_ / far_ - near_),
-									0.0f,  0.0f,  0.0f,  1};
+	// this should be transposed, but we need to decide how we do matrices.
+	float projectionmatrix[16] =   {2.0f / (right - left),   0.0f,                 0.0f,                 - (right + left) / (right - left),
+								    0.0f,            2.0f / (top - bot),           0.0f,                   - (top + bot) / (top - bot),
+									0.0f,                   0.0f,          (-2.0f / (far_ - near_)),     -(far_ + near_) / (far_ - near_),
+									0.0f,                   0.0f,                   0.0f,                    1};
 
     //@refactor: this projection matrix does not ever change.
     // do we want to store this somewhere?
-    Mat4 projection_matrix = mmat:ortho(left, right, top, bot, near_, far_);
-
-
-	//gl_text_mode? do we need viewport?
-	glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glViewport(0, 0, 1280, 1024);
+    Mat4 projection_matrix = mmat::ortho(left, right, top, bot, near_, far_);
 
     
-    GLint success =       glGetUniformLocation(graphics::shaders().text_shader_program, "projection");    
-    GLint color_success = glGetUniformLocation(graphics::shaders().text_shader_program, "text_color");
-    graphics::get_shader_info(graphics::shaders().text_shader_program);
+    GLint success =       glGetUniformLocation(graphics::shaders().text, "projection");    
+    GLint color_success = glGetUniformLocation(graphics::shaders().text, "text_color");
+    graphics::get_shader_info(graphics::shaders().text);
     
     if (success == GL_INVALID_VALUE || success == GL_INVALID_OPERATION)
-    {
-    	fmt::print("glGetUniformLocation doesn't work.");
-    }
+    	fmt::print("glGetUniformLocation for projection matrix doesn't work.\n");
     else
     {
-    	fmt::print("matrix succes is {}", success);
-    	fmt::print("color_succes is {}", color_success);
-    	graphics::get_shader_info(graphics::shaders().text_shader_program);
-    	while(true) {}
+    	fmt::print("matrix success is {}\n", success);
+    	fmt::print("color_success is {}\n", color_success);
     }
 
-    glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text_shader_program, "projection"), 1, false, &projectionmatrix[0]);
-	glUniform3f(glGetUniformLocation(graphics::shaders().text_shader_program, "text_color"), color.x, color.y, color.z);
+    glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text, "projection"), 1, true, &projectionmatrix[0]);
+	glUniform3f(glGetUniformLocation(graphics::shaders().text, "text_color"), color.x, color.y, color.z);
     
-	auto character_map = font::characters();
+	auto& character_map = font::characters();
 	
     // Iterate through all characters
     for (auto& single_char: text)
     {
+
         //@Note: what if the character is not found?
-        auto char_glyph = character_map[single_char]; //Character&?
+        auto search = character_map.find(single_char);
+        if (search != character_map.end())
+        	fmt::print("character found. character is {}\n", single_char);
+		else
+        	fmt::print("single_char not found. character is {}\n", single_char);
+
+        auto& char_glyph = character_map[single_char]; //Character&?
 
         GLfloat xpos = start_x + char_glyph.bearing.x * scale;
         GLfloat ypos = start_y - (char_glyph.size.y - char_glyph.bearing.y) * scale;
 
-        GLfloat width = char_glyph.size.x * scale;
+        GLfloat width  = char_glyph.size.x * scale;
         GLfloat height = char_glyph.size.y * scale;
         // Update VBO for each character
         GLfloat vertices[6][4] =
@@ -193,9 +188,12 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
         };
         // Render glyph texture over quad
         glBindTexture(GL_TEXTURE_2D, char_glyph.textureID);
+    	glUniform1i(glGetUniformLocation(graphics::shaders().text, "text", 0));
+
         // Update content of VBO memory
         glBindBuffer(GL_ARRAY_BUFFER, gl_font.VBO);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); 
+
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         // Render quad
         glDrawArrays(GL_TRIANGLES, 0, 6);
