@@ -1,5 +1,6 @@
 #ifndef INCLUDED_FONT_
 #define INCLUDED_FONT_
+
 #include <ft2build.h>
 #include FT_FREETYPE_H 
 
@@ -12,6 +13,7 @@
 //@Todo: implement a font selector for draw_text?
 // Character is now a set of glyphs for one particular font.
 
+#include <string> // for testing.
 
 
 
@@ -45,6 +47,11 @@ namespace font
 				   float scale,
 				   Vec3 color);
 					   // Text_Effect effect);
+
+	// stuff to be removed after testing:
+	void RenderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, Vec3 color);
+	void startup();
+
 
 
 	

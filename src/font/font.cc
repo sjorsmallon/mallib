@@ -11,6 +11,7 @@
 #include "../mat4/mat4.h"
 #include "../mmat/mmat.h"
 
+
 void font::init_font()
 {
 	FT_Library ft;
@@ -18,10 +19,15 @@ void font::init_font()
 		fmt::print("init_freetype: failed to init freetype.");
 
 	FT_Face face;
+
 	// if (FT_New_Face(ft, "../fonts/karminabold.otf", 0, &face))
 	// 	fmt::print("new_face: failed to create new font face.\n");
-	if (FT_New_Face(ft, "../fonts/opensans.ttf",0, &face))
+
+	if (FT_New_Face(ft, "../fonts/arial.ttf", 0, &face))
 		fmt::print("new_face: failed to create new font face.\n");
+
+	// if (FT_New_Face(ft, "../fonts/opensans.ttf",0, &face))
+		// fmt::print("new_face: failed to create new font face.\n");
 
 	FT_Set_Pixel_Sizes(face, 0, 48);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction?
@@ -50,6 +56,7 @@ void font::init_font()
         face->glyph->bitmap.buffer
     	);
 
+		fmt::print("created Gluint texture: {}", texture);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -64,7 +71,7 @@ void font::init_font()
 
 		font::characters().insert(std::pair<GLchar, Character>(char_index, character_glyph));
 	}
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_2D, 0); // this is the texture ID. we should store this as well.
 
 	FT_Done_Face(face);
 	FT_Done_FreeType(ft);
@@ -142,6 +149,7 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
     
     GLint success =       glGetUniformLocation(graphics::shaders().text, "projection");    
     GLint color_success = glGetUniformLocation(graphics::shaders().text, "text_color");
+    GLint text_success  = glGetUniformLocation(graphics::shaders().text, "text");
     graphics::get_shader_info(graphics::shaders().text);
     
     if (success == GL_INVALID_VALUE || success == GL_INVALID_OPERATION)
@@ -149,12 +157,13 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
     else
     {
     	fmt::print("matrix success is {}\n", success);
+    	fmt::print("text success is {}\n", success);
     	fmt::print("color_success is {}\n", color_success);
     }
 
     glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text, "projection"), 1, true, &projectionmatrix[0]);
 	glUniform3f(glGetUniformLocation(graphics::shaders().text, "text_color"), color.x, color.y, color.z);
-    
+	    
 	auto& character_map = font::characters();
 	
     // Iterate through all characters
@@ -188,7 +197,7 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
         };
         // Render glyph texture over quad
         glBindTexture(GL_TEXTURE_2D, char_glyph.textureID);
-    	glUniform1i(glGetUniformLocation(graphics::shaders().text, "text", 0));
+    	glUniform1i(glGetUniformLocation(graphics::shaders().text, "text"), 0);
 
         // Update content of VBO memory
         glBindBuffer(GL_ARRAY_BUFFER, gl_font.VBO);

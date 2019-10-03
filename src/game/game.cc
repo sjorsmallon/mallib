@@ -40,7 +40,9 @@ void game::shutdown()
 
 void game::main_loop()
 {
+
     graphics::clear_buffers();
+    
     std::string text = "sample text";
     uint32_t start_x = 500;
     uint32_t start_y = 500;
@@ -49,8 +51,11 @@ void game::main_loop()
     color.g = 0.0f;
     color.b = 0.0f;
     float scale = 2.0f;
+
     font::draw_text(text, start_x, start_y, scale, color);//, Text_Effect effect);
     
+    // font::startup();
+
     // graphics::render_frame();
     // if (game::global_program_mode() == Program_Mode::GAME)
     // {
@@ -63,7 +68,7 @@ void game::main_loop()
     // }
     // update_audio();
 
-    graphics::render_frame();
+    // graphics::render_frame();
 
   
 }
