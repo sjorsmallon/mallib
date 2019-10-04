@@ -15,11 +15,6 @@ void font::startup()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     auto settings  = graphics::window_settings();
     glViewport(0, 0,static_cast<int>(settings.width),static_cast<int>(settings.height));
-    // Compile and setup the shader
-    // Shader shader("shaders/text.vs", "shaders/text.frag");
-    // glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(WIDTH), 0.0f, static_cast<GLfloat>(HEIGHT));
-   
-    // shader.Use();
 
 	float top   = settings.height; // viewport 
 	float bot   = 0.0f;
@@ -27,6 +22,7 @@ void font::startup()
 	float right = settings.width; // viewport
 	float near_  = 0.0f;
 	float far_   = 1.0f; // near and far are reserved by windows???
+	
     glUseProgram(graphics::shaders().text);
 	float projectionmatrix[16] =   {2.0f / (right - left),   0.0f,                 0.0f,                 - (right + left) / (right - left),
 								    0.0f,            2.0f / (top - bot),           0.0f,                   - (top + bot) / (top - bot),

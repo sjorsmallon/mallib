@@ -43,18 +43,23 @@ void game::main_loop()
 
     graphics::clear_buffers();
     
+    
     std::string text = "sample text";
     uint32_t start_x = 500;
     uint32_t start_y = 500;
     Vec3 color;
-    color.r = 1.0f;
-    color.g = 0.0f;
-    color.b = 0.0f;
-    float scale = 2.0f;
+    color.r = 0.5f;
+    color.g = 0.8f;
+    color.b = 0.7f;
+    float scale = 1.0f;
 
     font::draw_text(text, start_x, start_y, scale, color);//, Text_Effect effect);
     
-    // font::startup();
+
+    text = "some other text";
+    font::draw_text(text, 20, 20, 2.0f, {0.3f, 0.2f, 0.4f});
+
+    graphics::swap_buffers();
 
     // graphics::render_frame();
     // if (game::global_program_mode() == Program_Mode::GAME)

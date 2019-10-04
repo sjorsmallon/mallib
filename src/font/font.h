@@ -4,18 +4,16 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H 
 
-#include <map>
+#include <array> 
+#include <string> // for testing.
 
 #include "../graphics/gl_lite.h"
 #include "../vec2/vec2.h"
 #include "../vec3/vec3.h"
 
-//@Todo: implement a font selector for draw_text?
-// Character is now a set of glyphs for one particular font.
-
-#include <string> // for testing.
-
-
+//@Todo: for now, only one font lives in here.
+// provide the user a pointer that they can set 
+// to some particular font for all these functions?
 
 namespace font
 {
@@ -35,7 +33,9 @@ namespace font
 
 	gl_Objects& gl_objects();
 
-	std::map<char, Character>& characters();
+	// std::map<char, Character>& characters();
+	// std::vector<Character>& characters();
+	std::array<Character, 128>& characters();
 
 	void init_font();
 	void init_font_gl_objects();
@@ -49,12 +49,8 @@ namespace font
 					   // Text_Effect effect);
 
 	// stuff to be removed after testing:
-	void RenderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, Vec3 color);
-	void startup();
-
-
-
-	
+	// void RenderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, Vec3 color);
+	// void startup();
 	
 };
 

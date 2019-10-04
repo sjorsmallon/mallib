@@ -12,6 +12,32 @@
 #include "../mmat/mmat.h"
 
 
+// std::map<char, font::Character>& font::characters() // does this constitute a font then?
+// {
+// 	static std::map<char, font::Character> characters;
+// 	return characters;
+// }
+// std::vector<font::Character>& font::characters()
+// {
+// 	static std::vector<font::Character> characters(128);
+// 	return characters;
+// }
+
+
+std::array<font::Character, 128>& font::characters()
+{
+	static std::array<font::Character,128> characters;
+	return characters;
+}
+
+font::gl_Objects& font::gl_objects() //@Note:VAO & VBO
+{
+	static gl_Objects objects;
+	return objects;
+}
+
+
+
 void font::init_font()
 {
 	FT_Library ft;
@@ -29,10 +55,12 @@ void font::init_font()
 	// if (FT_New_Face(ft, "../fonts/opensans.ttf",0, &face))
 		// fmt::print("new_face: failed to create new font face.\n");
 
+	// size to load glyphs as
 	FT_Set_Pixel_Sizes(face, 0, 48);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction?
+	// disable byte-alignment restriction?
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
 
-	// create character glyphs and store them in a map.
+	// create character glyphs and store them in the array.
 	for (uint8_t char_index = 0; char_index != 128;  ++char_index)
 	{
 		if (FT_Load_Char(face, char_index, FT_LOAD_RENDER))
@@ -69,7 +97,8 @@ void font::init_font()
 				 				face->glyph->advance.x
 				 			  };
 
-		font::characters().insert(std::pair<GLchar, Character>(char_index, character_glyph));
+		// font::characters().insert(std::pair<GLchar, Character>(char_index, character_glyph));
+		font::characters()[char_index] = character_glyph;
 	}
 	glBindTexture(GL_TEXTURE_2D, 0); // this is the texture ID. we should store this as well.
 
@@ -82,6 +111,7 @@ void font::init_font()
 void font::init_font_gl_objects()
 {
 	font::gl_Objects& objects = font::gl_objects();
+
 	glGenVertexArrays(1, &objects.VAO);
 	glGenBuffers(1, &objects.VBO);
 	glBindVertexArray(objects.VAO);
@@ -93,41 +123,27 @@ void font::init_font_gl_objects()
 	glBindVertexArray(0);      
 }
 
-std::map<char, font::Character>& font::characters() // does this constitute a font then?
-{
-	static std::map<char, font::Character> characters;
-	return characters;
-}
-
-
-font::gl_Objects& font::gl_objects() //@Note:VAO & VBO
-{
-	static gl_Objects objects;
-	return objects;
-}
-
 void font::gl_text_mode()
 {
+	//@Note: this now happens in the init_font function.
     // glEnable(GL_BLEND);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    // glViewport(0, 0, 1280, 1024);
+    graphics::set_shader(graphics::Shader_Type::SHADER_TEXT); 
 }
 
 void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32_t start_y, float scale, Vec3 color)//, Text_Effect effect)
 {
-	//gl_text_mode? do we need viewport?
-	// glDisable(GL_DEPTH_TEST); // need to re-enable?
-	glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	font::gl_text_mode();
+    font::gl_Objects& gl_font = font::gl_objects();
+
+	glUniform3f(glGetUniformLocation(graphics::shaders().text, "text_color"), color.x, color.y, color.z);
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(gl_font.VAO);   
+    //@Note: this should match the Active Texture (i.e. GL_TEXTURE0). we're lucky that it does right now.
+    //glUniform1i(glGetUniformLocation(graphics::shaders().text, "text"), 0);
 
     auto settings  = graphics::window_settings();
     glViewport(0, 0,static_cast<int>(settings.width),static_cast<int>(settings.height));
-    graphics::set_shader(graphics::Shader_Type::SHADER_TEXT); 
-
-    font::gl_Objects& gl_font = font::gl_objects();
-    
-    glActiveTexture(GL_TEXTURE0);
-    glBindVertexArray(gl_font.VAO);   
 
 	float top   = settings.height; // viewport 
 	float bot   = 0.0f;
@@ -145,37 +161,18 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
     //@refactor: this projection matrix does not ever change.
     // do we want to store this somewhere?
     Mat4 projection_matrix = mmat::ortho(left, right, top, bot, near_, far_);
-
-    
-    GLint success =       glGetUniformLocation(graphics::shaders().text, "projection");    
-    GLint color_success = glGetUniformLocation(graphics::shaders().text, "text_color");
-    GLint text_success  = glGetUniformLocation(graphics::shaders().text, "text");
-    graphics::get_shader_info(graphics::shaders().text);
-    
-    if (success == GL_INVALID_VALUE || success == GL_INVALID_OPERATION)
-    	fmt::print("glGetUniformLocation for projection matrix doesn't work.\n");
-    else
-    {
-    	fmt::print("matrix success is {}\n", success);
-    	fmt::print("text success is {}\n", success);
-    	fmt::print("color_success is {}\n", color_success);
-    }
-
     glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text, "projection"), 1, true, &projectionmatrix[0]);
-	glUniform3f(glGetUniformLocation(graphics::shaders().text, "text_color"), color.x, color.y, color.z);
-	    
-	auto& character_map = font::characters();
+    
+	const auto& character_map = font::characters();
 	
     // Iterate through all characters
-    for (auto& single_char: text)
+    for (const auto& single_char: text)
     {
 
-        //@Note: what if the character is not found?
-        auto search = character_map.find(single_char);
-        if (search != character_map.end())
-        	fmt::print("character found. character is {}\n", single_char);
-		else
-        	fmt::print("single_char not found. character is {}\n", single_char);
+        //@Log: character_not_found_error?
+        // auto search = character_map.find(single_char);
+        // if (search == character_map.end())
+        // 	fmt::print("single_char not found. character is {}\n", single_char);
 
         auto& char_glyph = character_map[single_char]; //Character&?
 
@@ -197,7 +194,6 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
         };
         // Render glyph texture over quad
         glBindTexture(GL_TEXTURE_2D, char_glyph.textureID);
-    	glUniform1i(glGetUniformLocation(graphics::shaders().text, "text"), 0);
 
         // Update content of VBO memory
         glBindBuffer(GL_ARRAY_BUFFER, gl_font.VBO);
@@ -210,8 +206,7 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
         start_x += (char_glyph.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
     }
     glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    
+    glBindTexture(GL_TEXTURE_2D, 0);   
 }
 
 
