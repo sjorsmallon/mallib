@@ -15,3 +15,8 @@ void sound::perform_shutdown()
 {
 	sound::soloud().deinit();
 }
+
+void sound::update_audio()
+{
+	// whatever.
+}

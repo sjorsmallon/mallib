@@ -6,6 +6,7 @@
 
 #include <array> 
 #include <string> // for testing.
+#include <vector>
 
 #include "../graphics/gl_lite.h"
 #include "../vec2/vec2.h"
@@ -48,10 +49,9 @@ namespace font
 				   Vec3 color);
 					   // Text_Effect effect);
 
-	// stuff to be removed after testing:
-	// void RenderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, Vec3 color);
-	// void startup();
-	
+
+	void generate_font_at_size(std::vector<Character>& target, std::string& filename, uint32_t pixel_size);
+
 };
 
 #endif

@@ -4,24 +4,13 @@
 #include FT_FREETYPE_H 
 
 #include <fmt/core.h>
+
 #include "../graphics/gl_lite.h"
 #include "../graphics/graphics.h"
 
 #include "../vec2/vec2.h"
 #include "../mat4/mat4.h"
 #include "../mmat/mmat.h"
-
-
-// std::map<char, font::Character>& font::characters() // does this constitute a font then?
-// {
-//  static std::map<char, font::Character> characters;
-//  return characters;
-// }
-// std::vector<font::Character>& font::characters()
-// {
-//  static std::vector<font::Character> characters(128);
-//  return characters;
-// }
 
 
 std::array<font::Character, 128>& font::characters()
@@ -37,7 +26,7 @@ font::gl_Objects& font::gl_objects() //@Note:VAO & VBO
 }
 
 
-
+//@Todo: parameterize font name, font size. we also need to determine where the fonts are stored.
 void font::init_font()
 {
     FT_Library ft;
@@ -46,14 +35,8 @@ void font::init_font()
 
     FT_Face face;
 
-    // if (FT_New_Face(ft, "../fonts/karminabold.otf", 0, &face))
-    //  fmt::print("new_face: failed to create new font face.\n");
-
     if (FT_New_Face(ft, "../fonts/arial.ttf", 0, &face))
         fmt::print("new_face: failed to create new font face.\n");
-
-    // if (FT_New_Face(ft, "../fonts/opensans.ttf",0, &face))
-        // fmt::print("new_face: failed to create new font face.\n");
 
     // size to load glyphs as
     FT_Set_Pixel_Sizes(face, 0, 48);
@@ -84,7 +67,6 @@ void font::init_font()
         face->glyph->bitmap.buffer
         );
 
-        fmt::print("created Gluint texture: {}", texture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -97,11 +79,12 @@ void font::init_font()
             face->glyph->advance.x
         };
 
-        // font::characters().insert(std::pair<GLchar, Character>(char_index, character_glyph));
         font::characters()[char_index] = character_glyph;
     }
-    glBindTexture(GL_TEXTURE_2D, 0); // this is the texture ID. we should store this as well.
+    //@NOTE: we need to unbind textures after binding them.
+    glBindTexture(GL_TEXTURE_2D, 0); 
 
+    // free all FreeType resources.
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
 
@@ -139,7 +122,7 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(gl_font.VAO);   
     //@Note: this should match the Active Texture (i.e. GL_TEXTURE0). we're lucky that it does right now.
-    //glUniform1i(glGetUniformLocation(graphics::shaders().text, "text"), 0);
+    glUniform1i(glGetUniformLocation(graphics::shaders().text, "text"), 0);
 
     auto settings  = graphics::window_settings();
     glViewport(0, 0,static_cast<int>(settings.width),static_cast<int>(settings.height));
@@ -168,11 +151,6 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
     for (const auto& single_char: text)
     {
 
-        //@Log: character_not_found_error?
-        // auto search = character_map.find(single_char);
-        // if (search == character_map.end())
-        //  fmt::print("single_char not found. character is {}\n", single_char);
-
         auto& char_glyph = character_map[single_char]; //Character&?
 
         GLfloat xpos = start_x + char_glyph.bearing.x * scale;
@@ -180,6 +158,7 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
 
         GLfloat width  = char_glyph.size.x * scale;
         GLfloat height = char_glyph.size.y * scale;
+
         // Update VBO for each character
         GLfloat vertices[6][4] =
         {
@@ -209,3 +188,66 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
 }
 
 
+
+
+
+void font::generate_font_at_size(std::vector<Character>& target, std::string& font_name, uint32_t pixel_size)
+{
+      FT_Library ft;
+    if (FT_Init_FreeType(&ft))
+        fmt::print("generate_font_at_size: failed to init freetype.");
+
+    FT_Face face;
+
+    if (FT_New_Face(ft, font_name.c_str(), 0, &face))
+        fmt::print("generate_font_at_size: failed to create new font face.\n");
+
+    FT_Set_Pixel_Sizes(face, 0, pixel_size);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
+
+    // create character glyphs and store them in the array.
+    for (uint8_t char_index = 0; char_index != 128;  ++char_index)
+    {
+        if (FT_Load_Char(face, char_index, FT_LOAD_RENDER))
+        {
+            fmt::print("error: freetype: failed to load glyph %", char_index);
+            continue;
+        }
+
+        GLuint texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RED,
+        face->glyph->bitmap.width,
+        face->glyph->bitmap.rows,
+        0,
+        GL_RED,
+        GL_UNSIGNED_BYTE,
+        face->glyph->bitmap.buffer
+        );
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        Character character_glyph = {
+            texture,
+            {face->glyph->bitmap.width, face->glyph->bitmap.rows},
+            {face->glyph->bitmap_left, face->glyph->bitmap_top},
+            face->glyph->advance.x
+        };
+
+        target.push_back(character_glyph);
+    }
+    //@NOTE: we need to unbind textures after binding them.
+    glBindTexture(GL_TEXTURE_2D, 0); 
+
+    // free all FreeType resources.
+    FT_Done_Face(face);
+    FT_Done_FreeType(ft);
+}

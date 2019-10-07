@@ -2,16 +2,19 @@
 #define INCLUDED_GAME_
 
 
-enum class Program_Mode
-{
-	GAME,
-	EDITOR,
-	PAUSED,
-	MENU
-};
 
 namespace game
 {
+
+	enum class Program_Mode
+	{
+		GAME,
+		EDITOR,
+		PAUSED,
+		MENU
+	};
+
+	Program_Mode& global_program_mode();
 
 	void load_audio();
 	void load_shaders();

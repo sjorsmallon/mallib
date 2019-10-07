@@ -37,7 +37,7 @@ namespace graphics
 		uint32_t default;
 	};
 
-	void init_opengl(); //@Note: does that also mean to load all the shaders etc?
+	void init_graphics(); //@Note: does that also mean to load all the shaders etc?
 	void render_frame();
 	void draw_game_3d();
 	void clear_buffers();

@@ -17,7 +17,7 @@ namespace sound
 
 	void init_sound();
 	void perform_shutdown();
-
+	void update_audio(); 
 }
 
 

@@ -7,7 +7,14 @@
 #include "../file/file.h"
 #include "../font/font.h"
 #include "../vec3/vec3.h"
+#include "../menu/menu.h"
 
+
+game::Program_Mode& game::global_program_mode()
+{
+    static Program_Mode mode;
+    return mode;
+}
 
 void game::init_font()
 {
@@ -21,15 +28,19 @@ void game::init_audio()
 
 void game::init_graphics()
 {
-    graphics::init_opengl();
+    graphics::init_graphics();
 }
-
 
 void game::init_everything()
 {
     game::init_audio();
     game::init_graphics();
     game::init_font();
+
+    // set some modes?
+    auto& program_mode = game::global_program_mode();
+    program_mode = Program_Mode::MENU;
+
     graphics::clear_buffers();
 }
 
@@ -43,22 +54,18 @@ void game::main_loop()
 
     graphics::clear_buffers();
     
-    
-    std::string text = "sample text";
-    uint32_t start_x = 500;
-    uint32_t start_y = 500;
-    Vec3 color;
-    color.r = 0.5f;
-    color.g = 0.8f;
-    color.b = 0.7f;
-    float scale = 1.0f;
+    if (game::global_program_mode() == Program_Mode::GAME)
+    {
+        // simulate_gameplay();
+        // update_game_camera();
+    }
+    else if (game::global_program_mode() == Program_Mode::MENU)
+    {
+        menu::draw_menu();
+    }
+    sound::update_audio();
 
-    font::draw_text(text, start_x, start_y, scale, color);//, Text_Effect effect);
-    
-
-    text = "some other text";
-    font::draw_text(text, 20, 20, 2.0f, {0.3f, 0.2f, 0.4f});
-
+    graphics::render_frame(); 
     graphics::swap_buffers();
 
     // graphics::render_frame();
@@ -73,7 +80,6 @@ void game::main_loop()
     // }
     // update_audio();
 
-    // graphics::render_frame();
 
   
 }

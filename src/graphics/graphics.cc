@@ -14,7 +14,7 @@
 #include "../file/file.h"
 
 
-void graphics::init_opengl()
+void graphics::init_graphics()
 { 
     gl_lite_init();
     glEnable(GL_CULL_FACE);
@@ -101,7 +101,6 @@ void graphics::clear_buffers()
 void graphics::render_frame()
 {
     graphics::draw_game_3d();
-    graphics::swap_buffers();
 }
 
 void graphics::swap_buffers()
