@@ -32,6 +32,11 @@ namespace font
 		GLuint VBO;
 	};
 
+	struct Font
+	{
+		std::vector<Character> characters;
+	};
+
 	gl_Objects& gl_objects();
 
 	// std::map<char, Character>& characters();
@@ -41,7 +46,7 @@ namespace font
 	void init_font();
 	void init_font_gl_objects();
 	void gl_text_mode();
-	void draw_text(std::string& text,
+	void draw_text(std::string text,
 				   // Font font,
 				   uint32_t start_x,
 				   uint32_t start_y,
@@ -49,6 +54,7 @@ namespace font
 				   Vec3 color);
 					   // Text_Effect effect);
 
+	uint32_t get_string_width_in_pixels(Font& font,std::string text); // font effect?
 
 	void generate_font_at_size(std::vector<Character>& target, std::string& filename, uint32_t pixel_size);
 

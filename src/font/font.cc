@@ -113,7 +113,7 @@ void font::gl_text_mode()
     graphics::set_shader(graphics::Shader_Type::SHADER_TEXT); 
 }
 
-void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32_t start_y, float scale, Vec3 color)//, Text_Effect effect)
+void font::draw_text(std::string text, /*Font font, */ uint32_t start_x, uint32_t start_y, float scale, Vec3 color)//, Text_Effect effect)
 {
     font::gl_text_mode();
     font::gl_Objects& gl_font = font::gl_objects();
@@ -145,13 +145,13 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
     Mat4 projection_matrix = mmat::ortho(left, right, top, bot, near_, far_);
     glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text, "projection"), 1, true, &projectionmatrix[0]);
     
-    const auto& character_map = font::characters();
+    const auto& glyph_array = font::characters();
     
     // Iterate through all characters
     for (const auto& single_char: text)
     {
 
-        auto& char_glyph = character_map[single_char]; //Character&?
+        const auto& char_glyph = glyph_array[single_char]; //Character&?
 
         GLfloat xpos = start_x + char_glyph.bearing.x * scale;
         GLfloat ypos = start_y - (char_glyph.size.y - char_glyph.bearing.y) * scale;
@@ -189,21 +189,17 @@ void font::draw_text(std::string& text, /*Font font, */ uint32_t start_x, uint32
 
 
 
-
-
 void font::generate_font_at_size(std::vector<Character>& target, std::string& font_name, uint32_t pixel_size)
 {
-      FT_Library ft;
+    FT_Library ft;
     if (FT_Init_FreeType(&ft))
         fmt::print("generate_font_at_size: failed to init freetype.");
 
     FT_Face face;
-
     if (FT_New_Face(ft, font_name.c_str(), 0, &face))
         fmt::print("generate_font_at_size: failed to create new font face.\n");
 
     FT_Set_Pixel_Sizes(face, 0, pixel_size);
-
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
 
     // create character glyphs and store them in the array.
