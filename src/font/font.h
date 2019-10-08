@@ -18,12 +18,24 @@
 
 namespace font
 {
+
 	struct Character
 	{
 		GLuint textureID;
 		Vec2i size;
 		Vec2i bearing;
 		GLuint advance;
+	};
+
+	struct Font
+	{
+		std::vector<Character> characters;
+		Font() = default;
+		~Font()
+		{
+			for(const auto& character: characters)
+				glDeleteTextures(1, &character.textureID);
+		}
 	};
 	
 	struct gl_Objects
@@ -32,10 +44,6 @@ namespace font
 		GLuint VBO;
 	};
 
-	struct Font
-	{
-		std::vector<Character> characters;
-	};
 
 	gl_Objects& gl_objects();
 

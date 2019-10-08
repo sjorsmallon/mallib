@@ -8,6 +8,14 @@ namespace globals
 	const static inline std::string sound_folder = "../sounds/";
 	const static inline std::string texture_folder = " ../textures/";
 
+	struct Campaign_State
+	{
+		uint32_t current_level;
+		uint32_t master_volume;
+		uint32_t music_volume;
+	}
+
+	
 	// mouse position
 	// window dimensions
 	// render dimensions

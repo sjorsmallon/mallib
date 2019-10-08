@@ -20,7 +20,9 @@ void menu::draw_menu()
     float scale = 1.0f;
 
     //@TODO:"how to deal with selected thing flashing in other color? think about that.
-    std::vector<font::Character> font;
+    font::Font menu_font;
+    uint32_t font_height = 50;
+    font::generate_font_at_size(menu_font, "../fonts/opensans.ttf", font_height);
     // generate_font_at_size(font_name, height, color);
 
 
@@ -28,6 +30,8 @@ void menu::draw_menu()
     // Menu Item: Start Game
     //
     font::draw_text("Start game", center_x, cursor_y, scale, color);//, Text_Effect effect);
+
+
     //
     // Menu Item: Exit
     //
