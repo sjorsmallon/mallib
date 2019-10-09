@@ -15,6 +15,9 @@ namespace globals
 		uint32_t music_volume;
 	}
 
+	uint32_t large_font_size;
+	uint32_t huge_font_size;
+	uint32_t small_font_size;
 	
 	// mouse position
 	// window dimensions

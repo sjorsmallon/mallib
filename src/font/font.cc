@@ -13,10 +13,10 @@
 #include "../mmat/mmat.h"
 
 
-std::array<font::Character, 128>& font::characters()
+font::Font& font::default_font()
 {
-    static std::array<font::Character,128> characters;
-    return characters;
+    static Font default_font;
+    return default_font;
 }
 
 font::gl_Objects& font::gl_objects() //@Note:VAO & VBO
@@ -25,68 +25,13 @@ font::gl_Objects& font::gl_objects() //@Note:VAO & VBO
     return objects;
 }
 
-
-//@Todo: parameterize font name, font size. we also need to determine where the fonts are stored.
+//@Note:For now, init font inits a default font & inits the VAO & VBO.
 void font::init_font()
 {
-    FT_Library ft;
-    if (FT_Init_FreeType(&ft))
-        fmt::print("init_freetype: failed to init freetype.");
+    //@Memory: reserve enough space. 
+    font::default_font().characters.resize(128);
 
-    FT_Face face;
-
-    if (FT_New_Face(ft, "../fonts/arial.ttf", 0, &face))
-        fmt::print("new_face: failed to create new font face.\n");
-
-    // size to load glyphs as
-    FT_Set_Pixel_Sizes(face, 0, 48);
-    // disable byte-alignment restriction?
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
-
-    // create character glyphs and store them in the array.
-    for (uint8_t char_index = 0; char_index != 128;  ++char_index)
-    {
-        if (FT_Load_Char(face, char_index, FT_LOAD_RENDER))
-        {
-            fmt::print("error: freetype: failed to load glyph %", char_index);
-            continue;
-        }
-
-        GLuint texture;
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RED,
-        face->glyph->bitmap.width,
-        face->glyph->bitmap.rows,
-        0,
-        GL_RED,
-        GL_UNSIGNED_BYTE,
-        face->glyph->bitmap.buffer
-        );
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        Character character_glyph = {
-            texture,
-            {face->glyph->bitmap.width, face->glyph->bitmap.rows},
-            {face->glyph->bitmap_left, face->glyph->bitmap_top},
-            face->glyph->advance.x
-        };
-
-        font::characters()[char_index] = character_glyph;
-    }
-    //@NOTE: we need to unbind textures after binding them.
-    glBindTexture(GL_TEXTURE_2D, 0); 
-
-    // free all FreeType resources.
-    FT_Done_Face(face);
-    FT_Done_FreeType(ft);
+    font::generate_font_at_size(font::default_font(), "../fonts/arial.ttf", 48);
 
     font::init_font_gl_objects();
 }
@@ -113,18 +58,20 @@ void font::gl_text_mode()
     graphics::set_shader(graphics::Shader_Type::SHADER_TEXT); 
 }
 
-void font::draw_text(std::string text, /*Font font, */ uint32_t start_x, uint32_t start_y, float scale, Vec3 color)//, Text_Effect effect)
+void font::draw_text(std::string text,Font& font, uint32_t start_x, uint32_t start_y, float scale, Vec3 color)//, Text_Effect effect)
 {
+
     font::gl_text_mode();
     font::gl_Objects& gl_font = font::gl_objects();
 
     glUniform3f(glGetUniformLocation(graphics::shaders().text, "text_color"), color.x, color.y, color.z);
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(gl_font.VAO);   
-    //@Note: this should match the Active Texture (i.e. GL_TEXTURE0). we're lucky that it does right now.
+   
+    //@Refactor: this should match the Active Texture (i.e. GL_TEXTURE0). we're lucky that it does right now.
     glUniform1i(glGetUniformLocation(graphics::shaders().text, "text"), 0);
 
-    auto settings  = graphics::window_settings();
+    const auto& settings  = graphics::window_settings();
     glViewport(0, 0,static_cast<int>(settings.width),static_cast<int>(settings.height));
 
     float top   = settings.height; // viewport 
@@ -134,7 +81,7 @@ void font::draw_text(std::string text, /*Font font, */ uint32_t start_x, uint32_
     float near_  = 0.0f;
     float far_   = 1.0f; // near and far are reserved by windows???
 
-    // this should be transposed, but we need to decide how we do matrices.
+    //@Refactor: this should be transposed, but we need to decide how we do matrices.
     float projectionmatrix[16] =   {2.0f / (right - left),   0.0f,                 0.0f,                 - (right + left) / (right - left),
                                     0.0f,            2.0f / (top - bot),           0.0f,                   - (top + bot) / (top - bot),
                                     0.0f,                   0.0f,          (-2.0f / (far_ - near_)),     -(far_ + near_) / (far_ - near_),
@@ -145,13 +92,11 @@ void font::draw_text(std::string text, /*Font font, */ uint32_t start_x, uint32_
     Mat4 projection_matrix = mmat::ortho(left, right, top, bot, near_, far_);
     glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text, "projection"), 1, true, &projectionmatrix[0]);
     
-    const auto& glyph_array = font::characters();
+    const auto& glyph_array = font.characters;
     
-    // Iterate through all characters
     for (const auto& single_char: text)
     {
-
-        const auto& char_glyph = glyph_array[single_char]; //Character&?
+        const auto& char_glyph = glyph_array.at(single_char); //Character&?
 
         GLfloat xpos = start_x + char_glyph.bearing.x * scale;
         GLfloat ypos = start_y - (char_glyph.size.y - char_glyph.bearing.y) * scale;
@@ -188,9 +133,11 @@ void font::draw_text(std::string text, /*Font font, */ uint32_t start_x, uint32_
 }
 
 
-
-void font::generate_font_at_size(std::vector<Character>& target, std::string& font_name, uint32_t pixel_size)
+void font::generate_font_at_size(font::Font& target, std::string font_name, const uint32_t pixel_size)
 {
+    //@TODO: this is hardcoded to only generate 255 characters. how many do we need? or does that depend on the locale?
+    const uint8_t num_characters = 255; 
+
     FT_Library ft;
     if (FT_Init_FreeType(&ft))
         fmt::print("generate_font_at_size: failed to init freetype.");
@@ -202,8 +149,11 @@ void font::generate_font_at_size(std::vector<Character>& target, std::string& fo
     FT_Set_Pixel_Sizes(face, 0, pixel_size);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
 
+    //@Memory: assume an empty vector, this function reserves N.
+    target.characters.resize(num_characters);
+
     // create character glyphs and store them in the array.
-    for (uint8_t char_index = 0; char_index != 128;  ++char_index)
+    for (uint8_t char_index = 0; char_index != num_characters;  ++char_index)
     {
         if (FT_Load_Char(face, char_index, FT_LOAD_RENDER))
         {
@@ -238,7 +188,7 @@ void font::generate_font_at_size(std::vector<Character>& target, std::string& fo
             face->glyph->advance.x
         };
 
-        target.push_back(character_glyph);
+        target.characters[char_index] = character_glyph;
     }
     //@NOTE: we need to unbind textures after binding them.
     glBindTexture(GL_TEXTURE_2D, 0); 
@@ -246,4 +196,18 @@ void font::generate_font_at_size(std::vector<Character>& target, std::string& fo
     // free all FreeType resources.
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
+}
+
+
+uint32_t font::get_string_width_in_pixels(const std::string text,font::Font& font, const uint32_t scale)
+{
+    uint32_t total_width = 0;
+
+    const auto& glyph_array = font.characters;
+    for (const auto single_char: text)
+    {
+        const auto& char_glyph = glyph_array.at(single_char); //Character&?
+        total_width += (char_glyph.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
+    }
+    return total_width;
 }

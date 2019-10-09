@@ -13,7 +13,7 @@ void font::startup()
 	glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    auto settings  = graphics::window_settings();
+    const auto& settings  = graphics::window_settings();
     glViewport(0, 0,static_cast<int>(settings.width),static_cast<int>(settings.height));
 
 	float top   = settings.height; // viewport 
@@ -58,7 +58,7 @@ void font::startup()
             continue;
         }
         // Generate texture
-        GLuint texture;
+        uint32_t texture;
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
         glTexImage2D(
@@ -80,8 +80,8 @@ void font::startup()
         // Now store character for later use
         Character character{
             texture,
-           	{face->glyph->bitmap.width, face->glyph->bitmap.rows},
-            {face->glyph->bitmap_left, face->glyph->bitmap_top},
+           	{face->glyph->bitmap.width, face->glyph->bitmap.rows}, //uints
+            {face->glyph->bitmap_left, face->glyph->bitmap_top}, //ints
             face->glyph->advance.x
         };
 

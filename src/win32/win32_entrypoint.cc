@@ -58,11 +58,11 @@ LRESULT CALLBACK win32_main_window_callback(HWND window,
 static void redirect_output_to_console()
 {
     // Create the console window and set the window title.
-    if (AllocConsole() == 0)
-    {
-        fatal_error("redirect_output: allocConsole failed.");
-    }
-    // AttachConsole(ATTACH_PARENT_PROCESS);
+    // if (AllocConsole() == 0)
+    // {
+    //     fatal_error("redirect_output: allocConsole failed.");
+    // }
+    AttachConsole(ATTACH_PARENT_PROCESS);
 
     // Redirect CRT standard input, output and error handles to the console window.
     FILE * pNewStdout = nullptr;
@@ -273,9 +273,7 @@ int WINAPI wWinMain(HINSTANCE instance,
                     int command_show)
 {
     
-    redirect_output_to_console(); // output redirection for a new console. This calls AllocConsole().
-
-    // AttachConsole(-1); // attach to parent process
+    redirect_output_to_console(); 
 
     HWND window = create_window(instance);
     HDC  device_context = GetDC(window);
@@ -292,8 +290,8 @@ int WINAPI wWinMain(HINSTANCE instance,
     if (window)
     {
         // change window size
-        int width = 1280; // @hardcoded
-        int height = 1024;
+        const int width =  1920; // @hardcoded
+        const int height = 1080;
         auto& settings = graphics::window_settings();
         settings.width = width;
         settings.height = height;
@@ -329,16 +327,16 @@ int WINAPI wWinMain(HINSTANCE instance,
                 }
             }
             game::main_loop();
-        }        	    
+        }               
     }
- 	
+    
     return 0;
 }
 
 
 static void on_size_changed(HWND hwnd, UINT flag, const int width, const int height)
 {
-	// fmt::print("on_size_changed is not yet implemented.\n");
+    // fmt::print("on_size_changed is not yet implemented.\n");
 }
 
 static LRESULT CALLBACK win32_main_window_callback(HWND window,
@@ -346,7 +344,7 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window,
                                                    WPARAM wParam,
                                                    LPARAM lParam)
 {
-	LRESULT result = 0;
+    LRESULT result = 0;
     switch (message)
     {
         // all  keyboard nonsense
@@ -383,31 +381,31 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window,
             break;
         }
 
-		case WM_SIZE:
-    	{
-    		// resize!
-    		const int width = LOWORD(lParam);
-    		const int height = HIWORD(lParam);
+        case WM_SIZE:
+        {
+            // resize!
+            const int width = LOWORD(lParam);
+            const int height = HIWORD(lParam);
 
-			on_size_changed(window, static_cast<UINT>(wParam), width, height);
-    		break;
-    	}
-    	case WM_CLOSE:
-    	{
-			DestroyWindow(window);
-			break;
-    	}
-    	case WM_DESTROY:
-	    {
+            on_size_changed(window, static_cast<UINT>(wParam), width, height);
+            break;
+        }
+        case WM_CLOSE:
+        {
+            DestroyWindow(window);
+            break;
+        }
+        case WM_DESTROY:
+        {
             wglMakeCurrent(nullptr, nullptr);
             graphics::Win32_Context& context = graphics::global_Win32_context();
             wglDeleteContext(context.gl_context);
 
-	        PostQuitMessage(0);
-	        break;
-	    }
-	    
-	    case WM_PAINT:
+            PostQuitMessage(0);
+            break;
+        }
+        
+        case WM_PAINT:
         {
             // we need to start painting here, otherwise WM_PAINT stays
             // in the message queue, and we can never break the peekMessage loop.
@@ -421,12 +419,12 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window,
         }
         case WM_ACTIVATEAPP:
         {
-        	break;
+            break;
         }
         default: 
         {
-        	result = DefWindowProc(window, message, wParam, lParam); 
-        	break;
+            result = DefWindowProc(window, message, wParam, lParam); 
+            break;
         }
     }
     // this is for all messages that are not handled. the default is returned.

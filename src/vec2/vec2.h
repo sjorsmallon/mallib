@@ -20,6 +20,7 @@
 //     };
 //     float data[2];
 // };
+
 struct Vec2
 {
     float x;
@@ -28,10 +29,15 @@ struct Vec2
 
 struct Vec2i
 {
-	int x;
-	int y;
+	int32_t x;
+	int32_t y;
 };
 
+struct Vec2u
+{
+	uint32_t x;
+	uint32_t y;
+};
 
 
 #endif

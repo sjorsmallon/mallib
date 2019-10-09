@@ -23,13 +23,14 @@ namespace font
 	{
 		GLuint textureID;
 		Vec2i size;
-		Vec2i bearing;
-		GLuint advance;
+		Vec2u bearing;
+		int32_t advance;
 	};
 
 	struct Font
 	{
 		std::vector<Character> characters;
+		// std::array<Character, 255?>& characters;
 		Font() = default;
 		~Font()
 		{
@@ -47,24 +48,25 @@ namespace font
 
 	gl_Objects& gl_objects();
 
-	// std::map<char, Character>& characters();
-	// std::vector<Character>& characters();
-	std::array<Character, 128>& characters();
+	Font& default_font();
+	// std::array<Character, 255>& default_font();
 
 	void init_font();
 	void init_font_gl_objects();
 	void gl_text_mode();
 	void draw_text(std::string text,
-				   // Font font,
+				   Font& font,
 				   uint32_t start_x,
 				   uint32_t start_y,
 				   float scale,
 				   Vec3 color);
 					   // Text_Effect effect);
 
-	uint32_t get_string_width_in_pixels(Font& font,std::string text); // font effect?
 
-	void generate_font_at_size(std::vector<Character>& target, std::string& filename, uint32_t pixel_size);
+	void generate_font_at_size(font::Font& target, std::string filename, const uint32_t pixel_size);
+	
+	uint32_t get_string_width_in_pixels(const std::string text,font::Font& font, const uint32_t scale = 1.0f);
+
 
 };
 
