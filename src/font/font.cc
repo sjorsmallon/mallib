@@ -29,7 +29,7 @@ font::gl_Objects& font::gl_objects() //@Note:VAO & VBO
 void font::init_font()
 {
     //@Memory: reserve enough space. 
-    font::default_font().characters.resize(128);
+    font::default_font().characters.resize(255);
 
     font::generate_font_at_size(font::default_font(), "../fonts/arial.ttf", 48);
 
