@@ -23,6 +23,9 @@ namespace sound
  //    extern std::map<uint32_t, uint32_t> buffer_to_sources;
 //     extern std::map<std::string, std::vector<uint32_t>> music_buffers;
     
+    Sound_Device& sound_device();
+    std::map<std::string, Wav_File> wav_files = {};
+    std::map<std::string, uint32_t> sound_sources = {};
 
     Wav_File    load_wav_file(const char* filename); //Wav_File
     uint32_t    register_wav_file(const char* filename); // Wav_File?

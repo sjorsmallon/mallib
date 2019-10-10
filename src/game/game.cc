@@ -10,48 +10,9 @@
 #include "../menu/menu.h"
 
 
-game::Program_Mode& game::global_program_mode()
-{
-    static Program_Mode mode;
-    return mode;
-}
-
-void game::init_font()
-{
-    font::init_font();
-}
-
-void game::init_audio()
-{
-    sound::init_sound();
-}
-
-void game::init_graphics()
-{
-    graphics::init_graphics();
-}
-
-void game::init_everything()
-{
-    game::init_audio();
-    game::init_graphics();
-    game::init_font();
-
-    // set some modes?
-    auto& program_mode = game::global_program_mode();
-    program_mode = Program_Mode::MENU;
-
-    graphics::clear_buffers();
-}
-
-void game::shutdown()
-{
-    sound::perform_shutdown();
-}
 
 void game::main_loop()
 {
-
     graphics::clear_buffers();
     
     if (game::global_program_mode() == Program_Mode::GAME)
@@ -80,28 +41,78 @@ void game::main_loop()
     // }
     // update_audio();
 
-
-  
 }
 
-
-void game::load_models()
+game::Program_Mode& game::global_program_mode()
 {
-    std::vector<std::string> file_names = file::list_files_in_dir("../data/obj");
-    for (auto& file_name: file_names)
-    {
-        fmt::printf("[game] loading obj file {}", file_name);
-        // renderer::load_obj_file(file_name);
-    }
+    static Program_Mode mode;
+    return mode;
 }
 
-void game::load_shaders()
+void game::init_font()
 {
-    std::vector<std::string> file_names = file::list_files_in_dir("../data/shaders");
-    for (auto& file_name: file_names)
-    {
-        fmt::printf("[game] loading shader {}", file_name);
-        // renderer::load_shader(file_name);
-        // graphics::load_and_compile_shader(file_name);
-    }
+    font::init_font();
 }
+
+void game::init_audio()
+{
+    sound::init_sound();
+}
+
+void game::init_graphics()
+{
+    graphics::init_graphics();
+}
+
+void game::init_everything()
+{
+    game::init_audio();
+    game::init_graphics();
+    game::init_font();
+
+    //@TODO: set some modes? program_mode, play the menu music?
+    // 
+    auto& program_mode = game::global_program_mode();
+    program_mode = Program_Mode::MENU;
+    sound::play_music("../music/i_feel_so_alive.wav");
+    // sound::play_sound("../music/chicken.wav");
+
+    graphics::clear_buffers();
+}
+
+void game::shutdown()
+{
+    sound::perform_shutdown();
+}
+
+void game::deinit_everything()
+{
+    // free all resources.
+    //sound::deinit_sound();
+    //graphics::deinit_graphics();
+    //font::deinit_font();
+    
+}
+
+
+
+// void game::load_models()
+// {
+//     std::vector<std::string> file_names = file::list_files_in_dir("../data/obj");
+//     for (auto& file_name: file_names)
+//     {
+//         fmt::printf("[game] loading obj file {}", file_name);
+//         // renderer::load_obj_file(file_name);
+//     }
+// }
+
+// void game::load_shaders()
+// {
+//     std::vector<std::string> file_names = file::list_files_in_dir("../data/shaders");
+//     for (auto& file_name: file_names)
+//     {
+//         fmt::printf("[game] loading shader {}", file_name);
+//         // renderer::load_shader(file_name);
+//         // graphics::load_and_compile_shader(file_name);
+//     }
+// }
