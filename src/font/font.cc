@@ -9,8 +9,11 @@
 #include "../graphics/graphics.h"
 
 #include "../vec2/vec2.h"
-#include "../mat4/mat4.h"
-#include "../mmat/mmat.h"
+#include <cmath> // sin, PI
+
+// #include "../mat4/mat4.h" // projection.
+// #include "../mmat/mmat.h"
+#include "../game/game.h" //@Refactor: replace this with globals for previous_frame_time.
 
 
 font::Font& font::default_font()
@@ -30,9 +33,7 @@ void font::init_font()
 {
     //@Memory: reserve enough space. 
     font::default_font().characters.resize(255);
-
     font::generate_font_at_size(font::default_font(), "../fonts/arial.ttf", 48);
-
     font::init_font_gl_objects();
 }
 
@@ -58,16 +59,38 @@ void font::gl_text_mode()
     graphics::set_shader(graphics::Shader_Type::SHADER_TEXT); 
 }
 
-void font::draw_text(std::string text,Font& font, uint32_t start_x, uint32_t start_y, float scale, Vec3 color)//, Text_Effect effect)
+
+void font::draw_text(std::string text,
+                     Font& font,
+                     uint32_t start_x,
+                     uint32_t start_y,
+                     float scale,
+                     Vec3 color,
+                     Text_Effect effect)
 {
 
     font::gl_text_mode();
     font::gl_Objects& gl_font = font::gl_objects();
 
+    if (effect == Text_Effect::COLOUR_SHIFT)
+    {
+        //@FIXME:: think about how to do this.
+        static float accumulator = 0;
+        accumulator += game::previous_frame_time().count();
+        fmt::print("previous_frame_time, accumulator: {}, {}\n", game::previous_frame_time().count(), accumulator);
+        float pulse_time = 2000.0f;
+        accumulator = fmod(accumulator, pulse_time);
+        float ratio = accumulator / pulse_time;
+        float sin_t = ratio * 2 * 3.14;
+        // use previous_frame_time? how do we calculate this?
+        float distance_t = (std::sin(sin_t) + 1.0f) /2.0f;
+        fmt::print("distance_t: {}", distance_t);
+        color = lerp(color, {1.0f,1.0f,1.0f}, distance_t);
+    }
+
     glUniform3f(glGetUniformLocation(graphics::shaders().text, "text_color"), color.x, color.y, color.z);
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(gl_font.VAO);   
-   
     //@Refactor: this should match the Active Texture (i.e. GL_TEXTURE0). we're lucky that it does right now.
     glUniform1i(glGetUniformLocation(graphics::shaders().text, "text"), 0);
 
@@ -89,7 +112,7 @@ void font::draw_text(std::string text,Font& font, uint32_t start_x, uint32_t sta
 
     //@refactor: this projection matrix does not ever change.
     // do we want to store this somewhere?
-    Mat4 projection_matrix = mmat::ortho(left, right, top, bot, near_, far_);
+    // Mat4 projection_matrix = mmat::ortho(left, right, top, bot, near_, far_);
     glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text, "projection"), 1, true, &projectionmatrix[0]);
     
     const auto& glyph_array = font.characters;

@@ -129,7 +129,8 @@ uint32_t graphics::shader_type_from_extension(const std::string& filename)
         return 0;
 }
 
-
+//@TODO:turn this into multiple things? i.e. get_shader_info,.
+// get_program_info, get_opengl_state.
 void graphics::get_shader_info(uint32_t prog)
 {
     // GLint numActiveAttribs = 0;
@@ -216,10 +217,19 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, const char* file
         // glDetachShader(program, shader_id); // can also postpone, but lower memory footprint
         // this way.
     }
-
-
     return shader_id;
 }
+
+
+void graphics::reload_shaders(uint32_t program)
+{
+    // unlink the shader from the program?
+    // deleteShader
+    // load_compile_attach_shader?
+
+
+}
+
 
 static void load_obj(const char* filename)
 {
@@ -245,26 +255,6 @@ static void load_obj(const char* filename)
 }
 
 
-
-
-// static void draw_menu()
-// {
-//     // tell opengl how we want to render
-//     rendering_2d_right_handed_unit_scale();
-//     set_render_target(0, hdr_buffer);
-//     set_depth_target(0, hdr_depth);
-
-//     glClearColor(0.0f, 1.0f, 1.0f, 1.0f);
-//     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-//     resolve_to_ldr();
-
-//     set_shader(shader_text);
-
-//     font::Font text_font = font::get_font_at_size(font_folder, "font_name", font_size);
-//     std::string text = {"hello there"};
-//     draw_text(text_font, 200, 200, {0, 1, 1}, text,  )
-// }
 
 // void graphics::render_frame()
 // {

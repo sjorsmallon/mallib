@@ -1,6 +1,21 @@
+
+
+# near future TODO
+look at harfbuzz for text shaping.
+text effects? (pulse?)
+
+# The const curse
+constness spreads throughout the application as a virus. What's mostly annoying is that constness should be more like 
+a contract in terms of what we are trying to do with it, but it also forces us to write more operator overloads.
+which is kind of annoying. I'm not sure what road I should go yet. I feel constness should actually be that 
+by default: let everything be const instead of mutable. sigh.
+
+
 # Long Term Goals
 This repository should contain a set of classes and structures that allow any user
 to easily construct a game engine. This is very work-in-progress; don't expect things to stay the same for very long.
+
+
 
 
 ## openGL extension loading
@@ -9,8 +24,6 @@ openGL on windows is convoluted. windows' `Gl\Gl.h` only includes the basic open
 Furthermore, openGL extension loading is also tricky. Normally, libraries like GLEW handle the loading of extensions. The problem with those libraries is distribution: it is one more thing to deploy and link against, etc. The way we do it now is sort of manually: using `gl_lite.h`, we can define and include types and functions, specified in `gl_ext.h`(the official gl_extensions header). This will result in lower compile times & less code bloat overall. It feels archaic, but it works.
 
 The way it works is we need to include "gl_lite.h" everywhere we would use openGL functions. In one of the source files, we need a `#define`. I would suggest putting this define in the entrypoint of your application.
-
-
 
 
 ## Writing as we go

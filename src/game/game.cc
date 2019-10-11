@@ -8,11 +8,12 @@
 #include "../font/font.h"
 #include "../vec3/vec3.h"
 #include "../menu/menu.h"
-
+#include <chrono>
 
 
 void game::main_loop()
 {
+    auto start = std::chrono::system_clock::now();
     graphics::clear_buffers();
     
     if (game::global_program_mode() == Program_Mode::GAME)
@@ -40,8 +41,16 @@ void game::main_loop()
     //     update_editor();            
     // }
     // update_audio();
-
+    auto end = std::chrono::system_clock::now();
+    game::previous_frame_time() = end - start;
 }
+
+std::chrono::duration<float, std::milli>& game::previous_frame_time()
+{
+    static std::chrono::duration<float, std::milli> previous_frame_time;
+    return previous_frame_time;
+}
+
 
 game::Program_Mode& game::global_program_mode()
 {
@@ -74,8 +83,9 @@ void game::init_everything()
     // 
     auto& program_mode = game::global_program_mode();
     program_mode = Program_Mode::MENU;
+
+    sound::load_music("../music/i_feel_so_alive.wav");
     sound::play_music("../music/i_feel_so_alive.wav");
-    // sound::play_sound("../music/chicken.wav");
 
     graphics::clear_buffers();
 }
@@ -90,11 +100,8 @@ void game::deinit_everything()
     // free all resources.
     //sound::deinit_sound();
     //graphics::deinit_graphics();
-    //font::deinit_font();
-    
+    //font::deinit_font();  
 }
-
-
 
 // void game::load_models()
 // {

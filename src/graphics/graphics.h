@@ -56,6 +56,7 @@ namespace graphics
 	void gl_text_mode();
 	void draw_text();
 
+	void reload_shaders(uint32_t program);
 
 
 

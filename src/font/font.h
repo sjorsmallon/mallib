@@ -11,13 +11,23 @@
 #include "../graphics/gl_lite.h"
 #include "../vec2/vec2.h"
 #include "../vec3/vec3.h"
+using namespace vec;
 
-//@Todo: for now, only one font lives in here.
-// provide the user a pointer that they can set 
-// to some particular font for all these functions?
+
+//@Todo: for now, a default font lives in the namespace.
 
 namespace font
 {
+	//@Todo: for now, colour_shift lerps the colour between white and the chosen colour.
+
+	enum class Text_Effect
+	{
+		NONE, 
+		COLOUR_SHIFT, // shifts color between white & chosen color. what is the time duration?
+		HORIZONTAL_SHIFT, // shift color horizontally
+		VERTICAL_SHIFT, // shift color vertically,
+		SHADOWED // draw "shadows (double layered"). @Todo: offset direction?
+	};
 
 	struct Character
 	{
@@ -62,8 +72,9 @@ namespace font
 				   uint32_t start_x,
 				   uint32_t start_y,
 				   float scale,
-				   Vec3 color);
-					   // Text_Effect effect);
+				   Vec3 color,
+					Text_Effect effect = Text_Effect::COLOUR_SHIFT
+				   );
 
 
 	void generate_font_at_size(font::Font& target, std::string filename, const uint32_t pixel_size);
