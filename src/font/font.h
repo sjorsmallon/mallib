@@ -73,7 +73,7 @@ namespace font
 				   uint32_t start_y,
 				   float scale,
 				   Vec3 color,
-					Text_Effect effect = Text_Effect::COLOUR_SHIFT
+					Text_Effect effect = Text_Effect::NONE
 				   );
 
 
