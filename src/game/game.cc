@@ -8,6 +8,8 @@
 #include "../font/font.h"
 #include "../vec3/vec3.h"
 #include "../menu/menu.h"
+
+#include "../input/input.h"
 #include <chrono>
 
 
@@ -16,9 +18,11 @@ void game::main_loop()
     auto start = std::chrono::system_clock::now();
     graphics::clear_buffers();
     
+    //@Removeme:
+    game::simulate_gameplay();
     if (game::global_program_mode() == Program_Mode::GAME)
     {
-        // simulate_gameplay();
+        // game::simulate_gameplay();
         // update_game_camera();
     }
     else if (game::global_program_mode() == Program_Mode::MENU)
@@ -43,6 +47,27 @@ void game::main_loop()
     // update_audio();
     auto end = std::chrono::system_clock::now();
     game::previous_frame_time() = end - start;
+}
+
+void game::simulate_gameplay()
+{
+
+    //@FIXME: where is the input queue emptied?
+    //@FIXME: do we want the keyboard to be bitwise?
+    // so we can continue?
+    auto &queue = input::input_queue();
+    // fmt::print("simulate_gameplay: queue size: {}", queue.size());    
+    for (auto key : queue)
+    {
+        if (key == input::Key_Input::KEY_UP)
+        {
+            fmt::print("detected KEY UP!\n");
+            // return;
+        }
+    }
+
+    queue.clear();
+    // fmt::print("simulate_gameplay: queue size: {}", queue.size());    
 }
 
 std::chrono::duration<float, std::milli>& game::previous_frame_time()

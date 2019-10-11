@@ -38,9 +38,29 @@ wglChoosePixelFormatARB_type *wglChoosePixelFormatARB;
 
 #include "../game/game.h"
 #include "../graphics/graphics.h"
+#include "../input/input.h"
 
 #include <Wingdi.h>
-#include <iostream> // redirect output
+#include <iostream> // redirect_output
+#include <map> // populate_windows_key_map
+#include "fmt/core.h" // 
+
+std::map<int, input::Key_Input> windows_key_map;
+
+static void populate_windows_key_map()
+{
+    using namespace input;
+
+    windows_key_map.insert(std::pair<int, input::Key_Input>(0x57, Key_Input::KEY_W));
+    windows_key_map.insert(std::pair<int, input::Key_Input>(0x41, Key_Input::KEY_A));
+    windows_key_map.insert(std::pair<int, input::Key_Input>(0x53, Key_Input::KEY_S));
+    windows_key_map.insert(std::pair<int, input::Key_Input>(0x44, Key_Input::KEY_D));
+    windows_key_map.insert(std::pair<int, input::Key_Input>(VK_UP, Key_Input::KEY_UP));
+    windows_key_map.insert(std::pair<int, input::Key_Input>(VK_DOWN, Key_Input::KEY_DOWN));
+    windows_key_map.insert(std::pair<int, input::Key_Input>(VK_LEFT, Key_Input::KEY_LEFT));
+    windows_key_map.insert(std::pair<int, input::Key_Input>(VK_RIGHT, Key_Input::KEY_RIGHT));
+}
+
 
 static void
 fatal_error(const char *msg)
@@ -84,7 +104,6 @@ static void redirect_output_to_console()
     std::wcout.clear();
     std::wcerr.clear();
     std::wcin.clear();
-
 }
 
 
@@ -266,6 +285,19 @@ static HWND create_window(HINSTANCE instance)
     return window;
 }
 
+static void insert_input_in_queue()
+{
+    //@Platform:
+    int keys[6] = {VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, VK_LBUTTON, VK_RBUTTON};
+    for (auto key: keys)
+    {
+        if (GetAsyncKeyState(key))
+            input::input_queue().push_back(windows_key_map[key]);
+    }
+    // do some bitwise stuff in order to pass only one thing?
+}
+
+
 
 int WINAPI wWinMain(HINSTANCE instance,
                     HINSTANCE prev_instance,
@@ -274,6 +306,7 @@ int WINAPI wWinMain(HINSTANCE instance,
 {
     
     redirect_output_to_console(); 
+    populate_windows_key_map();
 
     HWND window = create_window(instance);
     HDC  device_context = GetDC(window);
@@ -326,12 +359,17 @@ int WINAPI wWinMain(HINSTANCE instance,
                  DispatchMessage(&message);
                 }
             }
+
+            insert_input_in_queue();
             game::main_loop();
         }               
     }
     
     return 0;
 }
+
+// file_scope
+
 
 
 static void on_size_changed(HWND hwnd, UINT flag, const int width, const int height)

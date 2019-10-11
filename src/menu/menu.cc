@@ -5,6 +5,7 @@
 
 void menu::draw_menu()
 {
+    // selected_menu_item
 	// graphics::render_2d_left_handed_unit();
  	const auto& window_settings = graphics::window_settings(); // also render target?
 
@@ -13,15 +14,13 @@ void menu::draw_menu()
  	float center_x = window_settings.width  / 2.0f;
  	float cursor_y = (window_settings.height - vertical_offset);
 
-    //@Refactor: font_height is not stored in the font now.
-    uint32_t font_height = 50; 
-    font::Font menu_font;    
+    //@Refactor: font_height is not stored in the font now. does that matter?
+    uint32_t font_height = 50;
+    font::Font menu_font = {};    
     font::generate_font_at_size(menu_font, "../fonts/opensans.ttf", font_height);
 
     Vec3 start_game_color = {0.5f, 0.8f, 0.7f};
     float scale = 1.0f;
-
-    //@TODO:"how to deal with selected thing flashing in other color? think about that.
 
     //
     // Menu Item: Start Game
@@ -29,7 +28,13 @@ void menu::draw_menu()
     std::string start_game = "Start game";
     uint32_t start_game_width = font::get_string_width_in_pixels(start_game, menu_font);
     uint32_t start_game_x = center_x - 0.5 * start_game_width;
-    font::draw_text(start_game, menu_font, start_game_x, cursor_y, scale, start_game_color, font::Text_Effect::COLOUR_SHIFT);
+    font::draw_text(start_game,
+                    menu_font,
+                    start_game_x,
+                    cursor_y,
+                    scale,
+                    start_game_color,
+                    font::Text_Effect::COLOUR_SHIFT);
 
     //
     // Menu Item: Settings
@@ -39,7 +44,12 @@ void menu::draw_menu()
     uint32_t settings_x = center_x - 0.5 * settings_width;
     cursor_y -= vertical_stride;
     Vec3 settings_color = start_game_color; 
-    font::draw_text(settings, menu_font, settings_x, cursor_y, scale, settings_color);
+    font::draw_text(settings,
+                    menu_font,
+                    settings_x,
+                    cursor_y,
+                    scale,
+                    settings_color);
 
     //
     // Menu Item: Exit
@@ -49,5 +59,10 @@ void menu::draw_menu()
     uint32_t exit_x = center_x - 0.5 * exit_width;
     cursor_y -= vertical_stride;
     Vec3 exit_color = start_game_color;
-    font::draw_text(exit, menu_font, exit_x, cursor_y, scale, exit_color);
+    font::draw_text(exit,
+                    menu_font,
+                    exit_x,
+                    cursor_y,
+                    scale,
+                    exit_color);
 }

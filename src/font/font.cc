@@ -77,14 +77,14 @@ void font::draw_text(std::string text,
         //@FIXME:: think about how to do this.
         static float accumulator = 0;
         accumulator += game::previous_frame_time().count();
-        fmt::print("previous_frame_time, accumulator: {}, {}\n", game::previous_frame_time().count(), accumulator);
+        // fmt::print("previous_frame_time, accumulator: {}, {}\n", game::previous_frame_time().count(), accumulator);
         float pulse_time = 2000.0f;
         accumulator = fmod(accumulator, pulse_time);
         float ratio = accumulator / pulse_time;
         float sin_t = ratio * 2 * 3.14;
         // use previous_frame_time? how do we calculate this?
         float distance_t = (std::sin(sin_t) + 1.0f) /2.0f;
-        fmt::print("distance_t: {}", distance_t);
+        // fmt::print("distance_t: {}", distance_t);
         color = lerp(color, {1.0f,1.0f,1.0f}, distance_t);
     }
 

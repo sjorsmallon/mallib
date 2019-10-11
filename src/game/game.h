@@ -2,7 +2,6 @@
 #define INCLUDED_GAME_
 #include <chrono>
 
-
 namespace game
 {
 
@@ -13,16 +12,17 @@ namespace game
 		PAUSED,
 		MENU
 	};
-
 	//@Refactor: move to globals.
 	Program_Mode& global_program_mode();
 	//@Refactor: change to double for more precision?
     std::chrono::duration<float, std::milli>& previous_frame_time();
 
-
 	void load_audio();
 	void load_shaders();
 	void load_models();
+
+
+	void simulate_gameplay(); // make this static in the class?
 
 	void init_everything();
 	void init_audio();
