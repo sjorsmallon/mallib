@@ -23,6 +23,10 @@ namespace game
 
 
 	void simulate_gameplay(); // make this static in the class?
+	//@Refactor: is input handling like this better? or keep it
+	// centralized in one function which then evaluates what the game state is
+	void handle_menu_input();
+
 
 	void init_everything();
 	void init_audio();

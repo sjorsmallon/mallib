@@ -42,28 +42,32 @@ wglChoosePixelFormatARB_type *wglChoosePixelFormatARB;
 
 #include <Wingdi.h>
 #include <iostream> // redirect_output
-#include <map> // populate_windows_key_map
+#include <array> // populate_windows_key_map
+#include <vector>
 #include "fmt/core.h" // 
 
-std::map<int, input::Key_Input> windows_key_map;
+input::Key_Input windows_key_array[255] = {};
+std::vector<unsigned char> previous_keyboard_state(256);
+std::vector<unsigned char> current_keyboard_state(256);
 
-static void populate_windows_key_map()
+static void populate_windows_key_array()
 {
     using namespace input;
 
-    windows_key_map.insert(std::pair<int, input::Key_Input>(0x57, Key_Input::KEY_W));
-    windows_key_map.insert(std::pair<int, input::Key_Input>(0x41, Key_Input::KEY_A));
-    windows_key_map.insert(std::pair<int, input::Key_Input>(0x53, Key_Input::KEY_S));
-    windows_key_map.insert(std::pair<int, input::Key_Input>(0x44, Key_Input::KEY_D));
-    windows_key_map.insert(std::pair<int, input::Key_Input>(VK_UP, Key_Input::KEY_UP));
-    windows_key_map.insert(std::pair<int, input::Key_Input>(VK_DOWN, Key_Input::KEY_DOWN));
-    windows_key_map.insert(std::pair<int, input::Key_Input>(VK_LEFT, Key_Input::KEY_LEFT));
-    windows_key_map.insert(std::pair<int, input::Key_Input>(VK_RIGHT, Key_Input::KEY_RIGHT));
+    windows_key_array[0x57]       = Key_Input::KEY_W;
+    windows_key_array[0x41]       = Key_Input::KEY_A;
+    windows_key_array[0x53]       = Key_Input::KEY_S;
+    windows_key_array[0x44]       = Key_Input::KEY_D;
+    windows_key_array[VK_UP]      = Key_Input::KEY_UP;
+    windows_key_array[VK_DOWN]    = Key_Input::KEY_DOWN;
+    windows_key_array[VK_LEFT]    = Key_Input::KEY_LEFT;
+    windows_key_array[VK_RIGHT]   = Key_Input::KEY_RIGHT;
+    windows_key_array[VK_LBUTTON] = Key_Input::MOUSE_LEFT;
+    windows_key_array[VK_RBUTTON] = Key_Input::MOUSE_RIGHT;
 }
 
 
-static void
-fatal_error(const char *msg)
+static void fatal_error(const char *msg)
 {
     MessageBoxA(NULL, msg, "Error", MB_OK | MB_ICONEXCLAMATION);
     exit(EXIT_FAILURE);
@@ -119,8 +123,6 @@ static void init_opengl_extensions()
     window_class.lpfnWndProc = DefWindowProcA;
     window_class.hInstance = GetModuleHandle(0);
     window_class.lpszClassName = "Dummy_WGL_djuasiodwa";
-
-
     if (!RegisterClassA(&window_class))
     {
         fatal_error("Failed to register dummy OpenGL window.");
@@ -285,17 +287,56 @@ static HWND create_window(HINSTANCE instance)
     return window;
 }
 
+
 static void insert_input_in_queue()
 {
     //@Platform:
     int keys[6] = {VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, VK_LBUTTON, VK_RBUTTON};
+
+    //@Refactor: swapping pointers?
+    current_keyboard_state.swap(previous_keyboard_state); // constant time, yay
+
     for (auto key: keys)
     {
-        if (GetAsyncKeyState(key))
-            input::input_queue().push_back(windows_key_map[key]);
+
+        if(GetAsyncKeyState(key))
+        {
+            current_keyboard_state[key] = 1;
+             if (!previous_keyboard_state[key])
+             {
+                fmt::print("pressed {}\n", key);
+                input::input_queue().push_back(windows_key_array[key]);
+             }
+        }
+        else
+            current_keyboard_state[key] = 0;
     }
-    // do some bitwise stuff in order to pass only one thing?
 }
+
+        // if (current_keyboard_state[key] && !previous_keyboard_state[key])
+        // {
+        //     fmt::print("pressed {}\n", key);
+        // }
+    // for (auto key: keys)
+    // {
+    //     SHORT pressed = GetAsyncKeyState(key);
+    //     if (pressed)
+    //     {
+    //         if (pressed & 0x8000)
+    //         {
+    //             fmt::print("pressed & 0x8000\n");
+    //             input::input_queue().push_back(windows_key_array[key]);
+    //         }
+    //         else
+    //             fmt::print("pressed but not 0x800\n");
+    //     } 
+    //     // if (GetAsyncKeyState(key) & 0x8000) //key is currently down?
+    //     // {
+    //     // }
+    // }
+    // fmt::print("insert_input_in_queue size: {}",input::input_queue().size());
+    // do some bitwise stuff in order to pass only one thing?
+
 
 
 
@@ -306,7 +347,7 @@ int WINAPI wWinMain(HINSTANCE instance,
 {
     
     redirect_output_to_console(); 
-    populate_windows_key_map();
+    populate_windows_key_array();
 
     HWND window = create_window(instance);
     HDC  device_context = GetDC(window);
@@ -359,7 +400,7 @@ int WINAPI wWinMain(HINSTANCE instance,
                  DispatchMessage(&message);
                 }
             }
-
+            //@TODO: when do we look at input?
             insert_input_in_queue();
             game::main_loop();
         }               
@@ -367,10 +408,6 @@ int WINAPI wWinMain(HINSTANCE instance,
     
     return 0;
 }
-
-// file_scope
-
-
 
 static void on_size_changed(HWND hwnd, UINT flag, const int width, const int height)
 {

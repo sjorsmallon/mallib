@@ -1,0 +1,153 @@
+allocator\Allocator.h:    /// @param[in]  size - size of the fixed blocks
+allocator\Allocator.h:    /// @param[in]  objects - maximum number of object. If 0, new blocks are
+allocator\Allocator.h:	/// @param[in]	memory - pointer to a block of static memory for allocator or NULL 
+allocator\Allocator.h:	///	@param[in]	name - optional allocator name string.
+allocator\Allocator.h:    /// @param[in]  size - size of the block to allocate
+allocator\Allocator.h:    /// @return     Returns pointer to the block. Otherwise NULL if unsuccessful.
+allocator\Allocator.h:    /// @param[in]  pBlock - block of memory deallocate (i.e push onto free-list)
+allocator\Allocator.h:    /// @return		A pointer to the allocator name or NULL if none was assigned.
+allocator\Allocator.h:    /// @return		The fixed block size in bytes.
+allocator\Allocator.h:    /// @return		The number of fixed memory blocks created.
+allocator\Allocator.h:    /// @return		The number of blocks in use by the application.
+allocator\Allocator.h:    /// @return		The total number of allocations.
+allocator\Allocator.h:    /// @return		The total number of deallocations.
+allocator\Allocator.h:    /// @param[in]  pMemory - block of memory to push onto free-list
+allocator\Allocator.h:    /// @return     Returns pointer to the block. Otherwise NULL if unsuccessful.
+allocator\Fault.h:	/// @param[in] file - the file name that the software assertion occurred on
+allocator\Fault.h:	/// @param[in] line - the line number that the software assertion occurred on
+allocator\stl_allocator.h:/// @brief stl_allocator is STL-compatible allocator used to provide fixed 
+allocator\stl_allocator.h:/// @details The default allocator for the STL is the global heap. The 
+allocator\stl_allocator.h:	/// @return	Pointer to T memory.
+allocator\stl_allocator.h:	/// @return	Const pointer to T memory.
+allocator\stl_allocator.h:	/// @return	Max memory size in bytes.
+allocator\stl_allocator.h:	/// @param[in] n - size of memory to allocate in bytes
+allocator\stl_allocator.h:	/// @param[in] hint
+allocator\stl_allocator.h:	/// @return	Pointer to the allocated memory.
+allocator\stl_allocator.h:	/// @param[in] p - pointer to the memory block
+allocator\stl_allocator.h:	/// @param[in] n - size of memory in bytes
+allocator\stl_allocator.h:	/// @param[in] p - pointer to the memory where the instance is constructed
+allocator\stl_allocator.h:	/// @param[in] val - instance of object to copy construct.
+allocator\stl_allocator.h:	/// @param[in] p - pointer to the memory where the instance is constructed
+allocator\stl_allocator.h:	/// @param[in] p - pointer to object instance.
+allocator\xallocator.h:/// @param[in] size - the size of the block to allocate. 
+allocator\xallocator.h:/// @param[in] ptr - a pointer to a previously allocated memory using xalloc.
+allocator\xallocator.h:/// @param[in] ptr - a pointer to a previously allocated memory using xalloc.
+allocator\xallocator.h:/// @param[in] size - the size of the new block
+allocator\xallocator.cc:/// @param[in] k - numeric value to compute the next higher power of two.
+allocator\xallocator.cc:/// @return	The next higher power of two based on the input k. 
+allocator\xallocator.cc:/// @param[in] block - a pointer to the raw memory block. 
+allocator\xallocator.cc:///	@param[in] size - the client requested size of the memory block.
+allocator\xallocator.cc:/// @return	A pointer to the client's address within the raw memory block. 
+allocator\xallocator.cc:/// @param[in] block - a pointer to the client's memory block. 
+allocator\xallocator.cc:/// @return	The original allocator instance stored in the memory block.
+allocator\xallocator.cc:/// @param[in] block - a pointer to the client memory block. 
+allocator\xallocator.cc:/// @return	A pointer to the original raw memory block address. 
+allocator\xallocator.cc:/// @param[in] size - allocator block size
+allocator\xallocator.cc:/// @return Allocator instance handling requested block size or NULL
+allocator\xallocator.cc:/// @param[in] allocator - An allocator instance
+allocator\xallocator.cc:///	@param[in] size - the client's requested block size.
+allocator\xallocator.cc:///	@return An Allocator instance that handles blocks of the requested
+allocator\xallocator.cc:///	@param[in] size - the client requested size of the block.
+allocator\xallocator.cc:/// @return	A pointer to the client's memory block.
+allocator\xallocator.cc:///	@param[in] ptr - a pointer to a block created with xalloc.
+allocator\xallocator.cc:///	@param[in] ptr - a pointer to a block created with xalloc.
+allocator\xallocator.cc:///	@param[in] size - the client requested block size to create.
+allocator\xset.h:/// @see xset
+deprecated\vector.h:	size_t m_capacity; // @Refactor: defaults?
+deprecated\vector.h:	//@Missing:for loop over elements?
+deprecated\vector.h:	//@Missing: place elements? 
+deprecated\vector.h:	//@Robustness: can we always memcpy all data of another vector?
+file\file.cc:    std::vector<std::string> file_names = {}; //@TODO: prealloc?
+file\file.cc:    if (fs::is_directory(active_dir)) //@TODO: assert
+file\file_to_buffer.cc://     //@Leak: this is a copy with new.
+file_handler\file_handler.cc:    //@Leak: delete[] m_buffer;
+file_handler\file_handler.h://@Incomplete: we expose the raw file ptr, while we want to abstract. 
+file_handler\file_to_buffer.cc:// //@Incomplete: when to return false?
+file_handler\file_to_buffer.cc://     //@Leak: this is a copy with new, as there is no destructor here.
+file_handler\file_to_buffer.cc://     //@Leak: this is not correct?
+font\font.cc:#include "../game/game.h" //@Refactor: replace this with globals for previous_frame_time.
+font\font.cc:font::gl_Objects& font::gl_objects() //@Note:VAO & VBO
+font\font.cc://@Note:For now, init font inits a default font & inits the VAO & VBO.
+font\font.cc:    //@Memory: reserve enough space. 
+font\font.cc:    //@Note: this now happens in the init_font function.
+font\font.cc:        //@FIXME:: think about how to do this.
+font\font.cc:    //@Refactor: this should match the Active Texture (i.e. GL_TEXTURE0). we're lucky that it does right now.
+font\font.cc:    //@Refactor: this should be transposed, but we need to decide how we do matrices.
+font\font.cc:    //@refactor: this projection matrix does not ever change.
+font\font.cc:    //@TODO: this is hardcoded to only generate 255 characters. how many do we need? or does that depend on the locale?
+font\font.cc:    //@Memory: assume an empty vector, this function reserves N.
+font\font.cc:    //@NOTE: we need to unbind textures after binding them.
+font\font.h://@Todo: for now, a default font lives in the namespace.
+font\font.h:	//@Todo: for now, colour_shift lerps the colour between white and the chosen colour.
+font\font.h:		SHADOWED // draw "shadows (double layered"). @Todo: offset direction?
+game\game.cc:    //@Removeme:
+game\game.cc:    //@FIXME: where is the input queue emptied?
+game\game.cc:    //@FIXME: do we want the keyboard to be bitwise?
+game\game.cc:    //@TODO: set some modes? program_mode, play the menu music?
+game\game.h:	//@Refactor: move to globals.
+game\game.h:	//@Refactor: change to double for more precision?
+graphics\graphics.cc:graphics::Win32_Context& graphics::global_Win32_context() //@cleanup: i don't like this.
+graphics\graphics.cc://@TODO:turn this into multiple things? i.e. get_shader_info,.
+graphics\graphics.cc:    //@Cleanup:to const char* buffer?
+graphics\graphics.h://@todo: service locator pattern for the  shaders?
+graphics\graphics.h:	struct Shaders //@Note: shader_programs?
+graphics\graphics.h:	void init_graphics(); //@Note: does that also mean to load all the shaders etc?
+graphics\tinyobjloader.h:  /// @param[in] filename wavefront .obj filename
+graphics\tinyobjloader.h:  /// @param[in] config Reader configuration
+graphics\tinyobjloader.h:  /// @param[in] obj_text wavefront .obj filename
+graphics\tinyobjloader.h:  /// @param[in] mtl_text wavefront .mtl filename
+graphics\tinyobjloader.h:  /// @param[in] config Reader configuration
+graphics\tinyobjloader.h:/// @param[out] texname Parsed texture name
+graphics\tinyobjloader.h:/// @param[out] texopt Parsed texopt
+graphics\tinyobjloader.h:/// @param[in] linebuf Input string
+graphics\tinyobjloader.h:  // @todo { write more robust lexer and parser. }
+graphics\tinyobjloader.h:             /* is_bump */ false);  // @fixme { is_bump will be true? }
+graphics\tinyobjloader.h:      // @todo { multiple object name? }
+graphics\tinyobjloader.h:      // @todo { multiple object name? }
+graphics\tinyobjloader.h:#if 0  // @todo
+image\stb_image_resize.h:   by Jorge L Rodriguez (@VinoBS) - 2014
+image\stb_image_write.h:// @OPTIMIZE: provide an option that always forces left-predict or paeth predict
+image\std_image.h:   // @TODO: move stbi__convert_format to here
+image\std_image.h:   // @TODO: move stbi__convert_format16 to here
+image\std_image.h:   // @TODO: special case RGB-to-Y (and RGBA-to-YA) for 8-bit-to-16-bit case to keep more precision
+image\std_image.h:// @OPTIMIZE: store non-zigzagged during the decode passes,
+image\std_image.h:            int rs = stbi__jpeg_huff_decode(j, hac); // @OPTIMIZE see if we can use the fast path here, advance-by-r is so slow, eh
+image\std_image.h:   STBI_NOTUSED(tga_x_origin); // @TODO
+image\std_image.h:   STBI_NOTUSED(tga_y_origin); // @TODO
+image\std_image.h:         // @OPTIMIZE: is there some way we can accelerate the non-clear path?
+image\std_image.h:      0.96    fix detection of invalid v value - particleman@mollyrocket forum
+mat4\mat4.h:#define PI 3.14159265358979323846f //@Cleanup: move these to math
+mat4\mat4.h://     //@Incomplete: help.
+menu\menu.cc:    //@Refactor: font_height is not stored in the font now. does that matter?
+mmat\mmat.cc://@Incomplete: when do we need identity? keep a static const identity matrix
+mmat\mmat.cc://@Refactor: this creates a copy. better to do in place? or does it not matter?
+mmat\mmat.cc:// //@Incomplete: keep confusing myself about column vs row major
+mmat\mmat.cc://@Incomplete: inline assignment instead of creating and returning?
+mmat\mmat.cc://@Incomplete: is this inverted because of the column vs row major?
+mstring\mstring.h://@TODO: sensible defaults?
+mvec\mvec.h://@Performance: is it cheaper to pass by value or by reference?
+sound\my_sound.cc://@BUG: to be removed.
+sound\my_sound.cc://@Remove: uses static inline now.
+sound\my_sound.cc:	//@Todo:
+sound\my_sound.cc:		//@TODO: remove stereo channel, not necessary (at least for openAL.)
+sound\my_sound.cc:	return file_to_return; //@Leak: this can be empty.
+sound\sound.h:		//@Memory: for now, this is a unique ptr
+sound\sound.h:	//@Refactor: move to globals(?). we can keep it "living" in the namespace,
+sound\sound.h:	//@Refactor: for if we want to move active_music to global game state.
+sound\sound.cc:	//@Note: if any music still playing:
+sound\sound.cc:	//@Memory: think about what we want to do here. This is currently streaming from file.
+sound\sound.cc://@Refactor: toggle_pause?
+string\string.cc:            *end_ptr++ = *front_ptr++; //@Refactor: this is too clever.
+vec3\vec3.h://@Note: because the union has anonymous structs, and these are similar/ identical in layout,
+sound\my_sound.h:    // @Refactor: dt is in seconds here. change to ms?
+vec4\vec4.h://@Note: is this a problem with matrices?
+window\window.h:	//@Note: size_t?
+win32\win32_entrypoint.cc:    RegisterClass(&window_class); //@Log: can this fail?
+win32\win32_entrypoint.cc:        // @Log: help.
+win32\win32_entrypoint.cc:    //@Platform:
+win32\win32_entrypoint.cc:        const int width =  1920; // @hardcoded
+deprecated\sound_device\sound_device.cc:	//@Move: separate the data here.
+deprecated\sound_device\sound_device.cc:	//@Incomplete: this is 32 sound sources.
+deprecated\sound_device\sound_device.cc:	//@Leak: result can be end.
+deprecated\sound_device\sound_device.cc:	//@Leak: result can be end.
+deprecated\sound_device\sound_device.h:    //@NOTE: this is not data, these are just indices.

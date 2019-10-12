@@ -15,59 +15,75 @@
 
 void game::main_loop()
 {
-    auto start = std::chrono::system_clock::now();
     graphics::clear_buffers();
-    
-    //@Removeme:
-    game::simulate_gameplay();
-    if (game::global_program_mode() == Program_Mode::GAME)
+
+    // start & end are used for frametime.
+    auto start = std::chrono::system_clock::now();
+    const auto program_mode = game::global_program_mode();
+
+    if (program_mode == Program_Mode::GAME)
     {
-        // game::simulate_gameplay();
-        // update_game_camera();
+        // handle input -> simulate gameplay
+        simulate_gameplay();
     }
-    else if (game::global_program_mode() == Program_Mode::MENU)
+    else if (program_mode == Program_Mode::MENU)
     {
+        //@Refactor: how do we handle input in the menu?
+        game::handle_menu_input();
         menu::draw_menu();
     }
-    sound::update_audio();
 
+    sound::update_audio();
     graphics::render_frame(); 
     graphics::swap_buffers();
 
-    // graphics::render_frame();
-    // if (game::global_program_mode() == Program_Mode::GAME)
-    // {
-    //     simulate_gameplay();
-    //     update_game_camera();
-    // }
-    // else if(game::global_program_mode() == Program_Mode::EDITOR)
-    // {
-    //     update_editor();            
-    // }
-    // update_audio();
+
     auto end = std::chrono::system_clock::now();
     game::previous_frame_time() = end - start;
 }
 
-void game::simulate_gameplay()
+void game::handle_menu_input()
 {
-
-    //@FIXME: where is the input queue emptied?
-    //@FIXME: do we want the keyboard to be bitwise?
-    // so we can continue?
     auto &queue = input::input_queue();
-    // fmt::print("simulate_gameplay: queue size: {}", queue.size());    
+    int active_menu_item = static_cast<int>(menu::active_start_menu_item());
+
+    //@Refactor: this is horrible.
     for (auto key : queue)
     {
         if (key == input::Key_Input::KEY_UP)
         {
-            fmt::print("detected KEY UP!\n");
+            if (active_menu_item == menu::Menu_Item::START) {} // do nothing
+            else
+                active_menu_item = active_menu_item - 1;
             // return;
+        }
+        if (key == input::Key_Input::KEY_DOWN)
+        {
+            if(active_menu_item == menu::Menu_Item::EXIT) {} // do nothing
+            else
+                active_menu_item = active_menu_item + 1;
+        }
+    }
+    menu::active_start_menu_item() = static_cast<menu::Menu_Item>(active_menu_item);
+    queue.clear();
+}
+
+
+void game::simulate_gameplay()
+{
+    //@FIXME: where is the input queue emptied?
+    //@FIXME: do we want the keyboard to be bitwise? I think so,
+    // Now we are evaluating every value for every key.
+    // so we can continue?
+    auto &queue = input::input_queue();
+    for (auto key : queue)
+    {
+        if (key == input::Key_Input::KEY_UP)
+        {
         }
     }
 
     queue.clear();
-    // fmt::print("simulate_gameplay: queue size: {}", queue.size());    
 }
 
 std::chrono::duration<float, std::milli>& game::previous_frame_time()
@@ -75,7 +91,6 @@ std::chrono::duration<float, std::milli>& game::previous_frame_time()
     static std::chrono::duration<float, std::milli> previous_frame_time;
     return previous_frame_time;
 }
-
 
 game::Program_Mode& game::global_program_mode()
 {
@@ -105,7 +120,6 @@ void game::init_everything()
     game::init_font();
 
     //@TODO: set some modes? program_mode, play the menu music?
-    // 
     auto& program_mode = game::global_program_mode();
     program_mode = Program_Mode::MENU;
 
@@ -127,6 +141,19 @@ void game::deinit_everything()
     //graphics::deinit_graphics();
     //font::deinit_font();  
 }
+
+// Jon Blow main loop.
+// graphics::render_frame();
+// if (game::global_program_mode() == Program_Mode::GAME)
+// {
+//     simulate_gameplay();
+//     update_game_camera();
+// }
+// else if(game::global_program_mode() == Program_Mode::EDITOR)
+// {
+//     update_editor();            
+// }
+// update_audio();
 
 // void game::load_models()
 // {

@@ -3,6 +3,13 @@
 #include "../graphics/graphics.h"
 #include "fmt/core.h"
 
+menu::Menu_Item& menu::active_start_menu_item()
+{
+    static menu::Menu_Item active_start_menu_item = menu::Menu_Item::NONE;
+    return active_start_menu_item;
+}
+
+
 void menu::draw_menu()
 {
     // selected_menu_item
@@ -15,12 +22,51 @@ void menu::draw_menu()
  	float cursor_y = (window_settings.height - vertical_offset);
 
     //@Refactor: font_height is not stored in the font now. does that matter?
-    uint32_t font_height = 50;
+    const uint32_t font_height = 50;
+    const float scale = 1.0f;
     font::Font menu_font = {};    
     font::generate_font_at_size(menu_font, "../fonts/opensans.ttf", font_height);
 
-    Vec3 start_game_color = {0.5f, 0.8f, 0.7f};
-    float scale = 1.0f;
+    Vec3 default_color =  {0.19f, 0.717f,0.17f};
+    Vec3 selected_color = {0.12f, 0.76f, 0.717f};
+    Vec3 start_game_color = default_color;
+    Vec3 settings_color   = default_color;
+    Vec3 exit_game_color  = default_color;
+
+    font::Text_Effect start_game_effect = font::Text_Effect::NONE;
+    font::Text_Effect settings_effect   = font::Text_Effect::NONE;
+    font::Text_Effect exit_game_effect  = font::Text_Effect::NONE;
+
+    //@Refactor: make a struct for this?
+    switch(menu::active_start_menu_item())
+    {
+        case Menu_Item::NONE:
+        {
+            break;
+        }
+        case Menu_Item::START:
+        {
+            start_game_color = selected_color;
+            start_game_effect = font::Text_Effect::COLOUR_SHIFT;
+            break;
+        }
+        case Menu_Item::SETTINGS:
+        {
+            settings_color = selected_color;
+            settings_effect = font::Text_Effect::COLOUR_SHIFT;  
+            break;
+        }
+        case Menu_Item::EXIT:
+        {
+            exit_game_color = selected_color;
+            exit_game_effect = font::Text_Effect::COLOUR_SHIFT;
+            break;
+        }
+    }        
+
+
+
+
 
     //
     // Menu Item: Start Game
@@ -34,7 +80,7 @@ void menu::draw_menu()
                     cursor_y,
                     scale,
                     start_game_color,
-                    font::Text_Effect::COLOUR_SHIFT);
+                    start_game_effect);
 
     //
     // Menu Item: Settings
@@ -43,13 +89,13 @@ void menu::draw_menu()
     uint32_t settings_width = font::get_string_width_in_pixels(settings, menu_font);
     uint32_t settings_x = center_x - 0.5 * settings_width;
     cursor_y -= vertical_stride;
-    Vec3 settings_color = start_game_color; 
     font::draw_text(settings,
                     menu_font,
                     settings_x,
                     cursor_y,
                     scale,
-                    settings_color);
+                    settings_color,
+                    settings_effect);
 
     //
     // Menu Item: Exit
@@ -58,11 +104,11 @@ void menu::draw_menu()
     uint32_t exit_width = font::get_string_width_in_pixels(exit, menu_font);
     uint32_t exit_x = center_x - 0.5 * exit_width;
     cursor_y -= vertical_stride;
-    Vec3 exit_color = start_game_color;
     font::draw_text(exit,
                     menu_font,
                     exit_x,
                     cursor_y,
                     scale,
-                    exit_color);
+                    exit_game_color,
+                    exit_game_effect);
 }

@@ -12,7 +12,7 @@ enum class Input_Event
 
 namespace input
 {
-    enum class Key_Input
+    enum Key_Input : uint32_t
     {
         KEY_W,
         KEY_A,
@@ -21,7 +21,9 @@ namespace input
         KEY_UP,
         KEY_DOWN,
         KEY_LEFT,
-        KEY_RIGHT
+        KEY_RIGHT,
+        MOUSE_LEFT,
+        MOUSE_RIGHT
     };
     
     std::vector<Key_Input>& input_queue();

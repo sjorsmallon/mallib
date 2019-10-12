@@ -4,6 +4,24 @@
 look at harfbuzz for text shaping.
 text effects? (pulse?)
 
+# Globals, Singletons, and modularity
+For now, I'm using the Static singleton pattern for some global state management. Some of these can move into some sort of global struct,
+which every gameplay module gets access to. The problem for now is I want to properly compartmentalize all of the
+several substructures in the program (for example, `font` or `graphics`). This allows me to have a global object that is accessible
+in the namespace. An additional benefit for now is that I can work with some global object without thinking about where it lives, while
+still allowing me to change where it lives live later on without a huge amount of refactoring. I want to take a look at the `stb` 
+files, as their concept of ownership and memory management are very useful: either they do it for you (via malloc etc), or they
+request the user to do so, and provide a different set of functions for this.
+
+# using the STL
+fFr now, I'm using the STL. For now, it saves me some pain dealing with heap allocations / memory management. I do not have a 
+solid concept on handling memory, or at least, I just don't know how to do it properly. So instead of doing a very bad job,
+I'm not doing a job at all. to be fair, I mostly use the containers of the STL, like `vector`, `map` and `string`. `string` is 
+especially difficult, since I don't know what I want to do. most C APIs expect some sort of NTBS, but I don't like that. 
+superficially, a string class should be a `size`and a`capacity`. Furthermore, I don't know much about `utf8`, but that will
+be a problem for a later date.
+
+
 # The const curse
 constness spreads throughout the application as a virus. What's mostly annoying is that constness should be more like 
 a contract in terms of what we are trying to do with it, but it also forces us to write more operator overloads.
@@ -39,9 +57,6 @@ I have no idea how to properly write a renderer API. I'll try to look at how Ogr
 # Entrypoints
 
 
-
-
-
 # CMake
 CMake is not a build tool, but cmake is a build generator. It can generate platform specific build files (i.e. make or a VS solution).
 
@@ -60,6 +75,9 @@ the `code generation -> runtime library` field to either Multithreaded or multit
 # use of FMT 
 FMT is only used in the glue parts of the engine, not in the classes / other files.
 any error reporting there is done using `cerr` (for now).
+
+# use of SOLOUD
+I need to document how to build soloud, as it uses this weird build system. It's a nice library though.
 
 
 # TODO
