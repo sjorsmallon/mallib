@@ -56,12 +56,16 @@ void game::handle_menu_input()
             else
                 active_menu_item = active_menu_item - 1;
             // return;
+            sound::play_sound("../music/menu_select.wav");
+
         }
         if (key == input::Key_Input::KEY_DOWN)
         {
             if(active_menu_item == menu::Menu_Item::EXIT) {} // do nothing
             else
                 active_menu_item = active_menu_item + 1;
+            sound::play_sound("../music/menu_select.wav");
+
         }
     }
     menu::active_start_menu_item() = static_cast<menu::Menu_Item>(active_menu_item);
@@ -123,8 +127,8 @@ void game::init_everything()
     auto& program_mode = game::global_program_mode();
     program_mode = Program_Mode::MENU;
 
-    sound::load_music("../music/i_feel_so_alive.wav");
-    sound::play_music("../music/i_feel_so_alive.wav");
+    sound::load_music("../music/introduction.mp3");
+    sound::play_music("../music/introduction.mp3");
 
     graphics::clear_buffers();
 }

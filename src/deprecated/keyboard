@@ -1,0 +1,22 @@
+  // if (current_keyboard_state[key] && !previous_keyboard_state[key])
+    // {
+    //     fmt::print("pressed {}\n", key);
+    // }
+    // for (auto key: keys)
+    // {
+    //     SHORT pressed = GetAsyncKeyState(key);
+    //     if (pressed)
+    //     {
+    //         if (pressed & 0x8000)
+    //         {
+    //             fmt::print("pressed & 0x8000\n");
+    //             input::input_queue().push_back(windows_key_array[key]);
+    //         }
+    //         else
+    //             fmt::print("pressed but not 0x800\n");
+    //     } 
+    //     // if (GetAsyncKeyState(key) & 0x8000) //key is currently down?
+    //     // {
+    //     // }
+    // }
+    // fmt::print("insert_input_in_queue size: {}",input::input_queue().size());

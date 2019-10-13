@@ -8,7 +8,8 @@
 #include <stdint.h> // uint32_t
 #include <string>
 #include <memory>
-#include <map>
+#include <map>	  // music(); // we want to store music w.r.t filenames 
+#include <vector> // active_sounds
 
 using Handle = uint32_t;
 using wav_file  = SoLoud::Wav;
@@ -30,6 +31,13 @@ namespace sound
 		std::unique_ptr<wav_stream> stream_ptr;
 	};
 
+	struct Sound
+	{
+		int handle;
+
+		wav_file* wav_ptr;
+	};
+
 	using Active_Music = uint32_t;
 
 	//@Refactor: move to globals(?). we can keep it "living" in the namespace,
@@ -38,19 +46,21 @@ namespace sound
 	Active_Music& active_music();
 	std::map<std::string,Music>& music();
 
+	// Ring_Buffer<wav_stream *>& active_sounds(); 
+	std::vector<Sound>& active_sounds();
 
 	void play_sound(std::string sound);
+
+	void load_music(std::string music);
 	void play_music(std::string music);
 	void stop_music();
 
 
 	//@Refactor: for if we want to move active_music to global game state.
-	void pause_music(Active_Music active_music);
-	void resume_music(Active_Music active_music);
-
+	void toggle_pause_music(Active_Music active_music, bool pause); // only music. 
+	void toggle_pause_all(bool pause); // music & sound fx.
 
 	void init_sound();
-	void load_music(std::string music);
 	void perform_shutdown();
 	void update_audio(); 
 }

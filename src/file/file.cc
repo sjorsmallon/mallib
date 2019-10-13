@@ -6,13 +6,17 @@
 #include <filesystem>
 #include <experimental/filesystem>
 
+#include <sys/stat.h>
+
 using namespace std;
 namespace fs = std::experimental::filesystem::v1;
 
-// using std::vector<std::string> string_array; // what are conventions here?
 
 void file::file_to_string(const string& filename, string& target)
 {
+    //@FIXME: seekg & tellg cannot be properly used to determine file size. 
+    // see some discussions about that. Prefer the function defined in this
+    // namespace to find the filename.
     std::ifstream file(filename);
     file.seekg(0, std::ios::end);   
     target.reserve(file.tellg());
@@ -21,7 +25,6 @@ void file::file_to_string(const string& filename, string& target)
     target.assign((std::istreambuf_iterator<char>(file)),
                    std::istreambuf_iterator<char>());
 }
-
 
 std::vector<std::string> file::list_files_in_dir(const char* dir_name)
 {
@@ -40,8 +43,10 @@ std::vector<std::string> file::list_files_in_dir(const char* dir_name)
     return file_names;
 }
 
-
-// void file::reload_file()
-// {
-//     // different function per file extension type?
-// }
+// returns 0 when something's not right.
+size_t file::get_file_size(const std::string& filename)
+{
+    struct stat stat_buf;
+    int rc = stat(filename.c_str(), &stat_buf);
+    return rc == 0 ? stat_buf.st_size : 0;
+}

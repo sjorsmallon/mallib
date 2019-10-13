@@ -4,3 +4,4 @@ cl.exe /MP4 /EHsc /Fe:test.exe /std:c++17 win32_entrypoint.cc ../game/game.cc ..
 
 // user32 for some random error?
 #pragma comment(lib, "Gdi32.lib") // for blit.
+

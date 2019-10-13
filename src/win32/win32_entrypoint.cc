@@ -42,13 +42,14 @@ wglChoosePixelFormatARB_type *wglChoosePixelFormatARB;
 
 #include <Wingdi.h>
 #include <iostream> // redirect_output
-#include <array> // populate_windows_key_map
-#include <vector>
+#include <algorithm> // std::swap
 #include "fmt/core.h" // 
 
-input::Key_Input windows_key_array[255] = {};
-std::vector<unsigned char> previous_keyboard_state(256);
-std::vector<unsigned char> current_keyboard_state(256);
+
+//@Memory: these are allocated statically now?
+static input::Key_Input windows_key_array[255] = {};
+static unsigned char previous_keyboard_state[256] = {};
+static unsigned char current_keyboard_state[256] = {};
 
 static void populate_windows_key_array()
 {
@@ -287,57 +288,24 @@ static HWND create_window(HINSTANCE instance)
     return window;
 }
 
-
 static void insert_input_in_queue()
 {
     //@Platform:
     int keys[6] = {VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, VK_LBUTTON, VK_RBUTTON};
-
-    //@Refactor: swapping pointers?
-    current_keyboard_state.swap(previous_keyboard_state); // constant time, yay
+    std::swap(current_keyboard_state, previous_keyboard_state);
 
     for (auto key: keys)
     {
-
         if(GetAsyncKeyState(key))
         {
             current_keyboard_state[key] = 1;
              if (!previous_keyboard_state[key])
-             {
-                fmt::print("pressed {}\n", key);
                 input::input_queue().push_back(windows_key_array[key]);
-             }
         }
         else
             current_keyboard_state[key] = 0;
     }
 }
-
-        // if (current_keyboard_state[key] && !previous_keyboard_state[key])
-        // {
-        //     fmt::print("pressed {}\n", key);
-        // }
-    // for (auto key: keys)
-    // {
-    //     SHORT pressed = GetAsyncKeyState(key);
-    //     if (pressed)
-    //     {
-    //         if (pressed & 0x8000)
-    //         {
-    //             fmt::print("pressed & 0x8000\n");
-    //             input::input_queue().push_back(windows_key_array[key]);
-    //         }
-    //         else
-    //             fmt::print("pressed but not 0x800\n");
-    //     } 
-    //     // if (GetAsyncKeyState(key) & 0x8000) //key is currently down?
-    //     // {
-    //     // }
-    // }
-    // fmt::print("insert_input_in_queue size: {}",input::input_queue().size());
-    // do some bitwise stuff in order to pass only one thing?
-
-
 
 
 int WINAPI wWinMain(HINSTANCE instance,
