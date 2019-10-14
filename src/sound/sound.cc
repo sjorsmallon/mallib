@@ -43,7 +43,6 @@ void sound::perform_shutdown()
 
 void sound::update_audio()
 {
-
 	//@FIXME: music is never freed. we should do that.
 
 	//@Note: if any music still playing:
@@ -57,7 +56,6 @@ void sound::update_audio()
 	// over all sounds instead of only over the done ones.
 	//@Memory: we are deleting the sounds now.
 	auto& sounds = sound::active_sounds();
-
 	for (auto sound_ptr = sounds.begin(); sound_ptr != sounds.end();)
 	{
 		if(!sound::soloud().isValidVoiceHandle(sound_ptr->handle))
@@ -69,7 +67,6 @@ void sound::update_audio()
 		}
 		else ++sound_ptr;
 	}
-
 }
 
 void sound::load_music(std::string filename)
