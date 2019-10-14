@@ -45,6 +45,9 @@ void menu::draw_menu()
     font::Text_Effect settings_effect   = font::Text_Effect::NONE;
     font::Text_Effect exit_game_effect  = font::Text_Effect::NONE;
 
+
+
+
     //@Refactor: make a struct for this?
     switch(menu::active_start_menu_item())
     {
@@ -77,6 +80,8 @@ void menu::draw_menu()
     // Menu Item: Start Game
     //
     {
+        //if ()
+
         std::string start_game = "Start game";
         uint32_t start_game_width = font::get_string_width_in_pixels(start_game, menu_font);
         uint32_t start_game_x = center_x - 0.5 * start_game_width;

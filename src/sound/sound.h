@@ -34,7 +34,6 @@ namespace sound
 	struct Sound
 	{
 		int handle;
-
 		wav_file* wav_ptr;
 	};
 
@@ -44,7 +43,7 @@ namespace sound
 	// for the sake of the module?
 	SoLoud::Soloud& soloud(); 
 	Active_Music& active_music();
-	std::map<std::string,Music>& music();
+	std::map<std::string, Music>& music();
 
 	// Ring_Buffer<wav_stream *>& active_sounds(); 
 	std::vector<Sound>& active_sounds();

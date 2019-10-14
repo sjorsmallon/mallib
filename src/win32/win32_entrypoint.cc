@@ -51,7 +51,7 @@ static input::Key_Input windows_key_array[255] = {};
 static unsigned char previous_keyboard_state[256] = {};
 static unsigned char current_keyboard_state[256] = {};
 
-static void populate_windows_key_array()
+static void init_windows_key_array()
 {
     using namespace input;
 
@@ -290,6 +290,8 @@ static HWND create_window(HINSTANCE instance)
 
 static void insert_input_in_queue()
 {
+    //@refactor: the input queue is maximally the size of the buttons we want to check.
+    // I think? or do we want buffered input?
     //@Platform:
     int keys[6] = {VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, VK_LBUTTON, VK_RBUTTON};
     std::swap(current_keyboard_state, previous_keyboard_state);
@@ -315,7 +317,7 @@ int WINAPI wWinMain(HINSTANCE instance,
 {
     
     redirect_output_to_console(); 
-    populate_windows_key_array();
+    init_windows_key_array();
 
     HWND window = create_window(instance);
     HDC  device_context = GetDC(window);

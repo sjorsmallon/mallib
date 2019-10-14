@@ -135,8 +135,6 @@ void sound::toggle_pause_all(bool pause)
 	sound_player.setPauseAll(pause);
 }
 
-
-
 void sound::stop_music()
 {
 
