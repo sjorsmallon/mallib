@@ -80,6 +80,22 @@ inline Mat4 mmat::ortho(const float left,
 }
 
 
+inline Mat4 mmat::perspective(const float fov_y,
+                     const float aspect_ratio,
+                     const float near_plane,
+                     const float far_plane)
+{
+    float rad_fov = fov * DEG2RAD;
+    float tan_half_fov = tanf(rad_fov / 2.0f);
+      
+    d_matrix[0][0] = 1.0f /(aspectRatio * tan_half_fov);
+    d_matrix[1][1] = 1.0f / tan_half_fov;
+    d_matrix[2][2] = - (farPlane + nearPlane) / (farPlane - nearPlane);
+    d_matrix[2][3] = - (2.0f * farPlane * nearPlane) / (farPlane - nearPlane);
+    d_matrix[3][2] = - 1.0f;
+    d_matrix[3][3] = 0.0f;
+}
+
 
 
 

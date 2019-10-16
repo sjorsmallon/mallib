@@ -5,16 +5,11 @@
 #include <stdint.h>
 #include <string>
 #include <sstream>
-// #include <GL/GL.h>
-
 #include "gl_lite.h"
-
 #include <Wingdi.h>
 #include <stdlib.h>
 
-
 #include "../file/file.h"
-
 
 void graphics::init_graphics()
 { 
@@ -44,8 +39,8 @@ void graphics::init_graphics()
     glDetachShader(shader_programs.text, text_vertex);
     glDetachShader(shader_programs.text, text_fragment);
 
-    uint32_t normal_vertex   = graphics::load_compile_attach_shader(shader_programs.normals, "../shaders/normal.vertex");
-    uint32_t normal_fragment = graphics::load_compile_attach_shader(shader_programs.normals, "../shaders/normal.fragment");
+    uint32_t normal_vertex   = graphics::load_compile_attach_shader(shader_programs.normals, "../shaders/normals.vertex");
+    uint32_t normal_fragment = graphics::load_compile_attach_shader(shader_programs.normals, "../shaders/normals.fragment");
     glLinkProgram(shader_programs.normals);
     glDetachShader(shader_programs.normals, normal_vertex);
     glDetachShader(shader_programs.normals, normal_fragment);
@@ -147,21 +142,29 @@ void graphics::draw_game_3d()
     // for now, draw the cat.
     set_shader(graphics::Shader_Type::SHADER_NORMALS);
     // // calculate view transformation.
-    // d_viewMatrix = d_viewRotationMatrix * d_viewScaleMatrix;
-    // d_viewMatrix = d_viewTranslationMatrix * d_viewMatrix;
-    // d_viewMatrix = d_viewScaleMatrix * d_viewRotationMatrix * d_viewTranslationMatrix;
 
-    // // bind light position.
-    // d_lightPositionVector = {0, 0, 0.5, 1};
-    // d_light.color = {1.0f, 1.0f, 1.0f};
-    // glUniform4fv(d_lightPositionLocation, 1, d_lightPositionVector.data());
-    // glUniform3fv(d_lightColorLocation,    1, d_light.color.data()); //this is not yet fixed!
-    // glUniform4fv(d_materialLocation,      1, d_material.data());
-    
-    // // bind the view matrix to the uniform. 
-    // glUniformMatrix4fv(d_viewMatrixLocation,      1, false, d_viewMatrix.data());
-    // //use the projection matrix, set in the beginning:
-    // glUniformMatrix4fv(d_projectionMatrixLocation,      1, false, d_projectionMatrix.data());
+
+    // // bind light position. not necessary for the normals.
+    // uint32_t normal_shader = graphics::shaders().normals;
+    // int32_t light_position_location = glGetUniformLocation(normal_shader,light_position);
+    // int32_t light_color_location    = glGetUniformLocation(normal_shader,light_color);
+    // int32_t material_location       = glGetUniformLocation(normal_shader,material);
+    // vec::Vec3 light_position = {0.0f, 0.0f, 0.5f};
+    // vec::Vec3 light_color = {1.0f, 1.0f, 1.0f};
+    // Vec4 material =  {0.4f, 0.6f, 0.8f, 64f};
+    // glUniform3fv(light_position_location, 1, &light_position.data[0]);
+    // glUniform3fv(light_color_location, 1, &light_color.data[0])
+    // glUniform4fv(material_location, 1, material.data());
+
+    // bind the view matrix to the uniform. 
+    int32_t view_matrix_location = glGetUniformLocation(normal_shader, view_matrix);
+    view_matrix = view_scale_matrix * view_rotation_matrix * view_translation_matrix;
+    glUniformMatrix4fv(view_matrix_location,      1, false, d_viewMatrix.data());
+    //use the projection matrix, set in the beginning:
+
+
+    Mat4 projection_matrix = mmat::perspective(75, aspect_ratio, 0.1f, 1.0f);    
+    glUniformMatrix4fv(d_projectionMatrixLocation,      1, false, d_projectionMatrix.data());
 
     // // ???????
     // glActiveTexture(GL_TEXTURE0);

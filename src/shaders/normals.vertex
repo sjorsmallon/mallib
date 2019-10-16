@@ -8,16 +8,16 @@ in vec2 tex_coordinates_in;
 in vec3 normal_in;
 
 // Specify the Uniforms of the vertex shader
-uniform mat4 modelMatrix;
-uniform mat4 modelProjection;
-uniform mat4 viewMatrix;
-uniform mat3 normalTransform;
+uniform mat4 model_matrix;
+uniform mat4 model_projection;
+uniform mat4 view_matrix;
+uniform mat3 normal_transform;
 
 // Specify the output of the vertex stage
 out vec3 vert_normal;
 
 void main()
 {
-    gl_Position = modelProjection * viewMatrix * modelMatrix * vec4(position_in, 1.0);
-    vert_normal = normalTransform * normal_in;
+    gl_Position = model_projection * view_matrix * model_matrix * vec4(position_in, 1.0);
+    vert_normal = normal_transform * normal_in;
 }

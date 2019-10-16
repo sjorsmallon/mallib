@@ -13,7 +13,7 @@
 struct Mat4
 {
     // Vec4 d_matrix[4];
-    float data[4][4]; // we can always change this. for now, let's do this.
+    float data[4][4]; // we can always change this. 
 };
 
 
