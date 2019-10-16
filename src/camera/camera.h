@@ -13,7 +13,7 @@ struct Camera
     float focal_length;
     float near_clip_plane;
     float far_clip_plane;
-}
+};
 
 namespace mcam
 {

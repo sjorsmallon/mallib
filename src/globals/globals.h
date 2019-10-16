@@ -12,13 +12,13 @@ namespace globals
 	struct Window_Settings
 	{
 		Vec2i window_dimensions;
-	}
+	};
 
 	struct Global_Input
 	{
 		Vec2i mouse_coords;
 		std::vector<Key_Input> input_queue;
-	}
+	};
 
 
 

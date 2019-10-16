@@ -95,6 +95,7 @@ typedef ptrdiff_t GLsizeiptr;
     GLE(void,      ClearBufferfv,           GLenum buffer, GLint drawbuffer, const GLfloat * value) \
     GLE(void,      CompileShader,           GLuint shader) \
     GLE(GLuint,    CreateProgram,           void) \
+    GLE(void,      DeleteProgram,           GLuint program) \
     GLE(GLuint,    CreateShader,            GLenum type) \
     GLE(void,      DeleteBuffers,           GLsizei n, const GLuint *buffers) \
     GLE(void,      DeleteFramebuffers,      GLsizei n, const GLuint *framebuffers) \

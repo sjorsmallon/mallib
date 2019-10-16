@@ -12,6 +12,27 @@
 #include "../input/input.h"
 #include <chrono>
 
+void game::init_everything()
+{
+    game::init_audio();
+    game::init_graphics();
+    game::init_font();
+
+    //@TODO: set some modes? program_mode, play the menu music?
+    auto& program_mode = game::global_program_mode();
+    program_mode = Program_Mode::MENU;
+
+    sound::load_music("../music/introduction.mp3");
+    sound::play_music("../music/introduction.mp3");
+
+    // uint32_t VBO = 
+    // uint32_t VAO = 
+    auto& raw_data = graphics::cat_data();
+    graphics::load_obj("../object_files/cat.obj", raw_data);
+    graphics::generate_vertices_from_raw_data(raw_data);
+
+    graphics::clear_buffers();
+}
 
 void game::main_loop()
 {
@@ -20,6 +41,7 @@ void game::main_loop()
     // start & end are used for frametime.
     auto start = std::chrono::system_clock::now();
     const auto program_mode = game::global_program_mode();
+
 
     if (program_mode == Program_Mode::GAME)
     {
@@ -37,7 +59,7 @@ void game::main_loop()
     graphics::render_frame(); 
     graphics::swap_buffers();
 
-
+    // end time calculation.
     auto end = std::chrono::system_clock::now();
     game::previous_frame_time() = end - start;
 }
@@ -90,6 +112,8 @@ void game::simulate_gameplay()
     queue.clear();
 }
 
+
+
 std::chrono::duration<float, std::milli>& game::previous_frame_time()
 {
     static std::chrono::duration<float, std::milli> previous_frame_time;
@@ -117,21 +141,13 @@ void game::init_graphics()
     graphics::init_graphics();
 }
 
-void game::init_everything()
-{
-    game::init_audio();
-    game::init_graphics();
-    game::init_font();
 
-    //@TODO: set some modes? program_mode, play the menu music?
-    auto& program_mode = game::global_program_mode();
-    program_mode = Program_Mode::MENU;
 
-    sound::load_music("../music/introduction.mp3");
-    sound::play_music("../music/introduction.mp3");
 
-    graphics::clear_buffers();
-}
+
+
+
+
 
 void game::shutdown()
 {

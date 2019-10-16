@@ -3,13 +3,15 @@
 #undef min
 #include <fmt/core.h>
 #include <stdint.h>
+#include <string>
+#include <sstream>
 // #include <GL/GL.h>
 
 #include "gl_lite.h"
 
 #include <Wingdi.h>
 #include <stdlib.h>
-#include <string>
+
 
 #include "../file/file.h"
 
@@ -18,29 +20,55 @@ void graphics::init_graphics()
 { 
     gl_lite_init();
     glEnable(GL_CULL_FACE);
-    // glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
-    // glDepthFunc(GL_LEQUAL);
-    // for font.
+    glDepthFunc(GL_LEQUAL);
+    
+    //@Refactor::for font. should we move it there?
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
-
     graphics::Shaders& shader_programs = graphics::shaders();
+    //@Refactor: default init these to 0, so we can verify whether they are 0 in reload_shaders?
     shader_programs.default = glCreateProgram();
     shader_programs.text    = glCreateProgram();
     shader_programs.normals = glCreateProgram(); 
     shader_programs.bomb    = glCreateProgram();
 
+    //@Refactor: use reload shaders?
     uint32_t text_vertex   = graphics::load_compile_attach_shader(shader_programs.text, "../shaders/text.vertex");
     uint32_t text_fragment = graphics::load_compile_attach_shader(shader_programs.text, "../shaders/text.fragment");
     glLinkProgram(shader_programs.text);
     glDetachShader(shader_programs.text, text_vertex);
     glDetachShader(shader_programs.text, text_fragment);
 
+    uint32_t normal_vertex   = graphics::load_compile_attach_shader(shader_programs.normals, "../shaders/normal.vertex");
+    uint32_t normal_fragment = graphics::load_compile_attach_shader(shader_programs.normals, "../shaders/normal.fragment");
+    glLinkProgram(shader_programs.normals);
+    glDetachShader(shader_programs.normals, normal_vertex);
+    glDetachShader(shader_programs.normals, normal_fragment);
+
     set_shader(graphics::Shader_Type::SHADER_TEXT);
+}
+
+void graphics::reload_shaders(uint32_t& program)
+{
+    std::string vertex_shader  = "../shaders/text.vertex";
+    std::string fragment_shader = "../shaders/text.fragment";
+    glDeleteProgram(program);
+
+    program = glCreateProgram();
+    uint32_t vertex   = graphics::load_compile_attach_shader(program, vertex_shader);
+    uint32_t fragment = graphics::load_compile_attach_shader(program, "../shaders/text.fragment");
+    glLinkProgram(program);
+    glDetachShader(program, vertex);
+    glDetachShader(program, fragment);
+
+    // unlink the shader from the program?
+    // deleteShader
+    // load_compile_attach_shader?
 }
 
 graphics::Shaders& graphics::shaders()
@@ -86,15 +114,103 @@ void graphics::set_shader(Shader_Type shader_type)
 }
 
 
+void graphics::generate_vertices_from_raw_data(graphics::Raw_Obj_Data& raw_data)
+{
+    // preallocate space.
+    raw_data.vertices.resize(raw_data.faces.size());
+
+    for (auto &face : raw_data.faces)
+    {
+        for (auto& index_set : face.indices_set)
+        {
+            graphics::Vertex temp = { 
+                            raw_data.positions[index_set.data[0]].x,  //vx
+                            raw_data.positions[index_set.data[0]].y,  //vy
+                            raw_data.positions[index_set.data[0]].z,  //vz
+                            raw_data.tex_coords[index_set.data[1]].u, //u
+                            raw_data.tex_coords[index_set.data[1]].v, //v     
+                            raw_data.normals[index_set.data[2]].x,    //nx
+                            raw_data.normals[index_set.data[2]].y,    //ny
+                            raw_data.normals[index_set.data[2]].z,    //nz     
+                          };
+            raw_data.vertices.emplace_back(temp);
+        }
+    }
+}
+
+
+// Everything happens in here. I need to think about what to separate to which extent.
 void graphics::draw_game_3d()
 {
+
     // draw all buffers?
+    // for now, draw the cat.
+    set_shader(graphics::Shader_Type::SHADER_NORMALS);
+    // // calculate view transformation.
+    // d_viewMatrix = d_viewRotationMatrix * d_viewScaleMatrix;
+    // d_viewMatrix = d_viewTranslationMatrix * d_viewMatrix;
+    // d_viewMatrix = d_viewScaleMatrix * d_viewRotationMatrix * d_viewTranslationMatrix;
+
+    // // bind light position.
+    // d_lightPositionVector = {0, 0, 0.5, 1};
+    // d_light.color = {1.0f, 1.0f, 1.0f};
+    // glUniform4fv(d_lightPositionLocation, 1, d_lightPositionVector.data());
+    // glUniform3fv(d_lightColorLocation,    1, d_light.color.data()); //this is not yet fixed!
+    // glUniform4fv(d_materialLocation,      1, d_material.data());
+    
+    // // bind the view matrix to the uniform. 
+    // glUniformMatrix4fv(d_viewMatrixLocation,      1, false, d_viewMatrix.data());
+    // //use the projection matrix, set in the beginning:
+    // glUniformMatrix4fv(d_projectionMatrixLocation,      1, false, d_projectionMatrix.data());
+
+    // // ???????
+    // glActiveTexture(GL_TEXTURE0);
+    // //calculate object model matrix
+    // //        object.modelMatrix = object.translationMatrix * object.rotationMatrix * object.scaleMatrix;
+    // object.modelMatrix = object.scaleMatrix * object.rotationMatrix * object.translationMatrix;
+    // object.normalTransformMatrix = object.modelMatrix.normalMatrix();
+
+    // glUniformMatrix4fv(d_modelMatrixLocation, 1, false, object.modelMatrix.data());
+    // glUniformMatrix3fv(d_normalTransformMatrixLocation, 1, false, object.normalTransformMatrix.data());
+
+    // glBindVertexArray(gVAO);
+    // glBindTexture(GL_TEXTURE_2D, object.TBO);
+
+    // glUniform1i(d_textureLocation, 0);
+    // glDrawArrays(GL_TRIANGLES,0, object.interleaved_vertices.size()); //changed
+    // ///
+
+    // glUseProgram(0); // NULL?
+
+
+
+
+
+    // GLuint IBO;
+    // gluint normal_VAO;
+    // gluint position_VAO;
+    // gluint texture_coord_VAO;
+    // glGenBuffers(1, &IBO);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+
+    // // glActiveTexture(GL_TEXTURE0);
+
+
+
+
+    // auto& raw_data = graphics::cat_data();
+    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, raw_data.faces.size() * sizeof(graphics::Face), raw_data.data(), GL_STATIC_DRAW);
+
+
+
 }
+
+
 
 void graphics::clear_buffers()
 {
     // glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // glClear(GL_DEPTH_BUFFER_BIT);
 }
 
@@ -166,19 +282,20 @@ void graphics::get_shader_info(uint32_t prog)
 
 }
 
-uint32_t graphics::load_compile_attach_shader(uint32_t program, const char* file_name)
+uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file_name)
 {
 
     // set shader type based on the extension. maybe change shader_type to take const char*
     std::string filename = file_name;
     GLenum shader_type = shader_type_from_extension(filename);
-
+    if (shader_type == 0)
+        fmt::print("incorrect shader type.\n");
     //set Shader
     GLuint shader_id = glCreateShader(shader_type);
     if (shader_id == 0)
-        fmt::print("glCreateShader failed.\n");
+        fmt::print("[graphics] glCreateShader failed.\n");
     else
-        fmt::print("glCreateShader succeeded. created shader ID {}\n", shader_id);
+        fmt::print("[graphics] glCreateShader succeeded. created shader ID {}\n", shader_id);
 
     //@Cleanup:to const char* buffer?
     std::string target = {};
@@ -193,7 +310,7 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, const char* file
 
     if (shader_compiled != GL_TRUE)
     {
-        fmt::print("shader_from_file: unable to compile shader {}\n", filename);
+        fmt::print("[graphics] shader_from_file: unable to compile shader {}\n", filename);
         GLint max_length = 0;
         glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &max_length);
 
@@ -203,14 +320,14 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, const char* file
 
         // Provide the infolog in whatever manor you deem best.
         auto string_log = std::string(error_log.begin(), error_log.end());
-        fmt::print("shader error log: {}\n", string_log);
+        fmt::print("[graphics] shader error log: {}\n", string_log);
         // Exit with failure.
         glDeleteShader(shader_id); // Don't leak the shader.
         // printShaderLog(shader);
     }
     else
     {
-        fmt::print("shader_from_file: successfully compiled {}\n", filename);
+        fmt::print("[graphics] shader_from_file: successfully compiled {}\n", filename);
         glAttachShader(program, shader_id);
         // i think this is causing the problem?
         // glLinkProgram(program);
@@ -221,41 +338,106 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, const char* file
 }
 
 
-void graphics::reload_shaders(uint32_t program)
+//@Refactor:    
+// we need a null-terminated bytestring in order to use sscanf.
+// we can point to an address in memory, but then it doesn't null terminate.
+// read until either linebreak or EOF. replace linebreak by \0.
+// hand ptr over to user.
+// read line by line 
+// size_t file_size = file::get_file_size(filename);
+// if (file_size == 0)
+//     fmt::print("load_obj: could not read file {}", filename);
+// hand me a pointer, and I will alloc for you.
+// we can mitigate the unsafety of sscanf by limiting the number of characters that are 
+// read by %s by affixing a number, i.e. %1s for 1 character only.  
+void graphics::load_obj(const std::string& filename, graphics::Raw_Obj_Data& raw_data)
 {
-    // unlink the shader from the program?
-    // deleteShader
-    // load_compile_attach_shader?
+    std::string data ={};
+    // we assume the filename to be valid?
+    file::file_to_string(filename, data);
+    std::stringstream data_stream(data);
+    constexpr const int max_string_length = 20;
+    constexpr const int max_string_read_length = 9;
+    char garbage_buffer[20] = {}; // used for the garbage in each line. 
 
+    raw_data.positions.resize(4000);
+    raw_data.normals.resize(4000);
+    raw_data.tex_coords.resize(4000);
+    raw_data.faces.resize(4000);
 
+    size_t line_number = 0;
+    for (std::string line; std::getline(data_stream, line);)
+    {
+        ++line_number;
+        if (line[0] == 's')
+        {
+            // what does that mean?
+            continue;
+        }
+        else if (line[0] == '#') // comment 
+        {
+            continue;
+        }
+        else if (line[0] ==  'v' && line[1] == ' ') // vertex
+        {
+            vec::Vec3 pos = {};
+            sscanf(line.c_str(), "%9s %f %f %f", garbage_buffer, &pos.x, &pos.y, &pos.z);
+            raw_data.positions.emplace_back(pos);
+        } 
+        else if (line[0] == 'v' && line[1] == 't') // texture coordinates
+        {
+            Vec2 tex_coords = {};
+            sscanf(line.c_str(), "%9s %f %f", garbage_buffer, &tex_coords.x, &tex_coords.y);
+            raw_data.tex_coords.emplace_back(tex_coords);
+        }
+        else if (line[0] == 'v' && line[1] == 'n') // vertex normals
+        {
+            vec::Vec3 normal = {};
+            sscanf(line.c_str(), "%9s %f %f %f", garbage_buffer, &normal.x, &normal.y, &normal.z);
+            raw_data.normals.emplace_back(normal);
+        }
+        else if (line[0] == 'f') // face indices
+        {
+            Face face = {};
+
+            //@incomplete: This will barf on unstructured obj files. for now, we assume everything's present.
+            sscanf(line.c_str(), "%9s %u / %u / %u %u /%u /%u %u /%u /%u",
+                   garbage_buffer,
+                   &face.indices_set[0].data[0], &face.indices_set[0].data[1], &face.indices_set[0].data[2],
+                   &face.indices_set[1].data[0], &face.indices_set[1].data[1], &face.indices_set[1].data[2],
+                   &face.indices_set[2].data[0], &face.indices_set[2].data[1], &face.indices_set[2].data[2]
+                   );
+
+            // The indices in the wavefront obj start at 1. we offset them to use them correctly
+            // with the arrays in raw_data.
+            face.indices_set[0] -= 1;
+            face.indices_set[1] -= 1;
+            face.indices_set[2] -= 1;
+
+            raw_data.faces.emplace_back(face);
+        }
+        else
+            fmt::print("[graphics] ERROR: load_obj: no matching indicator. line number: {}. content: {}\n", line_number, line);
+    }
+    fmt::print("[graphics] succesfully loaded {}. num_faces: {}\n", filename, raw_data.faces.size());
+}
+
+//@Temporary.
+graphics::Raw_Obj_Data& graphics::cat_data()
+{
+    static graphics::Raw_Obj_Data cat_data;
+    return cat_data;
 }
 
 
-static void load_obj(const char* filename)
-{
-    // std::string inputfile = filename;
-    // tinyobj::attrib_t attrib;
-    // std::vector<tinyobj::shape_t> shapes;
-    // std::vector<tinyobj::material_t> materials;
-
-    // std::string warning;
-    // std::string error;
-
-    // bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, inputfile.c_str());
-
-    // if (!warn.empty())
-    //     fmt::print("tinyobj warning: {}", warning);
-
-    // if (!error.empty())
-    //     fmt::print("tinyobj error: {}", error);
-
-    // if (!ret)
-    //     fmt::print("tinyobj:: something went horribly wrong.");
-
-}
 
 
 
+
+
+
+
+// Jon Blow's render_frame call.
 // void graphics::render_frame()
 // {
     

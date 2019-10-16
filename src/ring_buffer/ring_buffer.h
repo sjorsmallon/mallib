@@ -26,9 +26,7 @@ struct Ring_Buffer
 		++first_free_spot;
 		first_free_spot %= size;
 	}
-
-
-}
+};
 
 
 #endif

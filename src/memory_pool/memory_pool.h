@@ -20,7 +20,7 @@ namespace mem
 	  Memory_Pool* Next_Memory_Pool  = nullptr;
 	  bool has_next = false;
 	  bool is_dirty = true;
-	}
+	};
 
 	void init_pool(const Pool& pool, size_t size);
 	void defragment_pool(Pool& pool);
