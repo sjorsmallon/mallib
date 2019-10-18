@@ -165,11 +165,11 @@ void graphics::draw_game_3d()
     // calculate view transformation.
     // bind the view matrix to the uniform. 
     int32_t view_matrix_location = glGetUniformLocation(normal_shader, "view_matrix");
-    Mat4 view_scale_matrix = mat::scale(1.0f);
+    Mat4 view_scale_matrix = mat::mat4_identity();
     Mat4 view_rotation_matrix = mat::mat4_identity();
-    Mat4 view_translation_matrix = mat::translation()
+    Mat4 view_translation_matrix = mat::mat4_identity();
     Mat4 view_matrix = view_scale_matrix * view_rotation_matrix * view_translation_matrix;
-    glUniformMatrix4fv(view_matrix_location, 1, false, &d_viewMatrix[0][0]);
+    glUniformMatrix4fv(view_matrix_location, 1, false, &view_matrix[0][0]);
 
 
     // Projection Matrix:
@@ -179,15 +179,16 @@ void graphics::draw_game_3d()
     float perspective_far_z = 1.0f;
     float aspect_ratio = graphics::window_settings().width / graphics::window_settings().height;
     Mat4 projection_matrix = mat::perspective(fov, aspect_ratio, perspective_near_z, perspective_far_z);    
-    glUniformMatrix4fv(projection_matrix_location, 1, false, &projection_matrix[0][0]);
+    glUniformMatrix4fv(projection_matrix_location, 1, false, &projection_matrix[0][0]); // should this be transposed?
 
 
     // Model Matrix:
     Xform_State cat_state = {};
     cat_state.position = {0.0f, 0.0f, -0.8f};
-    cat_state.q_rotation = {0.0f, 0.0f, 0.0f, 1.0f};
+    cat_state.q_orientation = {0.0f, 0.0f, 0.0f, 1.0f};
     cat_state.scale = 0.2f; 
     Mat4 model_matrix = mat::from_xform_state(cat_state);
+
 
     // // ???????
     // glActiveTexture(GL_TEXTURE0);

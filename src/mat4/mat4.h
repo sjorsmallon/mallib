@@ -1,5 +1,7 @@
 #ifndef INCLUDED_MAT4_
 #define INCLUDED_MAT4_
+#include "../vec3/vec3.h"
+#include "../xform_state/xform_state.h"
 
 // #define PI 3.14159265358979323846f //@Cleanup: move these to math
 // #define DEG2RAD  PI / 180.0f
@@ -59,9 +61,37 @@ inline Mat4& operator*=(Mat4& lhs, Mat4& rhs)
 }
 
 
+// we assume that mat4 is ROW MAJOR here.
+// if they are not, we can swap these two functions.
+inline Mat4 from_row_vec3(const vec::Vec3& v0, const vec::Vec3& v1, const vec::Vec3& v2)
+{
+    return {v0.x, v0.y, v0.z, 0,
+            v1.x, v1.y, v1.z, 0,
+            v2.x, v2.y, v2.z, 0,
+            0,      0,     0, 1};
+}
+
+inline Mat4 from_col_vec3(const vec::Vec3& v0, const vec::Vec3& v1, const vec::Vec3& v2)
+{
+    return {v0.x, v1.x , v2.x, 0,
+            v0.y, v1.y,  v2.y, 0,
+            v0.z, v1.z, v2.z,  0,
+            0,    0,    0,      1};
+}
 
 
+// convert to matrix
+// non-optimized
+inline Mat4 from_quat(const Vec4& quaternion)
+{
+    vec::Vec3 v0 = rotate_by_quat(vec::Vec3{0,0,0}, quaternion);    // in xform_state.
+    vec::Vec3 v1 = rotate_by_quat(vec::Vec3{0,1,0}, quaternion);
+    vec::Vec3 v2 = rotate_by_quat(vec::Vec3{0,0,1}, quaternion);
 
+    Mat4 result = from_row_vec3(v0, v1, v2); // in mat4.
+
+    return result;
+}
 
 
 

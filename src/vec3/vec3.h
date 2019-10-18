@@ -79,14 +79,15 @@ namespace vec
         return  (t * lhs + (1.0f - t) * rhs);
     }
 
-    inline Vec3& normalize(Vec3& lhs)
+    inline void normalize(Vec3& lhs)
     {
+        //@FIXME: what if this is inf?
         float one_over_sum = 1.0f / (lhs.x + lhs.y + lhs.z);
         lhs.x *= one_over_sum;
         lhs.y *= one_over_sum;
         lhs.z *= one_over_sum;
 
-        return lhs;
+        // return lhs;
     }
 
     inline float dot(Vec3 lhs, Vec3 rhs)

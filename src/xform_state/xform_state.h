@@ -2,9 +2,9 @@
 #define INCLUDE_XFORM_STATE_
 #include "../vec3/vec3.h"
 #include "../vec4/vec4.h"
+#include "../mat4/mat4.h"
 #include <cmath> // sin,cos 
 
-#include "../mat/mat.h"
 
 
 struct Xform_State
@@ -102,19 +102,6 @@ inline Vec4 rotate_by_quat(const Vec4& quat_lhs, const Vec4& quat_rhs)
 	Vec4 result = q_product(quat_lhs, quat_rhs);
 	result = q_product(result, conjugate(quat_lhs));
 	return result; 
-}
-
-// convert to matrix
-// non-optimized
-inline Mat4 matrix_from_quat(const Vec4& quaternion)
-{
-	vec::Vec3 v0 = rotate_by_quat(vec::Vec3{0,0,0}, quaternion);	
-	vec::Vec3 v1 = rotate_by_quat(vec::Vec3{0,1,0}, quaternion);
-	vec::Vec3 v2 = rotate_by_quat(vec::Vec3{0,0,1}, quaternion);
-	
-	Mat4 result = mat::from_row_vec3(v0, v1, v2);
-
-	return result;
 }
 
 
