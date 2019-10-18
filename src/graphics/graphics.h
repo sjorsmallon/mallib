@@ -16,17 +16,6 @@
 
 namespace graphics
 {
-	struct Vertex_SOA
-	{
-		float *x;
-		float *y;
-		float *z;
-		float *n_x;
-		float *n_y;
-		float *n_z;
-		float *t_u;
-		float *t_v;
-	};
 	//@Cleanup: we can sort of remove this. or keep it internal facing.
 	struct Face
 	{
@@ -40,6 +29,7 @@ namespace graphics
 		Vec2 tex_coords;
 	};
 
+
 	struct Raw_Obj_Data
 	{
 		std::vector<vec::Vec3> positions;
@@ -48,8 +38,6 @@ namespace graphics
 		std::vector<Face> faces; // these indices are offset by 1.
 		std::vector<Vertex> vertices;
 	};
-
-
 
 	struct Light
 	{

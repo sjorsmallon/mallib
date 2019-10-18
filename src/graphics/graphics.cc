@@ -10,6 +10,8 @@
 #include <stdlib.h>
 
 #include "../file/file.h"
+#include "../mat/mat.h"
+#include "../mat4/mat4.h"
 
 void graphics::init_graphics()
 { 
@@ -141,8 +143,9 @@ void graphics::draw_game_3d()
     // draw all buffers?
     // for now, draw the cat.
     set_shader(graphics::Shader_Type::SHADER_NORMALS);
-    // // calculate view transformation.
+    uint32_t active_shader = graphics::shaders().normals;
 
+    // maybe defer(set_shader(graphics::Shader_Type::ERROR));
 
     // // bind light position. not necessary for the normals.
     // uint32_t normal_shader = graphics::shaders().normals;
@@ -156,21 +159,42 @@ void graphics::draw_game_3d()
     // glUniform3fv(light_color_location, 1, &light_color.data[0])
     // glUniform4fv(material_location, 1, material.data());
 
+
+    uint32_t normal_shader = graphics::shaders().normals;
+    // View matrix
+    // calculate view transformation.
     // bind the view matrix to the uniform. 
-    int32_t view_matrix_location = glGetUniformLocation(normal_shader, view_matrix);
-    view_matrix = view_scale_matrix * view_rotation_matrix * view_translation_matrix;
-    glUniformMatrix4fv(view_matrix_location,      1, false, d_viewMatrix.data());
-    //use the projection matrix, set in the beginning:
+    int32_t view_matrix_location = glGetUniformLocation(normal_shader, "view_matrix");
+    Mat4 view_scale_matrix = mat::scale(1.0f);
+    Mat4 view_rotation_matrix = mat::mat4_identity();
+    Mat4 view_translation_matrix = mat::translation()
+    Mat4 view_matrix = view_scale_matrix * view_rotation_matrix * view_translation_matrix;
+    glUniformMatrix4fv(view_matrix_location, 1, false, &d_viewMatrix[0][0]);
 
 
-    Mat4 projection_matrix = mmat::perspective(75, aspect_ratio, 0.1f, 1.0f);    
-    glUniformMatrix4fv(d_projectionMatrixLocation,      1, false, d_projectionMatrix.data());
+    // Projection Matrix:
+    int32_t projection_matrix_location = glGetUniformLocation(normal_shader, "projection_matrix");
+    float fov = 75.0f;
+    float perspective_near_z = 0.1f;
+    float perspective_far_z = 1.0f;
+    float aspect_ratio = graphics::window_settings().width / graphics::window_settings().height;
+    Mat4 projection_matrix = mat::perspective(fov, aspect_ratio, perspective_near_z, perspective_far_z);    
+    glUniformMatrix4fv(projection_matrix_location, 1, false, &projection_matrix[0][0]);
+
+
+    // Model Matrix:
+    Xform_State cat_state = {};
+    cat_state.position = {0.0f, 0.0f, -0.8f};
+    cat_state.q_rotation = {0.0f, 0.0f, 0.0f, 1.0f};
+    cat_state.scale = 0.2f; 
+    Mat4 model_matrix = mat::from_xform_state(cat_state);
 
     // // ???????
     // glActiveTexture(GL_TEXTURE0);
     // //calculate object model matrix
     // //        object.modelMatrix = object.translationMatrix * object.rotationMatrix * object.scaleMatrix;
     // object.modelMatrix = object.scaleMatrix * object.rotationMatrix * object.translationMatrix;
+    
     // object.normalTransformMatrix = object.modelMatrix.normalMatrix();
 
     // glUniformMatrix4fv(d_modelMatrixLocation, 1, false, object.modelMatrix.data());

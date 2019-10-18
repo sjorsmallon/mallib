@@ -1,20 +1,75 @@
 #ifndef INCLUDED_MAT4_
 #define INCLUDED_MAT4_
-#include "../vec4/vec4.h"
-#include "../vec3/vec3.h"
-#include "../quaternion/quaternion.h"
-#include "../xform_state/xform_state.h"
 
-#define PI 3.14159265358979323846f //@Cleanup: move these to math
-#define DEG2RAD  PI / 180.0f
-#define RAD2DEG  180.f / PI
+// #define PI 3.14159265358979323846f //@Cleanup: move these to math
+// #define DEG2RAD  PI / 180.0f
+// #define RAD2DEG  180.f / PI
 
-// column major
+// ROW MAJOR. otherwise my brain breaks w.r.t. initialization.
 struct Mat4
 {
-    // Vec4 d_matrix[4];
     float data[4][4]; // we can always change this. 
+
+    float *operator[](size_t idx)
+    {
+    	//assert(idx < 4)
+    	return data[idx];
+    }
 };
+
+// free mat4 functions.
+
+// this is column major?
+inline Mat4 operator*(Mat4& lhs, Mat4& rhs)
+{
+    const float *m1Ptr, *m2Ptr;
+    float *dstPtr;
+    Mat4 dst;
+
+    m1Ptr = reinterpret_cast<const float *>(&lhs);
+    m2Ptr = reinterpret_cast<const float *>(&rhs);
+    dstPtr = reinterpret_cast<float *>(&dst);
+
+    for (int i = 0; i < 4; i++ ) {
+        for (int j = 0; j < 4; j++ ) {
+            *dstPtr = m1Ptr[0] * m2Ptr[ 0 * 4 + j ]
+            + m1Ptr[1] * m2Ptr[ 1 * 4 + j ]
+            + m1Ptr[2] * m2Ptr[ 2 * 4 + j ]
+            + m1Ptr[3] * m2Ptr[ 3 * 4 + j ];
+            dstPtr++;
+        }
+        m1Ptr += 4;
+    }
+    return dst;
+}
+
+inline Mat4& operator*=(Mat4& lhs, const float factor)
+{
+    lhs[0][0] *= factor;
+    lhs[1][1] *= factor;
+    lhs[2][2] *= factor;
+
+    return lhs;
+}
+
+inline Mat4& operator*=(Mat4& lhs, Mat4& rhs)
+{
+    lhs = lhs * rhs;
+    return lhs;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -281,7 +281,7 @@ Quaternion::Quaternion( const Vector3& vFrom, const Vector3& vTo )
 {
 	a = 1 + Dot( vTo, vFrom );
 	
-	Vector3 vec = Cross( vFrom, vTo );
+	Vector3 vec = cross( vFrom, vTo );
 	v0 = vec[0];
 	v1 = vec[1];
 	v2 = vec[2];

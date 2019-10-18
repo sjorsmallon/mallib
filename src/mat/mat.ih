@@ -1,4 +1,4 @@
-#include "mmat.h"
+#include "mat.h"
 #include "../vec3/vec3.h"
 #include "../vector_transform/vector_transform.h"
 #include "../xform_state/xform_state.h"

@@ -45,6 +45,7 @@ namespace vec
         unsigned int data[3];
     };
     
+    // vec3u operators
     inline Vec3u& operator-=(Vec3u& lhs, float rhs)
     {   
         lhs.x -= rhs;
@@ -54,6 +55,10 @@ namespace vec
     }
 
     // Vec3 operators
+    inline Vec3 operator-(Vec3 lhs, Vec3 rhs)
+    {
+        return {lhs.x -rhs.x , lhs.y - rhs.y, lhs.z - rhs.z};
+    }
     inline Vec3 operator+(Vec3 lhs, Vec3 rhs)
     {
         return {lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z};
@@ -72,6 +77,32 @@ namespace vec
     inline Vec3 lerp(Vec3 lhs, Vec3 rhs, float t)
     {
         return  (t * lhs + (1.0f - t) * rhs);
+    }
+
+    inline Vec3& normalize(Vec3& lhs)
+    {
+        float one_over_sum = 1.0f / (lhs.x + lhs.y + lhs.z);
+        lhs.x *= one_over_sum;
+        lhs.y *= one_over_sum;
+        lhs.z *= one_over_sum;
+
+        return lhs;
+    }
+
+    inline float dot(Vec3 lhs, Vec3 rhs)
+    {
+        return (lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z);
+    }
+
+    inline Vec3 cross(Vec3 lhs, Vec3 rhs)
+    {
+        Vec3 result = {};
+
+        result.x = lhs.y * rhs.z - lhs.z * rhs.y; //aybz − azby
+        result.y = lhs.z * rhs.x - lhs.x * rhs.z; //azbx − axbz
+        result.z = lhs.x * rhs.y - lhs.y * rhs.x; //axby − aybx
+
+        return result;
     }
 }
 

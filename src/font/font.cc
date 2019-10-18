@@ -12,7 +12,7 @@
 #include <cmath> // sin, PI
 
 // #include "../mat4/mat4.h" // projection.
-// #include "../mmat/mmat.h"
+// #include "../mat/mat.h"
 #include "../game/game.h" //@Refactor: replace this with globals for previous_frame_time.
 
 
@@ -112,7 +112,7 @@ void font::draw_text(std::string text,
 
     //@refactor: this projection matrix does not ever change.
     // do we want to store this somewhere?
-    // Mat4 projection_matrix = mmat::ortho(left, right, top, bot, near_, far_);
+    // Mat4 projection_matrix = mat::ortho(left, right, top, bot, near_, far_);
     glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text, "projection"), 1, true, &projectionmatrix[0]);
     
     const auto& glyph_array = font.characters;
