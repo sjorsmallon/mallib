@@ -9,7 +9,6 @@ menu::Menu_Item& menu::active_start_menu_item()
     return active_start_menu_item;
 }
 
-
 void menu::draw_menu()
 {
     // selected_menu_item
@@ -30,7 +29,7 @@ void menu::draw_menu()
     //     float at_y;
     // }
 
-    const uint32_t font_height = 50;
+    const uint32_t font_height = 50; // in pixels
     const float scale = 1.0f;
     font::Font menu_font = {};    
     font::generate_font_at_size(menu_font, "../fonts/opensans.ttf", font_height);

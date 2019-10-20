@@ -1,16 +1,17 @@
-#ifndef INCLUDED_SCOPE_EXIT_
-#define INCLUDED_SCOPE_EXIT_
+#ifndef INCLUDED_ON_LEAVING_SCOPE_
+#define INCLUDED_ON_LEAVING_SCOPE_
+#include <utility> // std::move, std::forward
 
 template<typename Func>
-class OnLeavingScope
+class On_Leaving_Scope
 {
 public:
     // Prevent copying
-    OnLeavingScope(const OnLeavingScope&) = delete;
-    OnLeavingScope& operator=(const OnLeavingScope&) = delete;
+    On_Leaving_Scope(const On_Leaving_Scope&) = delete;
+    On_Leaving_Scope& operator=(const On_Leaving_Scope&) = delete;
 
     // Allow moving
-    OnLeavingScope(OnLeavingScope&& other) :
+    On_Leaving_Scope(On_Leaving_Scope&& other) :
         m_func(std::move(other.m_func)),
         m_active(other.m_active)
     {
@@ -18,14 +19,14 @@ public:
     }
 
     // Accept lvalue function objects
-    OnLeavingScope(const Func& f) :
+    On_Leaving_Scope(const Func& f) :
         m_func(f),
         m_active(true)
     {
     }
 
     // Accept rvalue function objects
-    OnLeavingScope(Func&& f) :
+    On_Leaving_Scope(Func&& f) :
         m_func(std::move(f)),
         m_active(true)
     {
@@ -33,7 +34,7 @@ public:
 
     // Only invoke function object if it
     // hasn't been moved elsewhere
-    ~OnLeavingScope()
+    ~On_Leaving_Scope()
     {
         if (m_active)
             m_func();
@@ -45,10 +46,10 @@ private:
 };
 
 template<typename Func>
-OnLeavingScope<typename std::decay<Func>::type>
+On_Leaving_Scope<typename std::decay<Func>::type>
 onLeavingScope(Func&& f)
 {
-    return OnLeavingScope<typename std::decay<Func>::type>(std::forward<Func>(f));
+    return On_Leaving_Scope<typename std::decay<Func>::type>(std::forward<Func>(f));
 }
 
 #endif

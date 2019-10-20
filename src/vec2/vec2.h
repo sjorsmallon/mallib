@@ -21,12 +21,6 @@ union Vec2
     float data[2];
 };
 
-// struct Vec2
-// {
-//     float x;
-//     float y;
-// };
-
 struct Vec2i
 {
 	int32_t x;

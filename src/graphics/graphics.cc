@@ -9,6 +9,8 @@
 #include <Wingdi.h>
 #include <stdlib.h>
 
+#include "../on_leaving_scope/on_leaving_scope.h"
+
 #include "../file/file.h"
 #include "../mat/mat.h"
 #include "../mat4/mat4.h"
@@ -145,20 +147,27 @@ void graphics::draw_game_3d()
     set_shader(graphics::Shader_Type::SHADER_NORMALS);
     uint32_t active_shader = graphics::shaders().normals;
 
+    // 
+    On_Leaving_Scope(set_shader(graphics::Shader_Type::SHADER_ERROR));
     // maybe defer(set_shader(graphics::Shader_Type::ERROR));
+
+    // lights are a property of the scene. 
+    // however, this implies that the properties of the scene
+    // are bound to uniforms in openGL. I don't necessarily think
+    // that that is a good idea. Or do we insert an array of lights to openGL?
+    // are there things such as uniform arrays?
 
     // // bind light position. not necessary for the normals.
     // uint32_t normal_shader = graphics::shaders().normals;
     // int32_t light_position_location = glGetUniformLocation(normal_shader,light_position);
     // int32_t light_color_location    = glGetUniformLocation(normal_shader,light_color);
     // int32_t material_location       = glGetUniformLocation(normal_shader,material);
-    // vec::Vec3 light_position = {0.0f, 0.0f, 0.5f};
-    // vec::Vec3 light_color = {1.0f, 1.0f, 1.0f};
+    // Vec3 light_position = {0.0f, 0.0f, 0.5f};
+    // Vec3 light_color = {1.0f, 1.0f, 1.0f};
     // Vec4 material =  {0.4f, 0.6f, 0.8f, 64f};
     // glUniform3fv(light_position_location, 1, &light_position.data[0]);
     // glUniform3fv(light_color_location, 1, &light_color.data[0])
     // glUniform4fv(material_location, 1, material.data());
-
 
     uint32_t normal_shader = graphics::shaders().normals;
     // View matrix
@@ -171,7 +180,6 @@ void graphics::draw_game_3d()
     Mat4 view_matrix = view_scale_matrix * view_rotation_matrix * view_translation_matrix;
     glUniformMatrix4fv(view_matrix_location, 1, false, &view_matrix[0][0]);
 
-
     // Projection Matrix:
     int32_t projection_matrix_location = glGetUniformLocation(normal_shader, "projection_matrix");
     float fov = 75.0f;
@@ -181,55 +189,44 @@ void graphics::draw_game_3d()
     Mat4 projection_matrix = mat::perspective(fov, aspect_ratio, perspective_near_z, perspective_far_z);    
     glUniformMatrix4fv(projection_matrix_location, 1, false, &projection_matrix[0][0]); // should this be transposed?
 
-
+    // //calculate object model matrix
+    // glActiveTexture(GL_TEXTURE0);
     // Model Matrix:
+    int32_t model_matrix_location = glGetUniformLocation(normal_shader, "model_matrix");
     Xform_State cat_state = {};
     cat_state.position = {0.0f, 0.0f, -0.8f};
     cat_state.q_orientation = {0.0f, 0.0f, 0.0f, 1.0f};
     cat_state.scale = 0.2f; 
+    //@Refactor: this goes to mat-> to mat4 (from_quat) -> to xform_state(quaternion).
     Mat4 model_matrix = mat::from_xform_state(cat_state);
+    glUniformMatrix4fv(model_matrix_location, 1, false, &model_matrix[0][0]);
+
+    int32_t normal_transform_matrix_location = glGetUniformLocation(normal_shader, "normal_transform_matrix");
+    Mat3 normal_transform_matrix = mat::normal_transform(model_matrix);
+    object.normalTransformMatrix = object.modelMatrix.normalMatrix();
+    //@Note: We need to actually verify whether or not this is transposed.
+    glUniformMatrix3fv(normal_transform_matrix_location, 1, false, &normal_transform_matrix[0][0]);
 
 
-    // // ???????
-    // glActiveTexture(GL_TEXTURE0);
-    // //calculate object model matrix
-    // //        object.modelMatrix = object.translationMatrix * object.rotationMatrix * object.scaleMatrix;
-    // object.modelMatrix = object.scaleMatrix * object.rotationMatrix * object.translationMatrix;
+    //@TODO: with all the above uniforms bound, we still need to send the cat's data to the gpu.
+    // see how I do it in the ECS2 example.
+
     
-    // object.normalTransformMatrix = object.modelMatrix.normalMatrix();
+    // glenableattribptr();
+    // glenableattribptr();
+    // glenableattribptr();
 
-    // glUniformMatrix4fv(d_modelMatrixLocation, 1, false, object.modelMatrix.data());
-    // glUniformMatrix3fv(d_normalTransformMatrixLocation, 1, false, object.normalTransformMatrix.data());
+
+    // whahuh?
 
     // glBindVertexArray(gVAO);
-    // glBindTexture(GL_TEXTURE_2D, object.TBO);
 
+    // glBindTexture(GL_TEXTURE_2D, object.TBO);
     // glUniform1i(d_textureLocation, 0);
+
     // glDrawArrays(GL_TRIANGLES,0, object.interleaved_vertices.size()); //changed
-    // ///
 
     // glUseProgram(0); // NULL?
-
-
-
-
-
-    // GLuint IBO;
-    // gluint normal_VAO;
-    // gluint position_VAO;
-    // gluint texture_coord_VAO;
-    // glGenBuffers(1, &IBO);
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-
-    // // glActiveTexture(GL_TEXTURE0);
-
-
-
-
-    // auto& raw_data = graphics::cat_data();
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, raw_data.faces.size() * sizeof(graphics::Face), raw_data.data(), GL_STATIC_DRAW);
-
-
 
 }
 
@@ -366,6 +363,9 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
 }
 
 
+
+
+
 //@Refactor:    
 // we need a null-terminated bytestring in order to use sscanf.
 // we can point to an address in memory, but then it doesn't null terminate.
@@ -408,7 +408,7 @@ void graphics::load_obj(const std::string& filename, graphics::Raw_Obj_Data& raw
         }
         else if (line[0] ==  'v' && line[1] == ' ') // vertex
         {
-            vec::Vec3 pos = {};
+            Vec3 pos = {};
             sscanf(line.c_str(), "%9s %f %f %f", garbage_buffer, &pos.x, &pos.y, &pos.z);
             raw_data.positions.emplace_back(pos);
         } 
@@ -420,7 +420,7 @@ void graphics::load_obj(const std::string& filename, graphics::Raw_Obj_Data& raw
         }
         else if (line[0] == 'v' && line[1] == 'n') // vertex normals
         {
-            vec::Vec3 normal = {};
+            Vec3 normal = {};
             sscanf(line.c_str(), "%9s %f %f %f", garbage_buffer, &normal.x, &normal.y, &normal.z);
             raw_data.normals.emplace_back(normal);
         }

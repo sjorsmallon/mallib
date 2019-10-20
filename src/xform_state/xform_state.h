@@ -9,18 +9,18 @@
 
 struct Xform_State
 {
-	vec::Vec3 position;
+	Vec3 position;
 	Vec4 q_orientation;
 	float scale;
 };
 
 
-inline Vec4 q_rotation(const vec::Vec3& from, const vec::Vec3& to)
+inline Vec4 q_rotation(const Vec3& from, const Vec3& to)
 {
 	Vec4 quaternion = {};
 	quaternion.w = 1.0f + vec::dot(to, from); // The order does not matter here right?
 	
-	vec::Vec3 cross_product = vec::cross(from, to);
+	Vec3 cross_product = vec::cross(from, to);
 
 	quaternion.x = cross_product.x;
 	quaternion.y = cross_product.y;
@@ -32,7 +32,7 @@ inline Vec4 q_rotation(const vec::Vec3& from, const vec::Vec3& to)
 
 // angle + axis, axis must be normalized. 
 //This function does NOT! normalize the axis.
-inline Vec4 q_rotation(float angle_in_rad, const vec::Vec3& axis)
+inline Vec4 q_rotation(float angle_in_rad, const Vec3& axis)
 {
 	Vec4 quaternion = {};
 	float sina = std::sin(angle_in_rad / 2.0f);
@@ -66,7 +66,7 @@ inline Vec4 q_product(const Vec4& lhs, const Vec4& rhs)
 /// Q (x,0) Q*
 // rotate vec3 by quad
 // non-optimized
-vec::Vec3 rotate_by_quat(const vec::Vec3& lhs, const Vec4& quat_p)
+Vec3 rotate_by_quat(const Vec3& lhs, const Vec4& quat_p)
 {
 	// q = P (lhs,0)
 	Vec4 quat_q = {}; 
@@ -77,7 +77,7 @@ vec::Vec3 rotate_by_quat(const vec::Vec3& lhs, const Vec4& quat_p)
 	quat_q.w = - quat_p.x * lhs.x - quat_p.y * lhs.y - quat_p.z * lhs.z;
 
 	// r = q P*
-	vec::Vec3 result = {};
+	Vec3 result = {};
 	result.x = quat_q.w * -quat_p.x + quat_p.w * quat_q.x  -  quat_q.y * quat_p.z + quat_q.z * quat_p.y;
 	result.y = quat_q.w * -quat_p.y + quat_p.w * quat_q.y  -  quat_q.z * quat_p.x + quat_q.x * quat_p.z;
 	result.z = quat_q.w * -quat_p.z + quat_p.w * quat_q.z  -  quat_q.x * quat_p.y + quat_q.y * quat_p.x;
@@ -104,29 +104,6 @@ inline Vec4 rotate_by_quat(const Vec4& quat_lhs, const Vec4& quat_rhs)
 	return result; 
 }
 
-
-
-// Normalize
-// inline void Quaternion::normalize()
-// {
-// 	float l = length();
-// 	a /= l; v0 /= l; v1 /= l; v2 /= l;
-// }
-
-// Normalized rotor
-// inline Quaternion Quaternion::normal() const
-// {
-// 	Quaternion r = *this; 
-// 	r.normalize(); 
-// 	return r;
-// }
-
-// Quaternion-Quaternion product
-// inline Quaternion Quaternion::operator*=( const Quaternion& r )
-// {
-// 	(*this) = (*this) * r;
-// 	return *this;
-// }
 
 // Length Squared
 // inline float Vec4::lengthsqrd() const

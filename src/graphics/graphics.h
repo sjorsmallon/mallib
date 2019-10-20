@@ -19,21 +19,21 @@ namespace graphics
 	//@Cleanup: we can sort of remove this. or keep it internal facing.
 	struct Face
 	{
-		vec::Vec3u indices_set[3]; // set of indices for a vertex.
+		Vec3u indices_set[3]; // set of indices for a vertex.
 	};
 	
 	struct Vertex
 	{
-		vec::Vec3 position;
-		vec::Vec3 normals;
+		Vec3 position;
+		Vec3 normals;
 		Vec2 tex_coords;
 	};
 
 
 	struct Raw_Obj_Data
 	{
-		std::vector<vec::Vec3> positions;
-		std::vector<vec::Vec3> normals;
+		std::vector<Vec3> positions;
+		std::vector<Vec3> normals;
 		std::vector<Vec2> tex_coords;
 		std::vector<Face> faces; // these indices are offset by 1.
 		std::vector<Vertex> vertices;
@@ -41,8 +41,8 @@ namespace graphics
 
 	struct Light
 	{
-		vec::Vec3 position;
-		vec::Vec3 light_color;
+		Vec3 position;
+		Vec3 light_color;
 		// what kind of light is this?
 	};
 

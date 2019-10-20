@@ -10,7 +10,7 @@ enum class lifetime
 struct Entity
 {
 	bool marked_for_destruction;
-	vec::Vec3 position;
+	Vec3 position;
 };
 
 // lifetime component?

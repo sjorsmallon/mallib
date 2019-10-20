@@ -12,7 +12,7 @@
 
 namespace mat
 {
-    // move these to math?
+    //@Refactor: move this to math?
     static inline const float PI = 3.1415926535;
     static inline const float DEG2RAD = mat::PI / 180.0f;
     static inline const float RAD2DEG = 180.0f / mat::PI;
@@ -23,7 +23,7 @@ namespace mat
     // Mat4 from_quaternion(const Quaternion& quaternion);
     Mat4 mat4_identity();
 
-    Mat4 translate(const Mat4& matrix, const vec::Vec3& vector);
+    Mat4 translate(const Mat4& matrix, const Vec3& vector);
     Mat4 scale(const Mat4& matrix, const float scale_factor);
     Mat4 scale(const float s);
     Mat4 rotate(const Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z); //expects identity
@@ -35,10 +35,9 @@ namespace mat
                      const float near_plane,
                      const float far_plane);
 
-    Mat4 translation(const vec::Vec3& position);
-    Mat4 view(const vec::Vec3& eye, const vec::Vec3& center, const vec::Vec3& up);
-    Mat4 look_at(const vec::Vec3& eye, const vec::Vec3& center, const vec::Vec3& up);
-
+    Mat4 translation(const Vec3& position);
+    Mat4 view(const Vec3& eye, const Vec3& center, const Vec3& up);
+    Mat4 look_at(const Vec3& eye, const Vec3& center, const Vec3& up);
     Mat4 ortho( const float left,
                 const float right,
                 const float top,
@@ -69,14 +68,15 @@ inline Mat4 mat::from_xform_state(const Xform_State& state)
 // }
 
 
-inline Mat4 mat::translation(const vec::Vec3& position)
+inline Mat4 mat::translation(const Vec3& position)
 {
-    return {
-            1, 0, 0, position.x,
-            0, 1, 0, position.y,
-            0, 0, 1, position.z,
-            0, 0, 0, 1
-            };
+ 
+  return {
+           1, 0, 0, position.x,
+           0, 1, 0, position.y,
+           0, 0, 1, position.z,
+           0, 0, 0, 1          
+         };
 }
 
 
@@ -93,10 +93,10 @@ inline Mat4 mat::scale(const float s)
 inline Mat4 mat::mat4_identity()
 {
   return {
-          1, 0, 0, 0,
-          0, 1, 0, 0,
-          0, 0, 1, 0,
-          0, 0, 0, 1
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
          };
 }
 
@@ -144,16 +144,16 @@ inline Mat4 mat::perspective(const float fov_y,
 }
 
 
-inline Mat4 mat::view(const vec::Vec3& eye, const vec::Vec3& center, const vec::Vec3& up)
+inline Mat4 mat::view(const Vec3& eye, const Vec3& center, const Vec3& up)
 {
    // modeled after gluLookAt. 
 
-   vec::Vec3 forward = center - eye; // f = coord_system
+   Vec3 forward = center - eye; // f = coord_system
    vec::normalize(forward);
-   vec::Vec3 tmp = {0,1,0};
+   Vec3 tmp = {0,1,0};
    vec::normalize(tmp);
-   vec::Vec3 right = vec::cross(tmp, forward);
-   vec::Vec3 up_norm = up;
+   Vec3 right = vec::cross(tmp, forward);
+   Vec3 up_norm = up;
    vec::normalize(up_norm);
 
    // The up vector must not be parallel to the line of sight from the
