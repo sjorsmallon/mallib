@@ -27,5 +27,11 @@ bool config::load_config(std::string filename)
         {
             // heh. so what do we do now? set the right memory location?
         }
+        if (line_number[0] == '/')
+        {
+            // will be a comment. so we can skip it.
+            continue;
+        }
+
     }
 }

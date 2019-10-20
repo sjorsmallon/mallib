@@ -203,15 +203,14 @@ void graphics::draw_game_3d()
 
     int32_t normal_transform_matrix_location = glGetUniformLocation(normal_shader, "normal_transform_matrix");
     Mat3 normal_transform_matrix = mat::normal_transform(model_matrix);
-    object.normalTransformMatrix = object.modelMatrix.normalMatrix();
     //@Note: We need to actually verify whether or not this is transposed.
     glUniformMatrix3fv(normal_transform_matrix_location, 1, false, &normal_transform_matrix[0][0]);
 
 
-    //@TODO: with all the above uniforms bound, we still need to send the cat's data to the gpu.
+    //@TODO: write mat::normal_transform(). with all the above uniforms bound, we still need to send the cat's data to the gpu.
     // see how I do it in the ECS2 example.
 
-    
+
     // glenableattribptr();
     // glenableattribptr();
     // glenableattribptr();
