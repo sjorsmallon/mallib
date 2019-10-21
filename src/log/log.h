@@ -3,13 +3,16 @@
 #include "fmt/core.h"
 
 
-namespace mlog
+namespace log
 {
+  enum class Level
+  {
+
+  }
   void vreport_error(const char *format, fmt::format_args args);
 
   template <typename... Args>
-  void report_error(const char *format, const Args & ... args);
-
+  void log_error(const char *format, const Args & ... args);
 };
 
 void vreport_error(const char *format, fmt::format_args args)
@@ -18,11 +21,12 @@ void vreport_error(const char *format, fmt::format_args args)
   fmt::vprint(format, args);
 }
 
-
 template <typename... Args>
-void mlog::report_error(const char *format, const Args & ... args)
+void mlog::log_error(const char *format, const Args & ... args)
 {
    vreport_error(format, fmt::make_format_args(args...));
 }
+
+
 
 #endif

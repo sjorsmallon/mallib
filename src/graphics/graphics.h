@@ -29,7 +29,6 @@ namespace graphics
 		Vec2 tex_coords;
 	};
 
-
 	struct Raw_Obj_Data
 	{
 		std::vector<Vec3> positions;

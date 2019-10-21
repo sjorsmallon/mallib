@@ -9,8 +9,9 @@
 #include <Wingdi.h>
 #include <stdlib.h>
 
-#include "../on_leaving_scope/on_leaving_scope.h"
+#define BUFFER_OFFSET(i) ((void*)(i)) //hacky macro for offset.
 
+#include "../on_leaving_scope/on_leaving_scope.h"
 #include "../file/file.h"
 #include "../mat/mat.h"
 #include "../mat4/mat4.h"
@@ -163,7 +164,7 @@ void graphics::draw_game_3d()
     // int32_t light_color_location    = glGetUniformLocation(normal_shader,light_color);
     // int32_t material_location       = glGetUniformLocation(normal_shader,material);
     // Vec3 light_position = {0.0f, 0.0f, 0.5f};
-    // Vec3 light_color = {1.0f, 1.0f, 1.0f};
+    // Vec3 light_color =    {1.0f, 1.0f, 1.0f};
     // Vec4 material =  {0.4f, 0.6f, 0.8f, 64f};
     // glUniform3fv(light_position_location, 1, &light_position.data[0]);
     // glUniform3fv(light_color_location, 1, &light_color.data[0])
@@ -178,6 +179,7 @@ void graphics::draw_game_3d()
     Mat4 view_rotation_matrix = mat::mat4_identity();
     Mat4 view_translation_matrix = mat::mat4_identity();
     Mat4 view_matrix = view_scale_matrix * view_rotation_matrix * view_translation_matrix;
+
     glUniformMatrix4fv(view_matrix_location, 1, false, &view_matrix[0][0]);
 
     // Projection Matrix:
@@ -211,9 +213,48 @@ void graphics::draw_game_3d()
     // see how I do it in the ECS2 example.
 
 
-    // glenableattribptr();
-    // glenableattribptr();
-    // glenableattribptr();
+    //@REFACTOR: we only need to do this once.
+    uint32_t VBO = 0;
+    uint32_t VAO = 0;
+    glGenBuffers(bufferCount, &VBO);     // glsizei n, GLuint *buffers
+    glGenVertexArrays(bufferCount, &VAO); // glsizei n, GLuinbt *arrays
+
+    // bind the VAO before the VBO.
+    glBindVertexArray(VAO);
+    //On_Scope_Exit(GlBindVertexArray(0));
+
+    // bind the VBO buffer to array buffer.
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    auto& cat_data = graphics::cat_data();
+    glBufferData(GL_ARRAY_BUFFER,
+                 static_cast<int>(cat_data.vertices.size() * sizeof(graphics::Vertex)),
+                 cat_data.vertices.data(),
+                 GL_STATIC_DRAW);
+    //On_Scope_Exit(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    // bind vertex array object.
+
+
+    //@Refactor: get_next_vertex_attrib_value?
+    // struct of three uints?
+    uint32_t pos_array = 0;
+    uint32_t uv_array = 1;
+    uint32_t normals_array = 2;
+    glEnableVertexAttribArray(pos_array);
+    glEnableVertexAttribArray(uv_array);
+    glEnableVertexAttribArray(normals_array);
+
+    //@Refactor: this is modern openGL. do we want to use this?
+    // glEnableVertexArrayAttrib(VAO, pos_array);
+    // glEnableVertexArrayAttrib(VAO, uv_array);
+    // glEnableVertexArrayAttrib(VAO, normals_array);
+    
+    glVertexAttribPointer(pos_array,     3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0); // x, y, z
+    glVertexAttribPointer(uv_array,      2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(3 * sizeof(float))); // skip  3: u, v,
+    glVertexAttribPointer(normals_array, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(5 * sizeof(float))); //skip 5: r, g, b.
+
+    // actually draw.
+    glDrawArrays(GL_TRIANGLES,0, object.interleaved_vertices.size());
+
 
 
     // whahuh?
@@ -229,8 +270,7 @@ void graphics::draw_game_3d()
 
 }
 
-
-
+// static
 void graphics::clear_buffers()
 {
     // glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -248,6 +288,7 @@ void graphics::swap_buffers()
 	SwapBuffers(graphics::global_Win32_context().device_context);
 }
 
+//static
 uint32_t graphics::shader_type_from_extension(const std::string& filename)
 {
     std::string_view view(filename);
@@ -271,28 +312,36 @@ uint32_t graphics::shader_type_from_extension(const std::string& filename)
 
 //@TODO:turn this into multiple things? i.e. get_shader_info,.
 // get_program_info, get_opengl_state.
+// static
 void graphics::get_shader_info(uint32_t prog)
 {
-    // GLint numActiveAttribs = 0;
-    GLint numActiveUniforms = 0;
-    // glGetProgramInterfaceiv(prog, GL_PROGRAM_INPUT, GL_ACTIVE_RESOURCES, &numActiveAttribs);
-    glGetProgramInterfaceiv(prog, GL_UNIFORM, GL_ACTIVE_RESOURCES, &numActiveUniforms);
-    std::vector<GLchar> nameData(256);
-    std::vector<GLenum> properties;
+
+    fmt::print("shader info for program {}:\n", prog);
+    std::vector<GLchar> nameData(256) = {};
+    std::vector<GLenum> properties = {};
     properties.push_back(GL_NAME_LENGTH);
     properties.push_back(GL_TYPE);
     properties.push_back(GL_ARRAY_SIZE);
-    std::vector<GLint> values(properties.size());
-    // for(int attrib = 0; attrib < numActiveAttribs; ++attrib)
-    // {
-    //     glGetProgramResourceiv(prog, GL_PROGRAM_INPUT, attrib, properties.size(),
-    //     &properties[0], values.size(), NULL, &values[0]);
+    std::vector<GLint> values(properties.size()) = {};
 
-    //     nameData.resize(values[0]); //The length of the name.
-    //     glGetProgramResourceName(prog, GL_PROGRAM_INPUT, attrib, nameData.size(), NULL, &nameData[0]);
-    //     std::string name((char*)&nameData[0], nameData.size() - 1);
-    // }
+    // PROGRAM_ATTRIBUTES
+    GLint numActiveAttribs = 0;
+    glGetProgramInterfaceiv(prog, GL_PROGRAM_INPUT, GL_ACTIVE_RESOURCES, &numActiveAttribs);
 
+    for(int attrib = 0; attrib < numActiveAttribs; ++attrib)
+    {
+        glGetProgramResourceiv(prog, GL_PROGRAM_INPUT, attrib, properties.size(),
+        &properties[0], values.size(), NULL, &values[0]);
+
+        nameData.resize(values[0]); //The length of the name.
+        glGetProgramResourceName(prog, GL_PROGRAM_INPUT, attrib, nameData.size(), NULL, &nameData[0]);
+        std::string name((char*)&nameData[0], nameData.size() - 1);
+        fmt::print("attributes: {}\n", name);
+
+    }
+    // PROGRAM_UNIFORMS.
+    GLint numActiveUniforms = 0;
+    glGetProgramInterfaceiv(prog, GL_UNIFORM, GL_ACTIVE_RESOURCES, &numActiveUniforms);
     for(int unif = 0; unif < numActiveUniforms; ++unif)
     {
         glGetProgramResourceiv(prog, GL_UNIFORM, unif, properties.size(),
@@ -308,12 +357,11 @@ void graphics::get_shader_info(uint32_t prog)
 
 uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file_name)
 {
-
     // set shader type based on the extension. maybe change shader_type to take const char*
     std::string filename = file_name;
     GLenum shader_type = shader_type_from_extension(filename);
     if (shader_type == 0)
-        fmt::print("incorrect shader type.\n");
+        fmt::print("[graphics] incorrect shader type.\n");
     //set Shader
     GLuint shader_id = glCreateShader(shader_type);
     if (shader_id == 0)
@@ -341,22 +389,16 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
         // The maxLength includes the NULL character
         std::vector<GLchar> error_log(max_length);
         glGetShaderInfoLog(shader_id, max_length, &max_length, &error_log[0]);
-
         // Provide the infolog in whatever manor you deem best.
         auto string_log = std::string(error_log.begin(), error_log.end());
         fmt::print("[graphics] shader error log: {}\n", string_log);
         // Exit with failure.
         glDeleteShader(shader_id); // Don't leak the shader.
-        // printShaderLog(shader);
     }
     else
     {
         fmt::print("[graphics] shader_from_file: successfully compiled {}\n", filename);
         glAttachShader(program, shader_id);
-        // i think this is causing the problem?
-        // glLinkProgram(program);
-        // glDetachShader(program, shader_id); // can also postpone, but lower memory footprint
-        // this way.
     }
     return shader_id;
 }
@@ -398,7 +440,7 @@ void graphics::load_obj(const std::string& filename, graphics::Raw_Obj_Data& raw
         ++line_number;
         if (line[0] == 's')
         {
-            // what does that mean?
+            // what does the 's' mean?
             continue;
         }
         else if (line[0] == '#') // comment 
