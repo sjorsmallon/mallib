@@ -19,12 +19,12 @@ namespace vec
 
 // mathy functions.
 
-inline float vec::dot(Vec3 lhs, Vec3 rhs)
+inline float vec::dot(const Vec3& lhs, const Vec3& rhs)
 {
     return (lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z);
 }
 
-inline Vec3 vec::cross(Vec3 lhs, Vec3 rhs)
+inline Vec3 vec::cross(const Vec3& lhs, const Vec3& rhs)
 {
     Vec3 result = {};
 

@@ -11,7 +11,6 @@
 #include "../graphics/gl_lite.h"
 #include "../vec2/vec2.h"
 #include "../vec3/vec3.h"
-using namespace vec;
 
 
 //@Todo: for now, a default font lives in the namespace.

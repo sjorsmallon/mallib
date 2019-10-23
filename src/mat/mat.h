@@ -46,6 +46,13 @@ namespace mat
                 const float z_far
               );
 
+    Mat3 normal_matrix(const Mat4& normal_matrix);
+
+    // @Refactor: return reference for chaining?
+    void invert(Mat3& lhs);
+    void transpose(Mat3& lhs); 
+    inline float determinant(Mat3& lhs);
+
 
 };
 
@@ -163,6 +170,53 @@ inline Mat4 mat::view(const Vec3& eye, const Vec3& center, const Vec3& up)
              -forward.x, -forward.y, -forward.z,  0,
                 0,              0,            0,  1};
 }
+   
+inline mat3 mat::to_mat3(const Mat4& matrix)
+{
+    return {matrix[0][0], matrix[0][1], matrix[0][2],
+            matrix[1][0], matrix[1][1], matrix[1][2],
+            matrix[2][0], matrix[2][1], matrix[2][2]}                        }
+}
+
+inline void mat::invert(Mat3& lhs)
+{
+
+    const float det = mat::determinant(lhs); 
+    const float inv_det = 1.0f / det;
+    
+    return
+}
+
+
+inline float mat::determinant(Mat3& lhs)
+{
+    //det(A) = a11a22a33 + a12a23a31 + a13a21a32 
+    //         -a13a22a31 - a12a21a33 - a11a23a32.
+
+    return {   mat3[0][0] * mat3[1][1] * mat3[2][2]
+             + mat3[0][1] * mat3[1][2] * mat3[2][0]
+             + mat3[0][2] * mat3[1][0] * mat3[2][1]
+             - mat3[0][2] * mat3[1][1] * mat3[2][0]
+             - mat3[0][1] * mat3[1][0] * mat3[2][2]
+             - mat3[0][0] * mat3[1][2] * mat3[2][1] }; 
+}
+
+inline void mat::transpose(Mat3& lhs)
+{
+    //@BUG: invert self can fail (see doom3 source code.)
+
+    return 
+}
+
+
+inline Mat3 mat::normal_matrix(const Mat4& normal_matrix)
+{
+    Mat3 matrix = to_mat3(normal_matrix);
+    invert(mat3);
+    transpose(mat3);
+
+}
+
 
 
 

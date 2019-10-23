@@ -8,6 +8,7 @@
 #include "../graphics/gl_lite.h"
 #include "../graphics/graphics.h"
 
+#include "../vec/vec.h" // lerp
 #include "../vec2/vec2.h"
 #include <cmath> // sin, PI
 
@@ -85,7 +86,7 @@ void font::draw_text(std::string text,
         // use previous_frame_time? how do we calculate this?
         float distance_t = (std::sin(sin_t) + 1.0f) /2.0f;
         // fmt::print("distance_t: {}", distance_t);
-        color = lerp(color, {1.0f,1.0f,1.0f}, distance_t);
+        color = vec::lerp(color, {1.0f,1.0f,1.0f}, distance_t);
     }
 
     glUniform3f(glGetUniformLocation(graphics::shaders().text, "text_color"), color.x, color.y, color.z);

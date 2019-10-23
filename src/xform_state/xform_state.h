@@ -1,5 +1,7 @@
 #ifndef INCLUDE_XFORM_STATE_
 #define INCLUDE_XFORM_STATE_
+
+#include "../vec/vec.h" // dot, cross 
 #include "../vec3/vec3.h"
 #include "../vec4/vec4.h"
 #include "../mat4/mat4.h"

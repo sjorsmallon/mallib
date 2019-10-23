@@ -14,6 +14,7 @@
 #include "../file/file.h"
 #include "../mat/mat.h"
 #include "../mat4/mat4.h"
+#include "../mat3/mat3.h" // for normal matrix.
 
 void graphics::init_graphics()
 { 
@@ -147,8 +148,8 @@ void graphics::draw_game_3d()
     set_shader(graphics::Shader_Type::SHADER_NORMALS);
     uint32_t active_shader = graphics::shaders().normals;
 
-    // 
-    On_Leaving_Scope(set_shader(graphics::Shader_Type::SHADER_ERROR));
+    //@Todo: I don't yet quite understand why we need a lambda here.
+    auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
     // maybe defer(set_shader(graphics::Shader_Type::ERROR));
 
     // lights are a property of the scene. 
