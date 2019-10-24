@@ -5,3 +5,6 @@
 
 /*.exe
 /src/tests/*.exe
+
+/src/.vs/*
+/src/win32/*.pdb
