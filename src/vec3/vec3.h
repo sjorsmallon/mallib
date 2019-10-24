@@ -41,7 +41,9 @@ union Vec3u
         unsigned int z;
     };
     unsigned int data[3];
+
 };
+
 
 // vec3u operators
 inline Vec3u& operator-=(Vec3u& lhs, float rhs)

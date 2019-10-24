@@ -80,14 +80,22 @@ LRESULT CALLBACK win32_main_window_callback(HWND window,
                                             WPARAM wParam,
                                             LPARAM lParam);
 
-static void redirect_output_to_console()
+static void redirect_output_to_console(bool use_parent)
 {
-    // Create the console window and set the window title.
-    // if (AllocConsole() == 0)
-    // {
-    //     fatal_error("redirect_output: allocConsole failed.");
-    // }
-     AttachConsole(ATTACH_PARENT_PROCESS);
+    //Create the console window and set the window title.
+    if (use_parent)
+    {
+        AttachConsole(ATTACH_PARENT_PROCESS);
+    }
+    else
+    {
+        if (AllocConsole() == 0)
+        {
+            fatal_error("redirect_output: allocConsole failed.");
+        }
+    }
+
+        
 
     // Redirect CRT standard input, output and error handles to the console window.
     FILE * pNewStdout = nullptr;
@@ -317,10 +325,14 @@ int WINAPI wWinMain(HINSTANCE instance,
 {
     
     auto arguments = std::wstring(command_line);
-    if (arguments.find(L"show"))
-        redirect_output_to_console(); 
-    else
-        exit(1);
+    bool use_parent = true;
+    if ( arguments.find(L"create_console") != std::string::npos)
+        use_parent = false;
+
+    redirect_output_to_console(use_parent);
+
+    // else
+    //     exit(1);
 
     init_windows_key_array();
 

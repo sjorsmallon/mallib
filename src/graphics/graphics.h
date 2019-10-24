@@ -19,7 +19,10 @@ namespace graphics
 	//@Cleanup: we can sort of remove this. or keep it internal facing.
 	struct Face
 	{
-		Vec3u indices_set[3]; // set of indices for a vertex.
+		Vec3u v0_indices;
+		Vec3u v1_indices;
+		Vec3u v2_indices;
+
 	};
 	
 	struct Material
@@ -30,8 +33,8 @@ namespace graphics
 	struct Vertex
 	{
 		Vec3 position;
-		Vec3 normals;
 		Vec2 tex_coords;
+		Vec3 normals;
 	};
 
 	struct Raw_Obj_Data

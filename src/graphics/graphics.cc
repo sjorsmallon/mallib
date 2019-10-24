@@ -17,6 +17,12 @@
 #include "../mat4/mat4.h"
 #include "../mat3/mat3.h" // for normal matrix.
 
+
+static uint32_t VBO = 0;
+static uint32_t VAO = 0;
+
+
+
 void graphics::init_graphics()
 { 
     // init gl_lite only after the gl_context has been created.
@@ -50,6 +56,10 @@ void graphics::init_graphics()
     glLinkProgram(shader_programs.normals);
     glDetachShader(shader_programs.normals, normal_vertex);
     glDetachShader(shader_programs.normals, normal_fragment);
+
+    const int buffer_count = 1;
+    glGenBuffers(buffer_count, &VBO);     // glsizei n, GLuint *buffers
+    glGenVertexArrays(buffer_count, &VAO); // glsizei n, GLuinbt *arrays
 
     set_shader(graphics::Shader_Type::SHADER_DEFAULT);
 }
@@ -118,25 +128,39 @@ void graphics::set_shader(Shader_Type shader_type)
 void graphics::generate_vertices_from_raw_data(graphics::Raw_Obj_Data& raw_data)
 {
     //@Memory: preallocate space.
+    for (auto &position: raw_data.positions)
+    {
+    }
     raw_data.vertices.resize(raw_data.faces.size());
+
 
     for (auto &face : raw_data.faces)
     {
-        for (auto& index_set : face.indices_set)
-        {
-            graphics::Vertex temp = { 
-                            raw_data.positions[index_set.data[0]].x,  //vx
-                            raw_data.positions[index_set.data[0]].y,  //vy
-                            raw_data.positions[index_set.data[0]].z,  //vz
-                            raw_data.tex_coords[index_set.data[1]].u, //u
-                            raw_data.tex_coords[index_set.data[1]].v, //v     
-                            raw_data.normals[index_set.data[2]].x,    //nx
-                            raw_data.normals[index_set.data[2]].y,    //ny
-                            raw_data.normals[index_set.data[2]].z,    //nz     
-                          };
-            raw_data.vertices.emplace_back(temp);
-        }
+        //@Refactor: maybe rewrite face to use the index set?
+
+            graphics::Vertex v0 = {
+                raw_data.positions[face.v0_indices.data[0]],
+                raw_data.tex_coords[face.v0_indices.data[1]],
+                raw_data.normals[face.v0_indices.data[2]]
+            };
+
+            graphics::Vertex v1 = {
+                raw_data.positions[face.v1_indices.data[0]],
+                raw_data.tex_coords[face.v1_indices.data[1]],
+                raw_data.normals[face.v1_indices.data[2]]
+            };
+
+            graphics::Vertex v2 = {
+                raw_data.positions[face.v2_indices.data[0]],
+                raw_data.tex_coords[face.v2_indices.data[1]],
+                raw_data.normals[face.v2_indices.data[2]]
+            };
+
+            raw_data.vertices.emplace_back(v0);
+            raw_data.vertices.emplace_back(v1);
+            raw_data.vertices.emplace_back(v2);
     }
+
 }
 
 
@@ -147,10 +171,9 @@ void graphics::draw_game_3d()
     // for now, draw the cat.
     set_shader(graphics::Shader_Type::SHADER_NORMALS);
     uint32_t active_shader = graphics::shaders().normals;
-    get_shader_info(active_shader);
-
     auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
    
+
     // lights are a property of the scene. 
     // however, this implies that the properties of the scene
     // are bound to uniforms in openGL. I don't necessarily think
@@ -180,6 +203,7 @@ void graphics::draw_game_3d()
     Mat4 view_rotation_matrix = mat::mat4_identity();
     Mat4 view_translation_matrix = mat::mat4_identity();
     Mat4 view_matrix = view_scale_matrix * view_rotation_matrix * view_translation_matrix;
+
     glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
 
     // Projection Matrix:
@@ -203,7 +227,7 @@ void graphics::draw_game_3d()
     Mat4 model_matrix = mat::from_xform_state(cat_state);
     glUniformMatrix4fv(model_matrix_location, 1, false, &model_matrix[0][0]);
 
-    int32_t normal_transform_matrix_location = glGetUniformLocation(normal_shader, "normal_transform_matrix");
+    int32_t normal_transform_matrix_location = glGetUniformLocation(normal_shader, "normal_transform");
     Mat3 normal_transform_matrix = mat::normal_transform(model_matrix);
     //@Note: We need to actually verify whether or not this is transposed.
     glUniformMatrix3fv(normal_transform_matrix_location, 1, false, &normal_transform_matrix[0][0]);
@@ -214,12 +238,7 @@ void graphics::draw_game_3d()
 
 
     //@REFACTOR: we only need to do this once.
-    const int buffer_count = 1;
-    uint32_t VBO = 0;
-    uint32_t VAO = 0;
-    glGenBuffers(buffer_count, &VBO);     // glsizei n, GLuint *buffers
-    glGenVertexArrays(buffer_count, &VAO); // glsizei n, GLuinbt *arrays
-
+ 
     // bind the VAO before the VBO.
     glBindVertexArray(VAO);
     //On_Scope_Exit(GlBindVertexArray(0));
@@ -227,6 +246,10 @@ void graphics::draw_game_3d()
     // bind the VBO buffer to array buffer.
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     auto& cat_data = graphics::cat_data();
+    for (auto& vertex: cat_data.vertices)
+    {
+        fmt::print("x: {}, y: {}, z: {}", vertex.position.x, vertex.position.y, vertex.position.z);
+    }
     glBufferData(GL_ARRAY_BUFFER,
                  static_cast<int>(cat_data.vertices.size() * sizeof(graphics::Vertex)),
                  cat_data.vertices.data(),
@@ -358,11 +381,12 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
     if (shader_type == 0)
         fmt::print("[graphics] incorrect shader type.\n");
     //set Shader
-    GLuint shader_id = glCreateShader(shader_type);
+    uint32_t shader_id = glCreateShader(shader_type);
     if (shader_id == 0)
         fmt::print("[graphics] glCreateShader failed.\n");
-    else
+    else{
         fmt::print("[graphics] glCreateShader succeeded. created shader ID {}\n", shader_id);
+    }
 
     //@Cleanup:to const char* buffer?
     std::string target = {};
@@ -407,6 +431,7 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
 // we can point to an address in memory, but then it doesn't null terminate.
 // read until either linebreak or EOF. replace linebreak by \0.
 // hand ptr over to user.
+// in essence, we want to make our own getline for a char array.
 // read line by line 
 // size_t file_size = file::get_file_size(filename);
 // if (file_size == 0)
@@ -425,10 +450,10 @@ void graphics::load_obj(const std::string& filename, graphics::Raw_Obj_Data& raw
 
     // @Memory: how to predict how to preallocate?
     fmt::print("[graphics] Warning: load_obj does not efficiently preallocate.\n");
-    raw_data.positions.resize(4000);
-    raw_data.normals.resize(4000);
-    raw_data.tex_coords.resize(4000);
-    raw_data.faces.resize(4000);
+    raw_data.positions.reserve(4000);
+    raw_data.normals.reserve(4000);
+    raw_data.tex_coords.reserve(4000);
+    raw_data.faces.reserve(4000);
 
     size_t line_number = 0;
     for (std::string line; std::getline(data_stream, line);)
@@ -464,21 +489,22 @@ void graphics::load_obj(const std::string& filename, graphics::Raw_Obj_Data& raw
         else if (line[0] == 'f') // face indices
         {
             Face face = {};
-
+            fmt::print("{}", line);
             //@incomplete: This will barf on unstructured obj files. for now, we assume everything's present.
             sscanf(line.c_str(), "%9s %u / %u / %u %u /%u /%u %u /%u /%u",
                    garbage_buffer,
-                   &face.indices_set[0].data[0], &face.indices_set[0].data[1], &face.indices_set[0].data[2],
-                   &face.indices_set[1].data[0], &face.indices_set[1].data[1], &face.indices_set[1].data[2],
-                   &face.indices_set[2].data[0], &face.indices_set[2].data[1], &face.indices_set[2].data[2]
+                   &face.v0_indices.data[0], &face.v0_indices.data[1], &face.v0_indices.data[2],
+                   &face.v1_indices.data[0], &face.v1_indices.data[1], &face.v1_indices.data[2],
+                   &face.v2_indices.data[0], &face.v2_indices.data[1], &face.v2_indices.data[2]
                    );
 
             // The indices in the wavefront obj start at 1. we offset them to use them correctly
             // with the arrays in raw_data.
-            face.indices_set[0] -= 1;
-            face.indices_set[1] -= 1;
-            face.indices_set[2] -= 1;
-
+            //@Note: be careful with this subtraction. made a dumb mistake.
+            face.v0_indices -= 1;
+            face.v1_indices -= 1;
+            face.v2_indices -= 1;
+            
             raw_data.faces.emplace_back(face);
         }
         else
