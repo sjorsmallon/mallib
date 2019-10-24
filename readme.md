@@ -4,6 +4,10 @@
 look at harfbuzz for text shaping.
 text effects? (pulse?)
 
+# Concepts
+look at the tprint concept, as well as the on_leaving_scope thing.
+
+
 # Globals, Singletons, and modularity
 For now, I'm using the Static singleton pattern for some global state management. Some of these can move into some sort of global struct,
 which every gameplay module gets access to. The problem for now is I want to properly compartmentalize all of the

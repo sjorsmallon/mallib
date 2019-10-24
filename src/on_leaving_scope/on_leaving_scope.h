@@ -2,6 +2,7 @@
 #define INCLUDED_ON_LEAVING_SCOPE_
 #include <utility> // std::move, std::forward
 
+
 template<typename Func>
 class On_Leaving_Scope
 {
