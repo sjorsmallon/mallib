@@ -59,3 +59,27 @@ size_t file::get_file_size(const std::string& filename)
     int rc = stat(filename.c_str(), &stat_buf);
     return rc == 0 ? stat_buf.st_size : 0;
 }
+
+// platform specific.
+void find_or_create_folder(const std::string& foldername)
+{
+    fs::create_directory(foldername);
+    // otherwise:
+    // ASSUMED INCLUDES
+// #include <string> // required for std::string
+// #include <sys/types.h> // required for stat.h
+// #include <sys/stat.h> // no clue why required -- man pages say so
+
+// std::string sPath = "/tmp/test";
+// mode_t nMode = 0733; // UNIX style permissions
+// int nError = 0;
+// #if defined(_WIN32)
+//   nError = _mkdir(sPath.c_str()); // can be used on Windows
+// #else 
+//   nError = mkdir(sPath.c_str(),nMode); // can be used on non-Windows
+// #endif
+// if (nError != 0) {
+//   // handle your error here
+// }
+
+}

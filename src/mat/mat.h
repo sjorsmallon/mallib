@@ -46,10 +46,11 @@ namespace mat
                 const float z_far
               );
 
-    Mat3 normal_matrix(const Mat4& normal_matrix);
+    Mat3 normal_matrix(const Mat4& model_view_matrix);
 
-    // @Refactor: return reference for chaining?
-    void invert(Mat3& lhs);
+    // @Note: return reference for chaining?
+    // try_inverse, since it can fail.
+    bool try_inverse(Mat3& lhs);
     void transpose(Mat3& lhs); 
     inline float determinant(Mat3& lhs);
 
@@ -175,16 +176,45 @@ inline mat3 mat::to_mat3(const Mat4& matrix)
 {
     return {matrix[0][0], matrix[0][1], matrix[0][2],
             matrix[1][0], matrix[1][1], matrix[1][2],
-            matrix[2][0], matrix[2][1], matrix[2][2]}                        }
+            matrix[2][0], matrix[2][1], matrix[2][2]};
 }
 
-inline void mat::invert(Mat3& lhs)
+inline bool mat::try_inverse(Mat3& lhs)
 {
+    Mat3 inverse = {};
 
-    const float det = mat::determinant(lhs); 
-    const float inv_det = 1.0f / det;
-    
-    return
+    inverse[0][0] = mat[1][1] * mat[2][2] - mat[1][2] * mat[2][1];
+    inverse[1][0] = mat[1][2] * mat[2][0] - mat[1][0] * mat[2][2];
+    inverse[2][0] = mat[1][0] * mat[2][1] - mat[1][1] * mat[2][0];
+
+    double det = mat[0][0] * inverse[0][0] + mat[0][1] * inverse[1][0] + mat[0][2] * inverse[2][0];
+
+    // if det is too small, the inverse does not exist.
+    // if ( ) {
+    //     return false;
+    // }
+    double inv_det = 1.0f / det;
+
+    inverse[0][1] = mat[0][2] * mat[2][1] - mat[0][1] * mat[2][2];
+    inverse[0][2] = mat[0][1] * mat[1][2] - mat[0][2] * mat[1][1];
+    inverse[1][1] = mat[0][0] * mat[2][2] - mat[0][2] * mat[2][0];
+    inverse[1][2] = mat[0][2] * mat[1][0] - mat[0][0] * mat[1][2];
+    inverse[2][1] = mat[0][1] * mat[2][0] - mat[0][0] * mat[2][1];
+    inverse[2][2] = mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
+
+    mat[0][0] = inverse[0][0] * inv_det;
+    mat[0][1] = inverse[0][1] * inv_det;
+    mat[0][2] = inverse[0][2] * inv_det;
+
+    mat[1][0] = inverse[1][0] * inv_det;
+    mat[1][1] = inverse[1][1] * inv_det;
+    mat[1][2] = inverse[1][2] * inv_det;
+
+    mat[2][0] = inverse[2][0] * inv_det;
+    mat[2][1] = inverse[2][1] * inv_det;
+    mat[2][2] = inverse[2][2] * inv_det;
+
+    return true;
 }
 
 
@@ -193,31 +223,37 @@ inline float mat::determinant(Mat3& lhs)
     //det(A) = a11a22a33 + a12a23a31 + a13a21a32 
     //         -a13a22a31 - a12a21a33 - a11a23a32.
 
-    return {   mat3[0][0] * mat3[1][1] * mat3[2][2]
-             + mat3[0][1] * mat3[1][2] * mat3[2][0]
-             + mat3[0][2] * mat3[1][0] * mat3[2][1]
-             - mat3[0][2] * mat3[1][1] * mat3[2][0]
-             - mat3[0][1] * mat3[1][0] * mat3[2][2]
-             - mat3[0][0] * mat3[1][2] * mat3[2][1] }; 
+    return {   lhs[0][0] * lhs[1][1] * lhs[2][2]
+             + lhs[0][1] * lhs[1][2] * lhs[2][0]
+             + lhs[0][2] * lhs[1][0] * lhs[2][1]
+             - lhs[0][2] * lhs[1][1] * lhs[2][0]
+             - lhs[0][1] * lhs[1][0] * lhs[2][2]
+             - lhs[0][0] * lhs[1][2] * lhs[2][1] }; 
+}
+
+// @Refactor: either write templated swap or include it from utility.
+static void swap(float & lhs, float& rhs)
+{
+    float t = lhs;
+    lhs = rhs;
+    rhs = t;
 }
 
 inline void mat::transpose(Mat3& lhs)
 {
-    //@BUG: invert self can fail (see doom3 source code.)
-
-    return 
+    swap(lhs[0][1], lhs[1][0]);
+    swap(lhs[0][2], lhs[2][0]);
+    swap(lhs[1][2], lhs[2][1]);
 }
 
-
-inline Mat3 mat::normal_matrix(const Mat4& normal_matrix)
+inline Mat3 mat::normal_matrix(const Mat4& model_view_matrix)
 {
-    Mat3 matrix = to_mat3(normal_matrix);
-    invert(mat3);
-    transpose(mat3);
-
+    // normal matrix is calculated from the modelview
+    Mat3 normal_matrix = to_mat3(model_view_matrix);
+    invert(normal_matrix);
+    transpose(normal_matrix);
+    return normal_matrix;
 }
-
-
 
 
 #endif

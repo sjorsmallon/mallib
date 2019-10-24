@@ -6,7 +6,7 @@ text effects? (pulse?)
 
 # Concepts
 look at the tprint concept, as well as the on_leaving_scope thing.
-
+the `load_x` functions use a from -> to pattern.
 
 # Globals, Singletons, and modularity
 For now, I'm using the Static singleton pattern for some global state management. Some of these can move into some sort of global struct,

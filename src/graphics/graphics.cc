@@ -19,20 +19,19 @@
 
 void graphics::init_graphics()
 { 
+    // init gl_lite only after the gl_context has been created.
     gl_lite_init();
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
-
     glDepthFunc(GL_LEQUAL);
-    
-    //@Refactor::for font. should we move it there?
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+
+    //@Refactor: These are used for font. should we move it there?
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-
-    graphics::Shaders& shader_programs = graphics::shaders();
     //@Refactor: default init these to 0, so we can verify whether they are 0 in reload_shaders?
+    graphics::Shaders& shader_programs = graphics::shaders();
     shader_programs.default = glCreateProgram();
     shader_programs.text    = glCreateProgram();
     shader_programs.normals = glCreateProgram(); 
@@ -45,17 +44,20 @@ void graphics::init_graphics()
     glDetachShader(shader_programs.text, text_vertex);
     glDetachShader(shader_programs.text, text_fragment);
 
+
     uint32_t normal_vertex   = graphics::load_compile_attach_shader(shader_programs.normals, "../shaders/normals.vertex");
     uint32_t normal_fragment = graphics::load_compile_attach_shader(shader_programs.normals, "../shaders/normals.fragment");
     glLinkProgram(shader_programs.normals);
     glDetachShader(shader_programs.normals, normal_vertex);
     glDetachShader(shader_programs.normals, normal_fragment);
 
-    set_shader(graphics::Shader_Type::SHADER_TEXT);
+    set_shader(graphics::Shader_Type::SHADER_DEFAULT);
 }
 
 void graphics::reload_shaders(uint32_t& program)
 {
+    //@Incomplete: either know which shaders to reload or reload all shaders
+    // associated with this program.
     std::string vertex_shader  = "../shaders/text.vertex";
     std::string fragment_shader = "../shaders/text.fragment";
     glDeleteProgram(program);
@@ -74,7 +76,7 @@ void graphics::reload_shaders(uint32_t& program)
 
 graphics::Shaders& graphics::shaders()
 {
-    static Shaders shaders;
+    static Shaders shaders = {};
     return shaders;
 }
 
@@ -93,8 +95,6 @@ graphics::Win32_Context& graphics::global_Win32_context() //@cleanup: i don't li
 
 void graphics::set_shader(Shader_Type shader_type)
 {
-    // using namespace graphics;
-
     graphics::Shaders& shader_programs = graphics::shaders();
     if (shader_type == Shader_Type::SHADER_TEXT)
     {
@@ -117,7 +117,7 @@ void graphics::set_shader(Shader_Type shader_type)
 
 void graphics::generate_vertices_from_raw_data(graphics::Raw_Obj_Data& raw_data)
 {
-    // preallocate space.
+    //@Memory: preallocate space.
     raw_data.vertices.resize(raw_data.faces.size());
 
     for (auto &face : raw_data.faces)
@@ -143,23 +143,20 @@ void graphics::generate_vertices_from_raw_data(graphics::Raw_Obj_Data& raw_data)
 // Everything happens in here. I need to think about what to separate to which extent.
 void graphics::draw_game_3d()
 {
-
     // draw all buffers?
     // for now, draw the cat.
     set_shader(graphics::Shader_Type::SHADER_NORMALS);
     uint32_t active_shader = graphics::shaders().normals;
 
-    //@Todo: I don't yet quite understand why we need a lambda here.
     auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
-    // maybe defer(set_shader(graphics::Shader_Type::ERROR));
-
+   
     // lights are a property of the scene. 
     // however, this implies that the properties of the scene
     // are bound to uniforms in openGL. I don't necessarily think
     // that that is a good idea. Or do we insert an array of lights to openGL?
-    // are there things such as uniform arrays?
+    // is there an uniform array?
 
-    // // bind light position. not necessary for the normals.
+    // bind light position. not necessary for the normals.
     // uint32_t normal_shader = graphics::shaders().normals;
     // int32_t light_position_location = glGetUniformLocation(normal_shader,light_position);
     // int32_t light_color_location    = glGetUniformLocation(normal_shader,light_color);
@@ -172,28 +169,30 @@ void graphics::draw_game_3d()
     // glUniform4fv(material_location, 1, material.data());
 
     uint32_t normal_shader = graphics::shaders().normals;
-    // View matrix
-    // calculate view transformation.
-    // bind the view matrix to the uniform. 
+
+    // matrices:
+    const bool row_major = true;
+
+    // View matrix:
     int32_t view_matrix_location = glGetUniformLocation(normal_shader, "view_matrix");
     Mat4 view_scale_matrix = mat::mat4_identity();
     Mat4 view_rotation_matrix = mat::mat4_identity();
     Mat4 view_translation_matrix = mat::mat4_identity();
     Mat4 view_matrix = view_scale_matrix * view_rotation_matrix * view_translation_matrix;
-
-    glUniformMatrix4fv(view_matrix_location, 1, false, &view_matrix[0][0]);
+    glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
 
     // Projection Matrix:
     int32_t projection_matrix_location = glGetUniformLocation(normal_shader, "projection_matrix");
-    float fov = 75.0f;
-    float perspective_near_z = 0.1f;
-    float perspective_far_z = 1.0f;
-    float aspect_ratio = graphics::window_settings().width / graphics::window_settings().height;
+    const float fov = 75.0f;
+    const float perspective_near_z = 0.1f;
+    const float perspective_far_z = 1.0f;
+    const float aspect_ratio = graphics::window_settings().width / graphics::window_settings().height;
     Mat4 projection_matrix = mat::perspective(fov, aspect_ratio, perspective_near_z, perspective_far_z);    
-    glUniformMatrix4fv(projection_matrix_location, 1, false, &projection_matrix[0][0]); // should this be transposed?
+    row_major = true;
+    glUniformMatrix4fv(projection_matrix_location, 1, row_major, &projection_matrix[0][0]);
 
-    // //calculate object model matrix
-    // glActiveTexture(GL_TEXTURE0);
+
+
     // Model Matrix:
     int32_t model_matrix_location = glGetUniformLocation(normal_shader, "model_matrix");
     Xform_State cat_state = {};
@@ -256,19 +255,12 @@ void graphics::draw_game_3d()
     // actually draw.
     glDrawArrays(GL_TRIANGLES,0, object.interleaved_vertices.size());
 
-
-
     // whahuh?
-
     // glBindVertexArray(gVAO);
-
+    // glActiveTexture(GL_TEXTURE0);
     // glBindTexture(GL_TEXTURE_2D, object.TBO);
     // glUniform1i(d_textureLocation, 0);
-
-    // glDrawArrays(GL_TRIANGLES,0, object.interleaved_vertices.size()); //changed
-
     // glUseProgram(0); // NULL?
-
 }
 
 // static
@@ -423,13 +415,14 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
 void graphics::load_obj(const std::string& filename, graphics::Raw_Obj_Data& raw_data)
 {
     std::string data ={};
-    // we assume the filename to be valid?
     file::file_to_string(filename, data);
     std::stringstream data_stream(data);
     constexpr const int max_string_length = 20;
     constexpr const int max_string_read_length = 9;
     char garbage_buffer[20] = {}; // used for the garbage in each line. 
 
+    // @Memory: how to predict how to preallocate?
+    fmt::print("[graphics] Warning: load_obj does not efficiently preallocate.\n");
     raw_data.positions.resize(4000);
     raw_data.normals.resize(4000);
     raw_data.tex_coords.resize(4000);
@@ -439,13 +432,13 @@ void graphics::load_obj(const std::string& filename, graphics::Raw_Obj_Data& raw
     for (std::string line; std::getline(data_stream, line);)
     {
         ++line_number;
-        if (line[0] == 's')
+        if (line[0] == '#') // comment 
         {
-            // what does the 's' mean?
             continue;
         }
-        else if (line[0] == '#') // comment 
+        else if (line[0] == 's')
         {
+            // what does the 's' mean?
             continue;
         }
         else if (line[0] ==  'v' && line[1] == ' ') // vertex
@@ -491,6 +484,81 @@ void graphics::load_obj(const std::string& filename, graphics::Raw_Obj_Data& raw
     }
     fmt::print("[graphics] succesfully loaded {}. num_faces: {}\n", filename, raw_data.faces.size());
 }
+
+void graphics::load_mtl(const std::string& filename, graphics::Material& material)
+{
+    std::string data ={};
+    file::file_to_string(filename, data);
+    std::stringstream data_stream(data);
+    constexpr const int max_string_length = 20;
+    constexpr const int max_string_read_length = 9;
+    char garbage_buffer[20] = {}; // used for the garbage in each line. 
+
+    //@Hack: we assume that if a line starts with "new"
+    // that the line declares a new mtl.
+    // the same is true for 'illum'.
+
+    // auto mat_vector = std::vector<Material>(1);
+    // Material& active_material = mat_vector[0];
+
+    size_t line_number = 0;
+    for (std::string line; std::getline(data_stream, line);)
+    {
+        ++line_number;
+        if (line[0] == '#') // comment
+        {
+            continue;
+        }
+        //@TODO: substring lookup instead of this?
+        else if (line[0] == 'n' && line[1] == 'e' && line[2] == 'w')
+        {
+            // the current mtl is done. create a new one and rebind the reference.
+            mat_vector.emplace_back();
+            active_material = mat_vector.back();
+        }
+        else if (line[0] == 'K' && line[1] == 'a') // ambient color
+        {
+            Vec3 color = {};
+            sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
+        }
+        else if (line[0] == 'K' && line[1] == 'd') // diffuse color
+        {
+            Vec3 color = {};
+            sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
+        }
+        else if (line[0] == 'K' && line[1] == 's') // specular color
+        {
+            Vec3 color = {};
+            sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
+        }
+        else if (line[0] == 'd') // non_transparency
+        {
+            float alpha = 0;
+            sscanf("%9s %f", &alpha);
+        }
+        else if (line[0] == 'T' && line[1] == 'r') // transparency
+        {
+            float inv_alpha = 0;
+            sscanf("%9s %f", &inv_alpha);
+
+            
+        }
+        else if (line[0] == 'i' && line[1] == 'l') // illumination
+        {
+            int illum = 0;
+            sscanf("%9s %d", &illum);
+            // if illum == 1: we can skip Ks.
+            // if illum == 2: requires ks to be defined.
+        }
+        else if (line[0] == 'm' && line[1] == 'a' && line[2] == 'p') // map_Ka
+        {
+            //@Incomplete:
+        }
+
+    }
+
+}
+
 
 //@Temporary.
 graphics::Raw_Obj_Data& graphics::cat_data()

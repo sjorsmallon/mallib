@@ -19,6 +19,10 @@ namespace file
   std::vector<std::string> list_files_in_dir(const char* dir_name); 
 
   size_t get_file_size(const std::string& filename);
+
+  void find_or_create_folder(const st::string& foldername);
+
+
   
   // void reload_file(const std::string& filename);
 };
