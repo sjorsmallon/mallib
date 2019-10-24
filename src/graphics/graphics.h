@@ -22,6 +22,11 @@ namespace graphics
 		Vec3u indices_set[3]; // set of indices for a vertex.
 	};
 	
+	struct Material
+	{
+		int empty;
+	};
+
 	struct Vertex
 	{
 		Vec3 position;
@@ -85,6 +90,8 @@ namespace graphics
 
 	//@Refactor: this name.
 	void load_obj(const std::string& filename, Raw_Obj_Data& raw_data);
+	void load_mtl(const std::string& filename, graphics::Material& material);
+
     void generate_vertices_from_raw_data(Raw_Obj_Data& raw_data); // either this should return something, but I want this to do something.
 
 	// text

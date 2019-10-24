@@ -2,6 +2,7 @@
 #define INCLUDED_MAT_
 
 #include "../mat4/mat4.h"
+#include "../mat3/mat3.h"
 #include "../vec3/vec3.h"
 #include "../quaternion/quaternion.h"
 #include "../xform_state/xform_state.h"
@@ -46,7 +47,8 @@ namespace mat
                 const float z_far
               );
 
-    Mat3 normal_matrix(const Mat4& model_view_matrix);
+    Mat3 normal_transform(const Mat4& model_view_matrix);
+    Mat3 to_mat3(const Mat4& matrix);
 
     // @Note: return reference for chaining?
     // try_inverse, since it can fail.
@@ -172,7 +174,7 @@ inline Mat4 mat::view(const Vec3& eye, const Vec3& center, const Vec3& up)
                 0,              0,            0,  1};
 }
    
-inline mat3 mat::to_mat3(const Mat4& matrix)
+inline Mat3 mat::to_mat3(const Mat4& matrix)
 {
     return {matrix[0][0], matrix[0][1], matrix[0][2],
             matrix[1][0], matrix[1][1], matrix[1][2],
@@ -183,11 +185,11 @@ inline bool mat::try_inverse(Mat3& lhs)
 {
     Mat3 inverse = {};
 
-    inverse[0][0] = mat[1][1] * mat[2][2] - mat[1][2] * mat[2][1];
-    inverse[1][0] = mat[1][2] * mat[2][0] - mat[1][0] * mat[2][2];
-    inverse[2][0] = mat[1][0] * mat[2][1] - mat[1][1] * mat[2][0];
+    inverse[0][0] = lhs[1][1] * lhs[2][2] - lhs[1][2] * lhs[2][1];
+    inverse[1][0] = lhs[1][2] * lhs[2][0] - lhs[1][0] * lhs[2][2];
+    inverse[2][0] = lhs[1][0] * lhs[2][1] - lhs[1][1] * lhs[2][0];
 
-    double det = mat[0][0] * inverse[0][0] + mat[0][1] * inverse[1][0] + mat[0][2] * inverse[2][0];
+    double det = lhs[0][0] * inverse[0][0] + lhs[0][1] * inverse[1][0] + lhs[0][2] * inverse[2][0];
 
     // if det is too small, the inverse does not exist.
     // if ( ) {
@@ -195,24 +197,24 @@ inline bool mat::try_inverse(Mat3& lhs)
     // }
     double inv_det = 1.0f / det;
 
-    inverse[0][1] = mat[0][2] * mat[2][1] - mat[0][1] * mat[2][2];
-    inverse[0][2] = mat[0][1] * mat[1][2] - mat[0][2] * mat[1][1];
-    inverse[1][1] = mat[0][0] * mat[2][2] - mat[0][2] * mat[2][0];
-    inverse[1][2] = mat[0][2] * mat[1][0] - mat[0][0] * mat[1][2];
-    inverse[2][1] = mat[0][1] * mat[2][0] - mat[0][0] * mat[2][1];
-    inverse[2][2] = mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
+    inverse[0][1] = lhs[0][2] * lhs[2][1] - lhs[0][1] * lhs[2][2];
+    inverse[0][2] = lhs[0][1] * lhs[1][2] - lhs[0][2] * lhs[1][1];
+    inverse[1][1] = lhs[0][0] * lhs[2][2] - lhs[0][2] * lhs[2][0];
+    inverse[1][2] = lhs[0][2] * lhs[1][0] - lhs[0][0] * lhs[1][2];
+    inverse[2][1] = lhs[0][1] * lhs[2][0] - lhs[0][0] * lhs[2][1];
+    inverse[2][2] = lhs[0][0] * lhs[1][1] - lhs[0][1] * lhs[1][0];
 
-    mat[0][0] = inverse[0][0] * inv_det;
-    mat[0][1] = inverse[0][1] * inv_det;
-    mat[0][2] = inverse[0][2] * inv_det;
+    lhs[0][0] = inverse[0][0] * inv_det;
+    lhs[0][1] = inverse[0][1] * inv_det;
+    lhs[0][2] = inverse[0][2] * inv_det;
 
-    mat[1][0] = inverse[1][0] * inv_det;
-    mat[1][1] = inverse[1][1] * inv_det;
-    mat[1][2] = inverse[1][2] * inv_det;
+    lhs[1][0] = inverse[1][0] * inv_det;
+    lhs[1][1] = inverse[1][1] * inv_det;
+    lhs[1][2] = inverse[1][2] * inv_det;
 
-    mat[2][0] = inverse[2][0] * inv_det;
-    mat[2][1] = inverse[2][1] * inv_det;
-    mat[2][2] = inverse[2][2] * inv_det;
+    lhs[2][0] = inverse[2][0] * inv_det;
+    lhs[2][1] = inverse[2][1] * inv_det;
+    lhs[2][2] = inverse[2][2] * inv_det;
 
     return true;
 }
@@ -246,11 +248,14 @@ inline void mat::transpose(Mat3& lhs)
     swap(lhs[1][2], lhs[2][1]);
 }
 
-inline Mat3 mat::normal_matrix(const Mat4& model_view_matrix)
+inline Mat3 mat::normal_transform(const Mat4& model_view_matrix)
 {
     // normal matrix is calculated from the modelview
     Mat3 normal_matrix = to_mat3(model_view_matrix);
-    invert(normal_matrix);
+    if (!try_inverse(normal_matrix))
+    { 
+        fmt::print("[mat] normal_transform: try_inverse failed.\n");
+    }
     transpose(normal_matrix);
     return normal_matrix;
 }

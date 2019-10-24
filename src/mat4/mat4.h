@@ -13,11 +13,15 @@ struct Mat4
     	//assert(idx < 4)
     	return data[idx];
     }
+    float const *operator[](size_t idx) const
+    {
+        return data[idx];
+    }
 };
 
 // free mat4 functions.
 
-// this is column major?
+//@Todo: is this matmul row major?
 inline Mat4 operator*(Mat4& lhs, Mat4& rhs)
 {
     const float *m1Ptr, *m2Ptr;

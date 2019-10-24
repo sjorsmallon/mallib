@@ -87,7 +87,7 @@ static void redirect_output_to_console()
     // {
     //     fatal_error("redirect_output: allocConsole failed.");
     // }
-    AttachConsole(ATTACH_PARENT_PROCESS);
+     AttachConsole(ATTACH_PARENT_PROCESS);
 
     // Redirect CRT standard input, output and error handles to the console window.
     FILE * pNewStdout = nullptr;
@@ -316,11 +316,16 @@ int WINAPI wWinMain(HINSTANCE instance,
                     int command_show)
 {
     
-    redirect_output_to_console(); 
+    auto arguments = std::wstring(command_line);
+    if (arguments.find(L"show"))
+        redirect_output_to_console(); 
+    else
+        exit(1);
+
     init_windows_key_array();
 
     HWND window = create_window(instance);
-    HDC  device_context = GetDC(window);
+    HDC device_context = GetDC(window);
     HGLRC gl_context = init_opengl(device_context);
     graphics::global_Win32_context().gl_context = gl_context;
     graphics::global_Win32_context().device_context = device_context;

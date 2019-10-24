@@ -147,6 +147,7 @@ void graphics::draw_game_3d()
     // for now, draw the cat.
     set_shader(graphics::Shader_Type::SHADER_NORMALS);
     uint32_t active_shader = graphics::shaders().normals;
+    get_shader_info(active_shader);
 
     auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
    
@@ -182,13 +183,12 @@ void graphics::draw_game_3d()
     glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
 
     // Projection Matrix:
-    int32_t projection_matrix_location = glGetUniformLocation(normal_shader, "projection_matrix");
+    int32_t projection_matrix_location = glGetUniformLocation(normal_shader, "model_projection");
     const float fov = 75.0f;
     const float perspective_near_z = 0.1f;
     const float perspective_far_z = 1.0f;
     const float aspect_ratio = graphics::window_settings().width / graphics::window_settings().height;
     Mat4 projection_matrix = mat::perspective(fov, aspect_ratio, perspective_near_z, perspective_far_z);    
-    row_major = true;
     glUniformMatrix4fv(projection_matrix_location, 1, row_major, &projection_matrix[0][0]);
 
 
@@ -214,10 +214,11 @@ void graphics::draw_game_3d()
 
 
     //@REFACTOR: we only need to do this once.
+    const int buffer_count = 1;
     uint32_t VBO = 0;
     uint32_t VAO = 0;
-    glGenBuffers(bufferCount, &VBO);     // glsizei n, GLuint *buffers
-    glGenVertexArrays(bufferCount, &VAO); // glsizei n, GLuinbt *arrays
+    glGenBuffers(buffer_count, &VBO);     // glsizei n, GLuint *buffers
+    glGenVertexArrays(buffer_count, &VAO); // glsizei n, GLuinbt *arrays
 
     // bind the VAO before the VBO.
     glBindVertexArray(VAO);
@@ -253,7 +254,7 @@ void graphics::draw_game_3d()
     glVertexAttribPointer(normals_array, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(5 * sizeof(float))); //skip 5: r, g, b.
 
     // actually draw.
-    glDrawArrays(GL_TRIANGLES,0, object.interleaved_vertices.size());
+    glDrawArrays(GL_TRIANGLES,0, cat_data.vertices.size());
 
     // whahuh?
     // glBindVertexArray(gVAO);
@@ -310,12 +311,13 @@ void graphics::get_shader_info(uint32_t prog)
 {
 
     fmt::print("shader info for program {}:\n", prog);
-    std::vector<GLchar> nameData(256) = {};
+
+    std::vector<GLchar> nameData(256);
     std::vector<GLenum> properties = {};
     properties.push_back(GL_NAME_LENGTH);
     properties.push_back(GL_TYPE);
     properties.push_back(GL_ARRAY_SIZE);
-    std::vector<GLint> values(properties.size()) = {};
+    std::vector<GLint> values(properties.size());
 
     // PROGRAM_ATTRIBUTES
     GLint numActiveAttribs = 0;
@@ -485,79 +487,79 @@ void graphics::load_obj(const std::string& filename, graphics::Raw_Obj_Data& raw
     fmt::print("[graphics] succesfully loaded {}. num_faces: {}\n", filename, raw_data.faces.size());
 }
 
-void graphics::load_mtl(const std::string& filename, graphics::Material& material)
-{
-    std::string data ={};
-    file::file_to_string(filename, data);
-    std::stringstream data_stream(data);
-    constexpr const int max_string_length = 20;
-    constexpr const int max_string_read_length = 9;
-    char garbage_buffer[20] = {}; // used for the garbage in each line. 
+// void graphics::load_mtl(const std::string& filename, graphics::Material& material)
+// {
+//     std::string data ={};
+//     file::file_to_string(filename, data);
+//     std::stringstream data_stream(data);
+//     constexpr const int max_string_length = 20;
+//     constexpr const int max_string_read_length = 9;
+//     char garbage_buffer[20] = {}; // used for the garbage in each line. 
 
-    //@Hack: we assume that if a line starts with "new"
-    // that the line declares a new mtl.
-    // the same is true for 'illum'.
+//     //@Hack: we assume that if a line starts with "new"
+//     // that the line declares a new mtl.
+//     // the same is true for 'illum'.
 
-    // auto mat_vector = std::vector<Material>(1);
-    // Material& active_material = mat_vector[0];
+//     // auto mat_vector = std::vector<Material>(1);
+//     // Material& active_material = mat_vector[0];
 
-    size_t line_number = 0;
-    for (std::string line; std::getline(data_stream, line);)
-    {
-        ++line_number;
-        if (line[0] == '#') // comment
-        {
-            continue;
-        }
-        //@TODO: substring lookup instead of this?
-        else if (line[0] == 'n' && line[1] == 'e' && line[2] == 'w')
-        {
-            // the current mtl is done. create a new one and rebind the reference.
-            mat_vector.emplace_back();
-            active_material = mat_vector.back();
-        }
-        else if (line[0] == 'K' && line[1] == 'a') // ambient color
-        {
-            Vec3 color = {};
-            sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
-        }
-        else if (line[0] == 'K' && line[1] == 'd') // diffuse color
-        {
-            Vec3 color = {};
-            sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
-        }
-        else if (line[0] == 'K' && line[1] == 's') // specular color
-        {
-            Vec3 color = {};
-            sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
-        }
-        else if (line[0] == 'd') // non_transparency
-        {
-            float alpha = 0;
-            sscanf("%9s %f", &alpha);
-        }
-        else if (line[0] == 'T' && line[1] == 'r') // transparency
-        {
-            float inv_alpha = 0;
-            sscanf("%9s %f", &inv_alpha);
+//     size_t line_number = 0;
+//     for (std::string line; std::getline(data_stream, line);)
+//     {
+//         ++line_number;
+//         if (line[0] == '#') // comment
+//         {
+//             continue;
+//         }
+//         //@TODO: substring lookup instead of this?
+//         else if (line[0] == 'n' && line[1] == 'e' && line[2] == 'w')
+//         {
+//             // the current mtl is done. create a new one and rebind the reference.
+//             mat_vector.emplace_back();
+//             active_material = mat_vector.back();
+//         }
+//         else if (line[0] == 'K' && line[1] == 'a') // ambient color
+//         {
+//             Vec3 color = {};
+//             sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
+//         }
+//         else if (line[0] == 'K' && line[1] == 'd') // diffuse color
+//         {
+//             Vec3 color = {};
+//             sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
+//         }
+//         else if (line[0] == 'K' && line[1] == 's') // specular color
+//         {
+//             Vec3 color = {};
+//             sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
+//         }
+//         else if (line[0] == 'd') // non_transparency
+//         {
+//             float alpha = 0;
+//             sscanf("%9s %f", &alpha);
+//         }
+//         else if (line[0] == 'T' && line[1] == 'r') // transparency
+//         {
+//             float inv_alpha = 0;
+//             sscanf("%9s %f", &inv_alpha);
 
             
-        }
-        else if (line[0] == 'i' && line[1] == 'l') // illumination
-        {
-            int illum = 0;
-            sscanf("%9s %d", &illum);
-            // if illum == 1: we can skip Ks.
-            // if illum == 2: requires ks to be defined.
-        }
-        else if (line[0] == 'm' && line[1] == 'a' && line[2] == 'p') // map_Ka
-        {
-            //@Incomplete:
-        }
+//         }
+//         else if (line[0] == 'i' && line[1] == 'l') // illumination
+//         {
+//             int illum = 0;
+//             sscanf("%9s %d", &illum);
+//             // if illum == 1: we can skip Ks.
+//             // if illum == 2: requires ks to be defined.
+//         }
+//         else if (line[0] == 'm' && line[1] == 'a' && line[2] == 'p') // map_Ka
+//         {
+//             //@Incomplete:
+//         }
 
-    }
+//     }
 
-}
+// }
 
 
 //@Temporary.

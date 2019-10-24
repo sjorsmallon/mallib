@@ -20,7 +20,7 @@ namespace file
 
   size_t get_file_size(const std::string& filename);
 
-  void find_or_create_folder(const st::string& foldername);
+  void find_or_create_folder(const std::string& foldername);
 
 
   
