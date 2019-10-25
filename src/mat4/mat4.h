@@ -47,6 +47,7 @@ inline Mat4 operator*(Mat4& lhs, Mat4& rhs)
 
 inline Mat4& operator*=(Mat4& lhs, const float factor)
 {
+    fmt::print("[mat4] operator*= INCOMPLETE INCOMPLETE!");
     lhs[0][0] *= factor;
     lhs[1][1] *= factor;
     lhs[2][2] *= factor;
@@ -83,7 +84,7 @@ inline Mat4 from_col_vec3(const Vec3& v0, const Vec3& v1, const Vec3& v2)
 // non-optimized
 inline Mat4 from_quat(const Vec4& quaternion)
 {
-    Vec3 v0 = rotate_by_quat(Vec3{0,0,0}, quaternion);    // in xform_state.
+    Vec3 v0 = rotate_by_quat(Vec3{1,0,0}, quaternion);    // in xform_state.
     Vec3 v1 = rotate_by_quat(Vec3{0,1,0}, quaternion);
     Vec3 v2 = rotate_by_quat(Vec3{0,0,1}, quaternion);
 

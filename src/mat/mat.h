@@ -1,16 +1,53 @@
 #ifndef INCLUDED_MAT_
 #define INCLUDED_MAT_
 
+#include <fmt/format.h>
+#include <fmt/core.h> // for printing mat3, mat4.
+
 #include "../mat4/mat4.h"
 #include "../mat3/mat3.h"
 #include "../vec3/vec3.h"
 #include "../quaternion/quaternion.h"
 #include "../xform_state/xform_state.h"
 
+// print definitions for Mat3 and Mat4.
+//@Refactor: we need to move these to somewhere.
+namespace fmt {
+    template <>
+    struct formatter<Mat3> {
+      template <typename ParseContext>
+      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+      template <typename FormatContext>
+      auto format(const Mat3 &lhs, FormatContext &ctx) {
+        return format_to(ctx.out(), "\n|{:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f}|\n",
+            lhs[0][0], lhs[0][1], lhs[0][2],
+            lhs[1][0], lhs[1][1], lhs[1][2],
+            lhs[2][0], lhs[2][1], lhs[2][2]);
+      }
+    };
+
+    template <>
+    struct formatter<Mat4> {
+      template <typename ParseContext>
+      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+      template <typename FormatContext>
+      auto format(const Mat4 &lhs, FormatContext &ctx) {
+        return format_to(ctx.out(), "\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n",
+            lhs[0][0], lhs[0][1], lhs[0][2], lhs[0][3],
+            lhs[1][0], lhs[1][1], lhs[1][2], lhs[1][3],
+            lhs[2][0], lhs[2][1], lhs[2][2], lhs[2][3],
+            lhs[3][0], lhs[3][1], lhs[3][2], lhs[3][3]);
+      }
+    };
+};
+
+
+
 
 //idea: instead of creating a translation / scale / rotation matrix everytime,
 // keep a static one in the namespace?
-
 namespace mat
 {
     //@Refactor: move this to math?
@@ -65,18 +102,14 @@ inline Mat4 mat::from_xform_state(const Xform_State& state)
       Mat4 rotation_matrix    = from_quat(state.q_orientation); // in mat4.
       Mat4 translation_matrix = mat::translation(state.position);
 
-      model_matrix *= state.scale;
+      model_matrix[0][0] *= state.scale;
+      model_matrix[1][1] *= state.scale;
+      model_matrix[2][2] *= state.scale;
       model_matrix *= rotation_matrix;
       model_matrix *= translation_matrix;
       
       return model_matrix;
 }
-
-// inline Mat4 mat::from_quaternion()
-// {
-
-// }
-
 
 inline Mat4 mat::translation(const Vec3& position)
 {
@@ -150,6 +183,8 @@ inline Mat4 mat::perspective(const float fov_y,
     matrix[3][2] = - 1.0f;
     matrix[3][3] = 0.0f;
 
+
+
     return matrix;
 }
 
@@ -185,35 +220,35 @@ inline bool mat::try_inverse(Mat3& lhs)
 {
     Mat3 inverse = {};
 
-    inverse[0][0] = lhs[1][1] * lhs[2][2] - lhs[1][2] * lhs[2][1];
-    inverse[1][0] = lhs[1][2] * lhs[2][0] - lhs[1][0] * lhs[2][2];
-    inverse[2][0] = lhs[1][0] * lhs[2][1] - lhs[1][1] * lhs[2][0];
+    inverse[0][0] = lhs[1][1] * lhs[2][2] - lhs[2][1] * lhs[1][2];
+    inverse[0][1] = lhs[2][1] * lhs[0][2] - lhs[0][1] * lhs[2][2];
+    inverse[0][2] = lhs[0][1] * lhs[1][2] - lhs[1][1] * lhs[0][2];
 
-    double det = lhs[0][0] * inverse[0][0] + lhs[0][1] * inverse[1][0] + lhs[0][2] * inverse[2][0];
+    double det = lhs[0][0] * inverse[0][0] + lhs[1][0] * inverse[0][1] + lhs[2][0] * inverse[0][2];
 
     // if det is too small, the inverse does not exist.
     // if ( ) {
     //     return false;
     // }
     double inv_det = 1.0f / det;
-
-    inverse[0][1] = lhs[0][2] * lhs[2][1] - lhs[0][1] * lhs[2][2];
-    inverse[0][2] = lhs[0][1] * lhs[1][2] - lhs[0][2] * lhs[1][1];
-    inverse[1][1] = lhs[0][0] * lhs[2][2] - lhs[0][2] * lhs[2][0];
-    inverse[1][2] = lhs[0][2] * lhs[1][0] - lhs[0][0] * lhs[1][2];
-    inverse[2][1] = lhs[0][1] * lhs[2][0] - lhs[0][0] * lhs[2][1];
-    inverse[2][2] = lhs[0][0] * lhs[1][1] - lhs[0][1] * lhs[1][0];
+    inverse[1][0] = lhs[2][0] * lhs[1][2] - lhs[1][0] * lhs[2][2];
+    inverse[2][0] = lhs[1][0] * lhs[2][1] - lhs[2][0] * lhs[1][1];
+    inverse[1][1] = lhs[0][0] * lhs[2][2] - lhs[2][0] * lhs[0][2];
+    inverse[2][1] = lhs[2][0] * lhs[0][1] - lhs[0][0] * lhs[2][1];
+    inverse[1][2] = lhs[1][0] * lhs[0][2] - lhs[0][0] * lhs[1][2];
+    inverse[2][2] = lhs[0][0] * lhs[1][1] - lhs[1][0] * lhs[0][1];
 
     lhs[0][0] = inverse[0][0] * inv_det;
-    lhs[0][1] = inverse[0][1] * inv_det;
-    lhs[0][2] = inverse[0][2] * inv_det;
 
     lhs[1][0] = inverse[1][0] * inv_det;
-    lhs[1][1] = inverse[1][1] * inv_det;
-    lhs[1][2] = inverse[1][2] * inv_det;
-
     lhs[2][0] = inverse[2][0] * inv_det;
+
+    lhs[0][1] = inverse[0][1] * inv_det;
+    lhs[1][1] = inverse[1][1] * inv_det;
     lhs[2][1] = inverse[2][1] * inv_det;
+
+    lhs[0][2] = inverse[0][2] * inv_det;
+    lhs[1][2] = inverse[1][2] * inv_det;
     lhs[2][2] = inverse[2][2] * inv_det;
 
     return true;
@@ -257,6 +292,7 @@ inline Mat3 mat::normal_transform(const Mat4& model_view_matrix)
         fmt::print("[mat] normal_transform: try_inverse failed.\n");
     }
     transpose(normal_matrix);
+
     return normal_matrix;
 }
 

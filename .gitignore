@@ -7,4 +7,4 @@
 /src/tests/*.exe
 
 /src/.vs/*
-/src/win32/*.pdb
+/src/win32/*.pdbsrc/.vs/ 

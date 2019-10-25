@@ -10,6 +10,10 @@ struct Mat3
   {
     return data[idx];
   }
+  float const *operator[](size_t idx) const 
+  {
+  	return data[idx];
+  }
 };
 
 

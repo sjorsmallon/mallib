@@ -105,7 +105,7 @@ void font::draw_text(std::string text,
     float near_  = 0.0f;
     float far_   = 1.0f; // near and far are reserved by windows???
 
-    //@Refactor: this should be transposed, but we need to decide how we do matrices.
+    //@Refactor: incorporate this intro matrices.
     float projectionmatrix[16] =   {2.0f / (right - left),   0.0f,                 0.0f,                 - (right + left) / (right - left),
                                     0.0f,            2.0f / (top - bot),           0.0f,                   - (top + bot) / (top - bot),
                                     0.0f,                   0.0f,          (-2.0f / (far_ - near_)),     -(far_ + near_) / (far_ - near_),

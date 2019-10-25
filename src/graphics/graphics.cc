@@ -57,9 +57,29 @@ void graphics::init_graphics()
     glDetachShader(shader_programs.normals, normal_vertex);
     glDetachShader(shader_programs.normals, normal_fragment);
 
+
+    //@refactor: we should abstract this. But I'm not quite sure how yet.
     const int buffer_count = 1;
-    glGenBuffers(buffer_count, &VBO);     // glsizei n, GLuint *buffers
-    glGenVertexArrays(buffer_count, &VAO); // glsizei n, GLuinbt *arrays
+    glGenBuffers(buffer_count, &VBO);     
+    glGenVertexArrays(buffer_count, &VAO); 
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    uint32_t pos_array = 0;
+    uint32_t uv_array = 1;
+    uint32_t normals_array = 2;
+    glEnableVertexAttribArray(pos_array);
+    glEnableVertexAttribArray(uv_array);
+    glEnableVertexAttribArray(normals_array);
+    glVertexAttribPointer(pos_array,     3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0); // x, y, z
+    glVertexAttribPointer(uv_array,      2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(3 * sizeof(float))); // skip  3: u, v,
+    glVertexAttribPointer(normals_array, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(5 * sizeof(float))); // skip 5: r, g, b.
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glBindVertexArray(0);
+
+
 
     set_shader(graphics::Shader_Type::SHADER_DEFAULT);
 }
@@ -127,17 +147,13 @@ void graphics::set_shader(Shader_Type shader_type)
 
 void graphics::generate_vertices_from_raw_data(graphics::Raw_Obj_Data& raw_data)
 {
-    //@Memory: preallocate space.
-    for (auto &position: raw_data.positions)
-    {
-    }
-    raw_data.vertices.resize(raw_data.faces.size());
+    //@Memory: preallocate space.   
+    raw_data.vertices.reserve(raw_data.faces.size());
 
 
     for (auto &face : raw_data.faces)
     {
         //@Refactor: maybe rewrite face to use the index set?
-
             graphics::Vertex v0 = {
                 raw_data.positions[face.v0_indices.data[0]],
                 raw_data.tex_coords[face.v0_indices.data[1]],
@@ -169,7 +185,7 @@ void graphics::draw_game_3d()
 {
     // draw all buffers?
     // for now, draw the cat.
-    set_shader(graphics::Shader_Type::SHADER_NORMALS);
+    graphics::set_shader(graphics::Shader_Type::SHADER_NORMALS);
     uint32_t active_shader = graphics::shaders().normals;
     auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
    
@@ -203,26 +219,24 @@ void graphics::draw_game_3d()
     Mat4 view_rotation_matrix = mat::mat4_identity();
     Mat4 view_translation_matrix = mat::mat4_identity();
     Mat4 view_matrix = view_scale_matrix * view_rotation_matrix * view_translation_matrix;
-
     glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
 
     // Projection Matrix:
     int32_t projection_matrix_location = glGetUniformLocation(normal_shader, "model_projection");
-    const float fov = 75.0f;
+    const float fov_in_degrees = 75.0f;
     const float perspective_near_z = 0.1f;
     const float perspective_far_z = 1.0f;
     const float aspect_ratio = graphics::window_settings().width / graphics::window_settings().height;
-    Mat4 projection_matrix = mat::perspective(fov, aspect_ratio, perspective_near_z, perspective_far_z);    
+    Mat4 projection_matrix = mat::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
     glUniformMatrix4fv(projection_matrix_location, 1, row_major, &projection_matrix[0][0]);
-
-
 
     // Model Matrix:
     int32_t model_matrix_location = glGetUniformLocation(normal_shader, "model_matrix");
     Xform_State cat_state = {};
-    cat_state.position = {0.0f, 0.0f, -0.8f};
+    cat_state.position = {0.0f, 0.0f, 0.8f};
     cat_state.q_orientation = {0.0f, 0.0f, 0.0f, 1.0f};
-    cat_state.scale = 0.2f; 
+    cat_state.scale = 0.2f;
+
     //@Refactor: this goes to mat-> to mat4 (from_quat) -> to xform_state(quaternion).
     Mat4 model_matrix = mat::from_xform_state(cat_state);
     glUniformMatrix4fv(model_matrix_location, 1, false, &model_matrix[0][0]);
@@ -232,55 +246,28 @@ void graphics::draw_game_3d()
     //@Note: We need to actually verify whether or not this is transposed.
     glUniformMatrix3fv(normal_transform_matrix_location, 1, false, &normal_transform_matrix[0][0]);
 
-
     //@TODO: write mat::normal_transform(). with all the above uniforms bound, we still need to send the cat's data to the gpu.
     // see how I do it in the ECS2 example.
 
-
-    //@REFACTOR: we only need to do this once.
- 
     // bind the VAO before the VBO.
     glBindVertexArray(VAO);
     //On_Scope_Exit(GlBindVertexArray(0));
-
     // bind the VBO buffer to array buffer.
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
     auto& cat_data = graphics::cat_data();
-    for (auto& vertex: cat_data.vertices)
-    {
-        fmt::print("x: {}, y: {}, z: {}", vertex.position.x, vertex.position.y, vertex.position.z);
-    }
     glBufferData(GL_ARRAY_BUFFER,
                  static_cast<int>(cat_data.vertices.size() * sizeof(graphics::Vertex)),
                  cat_data.vertices.data(),
                  GL_STATIC_DRAW);
+
     //On_Scope_Exit(glBindBuffer(GL_ARRAY_BUFFER, 0));
     // bind vertex array object.
-
-
-    //@Refactor: get_next_vertex_attrib_value?
-    // struct of three uints?
-    uint32_t pos_array = 0;
-    uint32_t uv_array = 1;
-    uint32_t normals_array = 2;
-    glEnableVertexAttribArray(pos_array);
-    glEnableVertexAttribArray(uv_array);
-    glEnableVertexAttribArray(normals_array);
-
-    //@Refactor: this is modern openGL. do we want to use this?
-    // glEnableVertexArrayAttrib(VAO, pos_array);
-    // glEnableVertexArrayAttrib(VAO, uv_array);
-    // glEnableVertexArrayAttrib(VAO, normals_array);
-    
-    glVertexAttribPointer(pos_array,     3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0); // x, y, z
-    glVertexAttribPointer(uv_array,      2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(3 * sizeof(float))); // skip  3: u, v,
-    glVertexAttribPointer(normals_array, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(5 * sizeof(float))); //skip 5: r, g, b.
 
     // actually draw.
     glDrawArrays(GL_TRIANGLES,0, cat_data.vertices.size());
 
     // whahuh?
-    // glBindVertexArray(gVAO);
     // glActiveTexture(GL_TEXTURE0);
     // glBindTexture(GL_TEXTURE_2D, object.TBO);
     // glUniform1i(d_textureLocation, 0);
@@ -375,7 +362,7 @@ void graphics::get_shader_info(uint32_t prog)
 
 uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file_name)
 {
-    // set shader type based on the extension. maybe change shader_type to take const char*
+    // set shader type based on the extension. 
     std::string filename = file_name;
     GLenum shader_type = shader_type_from_extension(filename);
     if (shader_type == 0)
@@ -408,7 +395,7 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
         // The maxLength includes the NULL character
         std::vector<GLchar> error_log(max_length);
         glGetShaderInfoLog(shader_id, max_length, &max_length, &error_log[0]);
-        // Provide the infolog in whatever manor you deem best.
+        // Provide the infolog in whatever manner you deem best.
         auto string_log = std::string(error_log.begin(), error_log.end());
         fmt::print("[graphics] shader error log: {}\n", string_log);
         // Exit with failure.
@@ -421,8 +408,6 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
     }
     return shader_id;
 }
-
-
 
 
 
@@ -489,7 +474,6 @@ void graphics::load_obj(const std::string& filename, graphics::Raw_Obj_Data& raw
         else if (line[0] == 'f') // face indices
         {
             Face face = {};
-            fmt::print("{}", line);
             //@incomplete: This will barf on unstructured obj files. for now, we assume everything's present.
             sscanf(line.c_str(), "%9s %u / %u / %u %u /%u /%u %u /%u /%u",
                    garbage_buffer,
@@ -594,14 +578,6 @@ graphics::Raw_Obj_Data& graphics::cat_data()
     static graphics::Raw_Obj_Data cat_data;
     return cat_data;
 }
-
-
-
-
-
-
-
-
 
 // Jon Blow's render_frame call.
 // void graphics::render_frame()
