@@ -18,5 +18,5 @@ void main()
 {
 
     fColor = vec4(normalize(vert_normal), 1.0);
-    fColor = Vec4(1.0,1.0,1.0,1.0);
+    fColor = vec4(1.0,1.0,1.0,1.0);
 }

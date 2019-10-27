@@ -96,17 +96,24 @@ namespace mat
 
 };
 
-inline Mat4 mat::from_xform_state(const Xform_State& state)
+inline Mat4 mat::mat4_from_xform_state(const Xform_State& state)
 {
+      fmt::print("xform_state: {} {} {} , {} {} {} {}, {}", state.position.x, state.position.x, state.position.y, state.q_orientation.x, state.q_orientation.y, state.q_orientation.z, state.q_orientation.w, state.scale);
       Mat4 model_matrix       = mat::mat4_identity();
-      Mat4 rotation_matrix    = from_quat(state.q_orientation); // in mat4.
+
+      Mat4 rotation_matrix    = mat4_from_quat(state.q_orientation); // in mat4.
       Mat4 translation_matrix = mat::translation(state.position);
+      fmt::print("translation matrix: {}", translation_matrix);
 
       model_matrix[0][0] *= state.scale;
       model_matrix[1][1] *= state.scale;
       model_matrix[2][2] *= state.scale;
+      fmt::print("model matrix after scaling: {}", model_matrix);
       model_matrix *= rotation_matrix;
+      fmt::print("model_matrix after rotation: {}", model_matrix);
       model_matrix *= translation_matrix;
+      fmt::print("model_matrix after translation: {}", model_matrix);
+
       
       return model_matrix;
 }
@@ -209,7 +216,7 @@ inline Mat4 mat::view(const Vec3& eye, const Vec3& center, const Vec3& up)
                 0,              0,            0,  1};
 }
    
-inline Mat3 mat::to_mat3(const Mat4& matrix)
+inline Mat3 mat::mat3_from_mat4(const Mat4& matrix)
 {
     return {matrix[0][0], matrix[0][1], matrix[0][2],
             matrix[1][0], matrix[1][1], matrix[1][2],
@@ -286,7 +293,7 @@ inline void mat::transpose(Mat3& lhs)
 inline Mat3 mat::normal_transform(const Mat4& model_view_matrix)
 {
     // normal matrix is calculated from the modelview
-    Mat3 normal_matrix = to_mat3(model_view_matrix);
+    Mat3 normal_matrix = mat3_from_mat4(model_view_matrix);
     if (!try_inverse(normal_matrix))
     { 
         fmt::print("[mat] normal_transform: try_inverse failed.\n");

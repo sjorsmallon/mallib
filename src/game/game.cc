@@ -52,7 +52,7 @@ void game::main_loop()
     {
         //@Refactor: how do we handle input in the menu?
         game::handle_menu_input();
-        menu::draw_menu();
+        // menu::draw_menu();
     }
 
     sound::update_audio();

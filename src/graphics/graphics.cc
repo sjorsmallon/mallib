@@ -27,7 +27,7 @@ void graphics::init_graphics()
 { 
     // init gl_lite only after the gl_context has been created.
     gl_lite_init();
-    glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -215,15 +215,15 @@ void graphics::draw_game_3d()
 
     // View matrix:
     int32_t view_matrix_location = glGetUniformLocation(normal_shader, "view_matrix");
-    Mat4 view_scale_matrix = mat::mat4_identity();
-    Mat4 view_rotation_matrix = mat::mat4_identity();
+    Mat4 view_scale_matrix       = mat::mat4_identity();
+    Mat4 view_rotation_matrix    = mat::mat4_identity();
     Mat4 view_translation_matrix = mat::mat4_identity();
     Mat4 view_matrix = view_scale_matrix * view_rotation_matrix * view_translation_matrix;
     glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
 
     // Projection Matrix:
     int32_t projection_matrix_location = glGetUniformLocation(normal_shader, "model_projection");
-    const float fov_in_degrees = 75.0f;
+    const float fov_in_degrees = 90.0f;
     const float perspective_near_z = 0.1f;
     const float perspective_far_z = 1.0f;
     const float aspect_ratio = graphics::window_settings().width / graphics::window_settings().height;
@@ -233,18 +233,18 @@ void graphics::draw_game_3d()
     // Model Matrix:
     int32_t model_matrix_location = glGetUniformLocation(normal_shader, "model_matrix");
     Xform_State cat_state = {};
-    cat_state.position = {0.0f, 0.0f, 0.8f};
+    cat_state.position = {0.0f, 0.0f, -0.8f};
     cat_state.q_orientation = {0.0f, 0.0f, 0.0f, 1.0f};
     cat_state.scale = 0.2f;
 
     //@Refactor: this goes to mat-> to mat4 (from_quat) -> to xform_state(quaternion).
-    Mat4 model_matrix = mat::from_xform_state(cat_state);
-    glUniformMatrix4fv(model_matrix_location, 1, false, &model_matrix[0][0]);
+    Mat4 model_matrix = mat::mat4_from_xform_state(cat_state);
+    glUniformMatrix4fv(model_matrix_location, 1, row_major, &model_matrix[0][0]);
 
     int32_t normal_transform_matrix_location = glGetUniformLocation(normal_shader, "normal_transform");
     Mat3 normal_transform_matrix = mat::normal_transform(model_matrix);
     //@Note: We need to actually verify whether or not this is transposed.
-    glUniformMatrix3fv(normal_transform_matrix_location, 1, false, &normal_transform_matrix[0][0]);
+    glUniformMatrix3fv(normal_transform_matrix_location, 1, row_major, &normal_transform_matrix[0][0]);
 
     //@TODO: write mat::normal_transform(). with all the above uniforms bound, we still need to send the cat's data to the gpu.
     // see how I do it in the ECS2 example.
