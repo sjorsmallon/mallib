@@ -57,7 +57,7 @@ namespace mat
 
 
     // mat4
-    Mat4 from_xform_state(const Xform_State& state);
+    Mat4 mat4_from_xform_state(const Xform_State& state);
     // Mat4 from_quaternion(const Quaternion& quaternion);
     Mat4 mat4_identity();
 
@@ -85,7 +85,7 @@ namespace mat
               );
 
     Mat3 normal_transform(const Mat4& model_view_matrix);
-    Mat3 to_mat3(const Mat4& matrix);
+    Mat3 mat3_from_mat4(const Mat4& matrix);
 
     // @Note: return reference for chaining?
     // try_inverse, since it can fail.

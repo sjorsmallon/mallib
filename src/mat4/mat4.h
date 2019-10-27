@@ -47,11 +47,16 @@ inline Mat4 operator*(Mat4& lhs, Mat4& rhs)
 
 inline Mat4& operator*=(Mat4& lhs, const float factor)
 {
-    fmt::print("[mat4] operator*= INCOMPLETE INCOMPLETE!");
-    lhs[0][0] *= factor;
-    lhs[1][1] *= factor;
-    lhs[2][2] *= factor;
+    const size_t matrix_dim = 4;
 
+    for (size_t row = 0; row != matrix_dim; ++row)
+    {
+        for (size_t col = 0; col != matrix_dim; ++row)
+        {
+            lhs[row][col] *= factor;
+        }
+    }
+    
     return lhs;
 }
 

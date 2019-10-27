@@ -18,7 +18,7 @@ void file::file_to_string(const string& filename, string& target)
 {
     //@FIXME: seekg & tellg cannot be properly used to determine file size. 
     // see some discussions about that. Prefer the get_file_size function defined in this
-    // namespace to find the filename.
+    // namespace to find the file size.
     std::ifstream file(filename);
     if (!file.is_open())
     {
