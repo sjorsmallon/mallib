@@ -134,22 +134,16 @@ inline Mat4 mat::mat4_from_quat(const Vec4& quaternion)
 
 inline Mat4 mat::mat4_from_xform_state(const Xform_State& state)
 {
-    fmt::print("xform_state: {}\n", state);
-
     Mat4 model_matrix       = mat::mat4_identity();
     Mat4 rotation_matrix    = mat4_from_quat(state.q_orientation); // in mat4.
-    fmt::print("rotation matrix: {}\n", rotation_matrix);
     Mat4 translation_matrix = mat::translation(state.position);
 
     model_matrix[0][0] *= state.scale;
     model_matrix[1][1] *= state.scale;
     model_matrix[2][2] *= state.scale;
 
-    fmt::print("model matrix after scaling: {}", model_matrix);
     model_matrix *= rotation_matrix;
-    fmt::print("model_matrix after rotation: {}", model_matrix);
     model_matrix *= translation_matrix;
-    fmt::print("model_matrix after translation: {}", model_matrix);
       
     return model_matrix;
 }

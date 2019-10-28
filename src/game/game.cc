@@ -52,12 +52,15 @@ void game::main_loop()
     {
         //@Refactor: how do we handle input in the menu?
         game::handle_menu_input();
-        // menu::draw_menu();
+        // draw 3d stuff for the menu. 
+        //
+       // menu::draw_menu();
     }
 
     sound::update_audio();
     graphics::render_frame(); 
-    fmt::print("FIXME: drawing menu too late. or something.\n");
+    // @FIXME FIXME : drawing menu after render_frame. This is because we want to render font last.
+    // eventually, the menu will have its own buffer etcetera.
     menu::draw_menu();
     graphics::swap_buffers();
 

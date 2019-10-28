@@ -1,8 +1,37 @@
 #ifndef INCLUDED_MVEC_
 #define INCLUDED_MVEC_
 #include "../vec3/vec3.h"
+#include "../vec2/vec2.h"
 
 //@Performance: is it cheaper to pass by value or by reference?
+namespace fmt {
+    template <>
+    struct formatter<Vec3> {
+      template <typename ParseContext>
+      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+      template <typename FormatContext>
+      auto format(const Vec3 &lhs, FormatContext &ctx) {
+        return format_to(ctx.out(), "\n{:.3f} {:.3f} {:.3f}",
+            lhs[0], lhs[1], lhs[2]);
+      }
+    };
+
+    template <>
+    struct formatter<Vec2> {
+      template <typename ParseContext>
+      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+      template <typename FormatContext>
+      auto format(const Vec2 &lhs, FormatContext &ctx) {
+        return format_to(ctx.out(), "\n{:.3f} {:.3f}",
+            lhs[0], lhs[1]);
+      }
+    };
+
+}
+
+
 
 
 namespace vec

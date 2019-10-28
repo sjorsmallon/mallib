@@ -70,7 +70,7 @@ void graphics::init_graphics()
     glEnableVertexAttribArray(normals_array);
     glVertexAttribPointer(pos_array,     3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0); // x, y, z
     glVertexAttribPointer(uv_array,      2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(3 * sizeof(float))); // skip  3: u, v,
-    glVertexAttribPointer(normals_array, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(5 * sizeof(float))); // skip 5: r, g, b.
+    glVertexAttribPointer(normals_array, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(5 * sizeof(float))); // skip 5: nx, ny, nz.
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -171,7 +171,6 @@ void graphics::generate_vertices_from_raw_data(graphics::Raw_Obj_Data& raw_data)
             raw_data.vertices.emplace_back(v1);
             raw_data.vertices.emplace_back(v2);
     }
-
 }
 
 
@@ -183,7 +182,6 @@ void graphics::draw_game_3d()
     graphics::set_shader(graphics::Shader_Type::SHADER_NORMALS);
     uint32_t active_shader = graphics::shaders().normals;
     auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
-   
 
     // lights are a property of the scene. 
     // however, this implies that the properties of the scene
@@ -229,10 +227,10 @@ void graphics::draw_game_3d()
 
     // Model Matrix:
     int32_t model_matrix_location = glGetUniformLocation(normal_shader, "model_matrix");
-    Xform_State cat_state = {   ;
+    Xform_State cat_state = {};
     cat_state.position = {0.0f, 0.0f, -1.2f};
-    cat_state.q_orientation = q_rotation(0.5f, {0.0f,0.0ff,1.0f});
-    
+    cat_state.q_orientation = q_rotation(0.5f, {0.0f,0.0f,1.0f});
+
     cat_state.q_orientation = {0.0f, 0.0f, 0.0f, 1.0f};
     cat_state.scale = 0.1f;
 
@@ -242,7 +240,6 @@ void graphics::draw_game_3d()
 
     int32_t normal_transform_matrix_location = glGetUniformLocation(normal_shader, "normal_transform");
     Mat3 normal_transform_matrix = mat::normal_transform(model_matrix);
-    fmt::print("normal transform matrix: {}\n", normal_transform_matrix);
 
     //@Note: We need to actually verify whether or not this is transposed.
     glUniformMatrix3fv(normal_transform_matrix_location, 1, row_major, &normal_transform_matrix[0][0]);

@@ -30,6 +30,15 @@ union Vec3
         float b;
     };
     float data[3];
+    
+    float operator[](size_t idx)
+    {
+        return data[idx];
+    }
+    float const operator[](size_t idx) const
+    {
+        return data[idx];
+    }
 };
 
 union Vec3u

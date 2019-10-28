@@ -3,9 +3,9 @@
 // Define constants
 #define M_PI 3.141593
 
-in vec3 position_in;
-in vec2 tex_coordinates_in;
-in vec3 normal_in;
+layout(location = 0) in vec3 position_in;
+layout(location = 1) in vec2 tex_coordinates_in;
+layout(location = 2) in vec3 normal_in;
 
 // Specify the Uniforms of the vertex shader
 
