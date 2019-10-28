@@ -43,6 +43,8 @@ inline Vec4 q_rotation(float angle_in_rad, const Vec3& axis)
 	quaternion.x = sina * axis.x;
 	quaternion.y = sina * axis.y;
 	quaternion.z = sina * axis.z;
+
+	return quaternion;
 }
 
 // Quaternion-Quaternion product

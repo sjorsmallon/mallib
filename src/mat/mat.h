@@ -138,6 +138,7 @@ inline Mat4 mat::mat4_from_xform_state(const Xform_State& state)
 
     Mat4 model_matrix       = mat::mat4_identity();
     Mat4 rotation_matrix    = mat4_from_quat(state.q_orientation); // in mat4.
+    fmt::print("rotation matrix: {}\n", rotation_matrix);
     Mat4 translation_matrix = mat::translation(state.position);
 
     model_matrix[0][0] *= state.scale;

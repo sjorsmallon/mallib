@@ -17,11 +17,8 @@
 #include "../mat4/mat4.h"
 #include "../mat3/mat3.h" // for normal matrix.
 
-
 static uint32_t VBO = 0;
 static uint32_t VAO = 0;
-
-
 
 void graphics::init_graphics()
 { 
@@ -78,8 +75,6 @@ void graphics::init_graphics()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glBindVertexArray(0);
-
-
 
     set_shader(graphics::Shader_Type::SHADER_DEFAULT);
 }
@@ -223,20 +218,23 @@ void graphics::draw_game_3d()
 
     // Projection Matrix:
     // perspective near_z and far_z define the clipping, not the actual bounds. I think.
+    // @Note: Then what should far_z and near_z be?
     int32_t projection_matrix_location = glGetUniformLocation(normal_shader, "model_projection");
     const float fov_in_degrees = 90.0f;
     const float perspective_near_z = 0.1f;
-    const float perspective_far_z = 1.0f;
+    const float perspective_far_z = 10.0f;
     const float aspect_ratio = graphics::window_settings().width / graphics::window_settings().height;
     Mat4 projection_matrix = mat::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
     glUniformMatrix4fv(projection_matrix_location, 1, row_major, &projection_matrix[0][0]);
 
     // Model Matrix:
     int32_t model_matrix_location = glGetUniformLocation(normal_shader, "model_matrix");
-    Xform_State cat_state = {};
-    cat_state.position = {0.0f, 0.0f, -0.8f};
+    Xform_State cat_state = {   ;
+    cat_state.position = {0.0f, 0.0f, -1.2f};
+    cat_state.q_orientation = q_rotation(0.5f, {0.0f,0.0ff,1.0f});
+    
     cat_state.q_orientation = {0.0f, 0.0f, 0.0f, 1.0f};
-    cat_state.scale = 0.2f;
+    cat_state.scale = 0.1f;
 
     //@Refactor: this goes to mat-> to mat4 (from_quat) -> to xform_state(quaternion).
     Mat4 model_matrix = mat::mat4_from_xform_state(cat_state);
@@ -244,6 +242,8 @@ void graphics::draw_game_3d()
 
     int32_t normal_transform_matrix_location = glGetUniformLocation(normal_shader, "normal_transform");
     Mat3 normal_transform_matrix = mat::normal_transform(model_matrix);
+    fmt::print("normal transform matrix: {}\n", normal_transform_matrix);
+
     //@Note: We need to actually verify whether or not this is transposed.
     glUniformMatrix3fv(normal_transform_matrix_location, 1, row_major, &normal_transform_matrix[0][0]);
 

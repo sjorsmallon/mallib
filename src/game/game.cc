@@ -57,6 +57,8 @@ void game::main_loop()
 
     sound::update_audio();
     graphics::render_frame(); 
+    fmt::print("FIXME: drawing menu too late. or something.\n");
+    menu::draw_menu();
     graphics::swap_buffers();
 
     // end time calculation.
