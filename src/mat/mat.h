@@ -34,17 +34,31 @@ namespace fmt {
 
       template <typename FormatContext>
       auto format(const Mat4 &lhs, FormatContext &ctx) {
-        return format_to(ctx.out(), "\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n",
-            lhs[0][0], lhs[0][1], lhs[0][2], lhs[0][3],
+        return format_to(ctx.out(),
+            "\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n",lhs[0][0], lhs[0][1], lhs[0][2], lhs[0][3],
             lhs[1][0], lhs[1][1], lhs[1][2], lhs[1][3],
             lhs[2][0], lhs[2][1], lhs[2][2], lhs[2][3],
             lhs[3][0], lhs[3][1], lhs[3][2], lhs[3][3]);
       }
     };
+
+    template <>
+    struct formatter<Xform_State> {
+      template <typename ParseContext>
+      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+      template <typename FormatContext>
+      auto format(const Xform_State &state, FormatContext &ctx) {
+        return format_to(ctx.out(),
+            "\nx: {:.3f}, y: {:.3f}, z: {:.3f}\nq_x: {:.3f}, q_y: {:.3f}, q_z: {:.3f}, q_w: {:.3f}\nscale:{:.3f}\n",
+            state.position.x, state.position.y, state.position.z,
+            state.q_orientation.x, state.q_orientation.y, state.q_orientation.z, state.q_orientation.w,
+            state.scale
+            );
+      }
+    };
+
 };
-
-
-
 
 //idea: instead of creating a translation / scale / rotation matrix everytime,
 // keep a static one in the namespace?
@@ -58,16 +72,18 @@ namespace mat
 
     // mat4
     Mat4 mat4_from_xform_state(const Xform_State& state);
-    // Mat4 from_quaternion(const Quaternion& quaternion);
+    Mat4 mat4_from_quat(const Vec4& quaternion);
+    Mat4 mat4_from_mat3(const Mat4& lhs);
+    Mat4 mat4_from_row_vec3(const Vec3& v0, const Vec3& v1, const Vec3& v2);
+
     Mat4 mat4_identity();
+    void to_identity(Mat4 &matrix);
+
 
     Mat4 translate(const Mat4& matrix, const Vec3& vector);
     Mat4 scale(const Mat4& matrix, const float scale_factor);
     Mat4 scale(const float s);
     Mat4 rotate(const Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z); //expects identity
-
-    void to_identity(Mat4 &matrix);
-    
     Mat4 perspective(const float fov_y,
                      const float aspect_ratio,
                      const float near_plane,
@@ -84,6 +100,7 @@ namespace mat
                 const float z_far
               );
 
+    // mat3
     Mat3 normal_transform(const Mat4& model_view_matrix);
     Mat3 mat3_from_mat4(const Mat4& matrix);
 
@@ -96,26 +113,44 @@ namespace mat
 
 };
 
+inline Mat4 mat::mat4_from_row_vec3(const Vec3& v0, const Vec3& v1, const Vec3& v2)
+{
+    return {v0.x, v0.y, v0.z, 0,
+            v1.x, v1.y, v1.z, 0,
+            v2.x, v2.y, v2.z, 0,
+            0,      0,     0, 1};
+}
+
+inline Mat4 mat::mat4_from_quat(const Vec4& quaternion)
+{
+    Vec3 v0 = rotate_by_quat(Vec3{1,0,0}, quaternion);    // in xform_state.
+    Vec3 v1 = rotate_by_quat(Vec3{0,1,0}, quaternion);
+    Vec3 v2 = rotate_by_quat(Vec3{0,0,1}, quaternion);
+
+    Mat4 result =  mat::mat4_from_row_vec3(v0, v1, v2); // in mat4.
+
+    return result;
+}
+
 inline Mat4 mat::mat4_from_xform_state(const Xform_State& state)
 {
-      fmt::print("xform_state: {} {} {} , {} {} {} {}, {}", state.position.x, state.position.x, state.position.y, state.q_orientation.x, state.q_orientation.y, state.q_orientation.z, state.q_orientation.w, state.scale);
-      Mat4 model_matrix       = mat::mat4_identity();
+    fmt::print("xform_state: {}\n", state);
 
-      Mat4 rotation_matrix    = mat4_from_quat(state.q_orientation); // in mat4.
-      Mat4 translation_matrix = mat::translation(state.position);
-      fmt::print("translation matrix: {}", translation_matrix);
+    Mat4 model_matrix       = mat::mat4_identity();
+    Mat4 rotation_matrix    = mat4_from_quat(state.q_orientation); // in mat4.
+    Mat4 translation_matrix = mat::translation(state.position);
 
-      model_matrix[0][0] *= state.scale;
-      model_matrix[1][1] *= state.scale;
-      model_matrix[2][2] *= state.scale;
-      fmt::print("model matrix after scaling: {}", model_matrix);
-      model_matrix *= rotation_matrix;
-      fmt::print("model_matrix after rotation: {}", model_matrix);
-      model_matrix *= translation_matrix;
-      fmt::print("model_matrix after translation: {}", model_matrix);
+    model_matrix[0][0] *= state.scale;
+    model_matrix[1][1] *= state.scale;
+    model_matrix[2][2] *= state.scale;
 
+    fmt::print("model matrix after scaling: {}", model_matrix);
+    model_matrix *= rotation_matrix;
+    fmt::print("model_matrix after rotation: {}", model_matrix);
+    model_matrix *= translation_matrix;
+    fmt::print("model_matrix after translation: {}", model_matrix);
       
-      return model_matrix;
+    return model_matrix;
 }
 
 inline Mat4 mat::translation(const Vec3& position)
@@ -190,8 +225,6 @@ inline Mat4 mat::perspective(const float fov_y,
     matrix[3][2] = - 1.0f;
     matrix[3][3] = 0.0f;
 
-
-
     return matrix;
 }
 
@@ -210,10 +243,10 @@ inline Mat4 mat::view(const Vec3& eye, const Vec3& center, const Vec3& up)
 
    // The up vector must not be parallel to the line of sight from the
    //           eye point to the reference point.
-    return { right.x,     right.y,      right.z, 0,
-              up_norm.x, up_norm.y,  up_norm.z,  0,
-             -forward.x, -forward.y, -forward.z,  0,
-                0,              0,            0,  1};
+    return {    right.x,    right.y,    right.z, 0,
+              up_norm.x,  up_norm.y,  up_norm.z, 0,
+             -forward.x, -forward.y, -forward.z, 0,
+                      0,          0,          0, 1};
 }
    
 inline Mat3 mat::mat3_from_mat4(const Mat4& matrix)

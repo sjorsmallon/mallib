@@ -27,7 +27,7 @@ void graphics::init_graphics()
 { 
     // init gl_lite only after the gl_context has been created.
     gl_lite_init();
-    // glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -222,6 +222,7 @@ void graphics::draw_game_3d()
     glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
 
     // Projection Matrix:
+    // perspective near_z and far_z define the clipping, not the actual bounds. I think.
     int32_t projection_matrix_location = glGetUniformLocation(normal_shader, "model_projection");
     const float fov_in_degrees = 90.0f;
     const float perspective_near_z = 0.1f;
