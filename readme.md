@@ -1,12 +1,59 @@
 
 
-# near future TODO
+
+# TODO
+## Scaffolding for Asset loading
+We need to load the assets. i.e. the cat model. The structure I have in my mind for storing the model is 
+a string -> vector<Vertex> map.
+
+## Scene
+create a scene (level?) So we know what to load when.
+The Scene will be read from a file. For now, the file will be described by
+``` 
+# entity_name
+model name
+material name
+texture name
+position
+q_orientation
+scale.
+``` 
+
+
+
+## SYNTAX
+unify all from -> to syntax in the program. All the loading functions (load_obj_from_file) 
+and the file functions(file_to_string). This is inconsistent.
+
+
+
+
+
+## Font rendering
 look at harfbuzz for text shaping.
-text effects? (pulse?)
+text effects? (pulse? Wavy stretchy?)
+
+## `sound_device`
+only allow valid wav files (not compressed!). See how HHH handles the file reading.
+It's very similar.
+
+pool pattern. 
+Maximum of (32) sound sources. 
+at startup, create 32 ALsources.
+ask pool for a source. (implement as ring buffer?)
+if no free sources, stop longest playing (priority list?)
+classify pool into groups:
+
+1. 1-8 unit sfx
+2. 8-12 explosions
+3. you name it.
+
+## platform Task Queue
+read about task queueing, work stealing and multithreading.
+
 
 # Concepts
 look at the tprint concept, as well as the on_leaving_scope thing.
-the `load_x` functions use a from -> to pattern.
 
 # Globals, Singletons, and modularity
 For now, I'm using the Static singleton pattern for some global state management. Some of these can move into some sort of global struct,
@@ -84,34 +131,17 @@ any error reporting there is done using `cerr` (for now).
 I need to document how to build soloud, as it uses this weird build system. It's a nice library though.
 
 
-# TODO
+# HAVE DONE
+the `load_x` functions use a from -> to pattern.
 
-## platform Task Queue
-read about task queueing, work stealing and multithreading.
 
 ## `Vec3` 
 Perform the `POD` test again with the union vec3. 
 
-## `sound_device`
-only allow valid wav files (not compressed!). See how HHH handles the file reading.
-It's very similar.
-
 typedef uint32_t to buffer / sound_source. But does that coerce `ALuint` to `uint32_t`?
 
+
 Move the buffers to outside of the class. Should be in data storage. Play sound via string? or via enum name? <- this is annoying, as user needs to add enums. better to instantiate map based on filenames.
-
-pool pattern. 
-Maximum of (32) sound sources. 
-at startup, create 32 ALsources.
-ask pool for a source. (implement as ring buffer?)
-if no free sources, stop longest playing (priority list?)
-classify pool into groups:
-
-1. 1-8 unit sfx
-2. 8-12 explosions
-3. you name it.
-
-# HAVE DONE
 
 ## wav files
 read / play wav file

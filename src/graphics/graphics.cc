@@ -229,8 +229,6 @@ void graphics::draw_game_3d()
     int32_t model_matrix_location = glGetUniformLocation(normal_shader, "model_matrix");
     Xform_State cat_state = {};
     cat_state.position = {0.0f, 0.0f, -1.2f};
-    cat_state.q_orientation = q_rotation(0.5f, {0.0f,0.0f,1.0f});
-
     cat_state.q_orientation = {0.0f, 0.0f, 0.0f, 1.0f};
     cat_state.scale = 0.1f;
 
@@ -376,9 +374,9 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
     //@Cleanup:to const char* buffer?
     std::string target = {};
     file::file_to_string(filename, target);
-    const char* c_str = target.c_str();
+    const char* shader_c_str = target.c_str();
 
-    glShaderSource(shader_id, 1, &c_str, NULL);
+    glShaderSource(shader_id, 1, &shader_c_str, NULL);
     glCompileShader(shader_id);
 
     GLint shader_compiled = GL_FALSE;
@@ -390,7 +388,7 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
         GLint max_length = 0;
         glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &max_length);
 
-        // The maxLength includes the NULL character
+        //  maxLength includes the NULL character.
         std::vector<GLchar> error_log(max_length);
         glGetShaderInfoLog(shader_id, max_length, &max_length, &error_log[0]);
         // Provide the infolog in whatever manner you deem best.

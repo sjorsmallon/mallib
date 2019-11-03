@@ -16,13 +16,14 @@
 
 namespace graphics
 {
+
+
 	//@Cleanup: we can sort of remove this. or keep it internal facing.
 	struct Face
 	{
 		Vec3u v0_indices;
 		Vec3u v1_indices;
 		Vec3u v2_indices;
-
 	};
 	
 	struct Material

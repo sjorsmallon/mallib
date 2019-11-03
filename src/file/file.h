@@ -5,8 +5,6 @@
 #include <vector>
 #include <string>
 
-// accumulator
-
 // struct Watch_List
 // {
 // 	// std::vector<std::string,std::chrono::duration<int, std::milli>> file_names;
