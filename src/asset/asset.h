@@ -11,8 +11,14 @@ namespace asset
         SOUND_FX
     }
 
+
     void load_model_from_obj(std::string& filename);
-    void load_scene_from_file(const std::string& filename, Scene& scene);
+    void load_scene_from_file(const std::string& filename, scene::Scene& scene);
+
+    void load_texture_from_file();
+    void load_obj_from_file();
+    void load_material_from_file();
+
 
 }
 

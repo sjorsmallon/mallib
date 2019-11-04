@@ -11,11 +11,6 @@ namespace entity
 	};
 
 
-	struct Scene
-	{
-		// std::vector<Draw?>
-	}
-
 	// does every entity have a xform_state?
 	// or is that a waste?
 	// or do we want some kind of component system?

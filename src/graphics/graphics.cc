@@ -521,6 +521,7 @@ void graphics::load_obj(const std::string& filename, graphics::Raw_Obj_Data& raw
 //         else if (line[0] == 'n' && line[1] == 'e' && line[2] == 'w')
 //         {
 //             // the current mtl is done. create a new one and rebind the reference.
+//             //@FIXME FIXME FIXME: this only works if the first one does not start with "new".
 //             mat_vector.emplace_back();
 //             active_material = mat_vector.back();
 //         }

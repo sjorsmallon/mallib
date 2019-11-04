@@ -1,7 +1,11 @@
 
 
+# FIX
+make string buffer in all load classes larger. 20 characters is not much.
 
 # TODO
+
+
 ## Scaffolding for Asset loading
 We need to load the assets. i.e. the cat model. The structure I have in my mind for storing the model is 
 a string -> vector<Vertex> map.
@@ -10,6 +14,7 @@ a string -> vector<Vertex> map.
 create a scene (level?) So we know what to load when.
 The Scene will be read from a file. For now, the file will be described by
 ``` 
+// these are comments.
 # entity_name
 model name
 material name
