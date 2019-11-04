@@ -4,6 +4,7 @@
 #include <string>
 #include "../sound/sound.h"
 #include "../graphics/graphics.h"
+#include "../asset/asset.h"
 #include "../file/file.h"
 #include "../font/font.h"
 #include "../vec3/vec3.h"
@@ -28,9 +29,7 @@ void game::init_everything()
     // uint32_t VBO = 
     // uint32_t VAO = 
     auto& raw_data = graphics::cat_data();
-    graphics::load_obj("../object_files/cat.obj", raw_data);
-    graphics::generate_vertices_from_raw_data(raw_data);
-
+    asset::load_obj_from_file(raw_data,"../object_files/cat.obj"); // this also generates interleaved vertices.
     graphics::clear_buffers();
 }
 

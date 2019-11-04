@@ -10,43 +10,13 @@
 	// #include <GL/GL.h>
 #endif
 
-#include "../vec3/vec3.h" // Vertex
-#include "../vec2/vec2.h" // Vertex
+#include "../asset/asset.h"
+#include "../scene/scene.h"
+#include "../vec3/vec3.h" // Light
 //@todo: service locator pattern for the shaders?
 
 namespace graphics
 {
-
-
-	//@Cleanup: we can sort of remove this. or keep it internal facing.
-	struct Face
-	{
-		Vec3u v0_indices;
-		Vec3u v1_indices;
-		Vec3u v2_indices;
-	};
-	
-	struct Material
-	{
-		int empty;
-	};
-
-	struct Vertex
-	{
-		Vec3 position;
-		Vec2 tex_coords;
-		Vec3 normals;
-	};
-
-	struct Raw_Obj_Data
-	{
-		std::vector<Vec3> positions;
-		std::vector<Vec3> normals;
-		std::vector<Vec2> tex_coords;
-		std::vector<Face> faces; // these indices are offset by 1.
-		std::vector<Vertex> vertices;
-	};
-
 	struct Light
 	{
 		Vec3 position;
@@ -62,19 +32,19 @@ namespace graphics
 		SHADER_BOMB
 	};
 
-	struct Window_Settings
-	{
-		float width;
-		float height;
-		bool v_sync;
-	};
-
 	struct Shaders //@Note: shader_programs?
 	{
 		uint32_t bomb;
 		uint32_t text;
 		uint32_t normals;
 		uint32_t default;
+	};
+
+	struct Window_Settings
+	{
+		float width;
+		float height;
+		bool v_sync;
 	};
 
 	void init_graphics(); //@Note: does that also mean to load all the shaders etc?
@@ -86,31 +56,23 @@ namespace graphics
 
 	Shaders& shaders();
 	Window_Settings& window_settings();
-
 	
 	void set_shader(Shader_Type shader);
+	//@Refactor what does this return?
 	uint32_t load_compile_attach_shader(uint32_t program, std::string file_name);
 	uint32_t shader_type_from_extension(const std::string& filename);
 
-	//@Refactor: this name.
-	void load_obj(const std::string& filename, Raw_Obj_Data& raw_data);
-	void load_mtl(const std::string& filename, graphics::Material& material);
-
-    void generate_vertices_from_raw_data(Raw_Obj_Data& raw_data); // either this should return something, but I want this to do something.
-
-	// text
+	// font/text mode.
 	void gl_text_mode();
 	void draw_text();
 	void reload_shaders(uint32_t& program);
 
 	//@temporary
-	graphics::Raw_Obj_Data& cat_data();
-
-
+	asset::Raw_Obj_Data& cat_data();
 
 	// draw modes.
 	// void draw_2d_right_handed_normalized()
-
+	// void draw_3d_right_hand_perspective();
 
 	// platform graphics?
 	#ifdef _WIN32

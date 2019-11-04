@@ -7,11 +7,11 @@
 # q_orientation 0.0 0.0 0.0 1.0 (Vec4)
 # scale.  0.5 (float)
 
-// what do we do when nothing is specified?
-// or do we need to specify?
+# what do we do when nothing is specified?
+# or do we need to specify?
 
 :/ cat_1
-model cat.obj
+model "cat.obj"
 position 0.0 0.0 -1.2
 q_orientation 0.0 0.0 0.0 1.0
 scale 0.1

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <streambuf>
 #include <filesystem>
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #include <experimental/filesystem>
 
 #include "fmt/core.h"

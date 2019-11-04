@@ -68,15 +68,15 @@ void graphics::init_graphics()
     glEnableVertexAttribArray(pos_array);
     glEnableVertexAttribArray(uv_array);
     glEnableVertexAttribArray(normals_array);
-    glVertexAttribPointer(pos_array,     3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0); // x, y, z
-    glVertexAttribPointer(uv_array,      2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(3 * sizeof(float))); // skip  3: u, v,
-    glVertexAttribPointer(normals_array, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(5 * sizeof(float))); // skip 5: nx, ny, nz.
+    glVertexAttribPointer(pos_array,     3, GL_FLOAT, GL_FALSE, sizeof(asset::Vertex), 0); // x, y, z
+    glVertexAttribPointer(uv_array,      2, GL_FLOAT, GL_FALSE, sizeof(asset::Vertex), BUFFER_OFFSET(3 * sizeof(float))); // skip  3: u, v,
+    glVertexAttribPointer(normals_array, 3, GL_FLOAT, GL_FALSE, sizeof(asset::Vertex), BUFFER_OFFSET(5 * sizeof(float))); // skip 5: nx, ny, nz.
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glBindVertexArray(0);
 
-    set_shader(graphics::Shader_Type::SHADER_DEFAULT);
+    graphics::set_shader(graphics::Shader_Type::SHADER_DEFAULT);
 }
 
 void graphics::reload_shaders(uint32_t& program)
@@ -140,38 +140,6 @@ void graphics::set_shader(Shader_Type shader_type)
 }
 
 
-void graphics::generate_vertices_from_raw_data(graphics::Raw_Obj_Data& raw_data)
-{
-    //@Memory: preallocate space.   
-    raw_data.vertices.reserve(raw_data.faces.size());
-
-
-    for (auto &face : raw_data.faces)
-    {
-        //@Refactor: maybe rewrite face to use the index set?
-            graphics::Vertex v0 = {
-                raw_data.positions[face.v0_indices.data[0]],
-                raw_data.tex_coords[face.v0_indices.data[1]],
-                raw_data.normals[face.v0_indices.data[2]]
-            };
-
-            graphics::Vertex v1 = {
-                raw_data.positions[face.v1_indices.data[0]],
-                raw_data.tex_coords[face.v1_indices.data[1]],
-                raw_data.normals[face.v1_indices.data[2]]
-            };
-
-            graphics::Vertex v2 = {
-                raw_data.positions[face.v2_indices.data[0]],
-                raw_data.tex_coords[face.v2_indices.data[1]],
-                raw_data.normals[face.v2_indices.data[2]]
-            };
-
-            raw_data.vertices.emplace_back(v0);
-            raw_data.vertices.emplace_back(v1);
-            raw_data.vertices.emplace_back(v2);
-    }
-}
 
 
 // Everything happens in here. I need to think about what to separate to which extent.
@@ -253,7 +221,7 @@ void graphics::draw_game_3d()
 
     auto& cat_data = graphics::cat_data();
     glBufferData(GL_ARRAY_BUFFER,
-                 static_cast<int>(cat_data.vertices.size() * sizeof(graphics::Vertex)),
+                 static_cast<int>(cat_data.vertices.size() * sizeof(asset::Vertex)),
                  cat_data.vertices.data(),
                  GL_STATIC_DRAW);
 
@@ -407,172 +375,12 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
 
 
 
-//@Refactor:    
-// we need a null-terminated bytestring in order to use sscanf.
-// we can point to an address in memory, but then it doesn't null terminate.
-// read until either linebreak or EOF. replace linebreak by \0.
-// hand ptr over to user.
-// in essence, we want to make our own getline for a char array.
-// read line by line 
-// size_t file_size = file::get_file_size(filename);
-// if (file_size == 0)
-//     fmt::print("load_obj: could not read file {}", filename);
-// hand me a pointer, and I will alloc for you.
-// we can mitigate the unsafety of sscanf by limiting the number of characters that are 
-// read by %s by affixing a number, i.e. %1s for 1 character only.  
-void graphics::load_obj(const std::string& filename, graphics::Raw_Obj_Data& raw_data)
-{
-    std::string data ={};
-    file::file_to_string(filename, data);
-    std::stringstream data_stream(data);
-    constexpr const int max_string_length = 20;
-    constexpr const int max_string_read_length = 9;
-    char garbage_buffer[20] = {}; // used for the garbage in each line. 
-
-    // @Memory: how to predict how to preallocate?
-    fmt::print("[graphics] Warning: load_obj does not efficiently preallocate.\n");
-    raw_data.positions.reserve(4000);
-    raw_data.normals.reserve(4000);
-    raw_data.tex_coords.reserve(4000);
-    raw_data.faces.reserve(4000);
-
-    size_t line_number = 0;
-    for (std::string line; std::getline(data_stream, line);)
-    {
-        ++line_number;
-        if (line[0] == '#') // comment 
-        {
-            continue;
-        }
-        else if (line[0] == 's')
-        {
-            // what does the 's' mean?
-            continue;
-        }
-        else if (line[0] ==  'v' && line[1] == ' ') // vertex
-        {
-            Vec3 pos = {};
-            sscanf(line.c_str(), "%9s %f %f %f", garbage_buffer, &pos.x, &pos.y, &pos.z);
-            raw_data.positions.emplace_back(pos);
-        } 
-        else if (line[0] == 'v' && line[1] == 't') // texture coordinates
-        {
-            Vec2 tex_coords = {};
-            sscanf(line.c_str(), "%9s %f %f", garbage_buffer, &tex_coords.x, &tex_coords.y);
-            raw_data.tex_coords.emplace_back(tex_coords);
-        }
-        else if (line[0] == 'v' && line[1] == 'n') // vertex normals
-        {
-            Vec3 normal = {};
-            sscanf(line.c_str(), "%9s %f %f %f", garbage_buffer, &normal.x, &normal.y, &normal.z);
-            raw_data.normals.emplace_back(normal);
-        }
-        else if (line[0] == 'f') // face indices
-        {
-            Face face = {};
-            //@incomplete: This will barf on unstructured obj files. for now, we assume everything's present.
-            sscanf(line.c_str(), "%9s %u / %u / %u %u /%u /%u %u /%u /%u",
-                   garbage_buffer,
-                   &face.v0_indices.data[0], &face.v0_indices.data[1], &face.v0_indices.data[2],
-                   &face.v1_indices.data[0], &face.v1_indices.data[1], &face.v1_indices.data[2],
-                   &face.v2_indices.data[0], &face.v2_indices.data[1], &face.v2_indices.data[2]
-                   );
-
-            // The indices in the wavefront obj start at 1. we offset them to use them correctly
-            // with the arrays in raw_data.
-            //@Note: be careful with this subtraction. made a dumb mistake.
-            face.v0_indices -= 1;
-            face.v1_indices -= 1;
-            face.v2_indices -= 1;
-            
-            raw_data.faces.emplace_back(face);
-        }
-        else
-            fmt::print("[graphics] ERROR: load_obj: no matching indicator. line number: {}. content: {}\n", line_number, line);
-    }
-    fmt::print("[graphics] succesfully loaded {}. num_faces: {}\n", filename, raw_data.faces.size());
-}
-
-// void graphics::load_mtl(const std::string& filename, graphics::Material& material)
-// {
-//     std::string data ={};
-//     file::file_to_string(filename, data);
-//     std::stringstream data_stream(data);
-//     constexpr const int max_string_length = 20;
-//     constexpr const int max_string_read_length = 9;
-//     char garbage_buffer[20] = {}; // used for the garbage in each line. 
-
-//     //@Hack: we assume that if a line starts with "new"
-//     // that the line declares a new mtl.
-//     // the same is true for 'illum'.
-
-//     // auto mat_vector = std::vector<Material>(1);
-//     // Material& active_material = mat_vector[0];
-
-//     size_t line_number = 0;
-//     for (std::string line; std::getline(data_stream, line);)
-//     {
-//         ++line_number;
-//         if (line[0] == '#') // comment
-//         {
-//             continue;
-//         }
-//         //@TODO: substring lookup instead of this?
-//         else if (line[0] == 'n' && line[1] == 'e' && line[2] == 'w')
-//         {
-//             // the current mtl is done. create a new one and rebind the reference.
-//             //@FIXME FIXME FIXME: this only works if the first one does not start with "new".
-//             mat_vector.emplace_back();
-//             active_material = mat_vector.back();
-//         }
-//         else if (line[0] == 'K' && line[1] == 'a') // ambient color
-//         {
-//             Vec3 color = {};
-//             sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
-//         }
-//         else if (line[0] == 'K' && line[1] == 'd') // diffuse color
-//         {
-//             Vec3 color = {};
-//             sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
-//         }
-//         else if (line[0] == 'K' && line[1] == 's') // specular color
-//         {
-//             Vec3 color = {};
-//             sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
-//         }
-//         else if (line[0] == 'd') // non_transparency
-//         {
-//             float alpha = 0;
-//             sscanf("%9s %f", &alpha);
-//         }
-//         else if (line[0] == 'T' && line[1] == 'r') // transparency
-//         {
-//             float inv_alpha = 0;
-//             sscanf("%9s %f", &inv_alpha);
-
-            
-//         }
-//         else if (line[0] == 'i' && line[1] == 'l') // illumination
-//         {
-//             int illum = 0;
-//             sscanf("%9s %d", &illum);
-//             // if illum == 1: we can skip Ks.
-//             // if illum == 2: requires ks to be defined.
-//         }
-//         else if (line[0] == 'm' && line[1] == 'a' && line[2] == 'p') // map_Ka
-//         {
-//             //@Incomplete:
-//         }
-
-//     }
-
-// }
 
 
 //@Temporary.
-graphics::Raw_Obj_Data& graphics::cat_data()
+asset::Raw_Obj_Data& graphics::cat_data()
 {
-    static graphics::Raw_Obj_Data cat_data;
+    static asset::Raw_Obj_Data cat_data;
     return cat_data;
 }
 

@@ -2,7 +2,8 @@
 #define INCLUDED_MVEC_
 #include "../vec3/vec3.h"
 #include "../vec2/vec2.h"
-
+#include <fmt/format.h>
+#include <fmt/core.h>
 //@Performance: is it cheaper to pass by value or by reference?
 namespace fmt {
     template <>

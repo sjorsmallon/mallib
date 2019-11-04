@@ -1,5 +1,6 @@
 #ifndef INCLUDED_VEC2_
 #define INCLUDED_VEC2_
+#include <stdint.h>
 
 union Vec2
 {

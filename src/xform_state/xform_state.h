@@ -70,7 +70,7 @@ inline Vec4 q_product(const Vec4& lhs, const Vec4& rhs)
 /// Q (x,0) Q*
 // rotate vec3 by quad
 // non-optimized
-Vec3 rotate_by_quat(const Vec3& lhs, const Vec4& quat_p)
+inline Vec3 rotate_by_quat(const Vec3& lhs, const Vec4& quat_p)
 {
 	// q = P (lhs,0)
 	Vec4 quat_q = {}; 

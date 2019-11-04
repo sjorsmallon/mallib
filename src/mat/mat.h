@@ -123,7 +123,7 @@ inline Mat4 mat::mat4_from_row_vec3(const Vec3& v0, const Vec3& v1, const Vec3& 
 
 inline Mat4 mat::mat4_from_quat(const Vec4& quaternion)
 {
-    Vec3 v0 = rotate_by_quat(Vec3{1,0,0}, quaternion);    // in xform_state.
+    Vec3 v0 = rotate_by_quat(Vec3{1,0,0}, quaternion);  
     Vec3 v1 = rotate_by_quat(Vec3{0,1,0}, quaternion);
     Vec3 v2 = rotate_by_quat(Vec3{0,0,1}, quaternion);
 
