@@ -4,14 +4,26 @@
 #include "../vec3/vec3.h"
 #include "../vec2/vec2.h"
 #include <vector>
+#include <map>
+#include <string>
 
 namespace asset
 {
+
     enum Asset_Type
     {
         MODEL,
         MUSIC,
         SOUND_FX
+    };
+
+    struct Asset_Folders
+    {
+        std::string obj_folder;
+        std::string mtl_folder;
+        std::string texture_folder;
+        std::string scene_folder;
+        //std::string sound_folder?
     };
 
     struct Face
@@ -59,6 +71,17 @@ namespace asset
     void load_scene_from_file(scene::Scene& scene,            const std::string& filename);
     void load_obj_from_file(asset::Raw_Obj_Data& raw_data,    const std::string& filename);
     void load_mtl_from_file(asset::Material& material,        const std::string& filename);
+    void load_texture_from_file(asset::Texture& texture,      const std::string& filename);
+    void load_assets_from_file(const asset::Asset_Folders& asset_folders);
+
+
+    // hmm. For now, asset manages all assets.
+    // of course this is data. What is the naming convention to use here?
+    std::map<std::string, Raw_Obj_Data>& obj_data();
+    std::map<std::string, Texture>&  texture_data();
+    std::map<std::string, Material>& mtl_data();
+    std::map<std::string, scene::Scene>& scenes();
+
 
 }
 

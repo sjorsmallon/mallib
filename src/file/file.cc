@@ -36,7 +36,7 @@ void file::file_to_string(const string& filename, string& target)
                    std::istreambuf_iterator<char>());
 }
 
-std::vector<std::string> file::list_files_in_dir(const char* dir_name)
+std::vector<std::string> file::list_files_in_dir(const std::string& dir_name)
 {
     // std::string dir_name(Dir_name);
     fs::path active_dir{dir_name};
@@ -46,12 +46,17 @@ std::vector<std::string> file::list_files_in_dir(const char* dir_name)
     {
         for (auto& file_name : fs::directory_iterator(dir_name))
         {
-            file_names.push_back(file_name.path().filename().string());
+            std::string file_name_string = file_name.path().filename().string();
+            file_names.push_back(file_name_string);
         }
     }
 
     return file_names;
 }
+
+
+
+
 
 // returns 0 when something's not right.
 size_t file::get_file_size(const std::string& filename)

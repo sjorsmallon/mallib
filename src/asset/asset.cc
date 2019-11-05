@@ -3,6 +3,79 @@
 #include "fmt/core.h"
 #include <sstream>
 
+// hmm. For now, asset manages all assets.
+std::map<std::string, asset::Raw_Obj_Data>& asset::obj_data()
+{
+    static std::map<std::string, asset::Raw_Obj_Data> obj_data;
+    return obj_data;
+}
+
+std::map<std::string, asset::Texture>& asset::texture_data()
+{
+    static std::map<std::string, asset::Texture> texture_data;
+    return texture_data;
+}
+std::map<std::string, asset::Material>& asset::mtl_data()
+{
+    static std::map<std::string, asset::Material> mtl_data;
+    return mtl_data;
+}
+
+std::map<std::string, scene::Scene>& asset::scenes()
+{
+    static std::map<std::string, scene::Scene> scenes;
+    return scenes;
+}
+
+
+//@Incomplete: these are now hardcoded. Where do we define these folders?
+//@Refactor: does it even make sense to separate these assets?
+//use from_to? do we supply folder names here? does this function assume a certain folder structure?
+void asset::load_assets_from_file(const Asset_Folders& asset_folders)
+{
+    auto obj_files = file::list_files_in_dir(asset_folders.obj_folder);
+    auto mtl_files = file::list_files_in_dir(asset_folders.mtl_folder);
+    auto texture_files = file::list_files_in_dir(asset_folders.texture_folder);
+    auto scene_files = file::list_files_in_dir(asset_folders.scene_folder);
+
+    //@TODO: preallocate space in the vector based on the number of entries here?
+    auto& objects = asset::obj_data(); 
+    auto& materials = asset::mtl_data();
+    auto& textures = asset::texture_data();
+    auto& scenes = asset::scenes();
+
+    for (auto& obj_file: obj_files)
+    {                
+        // implicit creation.
+        auto& new_object = objects[obj_file];
+        load_obj_from_file(new_object, asset_folders.obj_folder + obj_file);
+    }
+
+    for (auto& mtl_file: mtl_files)
+    {
+        // implicit creation.
+        auto& new_material = materials[mtl_file];
+        load_mtl_from_file(new_material, asset_folders.mtl_folder + mtl_file);
+    }
+
+    for (auto& texture_file: texture_files)
+    {
+        // implicit creation.
+        auto& new_texture = textures[texture_file];
+        load_texture_from_file(new_texture, asset_folders.texture_folder + texture_file);
+    }
+
+    for (auto& scene_file: scene_files)
+    {
+        auto& new_scene = scenes[scene_file];
+        load_scene_from_file(new_scene, asset_folders.scene_folder + scene_file);
+    }
+
+}
+
+
+
+// internal.
 static void generate_vertices_from_raw_data(asset::Raw_Obj_Data& raw_data)
 {
     //@Memory: preallocate space.   
@@ -37,7 +110,7 @@ static void generate_vertices_from_raw_data(asset::Raw_Obj_Data& raw_data)
 //@Note: assume an empty scene here.
 void asset::load_scene_from_file(scene::Scene& scene, const std::string& filename)
 {
-	auto file_content = std::string();
+    auto file_content = std::string();
     file::file_to_string(filename, file_content);
     std::stringstream data_stream(file_content);
 
@@ -55,61 +128,61 @@ void asset::load_scene_from_file(scene::Scene& scene, const std::string& filenam
     size_t line_number = 0;
     for (std::string line; std::getline(data_stream, line);)
     {
-    	line_number++;
-    	if (line[0] == '#') // comment
-    	{
-    		continue;
-    	}    	
-    	if (line[0] == ':' && line[1] == '/') // name of the object in the scene.
-    	{    		
-    		scene.set_pieces.emplace_back();
-    		set_piece = &scene.set_pieces.back();
-    		auto name = std::string{100};
+        line_number++;
+        if (line[0] == '#') // comment
+        {
+            continue;
+        }       
+        if (line[0] == ':' && line[1] == '/') // name of the object in the scene.
+        {           
+            scene.set_pieces.emplace_back();
+            set_piece = &scene.set_pieces.back();
+            auto name = std::string{100};
             fmt::print("name.size(): {}", name.size());
-    		sscanf(line.c_str(), "%2s %50s", garbage_buffer, &name[0]);
-    		set_piece->name = name;
-    	}
+            sscanf(line.c_str(), "%2s %50s", garbage_buffer, &name[0]);
+            set_piece->name = name;
+        }
 
-    	else if (line[0] == 'm' && line[1] == 'o') // model
-    	{
-    		auto model_name = std::string{100};
-    		sscanf(line.c_str(), "%15s \"%50s\"", garbage_buffer, &model_name[0]);
-    		set_piece->model_name = model_name;
-    	}
-    	else if (line[0] == 'm' && line[1] == 'a') // material
-    	{
-    		auto material_name = std::string{100};
-    		sscanf(line.c_str(), "%15s \"%50s\"", garbage_buffer, &material_name[0]);
-    		set_piece->material_name = material_name;
-    	}
-    	else if (line[0] == 't' && line[1] == 'e') // texture
-    	{
-    		auto texture_name = std::string{100};
-    		sscanf(line.c_str(), "%15s \"%50s\"", garbage_buffer, &texture_name[0]);
-    		set_piece->texture_name = texture_name;
-    	}
-    	else if (line[0] == 'p' && line[1] == '0') // position
-    	{
-    		Vec3 position = {};
-    		sscanf(line.c_str(), "%15s %f %f %f", garbage_buffer, &position.x, &position.y, &position.z);
-    		set_piece->xform_state.position = position;
-    	}
-    	else if (line[0] == 'q' && line[1] == '_') // q_orientation
-    	{
-    		Vec4 q_orientation = {};
-    		sscanf(line.c_str(), "%15s %f %f %f %f", garbage_buffer, &q_orientation.x, &q_orientation.y, &q_orientation.z, &q_orientation.w);
-    		set_piece->xform_state.q_orientation = q_orientation;
-    	}
-    	else if (line[0] == 's' && line[1] == 'c') // scale
-    	{
-    		float scale = 0.0f;
-    		sscanf(line.c_str(), "%15s %f", garbage_buffer, &scale);
-    		set_piece->xform_state.scale = scale;
-    	}
-    	else
-    	{
-    		fmt::print("[asset] Warning. file {}: No label recognized on line {}. content: {}\n",filename, line_number, line);
-    	}
+        else if (line[0] == 'm' && line[1] == 'o') // model
+        {
+            auto model_name = std::string{100};
+            sscanf(line.c_str(), "%15s \"%50s\"", garbage_buffer, &model_name[0]);
+            set_piece->model_name = model_name;
+        }
+        else if (line[0] == 'm' && line[1] == 'a') // material
+        {
+            auto material_name = std::string{100};
+            sscanf(line.c_str(), "%15s \"%50s\"", garbage_buffer, &material_name[0]);
+            set_piece->material_name = material_name;
+        }
+        else if (line[0] == 't' && line[1] == 'e') // texture
+        {
+            auto texture_name = std::string{100};
+            sscanf(line.c_str(), "%15s \"%50s\"", garbage_buffer, &texture_name[0]);
+            set_piece->texture_name = texture_name;
+        }
+        else if (line[0] == 'p' && line[1] == '0') // position
+        {
+            Vec3 position = {};
+            sscanf(line.c_str(), "%15s %f %f %f", garbage_buffer, &position.x, &position.y, &position.z);
+            set_piece->xform_state.position = position;
+        }
+        else if (line[0] == 'q' && line[1] == '_') // q_orientation
+        {
+            Vec4 q_orientation = {};
+            sscanf(line.c_str(), "%15s %f %f %f %f", garbage_buffer, &q_orientation.x, &q_orientation.y, &q_orientation.z, &q_orientation.w);
+            set_piece->xform_state.q_orientation = q_orientation;
+        }
+        else if (line[0] == 's' && line[1] == 'c') // scale
+        {
+            float scale = 0.0f;
+            sscanf(line.c_str(), "%15s %f", garbage_buffer, &scale);
+            set_piece->xform_state.scale = scale;
+        }
+        else
+        {
+            fmt::print("[asset] Warning. file {}: No label recognized on line {}. content: {}\n",filename, line_number, line);
+        }
     }
 }
 
@@ -216,7 +289,7 @@ void asset::load_mtl_from_file(Material& mat, const std::string& filename)
 
     auto mat_vector = std::vector<Material>(1);
     Material& active_material = mat_vector[0];
-    fmt::print("FIXME!! we have a spare material at index 0 here.\n");
+    fmt::print("[asset]FIXME!!!! load_mtl_from_file: we have a spare material at index 0 here.\n");
     size_t line_number = 0;
     for (std::string line; std::getline(data_stream, line);)
     {
@@ -272,4 +345,11 @@ void asset::load_mtl_from_file(Material& mat, const std::string& filename)
             //@Incomplete:
         }
     }
+}
+
+
+//@Incomplete: we can use stbimage here.    
+void asset::load_texture_from_file(Texture& texture, const std::string& filename)
+{
+    fmt::print("[asset] INCOMPLETE: load_texture_from_file: look at stbimage / use stbimage here.\n");
 }

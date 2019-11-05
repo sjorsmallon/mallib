@@ -28,8 +28,15 @@ void game::init_everything()
 
     // uint32_t VBO = 
     // uint32_t VAO = 
-    auto& raw_data = graphics::cat_data();
-    asset::load_obj_from_file(raw_data,"../object_files/cat.obj"); // this also generates interleaved vertices.
+    asset::Asset_Folders asset_folders = {};
+    asset_folders.obj_folder = "../object_files/";
+    asset_folders.mtl_folder = "../mtl_files/";
+    asset_folders.texture_folder = "../texture_files/";
+    asset_folders.scene_folder = "../scene_files/";
+
+    asset::load_assets_from_file(asset_folders);
+    graphics::cat_data() = asset::obj_data()["cat.obj"];
+
     graphics::clear_buffers();
 }
 

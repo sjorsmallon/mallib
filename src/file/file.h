@@ -14,7 +14,7 @@
 namespace file
 {
   void file_to_string(const std::string& filename, std::string& target);
-  std::vector<std::string> list_files_in_dir(const char* dir_name); 
+  std::vector<std::string> list_files_in_dir(const std::string& dir_name);
 
   size_t get_file_size(const std::string& filename);
 
