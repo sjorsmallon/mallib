@@ -41,15 +41,15 @@ void graphics::init_graphics()
     shader_programs.bomb    = glCreateProgram();
 
     //@Refactor: use reload shaders?
-    uint32_t text_vertex   = graphics::load_compile_attach_shader(shader_programs.text, "../shaders/text.vertex");
-    uint32_t text_fragment = graphics::load_compile_attach_shader(shader_programs.text, "../shaders/text.fragment");
+    uint32_t text_vertex   = graphics::load_compile_attach_shader(shader_programs.text, "assets/shaders/text.vertex");
+    uint32_t text_fragment = graphics::load_compile_attach_shader(shader_programs.text, "assets/shaders/text.fragment");
     glLinkProgram(shader_programs.text);
     glDetachShader(shader_programs.text, text_vertex);
     glDetachShader(shader_programs.text, text_fragment);
 
 
-    uint32_t normal_vertex   = graphics::load_compile_attach_shader(shader_programs.normals, "../shaders/normals.vertex");
-    uint32_t normal_fragment = graphics::load_compile_attach_shader(shader_programs.normals, "../shaders/normals.fragment");
+    uint32_t normal_vertex   = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/normals.vertex");
+    uint32_t normal_fragment = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/normals.fragment");
     glLinkProgram(shader_programs.normals);
     glDetachShader(shader_programs.normals, normal_vertex);
     glDetachShader(shader_programs.normals, normal_fragment);
@@ -83,13 +83,13 @@ void graphics::reload_shaders(uint32_t& program)
 {
     //@Incomplete: either know which shaders to reload or reload all shaders
     // associated with this program.
-    std::string vertex_shader  = "../shaders/text.vertex";
-    std::string fragment_shader = "../shaders/text.fragment";
+    std::string vertex_shader  = "assets/shaders/text.vertex";
+    std::string fragment_shader = "assets/shaders/text.fragment";
     glDeleteProgram(program);
 
     program = glCreateProgram();
     uint32_t vertex   = graphics::load_compile_attach_shader(program, vertex_shader);
-    uint32_t fragment = graphics::load_compile_attach_shader(program, "../shaders/text.fragment");
+    uint32_t fragment = graphics::load_compile_attach_shader(program, "assets/shaders/text.fragment");
     glLinkProgram(program);
     glDetachShader(program, vertex);
     glDetachShader(program, fragment);
@@ -324,6 +324,7 @@ void graphics::get_shader_info(uint32_t prog)
 
 }
 
+// returns the shader_id.
 uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file_name)
 {
     // set shader type based on the extension. 

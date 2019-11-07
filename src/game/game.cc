@@ -13,6 +13,11 @@
 #include "../input/input.h"
 #include <chrono>
 
+
+
+// There's initing, and there's loading.
+// Before loading, want to init everything.
+// Afterwards, we will load all assets.
 void game::init_everything()
 {
     game::init_audio();
@@ -23,21 +28,28 @@ void game::init_everything()
     auto& program_mode = game::global_program_mode();
     program_mode = Program_Mode::MENU;
 
-    sound::load_music("../music/introduction.mp3");
-    sound::play_music("../music/introduction.mp3");
+    game::load_everything(); 
+    graphics::clear_buffers();
+}
 
-    // uint32_t VBO = 
-    // uint32_t VAO = 
+void game::load_everything()
+{
+    // load sound
+    sound::load_music("assets/music/introduction.mp3");
+    sound::play_music("assets/music/introduction.mp3");
+
+
+    // load assets
     asset::Asset_Folders asset_folders = {};
-    asset_folders.obj_folder = "../object_files/";
-    asset_folders.mtl_folder = "../mtl_files/";
-    asset_folders.texture_folder = "../texture_files/";
-    asset_folders.scene_folder = "../scene_files/";
+    asset_folders.obj_folder = "assets/object_files/";
+    asset_folders.mtl_folder = "assets/mtl_files/";
+    asset_folders.texture_folder = "assets/texture_files/";
+    asset_folders.scene_folder = "assets/scene_files/";
 
     asset::load_assets_from_file(asset_folders);
-    graphics::cat_data() = asset::obj_data()["cat.obj"];
 
-    graphics::clear_buffers();
+    //@Temporary
+    graphics::cat_data() = asset::obj_data()["cat.obj"];
 }
 
 void game::main_loop()
@@ -89,7 +101,7 @@ void game::handle_menu_input()
             else
                 active_menu_item = active_menu_item - 1;
             // return;
-            sound::play_sound("../music/menu_select.wav");
+            sound::play_sound("assets/music/menu_select.wav");
 
         }
         if (key == input::Key_Input::KEY_DOWN)
@@ -97,7 +109,7 @@ void game::handle_menu_input()
             if(active_menu_item == menu::Menu_Item::EXIT) {} // do nothing
             else
                 active_menu_item = active_menu_item + 1;
-            sound::play_sound("../music/menu_select.wav");
+            sound::play_sound("assets/music/menu_select.wav");
 
         }
     }

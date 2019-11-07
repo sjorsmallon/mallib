@@ -68,11 +68,12 @@ namespace asset
         Vec2 dimensions;
     };
 
+
+    void load_assets_from_file(const asset::Asset_Folders& asset_folders);
     void load_scene_from_file(scene::Scene& scene,            const std::string& filename);
     void load_obj_from_file(asset::Raw_Obj_Data& raw_data,    const std::string& filename);
-    void load_mtl_from_file(asset::Material& material,        const std::string& filename);
     void load_texture_from_file(asset::Texture& texture,      const std::string& filename);
-    void load_assets_from_file(const asset::Asset_Folders& asset_folders);
+    void load_mtl_from_file(std::map<std::string, Material>& materials, const std::string& filename);
 
 
     // hmm. For now, asset manages all assets.

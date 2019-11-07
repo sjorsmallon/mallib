@@ -32,7 +32,7 @@ void menu::draw_menu()
     const uint32_t font_height = 50; // in pixels
     const float scale = 1.0f;
     font::Font menu_font = {};    
-    font::generate_font_at_size(menu_font, "../fonts/opensans.ttf", font_height);
+    font::generate_font_at_size(menu_font, "assets/fonts/opensans.ttf", font_height);
 
     Vec3 default_color =  {0.19f, 0.717f,0.17f};
     Vec3 selected_color = {0.12f, 0.76f, 0.717f};

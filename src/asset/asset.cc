@@ -51,11 +51,12 @@ void asset::load_assets_from_file(const Asset_Folders& asset_folders)
         load_obj_from_file(new_object, asset_folders.obj_folder + obj_file);
     }
 
+    // one MTL file can contain many mtls. We should thus pass the map itself to this function,
+    // and not a handle to a single mtl.
     for (auto& mtl_file: mtl_files)
     {
-        // implicit creation.
-        auto& new_material = materials[mtl_file];
-        load_mtl_from_file(new_material, asset_folders.mtl_folder + mtl_file);
+        // we pass the entire array here.
+        load_mtl_from_file(materials, asset_folders.mtl_folder + mtl_file);
     }
 
     for (auto& texture_file: texture_files)
@@ -137,27 +138,28 @@ void asset::load_scene_from_file(scene::Scene& scene, const std::string& filenam
         {           
             scene.set_pieces.emplace_back();
             set_piece = &scene.set_pieces.back();
-            auto name = std::string{100};
-            fmt::print("name.size(): {}", name.size());
-            sscanf(line.c_str(), "%2s %50s", garbage_buffer, &name[0]);
-            set_piece->name = name;
+            //@Refactor: this also warrants a string split function.
+            // Furthermore, we don't account for there not being a space in the scene file.
+            std::string set_piece_name = line.substr(line.find_last_of(" "));
+            fmt::print("[asset] set piece name: {}\n", set_piece_name);
+            set_piece->name = set_piece_name;
         }
 
         else if (line[0] == 'm' && line[1] == 'o') // model
         {
-            auto model_name = std::string{100};
+            auto model_name = std::string(100, '0');
             sscanf(line.c_str(), "%15s \"%50s\"", garbage_buffer, &model_name[0]);
             set_piece->model_name = model_name;
         }
         else if (line[0] == 'm' && line[1] == 'a') // material
         {
-            auto material_name = std::string{100};
+            auto material_name = std::string(100, '0');
             sscanf(line.c_str(), "%15s \"%50s\"", garbage_buffer, &material_name[0]);
             set_piece->material_name = material_name;
         }
         else if (line[0] == 't' && line[1] == 'e') // texture
         {
-            auto texture_name = std::string{100};
+            auto texture_name = std::string(100, '0');
             sscanf(line.c_str(), "%15s \"%50s\"", garbage_buffer, &texture_name[0]);
             set_piece->texture_name = texture_name;
         }
@@ -274,7 +276,7 @@ void asset::load_obj_from_file(asset::Raw_Obj_Data& raw_data, const std::string&
 }
 
 
-void asset::load_mtl_from_file(Material& mat, const std::string& filename)
+void asset::load_mtl_from_file(std::map<std::string, asset::Material>& materials, const std::string& filename)
 {
     std::string data ={};
     file::file_to_string(filename, data);
@@ -283,13 +285,10 @@ void asset::load_mtl_from_file(Material& mat, const std::string& filename)
     constexpr const int max_string_read_length = 9;
     char garbage_buffer[20] = {}; // used for the garbage at the start of    each line. 
 
-//     //@Hack: we assume that if a line starts with "new"
-//     // that the line declares a new mtl.
-//     // the same is true for 'illum'.
+    // there is at least one mtl in a mtl file, I think.
+    //@Refactor: raw pointer here. not very nice.
+    Material *material_ptr = nullptr;
 
-    auto mat_vector = std::vector<Material>(1);
-    Material& active_material = mat_vector[0];
-    fmt::print("[asset]FIXME!!!! load_mtl_from_file: we have a spare material at index 0 here.\n");
     size_t line_number = 0;
     for (std::string line; std::getline(data_stream, line);)
     {
@@ -301,37 +300,44 @@ void asset::load_mtl_from_file(Material& mat, const std::string& filename)
         //@TODO: substring lookup instead of this?
         else if (line[0] == 'n' && line[1] == 'e' && line[2] == 'w')
         {
-            // the current mtl is done. create a new one and rebind the reference.
-            //@FIXME FIXME FIXME: this only works if the first one does not start with "new".
-            mat_vector.emplace_back();
-            active_material = mat_vector.back();
+            // Either the current mtl is done, or we haven't seen one yet.
+            // auto new_material_name = std::string{100};
+            // sscanf("%9s %50s", garbage_buffer, &new_material_name[0]);
+            //@refactor: I'm just splitting the string by space and taking the last part of it.
+            std::string new_material_name = line.substr(line.find_first_of(" "));
+            fmt::print("[asset] newmtl. mtl name: {}\n", new_material_name);
+            material_ptr = &materials[new_material_name];
+
         }
         else if (line[0] == 'K' && line[1] == 'a') // ambient color
         {
             Vec3 color = {};
             sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
+            material_ptr->Ka = color;
         }
         else if (line[0] == 'K' && line[1] == 'd') // diffuse color
         {
             Vec3 color = {};
             sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
+            material_ptr->Kd = color;
         }
         else if (line[0] == 'K' && line[1] == 's') // specular color
         {
             Vec3 color = {};
             sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
+            material_ptr->Ks = color;
         }
         else if (line[0] == 'd') // non_transparency
         {
             float alpha = 0;
             sscanf("%9s %f", garbage_buffer, &alpha);
+            material_ptr->alpha = alpha;
         }
         else if (line[0] == 'T' && line[1] == 'r') // transparency
         {
             float inv_alpha = 0;
             sscanf("%9s %f", garbage_buffer, &inv_alpha);
-
-            
+            material_ptr->alpha = 1.0f / inv_alpha;
         }
         else if (line[0] == 'i' && line[1] == 'l') // illumination
         {
@@ -339,6 +345,7 @@ void asset::load_mtl_from_file(Material& mat, const std::string& filename)
             sscanf("%9s %d",garbage_buffer, &illum);
             // if illum == 1: we can skip Ks.
             // if illum == 2: requires ks to be defined.
+            material_ptr->illum = illum;
         }
         else if (line[0] == 'm' && line[1] == 'a' && line[2] == 'p') // map_Ka
         {

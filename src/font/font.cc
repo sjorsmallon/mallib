@@ -34,7 +34,7 @@ void font::init_font()
 {
     //@Memory: reserve enough space. 
     font::default_font().characters.resize(255);
-    font::generate_font_at_size(font::default_font(), "../fonts/arial.ttf", 48);
+    font::generate_font_at_size(font::default_font(), "assets/fonts/arial.ttf", 48);
     font::init_font_gl_objects();
 }
 

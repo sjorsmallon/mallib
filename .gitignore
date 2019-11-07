@@ -9,3 +9,9 @@
 /src/.vs/*
 /src/win32/*.pdbsrc/.vs/ 
 
+*.ilk
+
+**/*ilk
+
+*.exe
+*.pdb

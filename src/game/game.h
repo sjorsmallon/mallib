@@ -28,11 +28,17 @@ namespace game
 	void handle_menu_input();
 
 
+
+	// initing
 	void init_everything();
 	void init_audio();
 	void init_font();
 	void init_graphics();
 
+	// loading
+	void load_everything();
+
+	// deiniting
 	void deinit_everything();
 
 	void main_loop();
