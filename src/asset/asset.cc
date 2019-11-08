@@ -377,19 +377,13 @@ void asset::load_mtl_from_file(std::map<std::string, asset::Material>& materials
     }
 }
 
-void asset::load_texture_from_file(Texture& texture, const std::string& filename)
+//@Incomplete: we create pointers to the texture data here. What if they're null? how do we prevent
+// the rest of the program from suffering because of it?
+void asset::load_texture_from_file(Texture& new_texture, const std::string& filename)
 {
-
-    //@FIXME: i think we need to copy the file pointer in order to prevent this from leaking.
-    int x = 0;
-    int y = 0;
-    int channels = 0;   
-    asset::Texture new_texture = {0}; 
-    // Redirect CRT standard input, output and error handles to the console window.
     new_texture.data = stbi_load(filename.c_str(), &new_texture.dimensions.x, &new_texture.dimensions.y, &new_texture.channels, STBI_rgb);
     if (new_texture.data == NULL)
     {
-        std::string test = stbi_failure_reason();
         fmt::print("[asset] failed loading texture. stbi_error: {}\n", stbi_failure_reason());
         return;
     }
