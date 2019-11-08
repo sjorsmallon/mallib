@@ -71,6 +71,7 @@ namespace graphics
 
 	//@temporary
 	asset::Raw_Obj_Data& cat_data();
+	scene::Scene& active_scene();
 
 	// draw modes.
 	// void draw_2d_right_handed_normalized()

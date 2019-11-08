@@ -46,6 +46,8 @@ void game::load_everything()
     asset::load_assets_from_file(asset_folders);
 
     // let's try to create a scene.
+    graphics::active_scene() = asset::scenes()["test.scene"];
+    
     for (auto& set_piece: asset::scenes()["test.scene"].set_pieces)
     {
         fmt::print("set_piece name: {}\n", set_piece.name);

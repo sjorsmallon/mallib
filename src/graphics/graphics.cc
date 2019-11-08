@@ -16,6 +16,7 @@
 #include "../mat/mat.h"
 #include "../mat4/mat4.h"
 #include "../mat3/mat3.h" // for normal matrix.
+#include "../scene/scene.h"
 
 static uint32_t VBO = 0;
 static uint32_t VAO = 0;
@@ -174,16 +175,14 @@ void graphics::draw_game_3d()
     // bind vertex array object.
 
 
+    const int32_t model_matrix_location = glGetUniformLocation(normal_shader, "model_matrix");
     // for each object in the active scene:
-
+    for (auto &set_piece: graphics::active_scene().set_pieces)
+    {
         // Model Matrix:
-        int32_t model_matrix_location = glGetUniformLocation(normal_shader, "model_matrix");
-        Xform_State cat_state = {};
-        cat_state.position = {0.0f, 0.0f, -1.2f};
-        cat_state.q_orientation = {0.0f, 0.0f, 0.0f, 1.0f};
-        cat_state.scale = 0.1f;
 
-        Mat4 model_matrix = mat::mat4_from_xform_state(cat_state);
+        fmt::print("xform_state: {}", set_piece.xform_state);
+        Mat4 model_matrix = mat::mat4_from_xform_state(set_piece.xform_state);
         glUniformMatrix4fv(model_matrix_location, 1, row_major, &model_matrix[0][0]);
 
         int32_t normal_transform_matrix_location = glGetUniformLocation(normal_shader, "normal_transform");
@@ -191,10 +190,12 @@ void graphics::draw_game_3d()
         //@Note: We need to actually verify whether or not this is transposed.
         glUniformMatrix3fv(normal_transform_matrix_location, 1, row_major, &normal_transform_matrix[0][0]);
 
-        auto& cat_data = graphics::cat_data();
+        const auto& object_data = asset::obj_data()[set_piece.model_name];
+        //@Refactor: this substitutes the data in the buffer instead of appending it.
+        fmt::print("object_data.size(): {}", object_data.vertices.size());
         glBufferData(GL_ARRAY_BUFFER,
-                     static_cast<int>(cat_data.vertices.size() * sizeof(asset::Vertex)),
-                     cat_data.vertices.data(),
+                     static_cast<int>(object_data.vertices.size() * sizeof(asset::Vertex)),
+                     object_data.vertices.data(),
                      GL_STATIC_DRAW);
 
         // glActiveTexture(GL_TEXTURE0);
@@ -202,6 +203,10 @@ void graphics::draw_game_3d()
         // glUniform1i(d_textureLocation, 0);
         // glUseProgram(0); // NULL?
     // end for
+
+        //@FIXME: for now, we invoke draw after every object. 
+        glDrawArrays(GL_TRIANGLES,0, object_data.vertices.size());
+    }
 
     // for each light in the active scene:
         // lights are a property of the scene. 
@@ -225,7 +230,7 @@ void graphics::draw_game_3d()
 
 
     // actually draw.
-    glDrawArrays(GL_TRIANGLES,0, cat_data.vertices.size());
+    // glDrawArrays(GL_TRIANGLES,0, cat_data.vertices.size());
 
 }
 
@@ -401,6 +406,12 @@ asset::Raw_Obj_Data& graphics::cat_data()
 {
     static asset::Raw_Obj_Data cat_data;
     return cat_data;
+}
+
+scene::Scene& graphics::active_scene()
+{
+    static scene::Scene active_scene;
+    return active_scene;
 }
 
 graphics::Shaders& graphics::shaders()
