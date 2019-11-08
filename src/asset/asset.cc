@@ -1,7 +1,14 @@
 #include "asset.h"
 #include "../file/file.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "../image/stb_image.h"
+
+
 #include "fmt/core.h"
+#include "../on_leaving_scope/on_leaving_scope.h" // for the file pointer.
 #include <sstream>
+#include <fstream>
 
 // hmm. For now, asset manages all assets.
 std::map<std::string, asset::Raw_Obj_Data>& asset::obj_data()
@@ -33,10 +40,11 @@ std::map<std::string, scene::Scene>& asset::scenes()
 //use from_to? do we supply folder names here? does this function assume a certain folder structure?
 void asset::load_assets_from_file(const Asset_Folders& asset_folders)
 {
-    auto obj_files = file::list_files_in_dir(asset_folders.obj_folder);
-    auto mtl_files = file::list_files_in_dir(asset_folders.mtl_folder);
-    auto texture_files = file::list_files_in_dir(asset_folders.texture_folder);
-    auto scene_files = file::list_files_in_dir(asset_folders.scene_folder);
+
+    const auto obj_files     = file::list_files_in_dir(asset_folders.obj_folder);
+    const auto mtl_files     = file::list_files_in_dir(asset_folders.mtl_folder);
+    const auto texture_files = file::list_files_in_dir(asset_folders.texture_folder);
+    const auto scene_files   = file::list_files_in_dir(asset_folders.scene_folder);
 
     //@TODO: preallocate space in the vector based on the number of entries here?
     auto& objects = asset::obj_data(); 
@@ -56,7 +64,7 @@ void asset::load_assets_from_file(const Asset_Folders& asset_folders)
     for (auto& mtl_file: mtl_files)
     {
         // we pass the entire array here.
-        load_mtl_from_file(materials, asset_folders.mtl_folder + mtl_file);
+        // load_mtl_from_file(materials, asset_folders.mtl_folder + mtl_file);
     }
 
     for (auto& texture_file: texture_files)
@@ -73,8 +81,6 @@ void asset::load_assets_from_file(const Asset_Folders& asset_folders)
     }
 
 }
-
-
 
 // internal.
 static void generate_vertices_from_raw_data(asset::Raw_Obj_Data& raw_data)
@@ -183,7 +189,7 @@ void asset::load_scene_from_file(scene::Scene& scene, const std::string& filenam
         }
         else
         {
-            fmt::print("[asset] Warning. file {}: No label recognized on line {}. content: {}\n",filename, line_number, line);
+            fmt::print("[asset] Warning: file {}: No label recognized on line {}. content: {}\n",filename, line_number, line);
         }
     }
 }
@@ -205,7 +211,7 @@ void asset::load_obj_from_file(asset::Raw_Obj_Data& raw_data, const std::string&
 {
     std::string data ={};
     file::file_to_string(filename, data);
-    std::stringstream data_stream(data);
+    auto data_stream = std::stringstream(data);
     constexpr const int max_string_length = 20;
     constexpr const int max_string_read_length = 9;
     char garbage_buffer[20] = {}; // used for the garbage in each line. 
@@ -221,6 +227,11 @@ void asset::load_obj_from_file(asset::Raw_Obj_Data& raw_data, const std::string&
     for (std::string line; std::getline(data_stream, line);)
     {
         ++line_number;
+
+        if (line.empty())
+        {
+            continue;
+        }
         if (line[0] == '#') // comment 
         {
             continue;
@@ -289,11 +300,18 @@ void asset::load_mtl_from_file(std::map<std::string, asset::Material>& materials
     //@Refactor: raw pointer here. not very nice.
     Material *material_ptr = nullptr;
 
+    //@Refactor: we need to account for empty lines now as well. Better to have a better file handler
+    // which only returns valid strings  and increments some line number.
     size_t line_number = 0;
     for (std::string line; std::getline(data_stream, line);)
     {
         ++line_number;
-        if (line[0] == '#') // comment
+        //@Refactor: can't we just rewrite the format to something more useful?
+        //trim leading whitespace (tabs or spaces)
+        if (line.empty()) // nothing on this line.
+            continue;
+        line = line.substr(line.find_first_not_of("\t "));
+        if (line[0] == '#') // comment or empty.
         {
             continue;
         }
@@ -301,8 +319,6 @@ void asset::load_mtl_from_file(std::map<std::string, asset::Material>& materials
         else if (line[0] == 'n' && line[1] == 'e' && line[2] == 'w')
         {
             // Either the current mtl is done, or we haven't seen one yet.
-            // auto new_material_name = std::string{100};
-            // sscanf("%9s %50s", garbage_buffer, &new_material_name[0]);
             //@refactor: I'm just splitting the string by space and taking the last part of it.
             std::string new_material_name = line.substr(line.find_first_of(" "));
             fmt::print("[asset] newmtl. mtl name: {}\n", new_material_name);
@@ -312,37 +328,39 @@ void asset::load_mtl_from_file(std::map<std::string, asset::Material>& materials
         else if (line[0] == 'K' && line[1] == 'a') // ambient color
         {
             Vec3 color = {};
-            sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
+            sscanf(line.c_str(), "%2s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
             material_ptr->Ka = color;
         }
         else if (line[0] == 'K' && line[1] == 'd') // diffuse color
         {
+            fmt::print("{}\n",line);
             Vec3 color = {};
-            sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
+            sscanf(line.c_str(), "%2s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
             material_ptr->Kd = color;
         }
         else if (line[0] == 'K' && line[1] == 's') // specular color
         {
             Vec3 color = {};
-            sscanf("%9s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
+            sscanf(line.c_str(), "%2s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
             material_ptr->Ks = color;
         }
         else if (line[0] == 'd') // non_transparency
         {
             float alpha = 0;
-            sscanf("%9s %f", garbage_buffer, &alpha);
+            sscanf(line.c_str(), "%9s %f", garbage_buffer, &alpha);
             material_ptr->alpha = alpha;
         }
         else if (line[0] == 'T' && line[1] == 'r') // transparency
         {
             float inv_alpha = 0;
-            sscanf("%9s %f", garbage_buffer, &inv_alpha);
+            sscanf(line.c_str(), "%9s %f", garbage_buffer, &inv_alpha);
+
             material_ptr->alpha = 1.0f / inv_alpha;
         }
         else if (line[0] == 'i' && line[1] == 'l') // illumination
         {
             int illum = 0;
-            sscanf("%9s %d",garbage_buffer, &illum);
+            sscanf(line.c_str(), "%9s %d",garbage_buffer, &illum);
             // if illum == 1: we can skip Ks.
             // if illum == 2: requires ks to be defined.
             material_ptr->illum = illum;
@@ -352,11 +370,33 @@ void asset::load_mtl_from_file(std::map<std::string, asset::Material>& materials
             //@Incomplete:
         }
     }
+    fmt::print("loaded {} materials.\n", materials.size());
+    for (const auto& [key,material]: materials)
+    {
+        fmt::print("material {}:  {}\n",key, material);
+    }
 }
 
-
-//@Incomplete: we can use stbimage here.    
 void asset::load_texture_from_file(Texture& texture, const std::string& filename)
 {
-    fmt::print("[asset] INCOMPLETE: load_texture_from_file: look at stbimage / use stbimage here.\n");
+
+    //@FIXME: i think we need to copy the file pointer in order to prevent this from leaking.
+    int x = 0;
+    int y = 0;
+    int channels = 0;   
+    asset::Texture new_texture = {0}; 
+    // Redirect CRT standard input, output and error handles to the console window.
+    new_texture.data = stbi_load(filename.c_str(), &new_texture.dimensions.x, &new_texture.dimensions.y, &new_texture.channels, STBI_rgb);
+    if (new_texture.data == NULL)
+    {
+        std::string test = stbi_failure_reason();
+        fmt::print("[asset] failed loading texture. stbi_error: {}\n", stbi_failure_reason());
+        return;
+    }
+    else 
+    {
+        new_texture.data_size = new_texture.dimensions.x * new_texture.dimensions.y * new_texture.channels;
+        fmt::print("[asset] loaded texture {}. description: {}\n",filename, new_texture);
+    }
+
 }

@@ -9,7 +9,6 @@
 
 namespace asset
 {
-
     enum Asset_Type
     {
         MODEL,
@@ -58,14 +57,21 @@ namespace asset
         float Ns; // specular exponent?
         uint16_t illum; // if illum == 1, skip Ks.
         float alpha; // either d or inverse transparency.
- 
     };
 
     //@Incomplete: load into array, return index?
     struct Texture
     {
-        std::vector<char> buffer;
-        Vec2 dimensions;
+        unsigned char* data; // hmm. this is malloc'd by stb. do we just call free on delete?
+        Vec2i  dimensions;
+        int    channels;
+        size_t data_size;
+
+
+        ~Texture()
+        {
+            free(data);
+        }
     };
 
 
@@ -85,5 +91,44 @@ namespace asset
 
 
 }
+
+// for formatting
+namespace fmt {
+    template <>
+    struct formatter<asset::Material> {
+      template <typename ParseContext>
+      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+      template <typename FormatContext>
+      auto format(const asset::Material &lhs, FormatContext &ctx) {
+        return format_to(ctx.out(), "\nKa (ambient): {}\nKd (diffuse): {}\nKs (specular): {}\nNs (spec-ex): {}\nillum: {}\nalpha: {}",
+            lhs.Ka,
+            lhs.Kd,
+            lhs.Ks,
+            lhs.Ns,
+            lhs.illum,
+            lhs.alpha);
+      }
+    };
+
+       template <>
+    struct formatter<asset::Texture> {
+      template <typename ParseContext>
+      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+      template <typename FormatContext>
+      auto format(const asset::Texture &lhs, FormatContext &ctx) {
+        return format_to(ctx.out(), "\nx: {}, y: {}\nchannels: {}\ndata_size: {}.\n",
+            lhs.dimensions.x,
+            lhs.dimensions.y,
+            lhs.channels,
+            lhs.data_size);
+      }
+    };
+}
+
+
+
+
 
 #endif

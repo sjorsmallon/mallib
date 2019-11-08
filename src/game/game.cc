@@ -165,13 +165,6 @@ void game::init_graphics()
 }
 
 
-
-
-
-
-
-
-
 void game::shutdown()
 {
     sound::perform_shutdown();
@@ -198,23 +191,3 @@ void game::deinit_everything()
 // }
 // update_audio();
 
-// void game::load_models()
-// {
-//     std::vector<std::string> file_names = file::list_files_in_dir("../data/obj");
-//     for (auto& file_name: file_names)
-//     {
-//         fmt::printf("[game] loading obj file {}", file_name);
-//         // renderer::load_obj_file(file_name);
-//     }
-// }
-
-// void game::load_shaders()
-// {
-//     std::vector<std::string> file_names = file::list_files_in_dir("../data/shaders");
-//     for (auto& file_name: file_names)
-//     {
-//         fmt::printf("[game] loading shader {}", file_name);
-//         // renderer::load_shader(file_name);
-//         // graphics::load_and_compile_shader(file_name);
-//     }
-// }

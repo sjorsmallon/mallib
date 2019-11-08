@@ -1,11 +1,16 @@
 **/.DS_Store
 /.DS_Store
 
+
+
 *.obj
 
 /*.exe
 /src/tests/*.exe
 
+
+*.vs
+**/*.vs
 /src/.vs/*
 /src/win32/*.pdbsrc/.vs/ 
 
