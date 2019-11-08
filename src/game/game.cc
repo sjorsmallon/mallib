@@ -2,6 +2,7 @@
 #include<fmt/printf.h>
 #include <vector>
 #include <string>
+
 #include "../sound/sound.h"
 #include "../graphics/graphics.h"
 #include "../asset/asset.h"
@@ -9,15 +10,11 @@
 #include "../font/font.h"
 #include "../vec3/vec3.h"
 #include "../menu/menu.h"
-
 #include "../input/input.h"
+
 #include <chrono>
 
-
-
-// There's initing, and there's loading.
-// Before loading, want to init everything.
-// Afterwards, we will load all assets.
+// Init -> Load -> main_loop.
 void game::init_everything()
 {
     game::init_audio();
@@ -35,8 +32,8 @@ void game::init_everything()
 void game::load_everything()
 {
     // load sound
-    sound::load_music("assets/music/introduction.mp3");
-    sound::play_music("assets/music/introduction.mp3");
+    // sound::load_music("assets/music/introduction.mp3");
+    // sound::play_music("assets/music/introduction.mp3");
 
 
     // load assets
@@ -48,8 +45,15 @@ void game::load_everything()
 
     asset::load_assets_from_file(asset_folders);
 
+    // let's try to create a scene.
+    for (auto& set_piece: asset::scenes()["test.scene"].set_pieces)
+    {
+        fmt::print("set_piece name: {}\n", set_piece.name);
+        fmt::print("model name name: {}\n", set_piece.model_name);
+        graphics::cat_data() = asset::obj_data()[set_piece.model_name];
+    }
     //@Temporary
-    graphics::cat_data() = asset::obj_data()["cat.obj"];
+    // graphics::cat_data() = asset::obj_data()["cat.obj"];
 }
 
 void game::main_loop()

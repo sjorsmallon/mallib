@@ -47,12 +47,19 @@ void graphics::init_graphics()
     glDetachShader(shader_programs.text, text_vertex);
     glDetachShader(shader_programs.text, text_fragment);
 
-
+    // normals
     uint32_t normal_vertex   = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/normals.vertex");
     uint32_t normal_fragment = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/normals.fragment");
     glLinkProgram(shader_programs.normals);
     glDetachShader(shader_programs.normals, normal_vertex);
     glDetachShader(shader_programs.normals, normal_fragment);
+
+    // gouraud
+    uint32_t gouraud_vertex   = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/gouraud.vertex");
+    uint32_t gouraud_fragment = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/gouraud.fragment");
+    glLinkProgram(shader_programs.gouraud);
+    glDetachShader(shader_programs.gouraud, gouraud_vertex);
+    glDetachShader(shader_programs.gouraud, gouraud_fragment);
 
 
     //@refactor: we should abstract this. But I'm not quite sure how yet.
@@ -99,25 +106,6 @@ void graphics::reload_shaders(uint32_t& program)
     // load_compile_attach_shader?
 }
 
-graphics::Shaders& graphics::shaders()
-{
-    static Shaders shaders = {};
-    return shaders;
-}
-
-graphics::Window_Settings& graphics::window_settings()
-{
-    static Window_Settings settings;
-    return settings;
-}
-
-
-graphics::Win32_Context& graphics::global_Win32_context() //@cleanup: i don't like this.
-{
-	static Win32_Context context;
-	return context;
-}
-
 void graphics::set_shader(Shader_Type shader_type)
 {
     graphics::Shaders& shader_programs = graphics::shaders();
@@ -125,55 +113,36 @@ void graphics::set_shader(Shader_Type shader_type)
     {
         glUseProgram(shader_programs.text);
     }
-    else if(shader_type == Shader_Type::SHADER_BOMB)
+    else if (shader_type == Shader_Type::SHADER_BOMB)
     {
         glUseProgram(shader_programs.bomb);
     }
-    else if(shader_type == Shader_Type::SHADER_DEFAULT)
+    else if (shader_type == Shader_Type::SHADER_DEFAULT)
     {
         glUseProgram(shader_programs.default);
     }
-    else if(shader_type == Shader_Type::SHADER_NORMALS)
+    else if (shader_type == Shader_Type::SHADER_GOURAUD)
+    {
+        glUseProgram(shader_programs.gouraud);
+    }
+    else if (shader_type == Shader_Type::SHADER_NORMALS)
     {
         glUseProgram(shader_programs.normals);
     }
 }
 
 
-
-
 // Everything happens in here. I need to think about what to separate to which extent.
 void graphics::draw_game_3d()
 {
-    // draw all buffers?
-    // for now, draw the cat.
     graphics::set_shader(graphics::Shader_Type::SHADER_NORMALS);
     uint32_t active_shader = graphics::shaders().normals;
-    auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
-
-    // lights are a property of the scene. 
-    // however, this implies that the properties of the scene
-    // are bound to uniforms in openGL. I don't necessarily think
-    // that that is a good idea. Or do we insert an array of lights to openGL?
-    // is there an uniform array?
-
-    // bind light position. not necessary for the normals.
-    // uint32_t normal_shader = graphics::shaders().normals;
-    // int32_t light_position_location = glGetUniformLocation(normal_shader,light_position);
-    // int32_t light_color_location    = glGetUniformLocation(normal_shader,light_color);
-    // int32_t material_location       = glGetUniformLocation(normal_shader,material);
-    // Vec3 light_position = {0.0f, 0.0f, 0.5f};
-    // Vec3 light_color =    {1.0f, 1.0f, 1.0f};
-    // Vec4 material =  {0.4f, 0.6f, 0.8f, 64f};
-    // glUniform3fv(light_position_location, 1, &light_position.data[0]);
-    // glUniform3fv(light_color_location, 1, &light_color.data[0])
-    // glUniform4fv(material_location, 1, material.data());
-
     uint32_t normal_shader = graphics::shaders().normals;
+
+    auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
 
     // matrices:
     const bool row_major = true;
-
     // View matrix:
     int32_t view_matrix_location = glGetUniformLocation(normal_shader, "view_matrix");
     Mat4 view_scale_matrix       = mat::mat4_identity();
@@ -193,49 +162,71 @@ void graphics::draw_game_3d()
     Mat4 projection_matrix = mat::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
     glUniformMatrix4fv(projection_matrix_location, 1, row_major, &projection_matrix[0][0]);
 
-    // Model Matrix:
-    int32_t model_matrix_location = glGetUniformLocation(normal_shader, "model_matrix");
-    Xform_State cat_state = {};
-    cat_state.position = {0.0f, 0.0f, -1.2f};
-    cat_state.q_orientation = {0.0f, 0.0f, 0.0f, 1.0f};
-    cat_state.scale = 0.1f;
 
-    //@Refactor: this goes to mat-> to mat4 (from_quat) -> to xform_state(quaternion).
-    Mat4 model_matrix = mat::mat4_from_xform_state(cat_state);
-    glUniformMatrix4fv(model_matrix_location, 1, row_major, &model_matrix[0][0]);
 
-    int32_t normal_transform_matrix_location = glGetUniformLocation(normal_shader, "normal_transform");
-    Mat3 normal_transform_matrix = mat::normal_transform(model_matrix);
-
-    //@Note: We need to actually verify whether or not this is transposed.
-    glUniformMatrix3fv(normal_transform_matrix_location, 1, row_major, &normal_transform_matrix[0][0]);
-
-    //@TODO: write mat::normal_transform(). with all the above uniforms bound, we still need to send the cat's data to the gpu.
-    // see how I do it in the ECS2 example.
 
     // bind the VAO before the VBO.
     glBindVertexArray(VAO);
     //On_Scope_Exit(GlBindVertexArray(0));
     // bind the VBO buffer to array buffer.
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    auto& cat_data = graphics::cat_data();
-    glBufferData(GL_ARRAY_BUFFER,
-                 static_cast<int>(cat_data.vertices.size() * sizeof(asset::Vertex)),
-                 cat_data.vertices.data(),
-                 GL_STATIC_DRAW);
-
-    //On_Scope_Exit(glBindBuffer(GL_ARRAY_BUFFER, 0));
+     //On_Scope_Exit(glBindBuffer(GL_ARRAY_BUFFER, 0));
     // bind vertex array object.
+
+
+    // for each object in the active scene:
+
+        // Model Matrix:
+        int32_t model_matrix_location = glGetUniformLocation(normal_shader, "model_matrix");
+        Xform_State cat_state = {};
+        cat_state.position = {0.0f, 0.0f, -1.2f};
+        cat_state.q_orientation = {0.0f, 0.0f, 0.0f, 1.0f};
+        cat_state.scale = 0.1f;
+
+        Mat4 model_matrix = mat::mat4_from_xform_state(cat_state);
+        glUniformMatrix4fv(model_matrix_location, 1, row_major, &model_matrix[0][0]);
+
+        int32_t normal_transform_matrix_location = glGetUniformLocation(normal_shader, "normal_transform");
+        Mat3 normal_transform_matrix = mat::normal_transform(model_matrix);
+        //@Note: We need to actually verify whether or not this is transposed.
+        glUniformMatrix3fv(normal_transform_matrix_location, 1, row_major, &normal_transform_matrix[0][0]);
+
+        auto& cat_data = graphics::cat_data();
+        glBufferData(GL_ARRAY_BUFFER,
+                     static_cast<int>(cat_data.vertices.size() * sizeof(asset::Vertex)),
+                     cat_data.vertices.data(),
+                     GL_STATIC_DRAW);
+
+        // glActiveTexture(GL_TEXTURE0);
+        // glBindTexture(GL_TEXTURE_2D, object.TBO);
+        // glUniform1i(d_textureLocation, 0);
+        // glUseProgram(0); // NULL?
+    // end for
+
+    // for each light in the active scene:
+        // lights are a property of the scene. 
+        // however, this implies that the properties of the scene
+        // are bound to uniforms in openGL. I don't necessarily think
+        // that that is a good idea. Or do we insert an array of lights to openGL?
+        // is there an uniform array?
+
+        // bind light position. not necessary for the normals, but necessary for every other shader.
+        // uint32_t normal_shader = graphics::shaders().normals;
+        // int32_t light_position_location = glGetUniformLocation(normal_shader,light_position);
+        // int32_t light_color_location    = glGetUniformLocation(normal_shader,light_color);
+        // int32_t material_location       = glGetUniformLocation(normal_shader,material);
+        // Vec3 light_position = {0.0f, 0.0f, 0.5f};
+        // Vec3 light_color =    {1.0f, 1.0f, 1.0f};
+        // Vec4 material =  {0.4f, 0.6f, 0.8f, 64f};
+        // glUniform3fv(light_position_location, 1, &light_position.data[0]);
+        // glUniform3fv(light_color_location, 1, &light_color.data[0])
+        // glUniform4fv(material_location, 1, material.data());
+    // end for
+
 
     // actually draw.
     glDrawArrays(GL_TRIANGLES,0, cat_data.vertices.size());
 
-    // whahuh?
-    // glActiveTexture(GL_TEXTURE0);
-    // glBindTexture(GL_TEXTURE_2D, object.TBO);
-    // glUniform1i(d_textureLocation, 0);
-    // glUseProgram(0); // NULL?
 }
 
 // static
@@ -375,16 +366,6 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
 }
 
 
-
-
-
-//@Temporary.
-asset::Raw_Obj_Data& graphics::cat_data()
-{
-    static asset::Raw_Obj_Data cat_data;
-    return cat_data;
-}
-
 // Jon Blow's render_frame call.
 // void graphics::render_frame()
 // {
@@ -414,3 +395,29 @@ asset::Raw_Obj_Data& graphics::cat_data()
 //     graphics::swap_buffers();
 
 // }
+
+//@Temporary.
+asset::Raw_Obj_Data& graphics::cat_data()
+{
+    static asset::Raw_Obj_Data cat_data;
+    return cat_data;
+}
+
+graphics::Shaders& graphics::shaders()
+{
+    static Shaders shaders = {};
+    return shaders;
+}
+
+graphics::Window_Settings& graphics::window_settings()
+{
+    static Window_Settings settings;
+    return settings;
+}
+
+
+graphics::Win32_Context& graphics::global_Win32_context() //@cleanup: i don't like this.
+{
+    static Win32_Context context;
+    return context;
+}

@@ -114,62 +114,63 @@ static void generate_vertices_from_raw_data(asset::Raw_Obj_Data& raw_data)
     }
 }
 
+// @Refactor: this also warrants a string split function.
+// Furthermore, we don't account for there not being a space in the scene file.
 //@Note: assume an empty scene here.
 void asset::load_scene_from_file(scene::Scene& scene, const std::string& filename)
 {
     auto file_content = std::string();
     file::file_to_string(filename, file_content);
-    std::stringstream data_stream(file_content);
+    auto data_stream = std::stringstream(file_content);
 
     constexpr const int max_string_length = 20;
     constexpr const int max_string_read_length = 9;
     char garbage_buffer[max_string_length] = {0}; // used for the garbage at the start of each line. 
 
-
     // @Memory: how to predict how to preallocate?
-    fmt::print("[asset] Warning: load_scene_from_file does not efficiently preallocate.\n");
     scene.set_pieces.reserve(10);
     // we use a pointer here so the logic for creating new set pieces 
     // is more concise.
     scene::Set_Piece* set_piece = nullptr;
+
     size_t line_number = 0;
     for (std::string line; std::getline(data_stream, line);)
     {
         line_number++;
+        if (line.empty())
+        {
+            continue;
+        }
         if (line[0] == '#') // comment
         {
             continue;
         }       
         if (line[0] == ':' && line[1] == '/') // name of the object in the scene.
         {           
+            // create a new set piece & set the pointer.
             scene.set_pieces.emplace_back();
             set_piece = &scene.set_pieces.back();
-            //@Refactor: this also warrants a string split function.
-            // Furthermore, we don't account for there not being a space in the scene file.
-            std::string set_piece_name = line.substr(line.find_last_of(" "));
-            fmt::print("[asset] set piece name: {}\n", set_piece_name);
-            set_piece->name = set_piece_name;
-        }
 
+            line = line.substr(line.find_last_of(" ") + 1);
+            fmt::print("[asset] set piece name: {}\n", line);
+            set_piece->name = line;
+        }
         else if (line[0] == 'm' && line[1] == 'o') // model
         {
-            auto model_name = std::string(100, '0');
-            sscanf(line.c_str(), "%15s \"%50s\"", garbage_buffer, &model_name[0]);
-            set_piece->model_name = model_name;
+            line = line.substr(line.find_last_of(" ") + 1);
+            set_piece->model_name = line;
         }
         else if (line[0] == 'm' && line[1] == 'a') // material
         {
-            auto material_name = std::string(100, '0');
-            sscanf(line.c_str(), "%15s \"%50s\"", garbage_buffer, &material_name[0]);
-            set_piece->material_name = material_name;
+            line = line.substr(line.find_last_of(" ") + 1);
+            set_piece->material_name = line;
         }
         else if (line[0] == 't' && line[1] == 'e') // texture
         {
-            auto texture_name = std::string(100, '0');
-            sscanf(line.c_str(), "%15s \"%50s\"", garbage_buffer, &texture_name[0]);
-            set_piece->texture_name = texture_name;
+            line = line.substr(line.find_last_of(" ") + 1);
+            set_piece->texture_name = line;
         }
-        else if (line[0] == 'p' && line[1] == '0') // position
+        else if (line[0] == 'p' && line[1] == 'o') // position
         {
             Vec3 position = {};
             sscanf(line.c_str(), "%15s %f %f %f", garbage_buffer, &position.x, &position.y, &position.z);
@@ -192,6 +193,7 @@ void asset::load_scene_from_file(scene::Scene& scene, const std::string& filenam
             fmt::print("[asset] Warning: file {}: No label recognized on line {}. content: {}\n",filename, line_number, line);
         }
     }
+    fmt::print("[asset] Scene: succesfully loaded {}\n", filename);
 }
 
 //@Refactor:    
@@ -282,8 +284,9 @@ void asset::load_obj_from_file(asset::Raw_Obj_Data& raw_data, const std::string&
         else
             fmt::print("[asset] ERROR: load_obj: no matching indicator. line number: {}. content: {}\n", line_number, line);
     }
-    fmt::print("[asset] succesfully loaded {}. num_faces: {}\n", filename, raw_data.faces.size());
     generate_vertices_from_raw_data(raw_data);
+
+    fmt::print("[asset] Obj: succesfully loaded {}. num_faces: {}\n", filename, raw_data.faces.size());
 }
 
 
@@ -370,7 +373,7 @@ void asset::load_mtl_from_file(std::map<std::string, asset::Material>& materials
             //@Incomplete:
         }
     }
-    fmt::print("loaded {} materials.\n", materials.size());
+    fmt::print("[asset] Mtl: loaded {} materials.\n", materials.size());
     for (const auto& [key,material]: materials)
     {
         fmt::print("material {}:  {}\n",key, material);

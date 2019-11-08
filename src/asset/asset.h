@@ -7,6 +7,9 @@
 #include <map>
 #include <string>
 
+// asset loads all the asset from the Asset_Folder struct into memory.
+// for now, these are accessible through the references provided in this namespace.
+
 namespace asset
 {
     enum Asset_Type
@@ -66,7 +69,6 @@ namespace asset
         Vec2i  dimensions;
         int    channels;
         size_t data_size;
-
 
         ~Texture()
         {

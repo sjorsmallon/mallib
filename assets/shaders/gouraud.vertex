@@ -1,0 +1,48 @@
+#version 330 core
+
+// Specify the input locations of attributes
+layout(location = 0) in vec3 position_in;
+layout(location = 1) in vec2 texture_coordinates_in;
+layout(location = 2) in vec3 normal_in;
+
+// Specify the Uniforms of the vertex shader
+// uniform mat4 modelTransform; for example
+
+uniform mat4 model_matrix;
+uniform mat4 model_projection;
+uniform mat4 view_matrix;
+uniform mat3 normal_transform;
+
+uniform vec4 light_position;
+uniform vec3 light_color;
+uniform vec4 material;      // w = ka, x = kd, y = ks, z = n
+
+
+out vec3 vert_normal;
+
+// Specify the output of the vertex stage
+out vec3 vertex_color;
+out vec2 texture_coordinates;
+
+void main()
+{
+    vec4 world_position_vertex = model_matrix * vec4(position_in, 1.0); // MV
+    gl_Position = model_projection * view_matrix * world_position_vertex;                    // MVP
+
+    vec3 world_position_light = light_position.xyz; // modelMatrix *
+
+    vec3 N = normalize(normal_transform * normal_in);
+    vec3 L = normalize(world_position_light.xyz - world_position_vertex.xyz);
+    vec3 R = normalize(reflect(L, N));
+
+    vec3 V = normalize(world_position_vertex.xyz - vec3(0));
+
+    vec3 material_color = vec3(0.82, 0.82, 0.82);
+
+    vec3 i_A =  material_color * material.x;
+    vec3 i_D = max(0, dot(N, L)) * material_color * material.y;
+    vec3 i_S = pow(max(0, dot(R, V)), material.w) * light_color * material.z;
+
+    vertex_color = i_A + i_D + i_S;
+    texture_coordinates = texture_coordinates_in;
+}

@@ -1,17 +1,16 @@
 # these are comments.
 # :/ entity_name  (SPACE AFTER SLASH!)
-# model "modelname"
-# material "name"
-# texture "name"
+# model modelname
+# material name
+# texture name
 # position 0.0 0.2 0.3 (Vec3)
 # q_orientation 0.0 0.0 0.0 1.0 (Vec4)
 # scale.  0.5 (float)
 
-# what do we do when nothing is specified?
-# or do we need to specify?
+# what do we do when nothing is specified? default to empty.
 
 :/ cat_1
-model "cat.obj"
+model cat.obj
 position 0.0 0.0 -1.2
 q_orientation 0.0 0.0 0.0 1.0
 scale 0.1

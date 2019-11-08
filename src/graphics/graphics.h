@@ -29,6 +29,7 @@ namespace graphics
 		SHADER_TEXT,
 		SHADER_DEFAULT,
 		SHADER_NORMALS,
+		SHADER_GOURAUD,
 		SHADER_BOMB
 	};
 
@@ -37,6 +38,7 @@ namespace graphics
 		uint32_t bomb;
 		uint32_t text;
 		uint32_t normals;
+		uint32_t gouraud;
 		uint32_t default;
 	};
 
