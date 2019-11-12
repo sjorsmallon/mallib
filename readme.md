@@ -1,38 +1,20 @@
 
-
-# FIX
-make string buffer in all load classes larger. 20 characters is not much.
-
 # TODO
 
+## VAO / VBO structure
+How are relevant `entity` meshes combined in the VBO? Do we have one? What do other people use? 
 
-## Scaffolding for Asset loading
-We need to load the assets. i.e. the cat model. The structure I have in my mind for storing the model is 
-a string -> vector<Vertex> map.
+## Shader reloading
+Shader reloading is almost there. Let's finish it.
 
-## Scene
-create a scene (level?) So we know what to load when.
-The Scene will be read from a file. For now, the file will be described by
-``` 
-// these are comments.
-# entity_name
-model name
-material name
-texture name
-position
-q_orientation
-scale.
-``` 
+## Animation
+I think I know how to do animation, but I am not sure.
 
+## Expand the Scene description
+Look at what sounds are played when.
 
-
-## SYNTAX
-unify all from -> to syntax in the program. All the loading functions (load_obj_from_file) 
-and the file functions(file_to_string). This is inconsistent.
-
-
-
-
+## Unify graphics / Font / Asset
+All of these use some form of the `Vertex` struct. Where should it be defined? The problem is that they all need to agree on the common form in order for them to be able to communicate, but that also introduces some interdependence.
 
 ## Font rendering
 look at harfbuzz for text shaping.
@@ -136,7 +118,32 @@ any error reporting there is done using `cerr` (for now).
 I need to document how to build soloud, as it uses this weird build system. It's a nice library though.
 
 
+
+
 # HAVE DONE
+
+## Scaffolding for Asset loading
+We need to load the assets. i.e. the cat model. The structure I have in my mind for storing the model is 
+a string -> vector<Vertex> map.
+
+## Scene
+create a scene (level?) So we know what to load when.
+The Scene will be read from a file. For now, the file will be described by
+``` 
+// these are comments.
+# entity_name
+model name
+material name
+texture name
+position
+q_orientation
+scale.
+``` 
+
+## SYNTAX
+unify all from -> to syntax in the program. All the loading functions (load_obj_from_file) 
+and the file functions(file_to_string). This is inconsistent.
+
 the `load_x` functions use a from -> to pattern.
 
 
@@ -144,7 +151,6 @@ the `load_x` functions use a from -> to pattern.
 Perform the `POD` test again with the union vec3. 
 
 typedef uint32_t to buffer / sound_source. But does that coerce `ALuint` to `uint32_t`?
-
 
 Move the buffers to outside of the class. Should be in data storage. Play sound via string? or via enum name? <- this is annoying, as user needs to add enums. better to instantiate map based on filenames.
 
