@@ -142,7 +142,7 @@ void graphics::draw_game_3d()
 
     auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
 
-    // matrices:
+    // all matrices are defined in row major fashion. openGL needs to know about that.
     const bool row_major = true;
     // View matrix:
     int32_t view_matrix_location = glGetUniformLocation(normal_shader, "view_matrix");

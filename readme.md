@@ -1,14 +1,26 @@
 
 # TODO
 
+## Render Textures
+exactly what it sounds like.
+
+## Rotating the Scene
+we want to manipulate the scene using the mouse / keyboard. 
+
 ## VAO / VBO structure
 How are relevant `entity` meshes combined in the VBO? Do we have one? What do other people use? 
+according to  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Practices , The best way to do it is to create
+as few VBOs as possible. I'm wondering whether it's possible to keep data on the gpu and re-render that data (instead of needing to supply
+a model multiple times in the same VBO.)
 
 ## Shader reloading
 Shader reloading is almost there. Let's finish it.
 
 ## Animation
-I think I know how to do animation, but I am not sure.
+I think I know how to do animation, but I am not sure. We'll try with the cat.
+
+# Particle system
+Create a simple particle system.
 
 ## Expand the Scene description
 Look at what sounds are played when.
