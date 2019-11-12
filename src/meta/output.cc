@@ -44,9 +44,6 @@ struct Entity
 struct File_Watcher
 
 {
-
-	std::vector<>
-
 };
 
 //font\font.h

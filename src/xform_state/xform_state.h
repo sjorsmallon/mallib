@@ -7,8 +7,6 @@
 #include "../mat4/mat4.h"
 #include <cmath> // sin,cos 
 
-
-
 struct Xform_State
 {
 	Vec3 position;

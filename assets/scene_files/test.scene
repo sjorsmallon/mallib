@@ -1,8 +1,8 @@
 # these are comments.
 # :/ entity_name  (SPACE AFTER SLASH!)
-# model modelname
-# material name
-# texture name
+# model modelname (no directory/path, just the name.) 
+# material name (no directory/path, just the name.)
+# texture name (no directory/path, just the name. )
 # position 0.0 0.2 0.3 (Vec3)
 # q_orientation 0.0 0.0 0.0 1.0 (Vec4)
 # scale.  0.5 (float)
@@ -15,3 +15,14 @@ position 0.0 0.0 -1.2
 q_orientation 0.0 0.0 0.0 1.0
 scale 0.1
 
+:/ cat_2
+model cat.obj
+position -0.9 0.0 -1.2
+q_orientation 0.0 0.0 0.0 1.0
+scale 0.1
+
+:/ cat_3
+model cat.obj
+position 0.9 0.0 -1.2
+q_orientation 0.0 0.0 0.0 1.0
+scale 0.1

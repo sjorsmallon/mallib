@@ -6,7 +6,7 @@
 #include <iostream>
 
 // Polymorphism without inheritance
-// based on the Better Polymorphism talk by Sean Parent
+// based on the Better Polymorphism talk by Sean Parent.
 
 
 template <typename T> void draw(const T& x, ostream& out, size_t position)
