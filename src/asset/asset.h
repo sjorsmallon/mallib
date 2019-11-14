@@ -69,7 +69,7 @@ namespace asset
         Vec2i  dimensions;
         int    channels;
         size_t data_size;
-
+        uint32_t gl_texture_id;
         ~Texture()
         {
             free(data);

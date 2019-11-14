@@ -132,34 +132,67 @@ void graphics::set_shader(Shader_Type shader_type)
     }
 }
 
+void graphics::generate_texture_settings(std::map<std::string, asset::Texture>& textures)
+{
+    for (auto& [texture_name, texture]: textures)
+    {
+
+        glGenTextures(1, &texture.gl_texture_id);
+        glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     GL_RGBA8,
+                     texture.dimensions.x,
+                     texture.dimensions.y,
+                     0,
+                     GL_RGBA,
+                     GL_UNSIGNED_BYTE,
+                     texture.data);
+    }
+}
+
+
 
 // Everything happens in here. I need to think about what to separate to which extent.
 void graphics::draw_game_3d()
 {
-    graphics::set_shader(graphics::Shader_Type::SHADER_NORMALS);
-    uint32_t active_shader = graphics::shaders().normals;
-    uint32_t normal_shader = graphics::shaders().normals;
-
+    graphics::set_shader(graphics::Shader_Type::SHADER_GOURAUD);
+    uint32_t active_shader = graphics::shaders().gouraud;
+    // graphics::set_shader(graphics::Shader_Type::SHADER_NORMALS);
+    // uint32_t active_shader = graphics::shaders().normals;
+    // uint32_t normal_shader = graphics::shaders().normals;
     auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
+
+
 
     // all matrices are defined in row major fashion. openGL needs to know about that.
     const bool row_major = true;
-    // View matrix:
-    int32_t view_matrix_location = glGetUniformLocation(normal_shader, "view_matrix");
-    Mat4 view_scale_matrix       = mat::mat4_identity();
-    Mat4 view_rotation_matrix    = mat::mat4_identity();
-    Mat4 view_translation_matrix = mat::mat4_identity();
-    Mat4 view_matrix = view_scale_matrix * view_rotation_matrix * view_translation_matrix;
+
+    // View matrix
+    int32_t view_matrix_location = glGetUniformLocation(active_shader, "view_matrix");
+    // Mat4 view_scale_matrix       = mat::mat4_identity();
+    // Mat4 view_rotation_matrix    = mat::mat4_identity();
+    // Mat4 view_translation_matrix = mat::mat4_identity();
+    // Mat4 view_matrix = view_scale_matrix * view_rotation_matrix * view_translation_matrix;
+    Mat4 view_matrix = mat::mat4_identity();
     glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
 
     // Projection Matrix:
     // perspective near_z and far_z define the clipping, not the actual bounds. I think.
+    // OpenGL assumes that the points in the scene are projected on the near clipping planes,
+    // rather than on a plane that lies one unit away from the camera position
     // @Note: Then what should far_z and near_z be?
     // @Refactor: FOV should be customizable. we want the user to be able to say: "use this projection matrix."
-    int32_t projection_matrix_location = glGetUniformLocation(normal_shader, "model_projection");
+    int32_t projection_matrix_location = glGetUniformLocation(active_shader, "model_projection");
     const float fov_in_degrees     = 90.0f;
     const float perspective_near_z = 0.1f;
-    const float perspective_far_z  = 10.0f;
+    const float perspective_far_z  = 100.0f;
     const float aspect_ratio = graphics::window_settings().width / graphics::window_settings().height;
     Mat4 projection_matrix = mat::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
     glUniformMatrix4fv(projection_matrix_location, 1, row_major, &projection_matrix[0][0]);
@@ -167,27 +200,24 @@ void graphics::draw_game_3d()
 
     // bind the VAO before the VBO.
     // bind the VBO buffer to array buffer.
+    //On_Scope_Exit(GlBindVertexArray(0));
+    //On_Scope_Exit(glBindBuffer(GL_ARRAY_BUFFER, 0));
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    //On_Scope_Exit(GlBindVertexArray(0));
-    //On_Scope_Exit(glBindBuffer(GL_ARRAY_BUFFER, 0));
-
-
-    const int32_t model_matrix_location = glGetUniformLocation(normal_shader, "model_matrix");
+    const int32_t model_matrix_location = glGetUniformLocation(active_shader, "model_matrix");
 
     // for each object in the active scene:
     for (auto &set_piece: graphics::active_scene().set_pieces)
     {
-        // Model Matrix:
+
+        // Model Matrix
         Mat4 model_matrix = mat::mat4_from_xform_state(set_piece.xform_state);
         glUniformMatrix4fv(model_matrix_location, 1, row_major, &model_matrix[0][0]);
 
         // Normal transform Matrix
-        int32_t normal_transform_matrix_location = glGetUniformLocation(normal_shader, "normal_transform");
+        int32_t normal_transform_matrix_location = glGetUniformLocation(active_shader, "normal_transform");
         Mat3    normal_transform_matrix          = mat::normal_transform(model_matrix);
-
-        //@Note: We need to actually verify whether or not this is transposed.
         glUniformMatrix3fv(normal_transform_matrix_location, 1, row_major, &normal_transform_matrix[0][0]);
 
         const auto& object_data = asset::obj_data()[set_piece.model_name];
@@ -197,34 +227,35 @@ void graphics::draw_game_3d()
                      object_data.vertices.data(),
                      GL_STATIC_DRAW);
 
-        int32_t texture_location = glGetUniformLocation(normal_shader, "texture_uniform");
-        // glActiveTexture(GL_TEXTURE0);
-        // glBindTexture(GL_TEXTURE_2D, object.TBO);
-        // glUniform1i(d_textureLocation, 0);
-        // glUseProgram(0); // NULL?
+        int32_t texture_location = glGetUniformLocation(active_shader, "texture_uniform");
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, asset::texture_data()[set_piece.texture_name].gl_texture_id);
+
         //@FIXME: for now, we invoke draw after every object. 
         glDrawArrays(GL_TRIANGLES,0, object_data.vertices.size());
+        // glUniform1i(d_textureLocation, 0);
     }
 
-    // for each light in the active scene:
+    if (active_shader == graphics::shaders().gouraud)
+    {
+        //     for each light in the active scene:
         // lights are a property of the scene. 
         // however, this implies that the properties of the scene
         // are bound to uniforms in openGL. I don't necessarily think
         // that that is a good idea. Or do we insert an array of lights to openGL?
         // is there an uniform array?
-
-        // bind light position. not necessary for the normals, but necessary for every other shader.
-        // uint32_t normal_shader = graphics::shaders().normals;
-        // int32_t light_position_location = glGetUniformLocation(normal_shader,light_position);
-        // int32_t light_color_location    = glGetUniformLocation(normal_shader,light_color);
-        // int32_t material_location       = glGetUniformLocation(normal_shader,material);
-        // Vec3 light_position = {0.0f, 0.0f, 0.5f};
-        // Vec3 light_color =    {1.0f, 1.0f, 1.0f};
-        // Vec4 material =  {0.4f, 0.6f, 0.8f, 64f};
-        // glUniform3fv(light_position_location, 1, &light_position.data[0]);
-        // glUniform3fv(light_color_location, 1, &light_color.data[0])
-        // glUniform4fv(material_location, 1, material.data());
-    // end for
+       // bind light position. not necessary for the normals, but necessary for every other shader.
+       // uint32_t normal_shader = graphics::shaders().normals;
+        int32_t light_position_location = glGetUniformLocation(active_shader,"light_position" );
+        int32_t light_color_location    = glGetUniformLocation(active_shader,light_color);
+        int32_t material_location       = glGetUniformLocation(active_shader,material);
+        Vec3 light_position = {0.0f, 0.0f, 0.5f};
+        Vec3 light_color =    {1.0f, 1.0f, 1.0f};
+        Vec4 material =  {0.4f, 0.6f, 0.8f, 64f};
+        glUniform3fv(light_position_location, 1, &light_position.data[0]);
+        glUniform3fv(light_color_location, 1, &light_color.data[0])
+        glUniform4fv(material_location, 1, material.data[0]);
+    }
 
 
     // actually draw.
@@ -264,7 +295,7 @@ uint32_t graphics::shader_type_from_extension(const std::string& filename)
         return GL_GEOMETRY_SHADER;
     else if (view == "tess_control")
         return GL_TESS_CONTROL_SHADER;
-    else if (view == "tess_evaluation")
+    else if (view == "tess_eval")
         return GL_TESS_EVALUATION_SHADER;
     // else if (view == "compute")
     //     return GL_COMPUTE_SHADER;

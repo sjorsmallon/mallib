@@ -23,6 +23,8 @@ namespace entity
 		bool hidden;
 		bool marked_for_destruction; // destroy this entity next frame.
 		Duration duration;
+
+		// std::string debug_notes;  (for debugging purposes / inspection of entities.)
 	};
 
 	// the entity manager has a non-owning pointer to a list of entities.

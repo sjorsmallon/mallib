@@ -73,6 +73,8 @@ namespace graphics
 	asset::Raw_Obj_Data& cat_data();
 	scene::Scene& active_scene();
 
+	void generate_texture_settings(std::map<std::string, asset::Texture>& textures);
+
 	// draw modes.
 	// void draw_2d_right_handed_normalized()
 	// void draw_3d_right_hand_perspective();
