@@ -35,11 +35,13 @@ void graphics::init_graphics()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     //@Refactor: default init these to 0, so we can verify whether they are 0 in reload_shaders?
+    // Or do we want to construct this so this is always in a valid state?
     graphics::Shaders& shader_programs = graphics::shaders();
     shader_programs.default = glCreateProgram();
     shader_programs.text    = glCreateProgram();
     shader_programs.normals = glCreateProgram(); 
     shader_programs.bomb    = glCreateProgram();
+    shader_programs.gouraud = glCreateProgram();
 
     //@Refactor: use reload shaders?
     uint32_t text_vertex   = graphics::load_compile_attach_shader(shader_programs.text, "assets/shaders/text.vertex");
@@ -169,6 +171,8 @@ void graphics::draw_game_3d()
     // uint32_t normal_shader = graphics::shaders().normals;
     auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
 
+    graphics::get_shader_info(active_shader);
+
 
 
     // all matrices are defined in row major fashion. openGL needs to know about that.
@@ -246,15 +250,15 @@ void graphics::draw_game_3d()
         // is there an uniform array?
        // bind light position. not necessary for the normals, but necessary for every other shader.
        // uint32_t normal_shader = graphics::shaders().normals;
-        int32_t light_position_location = glGetUniformLocation(active_shader,"light_position" );
-        int32_t light_color_location    = glGetUniformLocation(active_shader,light_color);
-        int32_t material_location       = glGetUniformLocation(active_shader,material);
-        Vec3 light_position = {0.0f, 0.0f, 0.5f};
+        int32_t light_position_location = glGetUniformLocation(active_shader, "light_position");
+        int32_t light_color_location    = glGetUniformLocation(active_shader, "light_color");
+        int32_t material_location       = glGetUniformLocation(active_shader, "material");
+        Vec3 light_position = {0.0f, 0.5f, -1.2f};
         Vec3 light_color =    {1.0f, 1.0f, 1.0f};
-        Vec4 material =  {0.4f, 0.6f, 0.8f, 64f};
+        Vec4 material =  {0.4f, 0.6f, 0.8f, 64.0f};
         glUniform3fv(light_position_location, 1, &light_position.data[0]);
-        glUniform3fv(light_color_location, 1, &light_color.data[0])
-        glUniform4fv(material_location, 1, material.data[0]);
+        glUniform3fv(light_color_location, 1, &light_color.data[0]);
+        glUniform4fv(material_location, 1, &material.data[0]);
     }
 
 

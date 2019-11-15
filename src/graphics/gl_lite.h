@@ -25,7 +25,7 @@
 #if defined(__linux__)
 #include <dlfcn.h>
 #define GLDECL // Empty define
-#define PAPAYA_GL_LIST_WIN32 // Empty define
+#define MALLIB_GL_LIST_WIN32 // Empty define
 #endif // __linux__
 
 #if defined(_WIN32)
@@ -76,7 +76,7 @@ typedef char GLchar;
 typedef ptrdiff_t GLintptr;
 typedef ptrdiff_t GLsizeiptr;
 
-#define PAPAYA_GL_LIST_WIN32 \
+#define MALLIB_GL_LIST_WIN32 \
     /* ret, name, params */ \
     GLE(void,      BlendEquation,           GLenum mode) \
     GLE(void,      ActiveTexture,           GLenum texture) \
@@ -87,7 +87,7 @@ typedef ptrdiff_t GLsizeiptr;
 #include <GL/gl.h>
 
 
-#define PAPAYA_GL_LIST \
+#define MALLIB_GL_LIST \
     /* ret, name, params */ \
     GLE(void,      AttachShader,            GLuint program, GLuint shader) \
     GLE(void,      BindBuffer,              GLenum target, GLuint buffer) \
@@ -126,6 +126,8 @@ typedef ptrdiff_t GLsizeiptr;
     GLE(void,      GenVertexArrays,         GLsizei n, GLuint *arrays) \
     GLE(void,      BindVertexArray,         GLuint array) \
     GLE(void,      Uniform3f,               GLint location, GLfloat v0, GLfloat v1, GLfloat v2) \
+    GLE(void,      Uniform3fv,              GLint location, GLsizei count, const GLfloat *value) \
+    GLE(void,      Uniform4fv,              GLint location, GLsizei count, const GLfloat *value) \
     GLE(void,      GetProgramInterfaceiv,   GLuint program, GLenum programInterface, GLenum pname, GLint *params)\
     GLE(void,      GetProgramiv,            GLuint program, GLenum pname, GLint *params)\
     GLE(void,      GetProgramResourceiv,    GLuint program, GLenum programInterface, GLuint index, GLsizei propCount, const GLenum *props, GLsizei bufSize, GLsizei *length, GLint *params)\
@@ -135,8 +137,8 @@ typedef ptrdiff_t GLsizeiptr;
     /* end */
 
 #define GLE(ret, name, ...) typedef ret GLDECL name##proc(__VA_ARGS__); extern name##proc * gl##name;
-PAPAYA_GL_LIST
-PAPAYA_GL_LIST_WIN32
+MALLIB_GL_LIST
+MALLIB_GL_LIST_WIN32
 #undef GLE
 
 bool gl_lite_init();
@@ -148,8 +150,8 @@ bool gl_lite_init();
 #ifdef GL_LITE_IMPLEMENTATION
 
 #define GLE(ret, name, ...) name##proc * gl##name;
-PAPAYA_GL_LIST
-PAPAYA_GL_LIST_WIN32
+MALLIB_GL_LIST
+MALLIB_GL_LIST_WIN32
 #undef GLE
 
 bool gl_lite_init()
@@ -168,7 +170,7 @@ bool gl_lite_init()
                 printf("Function gl" #name " couldn't be loaded from libGL.so\n"); \
                 return false;                                                      \
             }
-        PAPAYA_GL_LIST
+        MALLIB_GL_LIST
     #undef GLE
 
 #elif defined(_WIN32)
@@ -188,8 +190,8 @@ bool gl_lite_init()
                 OutputDebugStringA("Function gl" #name " couldn't be loaded from opengl32.dll\n"); \
                 return false;                                                                      \
             }
-        PAPAYA_GL_LIST
-        PAPAYA_GL_LIST_WIN32
+        MALLIB_GL_LIST
+        MALLIB_GL_LIST_WIN32
     #undef GLE
 
 #else

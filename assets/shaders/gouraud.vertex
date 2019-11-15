@@ -24,6 +24,7 @@ out vec2 texture_coordinates;
 void main()
 {
     vec4 world_position_vertex = model_matrix * vec4(position_in, 1.0); // MV
+   
     gl_Position = model_projection * view_matrix * world_position_vertex;                    // MVP
 
     vec3 world_position_light = light_position.xyz; // modelMatrix *
