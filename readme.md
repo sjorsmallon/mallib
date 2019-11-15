@@ -1,11 +1,18 @@
 
 # TODO
 
+## See how to fix font / texture rendering
+The way font renders textures does something funky with the `glPixelParameteri` that we need to undo before trying to render our own textures.
+
 ## Render Textures
-exactly what it sounds like.
+exactly what it sounds like. They render, but they are reversed atm. Devise some sort of construct / order / layout which specifies the texture resolution.
+
+## Better errors when things are not specified in the scene foratm
+We need to know when textures etc are not specified properly, so we can save some debugging time.
 
 ## Rotating the Scene
 we want to manipulate the scene using the mouse / keyboard. 
+
 
 ## VAO / VBO structure
 How are relevant `entity` meshes combined in the VBO? Do we have one? What do other people use? 
@@ -13,7 +20,7 @@ according to  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Prac
 as few VBOs as possible. I'm wondering whether it's possible to keep data on the gpu and re-render that data (instead of needing to supply
 a model multiple times in the same VBO.)
 
-## Shader reloading
+## Shader reloading && Refactor adding shaders.
 Shader reloading is almost there. Let's finish it.
 
 ## Animation

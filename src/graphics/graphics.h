@@ -70,7 +70,6 @@ namespace graphics
 	void reload_shaders(uint32_t& program);
 
 	//@temporary
-	asset::Raw_Obj_Data& cat_data();
 	scene::Scene& active_scene();
 
 	void generate_texture_settings(std::map<std::string, asset::Texture>& textures);

@@ -6,7 +6,6 @@ layout(location = 1) in vec2 texture_coordinates_in;
 layout(location = 2) in vec3 normal_in;
 
 // Specify the Uniforms of the vertex shader
-
 uniform mat4 model_matrix;
 uniform mat4 model_projection;
 uniform mat4 view_matrix;

@@ -52,10 +52,8 @@ void game::load_everything()
     {
         fmt::print("set_piece name: {}\n", set_piece.name);
         fmt::print("model name name: {}\n", set_piece.model_name);
-        graphics::cat_data() = asset::obj_data()[set_piece.model_name];
     }
-    //@Temporary
-    // graphics::cat_data() = asset::obj_data()["cat.obj"];
+    graphics::generate_texture_settings(asset::texture_data());
 }
 
 void game::main_loop()
@@ -85,7 +83,7 @@ void game::main_loop()
     graphics::render_frame(); 
     // @FIXME FIXME : drawing menu after render_frame. This is because we want to render font last.
     // eventually, the menu will have its own buffer etcetera.
-    menu::draw_menu();
+    // menu::draw_menu();
     graphics::swap_buffers();
 
     // end time calculation.

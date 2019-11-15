@@ -58,8 +58,8 @@ void graphics::init_graphics()
     glDetachShader(shader_programs.normals, normal_fragment);
 
     // gouraud
-    uint32_t gouraud_vertex   = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/gouraud.vertex");
-    uint32_t gouraud_fragment = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/gouraud.fragment");
+    uint32_t gouraud_vertex   = graphics::load_compile_attach_shader(shader_programs.gouraud, "assets/shaders/gouraud.vertex");
+    uint32_t gouraud_fragment = graphics::load_compile_attach_shader(shader_programs.gouraud, "assets/shaders/gouraud.fragment");
     glLinkProgram(shader_programs.gouraud);
     glDetachShader(shader_programs.gouraud, gouraud_vertex);
     glDetachShader(shader_programs.gouraud, gouraud_fragment);
@@ -138,8 +138,9 @@ void graphics::generate_texture_settings(std::map<std::string, asset::Texture>& 
 {
     for (auto& [texture_name, texture]: textures)
     {
-
+        //@Refactor: we only use texture0 now.
         glGenTextures(1, &texture.gl_texture_id);
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -149,14 +150,15 @@ void graphics::generate_texture_settings(std::map<std::string, asset::Texture>& 
 
         glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     GL_RGBA8,
+                     GL_RGB8,
                      texture.dimensions.x,
                      texture.dimensions.y,
                      0,
-                     GL_RGBA,
+                     GL_RGB,
                      GL_UNSIGNED_BYTE,
                      texture.data);
     }
+    fmt::print("generate_texture_settings\n");
 }
 
 
@@ -166,14 +168,7 @@ void graphics::draw_game_3d()
 {
     graphics::set_shader(graphics::Shader_Type::SHADER_GOURAUD);
     uint32_t active_shader = graphics::shaders().gouraud;
-    // graphics::set_shader(graphics::Shader_Type::SHADER_NORMALS);
-    // uint32_t active_shader = graphics::shaders().normals;
-    // uint32_t normal_shader = graphics::shaders().normals;
     auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
-
-    graphics::get_shader_info(active_shader);
-
-
 
     // all matrices are defined in row major fashion. openGL needs to know about that.
     const bool row_major = true;
@@ -231,9 +226,11 @@ void graphics::draw_game_3d()
                      object_data.vertices.data(),
                      GL_STATIC_DRAW);
 
-        int32_t texture_location = glGetUniformLocation(active_shader, "texture_uniform");
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, asset::texture_data()[set_piece.texture_name].gl_texture_id);
+        int32_t texture_location = glGetUniformLocation(active_shader, "texture_uniform");
+        fmt::print("set_piece.texture_name: {}\n", set_piece.texture_name);
+        glUniform1i(texture_location, asset::texture_data()[set_piece.texture_name].gl_texture_id);
+
 
         //@FIXME: for now, we invoke draw after every object. 
         glDrawArrays(GL_TRIANGLES,0, object_data.vertices.size());
@@ -253,7 +250,7 @@ void graphics::draw_game_3d()
         int32_t light_position_location = glGetUniformLocation(active_shader, "light_position");
         int32_t light_color_location    = glGetUniformLocation(active_shader, "light_color");
         int32_t material_location       = glGetUniformLocation(active_shader, "material");
-        Vec3 light_position = {0.0f, 0.5f, -1.2f};
+        Vec3 light_position = {0.0f, 0.0f, -0.5f};
         Vec3 light_color =    {1.0f, 1.0f, 1.0f};
         Vec4 material =  {0.4f, 0.6f, 0.8f, 64.0f};
         glUniform3fv(light_position_location, 1, &light_position.data[0]);
@@ -433,13 +430,6 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
 //     graphics::swap_buffers();
 
 // }
-
-//@Temporary.
-asset::Raw_Obj_Data& graphics::cat_data()
-{
-    static asset::Raw_Obj_Data cat_data;
-    return cat_data;
-}
 
 scene::Scene& graphics::active_scene()
 {
