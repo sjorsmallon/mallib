@@ -8,6 +8,8 @@
 #include "../graphics/gl_lite.h"
 #include "../graphics/graphics.h"
 
+#include "../on_leaving_scope/on_leaving_scope.h"
+
 #include "../vec/vec.h" // lerp
 #include "../vec2/vec2.h"
 #include <cmath> // sin, PI
@@ -156,8 +158,10 @@ void font::draw_text(std::string text,
     glBindTexture(GL_TEXTURE_2D, 0);   
 }
 
+//@Note: pixel_count is both x and y dim of the letter.
+//@Refactor: it's kind of weird how this function sets the target.pixel_count.
 
-void font::generate_font_at_size(font::Font& target, std::string font_name, const uint32_t pixel_size)
+void font::generate_font_at_size(font::Font& target, std::string font_name, const uint32_t pixel_count)
 {
     //@TODO: this is hardcoded to only generate 255 characters. how many do we need? or does that depend on the locale?
     const uint8_t num_characters = 255; 
@@ -170,8 +174,10 @@ void font::generate_font_at_size(font::Font& target, std::string font_name, cons
     if (FT_New_Face(ft, font_name.c_str(), 0, &face))
         fmt::print("generate_font_at_size: failed to create new font face.\n");
 
-    FT_Set_Pixel_Sizes(face, 0, pixel_size);
+    FT_Set_Pixel_Sizes(face, 0, pixel_count);
+    // specify 1-byte alignment. Let us undo this after.
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
+    auto defer_pixel_store = On_Leaving_Scope([]{glPixelStorei(GL_UNPACK_ALIGNMENT,4);});
 
     //@Memory: assume an empty vector, this function reserves N.
     target.characters.resize(num_characters);
@@ -189,15 +195,15 @@ void font::generate_font_at_size(font::Font& target, std::string font_name, cons
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
         glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RED,
-        face->glyph->bitmap.width,
-        face->glyph->bitmap.rows,
-        0,
-        GL_RED,
-        GL_UNSIGNED_BYTE,
-        face->glyph->bitmap.buffer
+            GL_TEXTURE_2D,
+            0,
+            GL_RED,
+            face->glyph->bitmap.width,
+            face->glyph->bitmap.rows,
+            0,
+            GL_RED,
+            GL_UNSIGNED_BYTE,
+            face->glyph->bitmap.buffer
         );
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

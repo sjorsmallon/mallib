@@ -72,7 +72,7 @@ namespace graphics
 	//@temporary
 	scene::Scene& active_scene();
 
-	void generate_texture_settings(std::map<std::string, asset::Texture>& textures);
+	void init_texture_settings(std::map<std::string, asset::Texture>& textures);
 
 	// draw modes.
 	// void draw_2d_right_handed_normalized()

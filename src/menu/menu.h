@@ -1,5 +1,6 @@
 #ifndef INCLUDED_MENU_
 #define INCLUDED_MENU_
+#include "../font/font.h"
 
 namespace menu
 {	
@@ -17,9 +18,11 @@ namespace menu
 		NONE
 	};
 
-	void draw_menu();
+	void init_menu();
 
+	void draw_menu(/*font?*/);
 	Menu_Item& active_start_menu_item();
+	font::Font& menu_font();
 
 };
 

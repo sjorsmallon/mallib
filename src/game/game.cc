@@ -17,9 +17,13 @@
 // Init -> Load -> main_loop.
 void game::init_everything()
 {
-    game::init_audio();
-    game::init_graphics();
-    game::init_font();
+    // inits
+    sound::init_sound();
+    graphics::init_graphics();
+    font::init_font();
+    menu::init_menu();
+
+
 
     //@TODO: set some modes? program_mode, play the menu music?
     auto& program_mode = game::global_program_mode();
@@ -53,7 +57,7 @@ void game::load_everything()
         fmt::print("set_piece name: {}\n", set_piece.name);
         fmt::print("model name name: {}\n", set_piece.model_name);
     }
-    graphics::generate_texture_settings(asset::texture_data());
+    graphics::init_texture_settings(asset::texture_data());
 }
 
 void game::main_loop()
@@ -83,7 +87,7 @@ void game::main_loop()
     graphics::render_frame(); 
     // @FIXME FIXME : drawing menu after render_frame. This is because we want to render font last.
     // eventually, the menu will have its own buffer etcetera.
-    // menu::draw_menu();
+    menu::draw_menu();
     graphics::swap_buffers();
 
     // end time calculation.
@@ -152,22 +156,6 @@ game::Program_Mode& game::global_program_mode()
     static Program_Mode mode;
     return mode;
 }
-
-void game::init_font()
-{
-    font::init_font();
-}
-
-void game::init_audio()
-{
-    sound::init_sound();
-}
-
-void game::init_graphics()
-{
-    graphics::init_graphics();
-}
-
 
 void game::shutdown()
 {

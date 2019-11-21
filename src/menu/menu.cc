@@ -3,11 +3,27 @@
 #include "../graphics/graphics.h"
 #include "fmt/core.h"
 
+// @Refactor: sigh. menu is dependent on font and on graphics. 
+// how do we properly restructure?
+font::Font& menu::menu_font()
+{
+    static font::Font menu_font;
+    return menu_font;
+}
+
+void menu::init_menu()
+{
+    const uint32_t font_height = 50; // in pixels
+    font::generate_font_at_size(menu::menu_font(), "assets/fonts/opensans.ttf", font_height);
+}
+
+
 menu::Menu_Item& menu::active_start_menu_item()
 {
     static menu::Menu_Item active_start_menu_item = menu::Menu_Item::NONE;
     return active_start_menu_item;
 }
+
 
 void menu::draw_menu()
 {
@@ -29,13 +45,13 @@ void menu::draw_menu()
     //     float at_y;
     // }
 
-    const uint32_t font_height = 50; // in pixels
-    const float scale = 1.0f;
-    font::Font menu_font = {};    
-    font::generate_font_at_size(menu_font, "assets/fonts/opensans.ttf", font_height);
+    //@Refactor: should we change this to a pointer or use some sort of font_manager?
+    auto& menu_font = menu::menu_font();
 
-    Vec3 default_color =  {0.19f, 0.717f,0.17f};
-    Vec3 selected_color = {0.12f, 0.76f, 0.717f};
+    const float scale = 1.0f; // we shouldn't ever scale, I think.
+
+    const Vec3 default_color =  {0.19f, 0.717f,0.17f};
+    const Vec3 selected_color = {0.12f, 0.76f, 0.717f};
     Vec3 start_game_color = default_color;
     Vec3 settings_color   = default_color;
     Vec3 exit_game_color  = default_color;
@@ -43,8 +59,6 @@ void menu::draw_menu()
     font::Text_Effect start_game_effect = font::Text_Effect::NONE;
     font::Text_Effect settings_effect   = font::Text_Effect::NONE;
     font::Text_Effect exit_game_effect  = font::Text_Effect::NONE;
-
-
 
 
     //@Refactor: make a struct for this?
@@ -73,7 +87,6 @@ void menu::draw_menu()
             break;
         }
     }        
-
 
     //
     // Menu Item: Start Game

@@ -36,7 +36,8 @@ void graphics::init_graphics()
 
     //@Refactor: default init these to 0, so we can verify whether they are 0 in reload_shaders?
     // Or do we want to construct this so this is always in a valid state?
-    graphics::Shaders& shader_programs = graphics::shaders();
+
+    graphics::Shaders& shader_programs = graphics::shaders(); // @Refactor:create_shader_programs.
     shader_programs.default = glCreateProgram();
     shader_programs.text    = glCreateProgram();
     shader_programs.normals = glCreateProgram(); 
@@ -44,22 +45,22 @@ void graphics::init_graphics()
     shader_programs.gouraud = glCreateProgram();
 
     //@Refactor: use reload shaders?
-    uint32_t text_vertex   = graphics::load_compile_attach_shader(shader_programs.text, "assets/shaders/text.vertex");
-    uint32_t text_fragment = graphics::load_compile_attach_shader(shader_programs.text, "assets/shaders/text.fragment");
+    const uint32_t text_vertex   = graphics::load_compile_attach_shader(shader_programs.text, "assets/shaders/text.vertex");
+    const uint32_t text_fragment = graphics::load_compile_attach_shader(shader_programs.text, "assets/shaders/text.fragment");
     glLinkProgram(shader_programs.text);
     glDetachShader(shader_programs.text, text_vertex);
     glDetachShader(shader_programs.text, text_fragment);
 
     // normals
-    uint32_t normal_vertex   = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/normals.vertex");
-    uint32_t normal_fragment = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/normals.fragment");
+    const uint32_t normal_vertex   = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/normals.vertex");
+    const uint32_t normal_fragment = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/normals.fragment");
     glLinkProgram(shader_programs.normals);
     glDetachShader(shader_programs.normals, normal_vertex);
     glDetachShader(shader_programs.normals, normal_fragment);
 
     // gouraud
-    uint32_t gouraud_vertex   = graphics::load_compile_attach_shader(shader_programs.gouraud, "assets/shaders/gouraud.vertex");
-    uint32_t gouraud_fragment = graphics::load_compile_attach_shader(shader_programs.gouraud, "assets/shaders/gouraud.fragment");
+    const uint32_t gouraud_vertex   = graphics::load_compile_attach_shader(shader_programs.gouraud, "assets/shaders/gouraud.vertex");
+    const uint32_t gouraud_fragment = graphics::load_compile_attach_shader(shader_programs.gouraud, "assets/shaders/gouraud.fragment");
     glLinkProgram(shader_programs.gouraud);
     glDetachShader(shader_programs.gouraud, gouraud_vertex);
     glDetachShader(shader_programs.gouraud, gouraud_fragment);
@@ -72,9 +73,9 @@ void graphics::init_graphics()
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    uint32_t pos_array = 0;
-    uint32_t uv_array = 1;
-    uint32_t normals_array = 2;
+    const uint32_t pos_array = 0;
+    const uint32_t uv_array = 1;
+    const uint32_t normals_array = 2;
     glEnableVertexAttribArray(pos_array);
     glEnableVertexAttribArray(uv_array);
     glEnableVertexAttribArray(normals_array);
@@ -134,31 +135,33 @@ void graphics::set_shader(Shader_Type shader_type)
     }
 }
 
-void graphics::generate_texture_settings(std::map<std::string, asset::Texture>& textures)
+void graphics::init_texture_settings(std::map<std::string, asset::Texture>& textures)
 {
+    glActiveTexture(GL_TEXTURE0 + 1);
     for (auto& [texture_name, texture]: textures)
     {
         //@Refactor: we only use texture0 now.
         glGenTextures(1, &texture.gl_texture_id);
-        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
+       
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGB8,
+            texture.dimensions.x,
+            texture.dimensions.y,
+            0,
+            GL_RGB,
+            GL_UNSIGNED_BYTE,
+            texture.data);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     GL_RGB8,
-                     texture.dimensions.x,
-                     texture.dimensions.y,
-                     0,
-                     GL_RGB,
-                     GL_UNSIGNED_BYTE,
-                     texture.data);
     }
-    fmt::print("generate_texture_settings\n");
+    fmt::print("init_texture_settings\n");
 }
 
 
@@ -175,9 +178,6 @@ void graphics::draw_game_3d()
 
     // View matrix
     int32_t view_matrix_location = glGetUniformLocation(active_shader, "view_matrix");
-    // Mat4 view_scale_matrix       = mat::mat4_identity();
-    // Mat4 view_rotation_matrix    = mat::mat4_identity();
-    // Mat4 view_translation_matrix = mat::mat4_identity();
     // Mat4 view_matrix = view_scale_matrix * view_rotation_matrix * view_translation_matrix;
     Mat4 view_matrix = mat::mat4_identity();
     glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
@@ -188,7 +188,7 @@ void graphics::draw_game_3d()
     // rather than on a plane that lies one unit away from the camera position
     // @Note: Then what should far_z and near_z be?
     // @Refactor: FOV should be customizable. we want the user to be able to say: "use this projection matrix."
-    int32_t projection_matrix_location = glGetUniformLocation(active_shader, "model_projection");
+    const int32_t projection_matrix_location = glGetUniformLocation(active_shader, "model_projection");
     const float fov_in_degrees     = 90.0f;
     const float perspective_near_z = 0.1f;
     const float perspective_far_z  = 100.0f;
@@ -215,7 +215,7 @@ void graphics::draw_game_3d()
         glUniformMatrix4fv(model_matrix_location, 1, row_major, &model_matrix[0][0]);
 
         // Normal transform Matrix
-        int32_t normal_transform_matrix_location = glGetUniformLocation(active_shader, "normal_transform");
+        const int32_t normal_transform_matrix_location = glGetUniformLocation(active_shader, "normal_transform");
         Mat3    normal_transform_matrix          = mat::normal_transform(model_matrix);
         glUniformMatrix3fv(normal_transform_matrix_location, 1, row_major, &normal_transform_matrix[0][0]);
 
@@ -226,9 +226,10 @@ void graphics::draw_game_3d()
                      object_data.vertices.data(),
                      GL_STATIC_DRAW);
 
-        glActiveTexture(GL_TEXTURE0);
-        int32_t texture_location = glGetUniformLocation(active_shader, "texture_uniform");
-        fmt::print("set_piece.texture_name: {}\n", set_piece.texture_name);
+        glActiveTexture(GL_TEXTURE0 + 1);
+        const int32_t texture_location = glGetUniformLocation(active_shader, "texture_uniform");
+        // fmt::print("set_piece.gl_texture_id: {}\n", asset::texture_data()[set_piece.texture_name].gl_texture_id);
+
         glUniform1i(texture_location, asset::texture_data()[set_piece.texture_name].gl_texture_id);
 
 
