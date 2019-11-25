@@ -90,7 +90,7 @@ void game::main_loop()
     menu::draw_menu();
     graphics::swap_buffers();
 
-    // end time calculation.
+    // rudimentary frame time calculation. Eventually, we want this to be in double form.
     auto end = std::chrono::system_clock::now();
     game::previous_frame_time() = end - start;
 }
@@ -100,7 +100,7 @@ void game::handle_menu_input()
     auto &queue = input::input_queue();
     int active_menu_item = static_cast<int>(menu::active_start_menu_item());
 
-    //@Refactor: this is horrible.
+    //@Refactor: look up how to properly deal with key events.
     for (auto key : queue)
     {
         if (key == input::Key_Input::KEY_UP)

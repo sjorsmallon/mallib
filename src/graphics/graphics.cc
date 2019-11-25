@@ -10,7 +10,6 @@
 #include <stdlib.h>
 
 #define BUFFER_OFFSET(i) ((void*)(i)) //hacky macro for offset.
-
 #include "../on_leaving_scope/on_leaving_scope.h"
 #include "../file/file.h"
 #include "../mat/mat.h"
@@ -18,24 +17,13 @@
 #include "../mat3/mat3.h" // for normal matrix.
 #include "../scene/scene.h"
 
+//@TODO: set up texture bookkeeping. Who gets which GL_TEXTURE0 + N?
+
 static uint32_t VBO = 0;
 static uint32_t VAO = 0;
 
-void graphics::init_graphics()
-{ 
-    // init gl_lite only after the gl_context has been created.
-    gl_lite_init();
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-
-    //@Refactor: These are used for font. should we move it there?
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    //@Refactor: default init these to 0, so we can verify whether they are 0 in reload_shaders?
-    // Or do we want to construct this so this is always in a valid state?
+void graphics::setup_shaders()
+{
 
     graphics::Shaders& shader_programs = graphics::shaders(); // @Refactor:create_shader_programs.
     shader_programs.default = glCreateProgram();
@@ -62,9 +50,27 @@ void graphics::init_graphics()
     const uint32_t gouraud_vertex   = graphics::load_compile_attach_shader(shader_programs.gouraud, "assets/shaders/gouraud.vertex");
     const uint32_t gouraud_fragment = graphics::load_compile_attach_shader(shader_programs.gouraud, "assets/shaders/gouraud.fragment");
     glLinkProgram(shader_programs.gouraud);
+    //@Refactor: automate detaching etc.
     glDetachShader(shader_programs.gouraud, gouraud_vertex);
     glDetachShader(shader_programs.gouraud, gouraud_fragment);
 
+}
+
+void graphics::init_graphics()
+{ 
+    //@NOte::init gl_lite only after the gl_context has been created
+    // (which is done in the win32 section of the program, since that is OS related.)
+
+    gl_lite_init();
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    //@Refactor: make clear colour a developer option?
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+
+    //@Refactor: These OpenGL settings are used for font. should we move it there?
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     //@refactor: we should abstract this. But I'm not quite sure how yet.
     const int buffer_count = 1;
@@ -73,6 +79,10 @@ void graphics::init_graphics()
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
+
+    graphics::setup_shaders();
+    //@Volatile: if this changes, the shaders need to change too.
+    // this mimicks the way these values are presented in the OBJ file.
     const uint32_t pos_array = 0;
     const uint32_t uv_array = 1;
     const uint32_t normals_array = 2;
@@ -82,9 +92,7 @@ void graphics::init_graphics()
     glVertexAttribPointer(pos_array,     3, GL_FLOAT, GL_FALSE, sizeof(asset::Vertex), 0); // x, y, z
     glVertexAttribPointer(uv_array,      2, GL_FLOAT, GL_FALSE, sizeof(asset::Vertex), BUFFER_OFFSET(3 * sizeof(float))); // skip  3: u, v,
     glVertexAttribPointer(normals_array, 3, GL_FLOAT, GL_FALSE, sizeof(asset::Vertex), BUFFER_OFFSET(5 * sizeof(float))); // skip 5: nx, ny, nz.
-
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
     glBindVertexArray(0);
 
     graphics::set_shader(graphics::Shader_Type::SHADER_DEFAULT);
@@ -109,6 +117,7 @@ void graphics::reload_shaders(uint32_t& program)
     // deleteShader
     // load_compile_attach_shader?
 }
+
 
 void graphics::set_shader(Shader_Type shader_type)
 {
@@ -178,7 +187,6 @@ void graphics::draw_game_3d()
 
     // View matrix
     int32_t view_matrix_location = glGetUniformLocation(active_shader, "view_matrix");
-    // Mat4 view_matrix = view_scale_matrix * view_rotation_matrix * view_translation_matrix;
     Mat4 view_matrix = mat::mat4_identity();
     glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
 
@@ -187,8 +195,9 @@ void graphics::draw_game_3d()
     // OpenGL assumes that the points in the scene are projected on the near clipping planes,
     // rather than on a plane that lies one unit away from the camera position
     // @Note: Then what should far_z and near_z be?
-    // @Refactor: FOV should be customizable. we want the user to be able to say: "use this projection matrix."
+
     const int32_t projection_matrix_location = glGetUniformLocation(active_shader, "model_projection");
+    // @Refactor: FOV should be customizable, or do we want the user to be able to say: "use this projection matrix."
     const float fov_in_degrees     = 90.0f;
     const float perspective_near_z = 0.1f;
     const float perspective_far_z  = 100.0f;
@@ -205,7 +214,6 @@ void graphics::draw_game_3d()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     const int32_t model_matrix_location = glGetUniformLocation(active_shader, "model_matrix");
-
     // for each object in the active scene:
     for (auto &set_piece: graphics::active_scene().set_pieces)
     {
@@ -226,11 +234,15 @@ void graphics::draw_game_3d()
                      object_data.vertices.data(),
                      GL_STATIC_DRAW);
 
-        glActiveTexture(GL_TEXTURE0 + 1);
-        const int32_t texture_location = glGetUniformLocation(active_shader, "texture_uniform");
-        // fmt::print("set_piece.gl_texture_id: {}\n", asset::texture_data()[set_piece.texture_name].gl_texture_id);
 
-        glUniform1i(texture_location, asset::texture_data()[set_piece.texture_name].gl_texture_id);
+        //@NOTE!!! this uniform does not take the texture ID, but takes the N from GL_TEXTURE0 +N!!!
+        // so the question is: which gl_texture owns which textures?
+        // An analogy we can use is that texture_2D is a picture frame to which we bind the "actual" picture using the texture_id.
+        // gl_texture0 is the wall on which the picture frames hang. Sounds good to me.
+        glActiveTexture(GL_TEXTURE0 + 1);
+        glBindTexture(GL_TEXTURE_2D, asset::texture_data()[set_piece.texture_name].gl_texture_id);
+        const int32_t texture_location = glGetUniformLocation(active_shader, "texture_uniform");
+        glUniform1i(texture_location, 1);
 
 
         //@FIXME: for now, we invoke draw after every object. 

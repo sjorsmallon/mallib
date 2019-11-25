@@ -384,7 +384,11 @@ void asset::load_mtl_from_file(std::map<std::string, asset::Material>& materials
 // the rest of the program from suffering because of it?
 void asset::load_texture_from_file(Texture& new_texture, const std::string& filename)
 {
+
+    fmt::print("[asset] Warning: flip_Vertically is active.\n");
+    stbi_set_flip_vertically_on_load(true);
     new_texture.data = stbi_load(filename.c_str(), &new_texture.dimensions.x, &new_texture.dimensions.y, &new_texture.channels, STBI_rgb);
+
     if (new_texture.data == NULL)
     {
         fmt::print("[asset] failed loading texture. stbi_error: {}\n", stbi_failure_reason());

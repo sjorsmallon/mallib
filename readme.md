@@ -1,13 +1,7 @@
 
 # TODO
 
-## See how to fix font / texture rendering
-The way font renders textures does something funky with the `glPixelParameteri` that we need to undo before trying to render our own textures.
-
-## Render Textures
-exactly what it sounds like. They render, but they are reversed atm. Devise some sort of construct / order / layout which specifies the texture resolution.
-
-## Better errors when things are not specified in the scene foratm
+## Better errors when things are not specified in the scene format
 We need to know when textures etc are not specified properly, so we can save some debugging time.
 
 ## Rotating the Scene
@@ -140,6 +134,12 @@ I need to document how to build soloud, as it uses this weird build system. It's
 
 
 # HAVE DONE
+
+## See how to fix font / texture rendering
+The way font renders textures does something funky with the `glPixelParameteri` that we need to undo before trying to render our own textures.
+
+## Render Textures
+exactly what it sounds like. They render, but they are reversed atm. Devise some sort of construct / order / layout which specifies the texture resolution.
 
 ## Scaffolding for Asset loading
 We need to load the assets. i.e. the cat model. The structure I have in my mind for storing the model is 

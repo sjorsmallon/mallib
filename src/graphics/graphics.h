@@ -50,6 +50,7 @@ namespace graphics
 	};
 
 	void init_graphics(); //@Note: does that also mean to load all the shaders etc?
+	void setup_shaders();
 	void render_frame();
 	void draw_game_3d();
 	void clear_buffers();
