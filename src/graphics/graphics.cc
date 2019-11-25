@@ -173,11 +173,13 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
     fmt::print("init_texture_settings\n");
 }
 
-
-
 // Everything happens in here. I need to think about what to separate to which extent.
+// The problem we face here is that a lot of global / "internal" data structures are used here.
+// it's unclear now what happens inside this function. I am not sure how to restructure.
+
 void graphics::draw_game_3d()
 {
+
     graphics::set_shader(graphics::Shader_Type::SHADER_GOURAUD);
     uint32_t active_shader = graphics::shaders().gouraud;
     auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
@@ -219,7 +221,10 @@ void graphics::draw_game_3d()
     {
 
         // Model Matrix
-        Mat4 model_matrix = mat::mat4_from_xform_state(set_piece.xform_state);
+        //@Refactor: should all xform_state quaternions be unit quaternions?
+        set_piece.xform_state.q_orientation = {0.0f, 1.0f, 0.0f, 0.0f};
+        // set_piece.xform_state.q_orientation = rotate_by_quat(set_piece.xform_state.q_orientation, {0.0f, 0.3826834f, 0.0f, 0.9238795f});
+        Mat4 model_matrix = mat::model_from_xform_state(set_piece.xform_state);
         glUniformMatrix4fv(model_matrix_location, 1, row_major, &model_matrix[0][0]);
 
         // Normal transform Matrix

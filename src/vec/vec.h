@@ -1,11 +1,24 @@
 #ifndef INCLUDED_MVEC_
 #define INCLUDED_MVEC_
+#include "../vec4/vec4.h"
 #include "../vec3/vec3.h"
 #include "../vec2/vec2.h"
 #include <fmt/format.h>
 #include <fmt/core.h>
 //@Performance: is it cheaper to pass by value or by reference?
 namespace fmt {
+   template <>
+    struct formatter<Vec4> {
+      template <typename ParseContext>
+      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+      template <typename FormatContext>
+      auto format(const Vec4 &lhs, FormatContext &ctx) {
+        return format_to(ctx.out(), "{:.3f} {:.3f} {:.3f} {:.3f}\n",
+            lhs[0], lhs[1], lhs[2], lhs[3]);
+      }
+    };
+
     template <>
     struct formatter<Vec3> {
       template <typename ParseContext>
@@ -13,7 +26,7 @@ namespace fmt {
 
       template <typename FormatContext>
       auto format(const Vec3 &lhs, FormatContext &ctx) {
-        return format_to(ctx.out(), "\n{:.3f} {:.3f} {:.3f}",
+        return format_to(ctx.out(), "{:.3f} {:.3f} {:.3f}\n",
             lhs[0], lhs[1], lhs[2]);
       }
     };
@@ -25,7 +38,7 @@ namespace fmt {
 
       template <typename FormatContext>
       auto format(const Vec2 &lhs, FormatContext &ctx) {
-        return format_to(ctx.out(), "\n{:.3f} {:.3f}",
+        return format_to(ctx.out(), "{:.3f} {:.3f}\n",
             lhs[0], lhs[1]);
       }
     };
@@ -43,6 +56,7 @@ namespace vec
 	Vec3 cross(const Vec3& lhs, const Vec3& rhs);
     Vec3 lerp(const Vec3& lhs, const Vec3& rhs, const float ratio);
     void normalize(Vec3& lhs);
+    void normalize(Vec4& lhs);
 
  	//vec4
 };
@@ -80,7 +94,16 @@ inline void vec::normalize(Vec3& lhs)
     lhs.z *= one_over_sum;
 }
 
-
+inline void vec::normalize(Vec4& lhs)
+{
+  //@FIXME: what if lhs is zero?
+    // assert(lhs.x + lhs.y +lhs.z > 0)
+  float one_over_sum = 1.0f / (lhs.x + lhs.y + lhs.z + lhs.w);
+  lhs.x *= one_over_sum;
+  lhs.y *= one_over_sum;
+  lhs.z *= one_over_sum;
+  lhs.w *= one_over_sum;
+}
 
 
 #endif

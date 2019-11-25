@@ -151,6 +151,7 @@ void asset::load_scene_from_file(scene::Scene& scene, const std::string& filenam
             scene.set_pieces.emplace_back();
             set_piece = &scene.set_pieces.back();
 
+
             line = line.substr(line.find_last_of(" ") + 1);
             fmt::print("[asset] set piece name: {}\n", line);
             set_piece->name = line;
@@ -194,6 +195,7 @@ void asset::load_scene_from_file(scene::Scene& scene, const std::string& filenam
         }
     }
     fmt::print("[asset] Scene: succesfully loaded {}\n", filename);
+
 }
 
 //@Refactor:    

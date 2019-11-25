@@ -19,6 +19,15 @@ union Vec4
         float a;
     };
     float data[4];
+
+    float operator[](size_t idx)
+    {
+        return data[idx];
+    }
+    float const operator[](size_t idx) const
+    {
+        return data[idx];
+    }
 };
 
 //@Refactor: restructure the vec3 /vec4 inconsistencies. now vec3 lives in the vec namespace.

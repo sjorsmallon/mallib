@@ -1,12 +1,26 @@
 
 # TODO
 
+## Rotating the Scene Objects Correctly
+currently, the ordering w.r.t translation/ rotation is borked because of the row major decision.
+Maybe we should keep it fire & forget for now.. or just abstract it as a whole.
+
+## Rotating the Scene Objects
+we want to manipulate the scene using the mouse / keyboard. 
+
+## Unify normalize & transpose syntax.
+
+## Fix how we set Active Shader
+we want some `active_shader` pointer or reference in graphics, since the way we do it now is convoluted.
+
 ## Better errors when things are not specified in the scene format
 We need to know when textures etc are not specified properly, so we can save some debugging time.
 
-## Rotating the Scene
-we want to manipulate the scene using the mouse / keyboard. 
+## include IMGUI
+We want to use IMGUI as some sort of debugging UI menu. IMGUI extension: allow IMGUI to run as detached window.
 
+##  Texture descriptions
+Devise some sort of construct / order / layout which specifies the texture resolution.
 
 ## VAO / VBO structure
 How are relevant `entity` meshes combined in the VBO? Do we have one? What do other people use? 
@@ -24,7 +38,7 @@ I think I know how to do animation, but I am not sure. We'll try with the cat.
 Create a simple particle system.
 
 ## Expand the Scene description
-Look at what sounds are played when.
+Look at what sounds are played when? which animations to load? starting pose? scene graph?
 
 ## Unify graphics / Font / Asset
 All of these use some form of the `Vertex` struct. Where should it be defined? The problem is that they all need to agree on the common form in order for them to be able to communicate, but that also introduces some interdependence.
@@ -51,7 +65,6 @@ classify pool into groups:
 ## platform Task Queue
 read about task queueing, work stealing and multithreading.
 
-
 # Concepts
 look at the tprint concept, as well as the on_leaving_scope thing.
 
@@ -65,7 +78,7 @@ files, as their concept of ownership and memory management are very useful: eith
 request the user to do so, and provide a different set of functions for this.
 
 # using the STL
-fFr now, I'm using the STL. For now, it saves me some pain dealing with heap allocations / memory management. I do not have a 
+It saves me some pain dealing with heap allocations / memory management. I do not have a 
 solid concept on handling memory, or at least, I just don't know how to do it properly. So instead of doing a very bad job,
 I'm not doing a job at all. to be fair, I mostly use the containers of the STL, like `vector`, `map` and `string`. `string` is 
 especially difficult, since I don't know what I want to do. most C APIs expect some sort of NTBS, but I don't like that. 
@@ -139,7 +152,7 @@ I need to document how to build soloud, as it uses this weird build system. It's
 The way font renders textures does something funky with the `glPixelParameteri` that we need to undo before trying to render our own textures.
 
 ## Render Textures
-exactly what it sounds like. They render, but they are reversed atm. Devise some sort of construct / order / layout which specifies the texture resolution.
+exactly what it sounds like. They render, but they are reversed atm.
 
 ## Scaffolding for Asset loading
 We need to load the assets. i.e. the cat model. The structure I have in my mind for storing the model is 

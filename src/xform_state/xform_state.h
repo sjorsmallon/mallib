@@ -4,6 +4,7 @@
 #include "../vec/vec.h" // dot, cross 
 #include "../vec3/vec3.h"
 #include "../vec4/vec4.h"
+#include <fmt/core.h>
 #include "../mat4/mat4.h"
 #include <cmath> // sin,cos 
 
@@ -80,9 +81,9 @@ inline Vec3 rotate_by_quat(const Vec3& lhs, const Vec4& quat_p)
 
 	// r = q P*
 	Vec3 result = {};
-	result.x = quat_q.w * -quat_p.x + quat_p.w * quat_q.x  -  quat_q.y * quat_p.z + quat_q.z * quat_p.y;
-	result.y = quat_q.w * -quat_p.y + quat_p.w * quat_q.y  -  quat_q.z * quat_p.x + quat_q.x * quat_p.z;
-	result.z = quat_q.w * -quat_p.z + quat_p.w * quat_q.z  -  quat_q.x * quat_p.y + quat_q.y * quat_p.x;
+	result.x = quat_q.w * -quat_p.x + quat_p.w * quat_q.x - quat_q.y * quat_p.z + quat_q.z * quat_p.y;
+	result.y = quat_q.w * -quat_p.y + quat_p.w * quat_q.y - quat_q.z * quat_p.x + quat_q.x * quat_p.z;
+	result.z = quat_q.w * -quat_p.z + quat_p.w * quat_q.z - quat_q.x * quat_p.y + quat_q.y * quat_p.x;
 
 	return result;
 }
@@ -103,6 +104,7 @@ inline Vec4 rotate_by_quat(const Vec4& quat_lhs, const Vec4& quat_rhs)
 
 	Vec4 result = q_product(quat_lhs, quat_rhs);
 	result = q_product(result, conjugate(quat_lhs));
+	
 	return result; 
 }
 

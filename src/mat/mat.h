@@ -71,13 +71,15 @@ namespace mat
 
 
     // mat4
-    Mat4 mat4_from_xform_state(const Xform_State& state);
+    Mat4 model_from_xform_state(const Xform_State& state);
     Mat4 mat4_from_quat(const Vec4& quaternion);
     Mat4 mat4_from_mat3(const Mat4& lhs);
     Mat4 mat4_from_row_vec3(const Vec3& v0, const Vec3& v1, const Vec3& v2);
 
     Mat4 mat4_identity();
-    void to_identity(Mat4 &matrix);
+    void to_transpose(Mat4& lhs);
+    Mat4 transpose(const Mat4& lhs);
+    void to_identity(Mat4 &lhs);
 
 
     Mat4 translate(const Mat4& matrix, const Vec3& vector);
@@ -113,6 +115,16 @@ namespace mat
 
 };
 
+// @Refactor: either write templated swap, use an intrinsic or include it from utility.
+static void swap(float & lhs, float& rhs)
+{
+    float t = lhs;
+    lhs = rhs;
+    rhs = t;
+}
+
+
+
 inline Mat4 mat::mat4_from_row_vec3(const Vec3& v0, const Vec3& v1, const Vec3& v2)
 {
     return {v0.x, v0.y, v0.z, 0,
@@ -128,24 +140,39 @@ inline Mat4 mat::mat4_from_quat(const Vec4& quaternion)
     Vec3 v2 = rotate_by_quat(Vec3{0,0,1}, quaternion);
 
     Mat4 result =  mat::mat4_from_row_vec3(v0, v1, v2); // in mat4.
-
     return result;
 }
 
-inline Mat4 mat::mat4_from_xform_state(const Xform_State& state)
+inline Mat4 mat::model_from_xform_state(const Xform_State& state)
 {
     Mat4 model_matrix       = mat::mat4_identity();
     Mat4 rotation_matrix    = mat4_from_quat(state.q_orientation); // in mat4.
+    //@Refactor: rotation matrix is generated as transpose. hm..
+    to_transpose(rotation_matrix);
     Mat4 translation_matrix = mat::translation(state.position);
+    // translation_matrix = mat::mat4_identity();
 
     model_matrix[0][0] *= state.scale;
     model_matrix[1][1] *= state.scale;
     model_matrix[2][2] *= state.scale;
 
-    model_matrix *= rotation_matrix;
     model_matrix *= translation_matrix;
+    model_matrix *= rotation_matrix;
+
+
+
       
     return model_matrix;
+}
+
+inline void mat::to_transpose(Mat4& lhs)
+{
+   swap(lhs[0][1], lhs[1][0]);
+   swap(lhs[0][2], lhs[2][0]);
+   swap(lhs[0][3], lhs[3][0]);
+   swap(lhs[1][2], lhs[2][1]);
+   swap(lhs[1][3], lhs[3][1]);
+   swap(lhs[2][3], lhs[3][2]);
 }
 
 inline Mat4 mat::translation(const Vec3& position)
@@ -303,13 +330,6 @@ inline float mat::determinant(Mat3& lhs)
              - lhs[0][0] * lhs[1][2] * lhs[2][1] }; 
 }
 
-// @Refactor: either write templated swap or include it from utility.
-static void swap(float & lhs, float& rhs)
-{
-    float t = lhs;
-    lhs = rhs;
-    rhs = t;
-}
 
 inline void mat::transpose(Mat3& lhs)
 {

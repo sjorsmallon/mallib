@@ -60,8 +60,9 @@ namespace graphics
 	Shaders& shaders();
 	Window_Settings& window_settings();
 	
-	void set_shader(Shader_Type shader);
-	//@Refactor what does this return?
+
+	//@Refactor what does this return? shader_id, program, id?
+	// using program_id, shader_id = uint32_t;
 	uint32_t load_compile_attach_shader(uint32_t program, std::string file_name);
 	uint32_t shader_type_from_extension(const std::string& filename);
 
@@ -69,6 +70,10 @@ namespace graphics
 	void gl_text_mode();
 	void draw_text();
 	void reload_shaders(uint32_t& program);
+
+	// active_shader?
+	void set_shader(Shader_Type shader);
+	// uint32_t& active_shader();
 
 	//@temporary
 	scene::Scene& active_scene();
