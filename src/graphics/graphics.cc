@@ -21,6 +21,7 @@
 #include "../game/game.h"
 
 //@TODO: set up texture bookkeeping. Who gets which GL_TEXTURE0 + N?
+//@TODO: set up shader initialization. Do we want a shared shader? do we want to load shaders per folder?
 
 static uint32_t VBO = 0;
 static uint32_t VAO = 0;
@@ -33,7 +34,6 @@ void graphics::setup_shaders()
     shader_programs.bomb    = glCreateProgram();
 
     shader_programs.reflection_lines = glCreateProgram();
-
 
     shader_programs.text    = glCreateProgram();
     const uint32_t text_vertex   = graphics::load_compile_attach_shader(shader_programs.text, "assets/shaders/text.vertex");
@@ -65,10 +65,6 @@ void graphics::setup_shaders()
     glLinkProgram(shader_programs.isophotes);
     glDetachShader(shader_programs.isophotes, isophotes_vertex);
     glDetachShader(shader_programs.isophotes, isophotes_fragment);
-
-
-
-
 
 
 }
@@ -199,6 +195,19 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
 // do we want to update the buffer content? does anyone else do that?
 
 
+// draw_game-3d:
+// - set active shader
+// - (set row major true)
+// - check whether or not view / projection matrix have changed before updating
+// - bind the (?) vertex array
+// - for each object in the active scene: 
+//       - change buffer data
+//       - maybe render texture
+//       - draw object 
+// - for each light in the scene:
+//       -- do something.
+
+
 // Everything happens in here. I need to think about what to separate to which extent.
 // The problem we face here is that a lot of global / "internal" data structures are used here.
 // it's unclear now what happens inside this function. I am not sure how to restructure.
@@ -212,15 +221,16 @@ void graphics::draw_game_3d()
     // uint32_t active_shader = graphics::shaders().gouraud;
     auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
 
-
     // all matrices are defined in row major fashion. openGL needs to know about that.
     const bool row_major = true;
+
+    // The model and view matrix are the same for all objects. Do we set them somewhere else
+    // and only update when needed?
+
     // View matrix
     int32_t view_matrix_location = glGetUniformLocation(active_shader, "view_matrix");
     Mat4 view_matrix = mat::mat4_identity();
     glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
-
-
     // Projection Matrix:
     // perspective near_z and far_z define the clipping, not the actual bounds. I think.
     // OpenGL assumes that the points in the scene are projected on the near clipping planes,
@@ -293,9 +303,6 @@ void graphics::draw_game_3d()
             const int32_t texture_location = glGetUniformLocation(active_shader, "texture_uniform");
             glUniform1i(texture_location, 1);
         }
-
-
-
 
         //@FIXME: for now, we invoke draw after every object. 
         glDrawArrays(GL_TRIANGLES,0, object_data.vertices.size());

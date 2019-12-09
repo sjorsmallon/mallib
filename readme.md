@@ -5,16 +5,32 @@
 currently, the ordering w.r.t translation/ rotation is borked because of the row major decision.
 Maybe we should keep it fire & forget for now.. or just abstract it as a whole.
 
-## Rotating the Scene Objects
+## VAO / VBO structure
+How are relevant `entity` meshes combined in the VBO? Do we have one? What do other people use? 
+according to  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Practices , The best way to do it is to create
+as few VBOs as possible. I'm wondering whether it's possible to keep data on the gpu and re-render that data (instead of needing to supply
+a model multiple times in the same VBO.) (this is possible.)
+
+### Ideas of how to handle the VAO/VBO situation
+use a VAO for generic drawings (for now, just update the VBO everytime. We could look at concatenating it. or switching to an IBO.)
+secondly, use a VAO/VBO combo for entity placement (i.e. light locations.)
+
+## Contracts for namespaces
+What do namespaces need in order to function? i.e. some sort of mandatory "constructor". I am leaning to a `Settings` struct.
+
+
+## Rotating the Scene Objects with Input
 we want to manipulate the scene using the mouse / keyboard. 
+
+## Rename shader uniforms (projection_model -> projection_matrix)
+
+
 
 ## Unify normalize & transpose syntax.
 
 ## Fix how we set Active Shader
 we want some `active_shader` pointer or reference in graphics, since the way we do it now is convoluted.
 
-## Better errors when things are not specified in the scene format
-We need to know when textures etc are not specified properly, so we can save some debugging time.
 
 ## include IMGUI
 We want to use IMGUI as some sort of debugging UI menu. IMGUI extension: allow IMGUI to run as detached window.
@@ -22,11 +38,10 @@ We want to use IMGUI as some sort of debugging UI menu. IMGUI extension: allow I
 ##  Texture descriptions
 Devise some sort of construct / order / layout which specifies the texture resolution.
 
-## VAO / VBO structure
-How are relevant `entity` meshes combined in the VBO? Do we have one? What do other people use? 
-according to  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Practices , The best way to do it is to create
-as few VBOs as possible. I'm wondering whether it's possible to keep data on the gpu and re-render that data (instead of needing to supply
-a model multiple times in the same VBO.)
+
+## Better errors when things are not specified in the scene format
+We need to know when textures etc are not specified properly, so we can save some debugging time.
+
 
 ## Shader reloading && Refactor adding shaders.
 Shader reloading is almost there. Let's finish it.
