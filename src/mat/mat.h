@@ -10,56 +10,6 @@
 #include "../quaternion/quaternion.h"
 #include "../xform_state/xform_state.h"
 
-// print definitions for Mat3 and Mat4.
-//@Refactor: we need to move these to somewhere.
-namespace fmt {
-    template <>
-    struct formatter<Mat3> {
-      template <typename ParseContext>
-      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
-
-      template <typename FormatContext>
-      auto format(const Mat3 &lhs, FormatContext &ctx) {
-        return format_to(ctx.out(), "\n|{:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f}|\n",
-            lhs[0][0], lhs[0][1], lhs[0][2],
-            lhs[1][0], lhs[1][1], lhs[1][2],
-            lhs[2][0], lhs[2][1], lhs[2][2]);
-      }
-    };
-
-    template <>
-    struct formatter<Mat4> {
-      template <typename ParseContext>
-      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
-
-      template <typename FormatContext>
-      auto format(const Mat4 &lhs, FormatContext &ctx) {
-        return format_to(ctx.out(),
-            "\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n",lhs[0][0], lhs[0][1], lhs[0][2], lhs[0][3],
-            lhs[1][0], lhs[1][1], lhs[1][2], lhs[1][3],
-            lhs[2][0], lhs[2][1], lhs[2][2], lhs[2][3],
-            lhs[3][0], lhs[3][1], lhs[3][2], lhs[3][3]);
-      }
-    };
-
-    template <>
-    struct formatter<Xform_State> {
-      template <typename ParseContext>
-      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
-
-      template <typename FormatContext>
-      auto format(const Xform_State &state, FormatContext &ctx) {
-        return format_to(ctx.out(),
-            "\nx: {:.3f}, y: {:.3f}, z: {:.3f}\nq_x: {:.3f}, q_y: {:.3f}, q_z: {:.3f}, q_w: {:.3f}\nscale:{:.3f}\n",
-            state.position.x, state.position.y, state.position.z,
-            state.q_orientation.x, state.q_orientation.y, state.q_orientation.z, state.q_orientation.w,
-            state.scale
-            );
-      }
-    };
-
-};
-
 //idea: instead of creating a translation / scale / rotation matrix everytime,
 // keep a static one in the namespace?
 namespace mat
@@ -124,7 +74,6 @@ static void swap(float & lhs, float& rhs)
 }
 
 
-
 inline Mat4 mat::mat4_from_row_vec3(const Vec3& v0, const Vec3& v1, const Vec3& v2)
 {
     return {v0.x, v0.y, v0.z, 0,
@@ -158,8 +107,6 @@ inline Mat4 mat::model_from_xform_state(const Xform_State& state)
 
     model_matrix *= translation_matrix;
     model_matrix *= rotation_matrix;
-
-
 
       
     return model_matrix;
@@ -350,6 +297,58 @@ inline Mat3 mat::normal_transform(const Mat4& model_view_matrix)
 
     return normal_matrix;
 }
+
+
+// print definitions for Mat3 and Mat4.
+//@Refactor: we need to move these to somewhere.
+namespace fmt {
+    template <>
+    struct formatter<Mat3> {
+      template <typename ParseContext>
+      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+      template <typename FormatContext>
+      auto format(const Mat3 &lhs, FormatContext &ctx) {
+        return format_to(ctx.out(), "\n|{:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f}|\n",
+            lhs[0][0], lhs[0][1], lhs[0][2],
+            lhs[1][0], lhs[1][1], lhs[1][2],
+            lhs[2][0], lhs[2][1], lhs[2][2]);
+      }
+    };
+
+    template <>
+    struct formatter<Mat4> {
+      template <typename ParseContext>
+      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+      template <typename FormatContext>
+      auto format(const Mat4 &lhs, FormatContext &ctx) {
+        return format_to(ctx.out(),
+            "\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n|{:.3f} {:.3f} {:.3f} {:.3f}|\n",lhs[0][0], lhs[0][1], lhs[0][2], lhs[0][3],
+            lhs[1][0], lhs[1][1], lhs[1][2], lhs[1][3],
+            lhs[2][0], lhs[2][1], lhs[2][2], lhs[2][3],
+            lhs[3][0], lhs[3][1], lhs[3][2], lhs[3][3]);
+      }
+    };
+
+    template <>
+    struct formatter<Xform_State> {
+      template <typename ParseContext>
+      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+      template <typename FormatContext>
+      auto format(const Xform_State &state, FormatContext &ctx) {
+        return format_to(ctx.out(),
+            "\nx: {:.3f}, y: {:.3f}, z: {:.3f}\nq_x: {:.3f}, q_y: {:.3f}, q_z: {:.3f}, q_w: {:.3f}\nscale:{:.3f}\n",
+            state.position.x, state.position.y, state.position.z,
+            state.q_orientation.x, state.q_orientation.y, state.q_orientation.z, state.q_orientation.w,
+            state.scale
+            );
+      }
+    };
+
+};
+
 
 
 #endif

@@ -18,6 +18,19 @@ using wav_stream = SoLoud::WavStream;
 
 namespace sound
 {
+
+	// hmm. the terms of use here are ill-defined.
+	struct Sound_Settings
+	{
+		std::string sound_folder;
+		int reserved_voices;
+		int max_voices;
+	};
+
+	
+	void init_sound();
+
+
 	struct Music
 	{
 		int handle;
@@ -48,8 +61,8 @@ namespace sound
 	// Ring_Buffer<wav_stream *>& active_sounds(); 
 	std::vector<Sound>& active_sounds();
 
-	void play_sound(std::string sound);
 
+	void play_sound(std::string sound);
 	void load_music(std::string music);
 	void play_music(std::string music);
 	void stop_music();
@@ -59,8 +72,9 @@ namespace sound
 	void toggle_pause_music(Active_Music active_music, bool pause); // only music. 
 	void toggle_pause_all(bool pause); // music & sound fx.
 
-	void init_sound();
+
 	void perform_shutdown();
+	// what does this mean?
 	void update_audio(); 
 }
 

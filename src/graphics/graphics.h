@@ -13,7 +13,7 @@
 #include "../asset/asset.h"
 #include "../scene/scene.h"
 #include "../vec3/vec3.h" // Light
-//@todo: service locator pattern for the shaders?
+
 
 namespace graphics
 {
@@ -30,6 +30,8 @@ namespace graphics
 		SHADER_DEFAULT,
 		SHADER_NORMALS,
 		SHADER_GOURAUD,
+		SHADER_ISOPHOTES,
+		SHADER_REFLECTION_LINES,
 		SHADER_BOMB
 	};
 
@@ -39,6 +41,8 @@ namespace graphics
 		uint32_t text;
 		uint32_t normals;
 		uint32_t gouraud;
+		uint32_t isophotes;
+		uint32_t reflection_lines;
 		uint32_t default;
 	};
 
@@ -50,12 +54,15 @@ namespace graphics
 	};
 
 	void init_graphics(); //@Note: does that also mean to load all the shaders etc?
+	void init_opengl();
 	void setup_shaders();
+	void get_shader_info(uint32_t shader_program);
+
 	void render_frame();
 	void draw_game_3d();
 	void clear_buffers();
 	void swap_buffers();
-	void get_shader_info(uint32_t program);
+	
 
 	Shaders& shaders();
 	Window_Settings& window_settings();
@@ -79,6 +86,11 @@ namespace graphics
 	scene::Scene& active_scene();
 
 	void init_texture_settings(std::map<std::string, asset::Texture>& textures);
+
+
+
+
+
 
 	// draw modes.
 	// void draw_2d_right_handed_normalized()

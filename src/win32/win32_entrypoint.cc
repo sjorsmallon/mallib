@@ -229,30 +229,31 @@ static HGLRC init_opengl(HDC device_context)
     UINT num_formats;
     wglChoosePixelFormatARB(device_context, pixel_format_attribs, 0, 1, &pixel_format, &num_formats);
     if (!num_formats) {
-        fatal_error("Failed to set the OpenGL 3.3 pixel format.");
+        fatal_error("Failed to set the OpenGL 4.1 pixel format.");
     }
 
     PIXELFORMATDESCRIPTOR pfd;
     DescribePixelFormat(device_context, pixel_format, sizeof(pfd), &pfd);
     if (!SetPixelFormat(device_context, pixel_format, &pfd)) {
-        fatal_error("Failed to set the OpenGL 3.3 pixel format.");
+        fatal_error("Failed to set the OpenGL 4.1 pixel format.");
     }
 
-    // Specify that we want to create an OpenGL 3.3 core profile context
+
+    // Specify that we want to create an OpenGL 4.1 core profile context
     int gl33_attribs[] = {
-        WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-        WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+        WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+        WGL_CONTEXT_MINOR_VERSION_ARB, 1,
         WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
         0,
     };
 
     HGLRC opengl_context = wglCreateContextAttribsARB(device_context, 0, gl33_attribs);
     if (!opengl_context) {
-        fatal_error("Failed to create OpenGL 3.3 context.");
+        fatal_error("Failed to create OpenGL 4.1 context.");
     }
 
     if (!wglMakeCurrent(device_context, opengl_context)) {
-        fatal_error("Failed to activate OpenGL 3.3 rendering context.");
+        fatal_error("Failed to activate OpenGL 4.1 rendering context.");
     }
 
 
