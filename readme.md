@@ -1,9 +1,6 @@
 
 # TODO
 
-## Rotating the Scene Objects Correctly
-currently, the ordering w.r.t translation/ rotation is borked because of the row major decision.
-Maybe we should keep it fire & forget for now.. or just abstract it as a whole.
 
 ## VAO / VBO structure
 How are relevant `entity` meshes combined in the VBO? Do we have one? What do other people use? 
@@ -24,6 +21,9 @@ we want to manipulate the scene using the mouse / keyboard.
 
 ## Rename shader uniforms (projection_model -> projection_matrix)
 
+## Rotating the Scene Objects Correctly
+currently, the ordering w.r.t translation/ rotation is borked because of the row major decision.
+Maybe we should keep it fire & forget for now.. or just abstract it as a whole.
 
 
 ## Unify normalize & transpose syntax.

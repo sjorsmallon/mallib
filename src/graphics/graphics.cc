@@ -73,7 +73,6 @@ void graphics::init_opengl()
 {
     //@NOte::init gl_lite only after the gl_context has been created
     // (which is done in the win32 section of the program, since that is OS related.)
-
     gl_lite_init();
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);

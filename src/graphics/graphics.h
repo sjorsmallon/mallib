@@ -53,6 +53,7 @@ namespace graphics
 		bool v_sync;
 	};
 
+
 	void init_graphics(); //@Note: does that also mean to load all the shaders etc?
 	void init_opengl();
 	void setup_shaders();
@@ -86,11 +87,6 @@ namespace graphics
 	scene::Scene& active_scene();
 
 	void init_texture_settings(std::map<std::string, asset::Texture>& textures);
-
-
-
-
-
 
 	// draw modes.
 	// void draw_2d_right_handed_normalized()

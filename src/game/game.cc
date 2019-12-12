@@ -14,6 +14,83 @@
 
 #include <chrono>
 
+
+// if it's only functions, how do we deal with state?
+// graphics can use a list of shaders
+// graphics can take a pointer to a list of shaders?
+
+// void game::graphics_test()
+// {
+
+//     // all of this means that graphics is aware of some type of manager.
+//     // which I think makes sense.
+//     // problem is still the contract that the manager enforces.
+//     // How do we make people aware?
+
+//     // sound_manager
+//     // auto & camera =  scene_manager->create_camera()
+//     // camera.position = {};
+//     // camera.orientation = lookat()
+//     // canera.near_clip_distance
+//     // camera.far_clip_distance 
+//     // 
+//     Scene_Manager* scene_manager = new Scene_Manager();
+//     Camera* camera =  create_camera(scene_manager);
+//     camera->position = {};
+//     camera->orientation = {};
+//     //@note: these should be in Z.
+//     camera->near_clip_distance = 1.0; 
+//     camera->far_clip_distance = 100.0;
+//     camera->aspect_ratio  = globals->window_width / globals->window_height;
+//     camera->field_of_view = 90.0f;
+//     // communicate the use of more than one camera?
+
+//     // new idea: the construction of the graphics manager preps the graphics environment.
+//     // (i.e. what is not called init_opengl.)
+//     // but what does graphics offer?
+//     // we can register shaders via the graphics manager
+//     // and .....? request VBOs and VAOs?
+//     // manages the texture state?
+//     // keep the manager a compositional type?
+//     Graphics_Manager* graphics_manager = new Graphics_Manager();
+//     create_shader();
+//     load_compile_attach_shader();
+//     create_shader();
+//     load_compile_attach_shader();
+//     create_shader();
+//     load_compile_attach_shader();
+//     load_compile_attach_shader();
+//     load_compile_attach_shader();
+//     load_compile_attach_shader();
+
+
+
+//     create_shader();
+
+
+//     // scene_manager->add_light()
+//     // 
+
+
+//     Shader_Program;
+//     load_compile_attach_shader
+//     load_compile_attach_shader
+//     bind
+//     detach_shader
+//     detach_shader
+//     graphics::shaders.push_back()
+//     // implicit connection between font and graphics.
+//     // can we use font without graphics?
+//     font VAO
+//     font VBO
+//     graphics::left_handed_3d();
+
+// }
+
+
+
+
+
 // Init -> Load -> main_loop.
 void game::init_everything()
 {
@@ -22,8 +99,6 @@ void game::init_everything()
     graphics::init_graphics();
     font::init_font();
     menu::init_menu();
-
-
 
     //@TODO: set some modes? program_mode, play the menu music?
     auto& program_mode = game::global_program_mode();
@@ -38,15 +113,13 @@ void game::load_everything()
     // load sound
     // sound::load_music("assets/music/introduction.mp3");
     // sound::play_music("assets/music/introduction.mp3");
-
-
     // load assets
+
     asset::Asset_Folders asset_folders = {};
     asset_folders.obj_folder = "assets/object_files/";
     asset_folders.mtl_folder = "assets/mtl_files/";
     asset_folders.texture_folder = "assets/texture_files/";
     asset_folders.scene_folder = "assets/scene_files/";
-
     asset::load_assets_from_file(asset_folders);
 
     // let's try to create a scene.
@@ -67,7 +140,6 @@ void game::main_loop()
     // start & end are used for frametime.
     auto start = std::chrono::system_clock::now();
     const auto program_mode = game::global_program_mode();
-
 
     if (program_mode == Program_Mode::GAME)
     {
@@ -142,7 +214,6 @@ void game::simulate_gameplay()
 
     queue.clear();
 }
-
 
 
 std::chrono::duration<float, std::milli>& game::previous_frame_time()
