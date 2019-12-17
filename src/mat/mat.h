@@ -175,8 +175,13 @@ inline Mat4 mat::ortho(const float left,
 }
 
 
-//@Incomplete: inline assignment instead of creating and returning?
-//@Incomplete: is this inverted because of the column vs row major?
+
+// Projection Matrix:
+// perspective near_z and far_z define the clipping, not the actual bounds. I think.
+// OpenGL assumes that the points in the scene are projected on the near clipping planes,
+// rather than on a plane that lies one unit away from the camera position.
+// note that near_z and far_z should be positive.
+//@Incomplete: the ordering here is inverted because of the column vs row major.
 inline Mat4 mat::perspective(const float fov_y,
                      const float aspect_ratio,
                      const float near_plane,

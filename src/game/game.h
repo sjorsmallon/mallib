@@ -28,7 +28,6 @@ namespace game
 	void handle_menu_input();
 
 
-
 	// initing
 	void init_everything();
 	void init_audio();

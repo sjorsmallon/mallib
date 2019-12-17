@@ -62,9 +62,6 @@
 //     load_compile_attach_shader();
 //     load_compile_attach_shader();
 //     load_compile_attach_shader();
-
-
-
 //     create_shader();
 
 
@@ -86,8 +83,6 @@
 //     graphics::left_handed_3d();
 
 // }
-
-
 
 
 
@@ -121,7 +116,6 @@ void game::load_everything()
     asset_folders.texture_folder = "assets/texture_files/";
     asset_folders.scene_folder = "assets/scene_files/";
     asset::load_assets_from_file(asset_folders);
-
     // let's try to create a scene.
     graphics::active_scene() = asset::scenes()["test.scene"];
     
@@ -130,7 +124,45 @@ void game::load_everything()
         fmt::print("set_piece name: {}\n", set_piece.name);
         fmt::print("model name name: {}\n", set_piece.model_name);
     }
+
+
     graphics::init_texture_settings(asset::texture_data());
+
+
+   // generate the VAO/VBO map.
+    auto& buffers =  graphics::buffers();
+
+    for (auto &[key, raw_object_data]: asset::obj_data())
+    {
+
+        graphics::Buffers new_buffer= {};
+        glGenVertexArrays(1, &new_buffer.VAO);
+        glBindVertexArray(new_buffer.VAO);
+        glGenBuffers(1, &new_buffer.VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, new_buffer.VBO);
+        const uint32_t pos_array = 0;
+        const uint32_t uv_array = 1;
+        const uint32_t normals_array = 2;
+        glEnableVertexAttribArray(pos_array);
+        glEnableVertexAttribArray(uv_array);
+        glEnableVertexAttribArray(normals_array);
+        glVertexAttribPointer(pos_array,     3, GL_FLOAT, GL_FALSE, sizeof(asset::Vertex), 0); // x, y, z
+        glVertexAttribPointer(uv_array,      2, GL_FLOAT, GL_FALSE, sizeof(asset::Vertex), ((void*)(3 * sizeof(float)))  ); // skip  3: u, v,
+        glVertexAttribPointer(normals_array, 3, GL_FLOAT, GL_FALSE, sizeof(asset::Vertex), ((void*)(5 * sizeof(float)))  ) ; // skip 5: nx, ny, nz.
+        glBufferData(GL_ARRAY_BUFFER,
+                    static_cast<int>(raw_object_data.vertices.size() * sizeof(asset::Vertex)),
+                    raw_object_data.vertices.data(),
+                    GL_STATIC_DRAW);
+        glBindVertexArray(0);
+        buffers[key] = new_buffer;
+    }
+
+    for (auto &[key,value]: buffers)
+    {
+        fmt::print("{}: buffer.", key);
+    }
+
+
 }
 
 void game::main_loop()

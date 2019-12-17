@@ -116,7 +116,7 @@ void font::draw_text(std::string text,
     //@refactor: this projection matrix does not ever change.
     // do we want to store this somewhere?
     // Mat4 projection_matrix = mat::ortho(left, right, top, bot, near_, far_);
-    glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text, "projection"), 1, true, &projectionmatrix[0]);
+    glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text, "projection_matrix"), 1, true, &projectionmatrix[0]);
     
     const auto& glyph_array = font.characters;
     

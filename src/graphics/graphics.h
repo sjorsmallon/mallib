@@ -14,9 +14,21 @@
 #include "../scene/scene.h"
 #include "../vec3/vec3.h" // Light
 
+#include <map> // for VAO/VBO stuff. will move.
+
 
 namespace graphics
 {
+	// struct Render_Settings
+	// {
+	// 	bool render_isophotes;
+	// 	bool render_normals;
+	// 	bool 
+	// 	bool
+	// 	bool
+	// 	bool
+	// }
+
 	struct Light
 	{
 		Vec3 position;
@@ -83,10 +95,20 @@ namespace graphics
 	void set_shader(Shader_Type shader);
 	// uint32_t& active_shader();
 
+
 	//@temporary
 	scene::Scene& active_scene();
-
 	void init_texture_settings(std::map<std::string, asset::Texture>& textures);
+
+	//@Incomplete: these draw modes / VBO&VAO management should move to the manager.
+	struct Buffers
+	{
+		uint32_t VAO;
+		uint32_t VBO;
+		uint32_t IBO;
+	};
+
+	std::map<std::string, graphics::Buffers>& buffers();
 
 	// draw modes.
 	// void draw_2d_right_handed_normalized()
@@ -103,25 +125,5 @@ namespace graphics
 	#endif
 	
 };
-
-
-// struct Renderer
-// {
-//     // list of shaders?
-//     // map of shaders?
-// };
-
-
-
-// class ShaderProgram
-// {
-//     std::vector<GLuint> shader_IDs;
-//     int ID;
-// }
-// struct Platform_Renderer_Limits
-// {
-// 	uint32_t max_quads_per_frame;
-// };
-
 
 #endif
