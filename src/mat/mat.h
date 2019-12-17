@@ -191,7 +191,6 @@ inline Mat4 mat::perspective(const float fov_y,
 
     float rad_fov = fov_y * mat::DEG2RAD;
     float tan_half_fov = tanf(rad_fov / 2.0f);
-      
     matrix[0][0] = 1.0f /(aspect_ratio * tan_half_fov);
     matrix[1][1] = 1.0f / tan_half_fov;
     matrix[2][2] = - (far_plane + near_plane) / (far_plane - near_plane);
@@ -203,11 +202,11 @@ inline Mat4 mat::perspective(const float fov_y,
 }
 
 
-inline Mat4 mat::view(const Vec3& eye, const Vec3& center, const Vec3& up)
+inline Mat4 mat::view(const Vec3& eye, const Vec3& target, const Vec3& up)
 {
    // modeled after gluLookAt. 
 
-   Vec3 forward = center - eye; // f = coord_system
+   Vec3 forward = target - eye; // f = coord_system
    vec::normalize(forward);
    Vec3 tmp = {0,1,0};
    vec::normalize(tmp);
@@ -215,12 +214,13 @@ inline Mat4 mat::view(const Vec3& eye, const Vec3& center, const Vec3& up)
    Vec3 up_norm = up;
    vec::normalize(up_norm);
 
+
    // The up vector must not be parallel to the line of sight from the
    //           eye point to the reference point.
-    return {    right.x,    right.y,    right.z, 0,
-              up_norm.x,  up_norm.y,  up_norm.z, 0,
-             -forward.x, -forward.y, -forward.z, 0,
-                      0,          0,          0, 1};
+    return {  right.x,    right.y,    right.z, -vec::dot(right, eye),
+              up_norm.x,  up_norm.y,   up_norm.z, -vec::dot(up_norm,eye),
+              forward.x,   forward.y,  forward.z, -vec::dot(forward,eye),
+                      0,          0,          0,    1};
 }
    
 inline Mat3 mat::mat3_from_mat4(const Mat4& matrix)

@@ -173,7 +173,11 @@ void graphics::draw_game_3d()
     // all matrices are defined in row major fashion. openGL needs to know about that.
     const bool row_major = true;
     // view matrix is identity (i.e. opengl_left_handed, vec3(0.0,0.0,0.)
-    Mat4 view_matrix = mat::mat4_identity();
+    // Mat4 view_matrix = mat::mat4_identity();
+    Vec3 camera_position = {};
+    Vec3 target_position = {0.0f, 0.0f, -1.0f};
+    Vec3 up_vector{0.0f, 1.0f, 0.0f};
+    Mat4 view_matrix = mat::view(camera_position, target_position, up_vector);
     // @Note: near_z and far_z should be positive in this context.
     const float fov_in_degrees     = 90.0f;
     const float perspective_near_z = 0.1f;
@@ -183,7 +187,6 @@ void graphics::draw_game_3d()
 
     bool render_isophotes = true;
     uint32_t active_shader = graphics::shaders().default;
-
     if (render_isophotes)
     {
         graphics::set_shader(graphics::Shader_Type::SHADER_ISOPHOTES);
@@ -191,13 +194,13 @@ void graphics::draw_game_3d()
     }
     auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
 
+
     // bind view matrix
     const int32_t view_matrix_location = glGetUniformLocation(active_shader, "view_matrix");
     glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
     // bind projection matrix.
     const int32_t projection_matrix_location = glGetUniformLocation(active_shader, "projection_matrix");
     glUniformMatrix4fv(projection_matrix_location, 1, row_major, &projection_matrix[0][0]);
-
 
     // are there any lights in the scene?
     if (active_shader == graphics::shaders().gouraud)
@@ -215,35 +218,32 @@ void graphics::draw_game_3d()
         int32_t material_location       = glGetUniformLocation(active_shader, "material");
         Vec3 light_position = {0.0f, 0.0f, -0.5f};
         Vec3 light_color =    {1.0f, 1.0f, 1.0f};
-        Vec4 material =  {0.4f, 0.6f, 0.8f, 64.0f};
+        Vec4 material =       {0.4f, 0.6f, 0.8f, 64.0f};
         glUniform3fv(light_position_location, 1, &light_position.data[0]);
-        glUniform3fv(light_color_location, 1, &light_color.data[0]);
-        glUniform4fv(material_location, 1, &material.data[0]);
+        glUniform3fv(light_color_location,    1, &light_color.data[0]);
+        glUniform4fv(material_location,       1, &material.data[0]);
     }
 
     // for a specific type of object:
     // do we need to update the buffer?
     glBindVertexArray(graphics::buffers()["cat.obj"].VAO);
-
-    // // find model matrix
-    const int32_t model_matrix_location = glGetUniformLocation(active_shader, "model_matrix");
-    // for all objects of that specific type:
+    //@TODO: allow grouping in scene by model.
     // for now, assume that all objects share the same model.
-    // implement by_type functionality?
+    // for all objects of that specific type:
+    // find model matrix and normal transform matrix locations.
+    const int32_t model_matrix_location = glGetUniformLocation(active_shader, "model_matrix");
+    const int32_t normal_transform_matrix_location = glGetUniformLocation(active_shader, "normal_transform");
     for (auto &set_piece: graphics::active_scene().set_pieces)
     {
         // Model Matrix
         //@Refactor: should all xform_state quaternions be unit quaternions?
-        set_piece.xform_state.q_orientation = {0.0f, 1.0f, 0.0f, 0.0f};
-        set_piece.xform_state.position.z = -2.0f;
         Mat4 model_matrix = mat::model_from_xform_state(set_piece.xform_state);
         glUniformMatrix4fv(model_matrix_location, 1, row_major, &model_matrix[0][0]);
 
         // Normal transform Matrix
-        const int32_t normal_transform_matrix_location = glGetUniformLocation(active_shader, "normal_transform");
-        Mat3    normal_transform_matrix          = mat::normal_transform(model_matrix);
+        Mat3 normal_transform_matrix = mat::normal_transform(model_matrix);
         glUniformMatrix3fv(normal_transform_matrix_location, 1, row_major, &normal_transform_matrix[0][0]);
-        const auto& object_data = asset::obj_data()[set_piece.model_name];
+
         if (active_shader == graphics::shaders().gouraud)
         {
             //@NOTE!!! this uniform does not take the texture ID, but takes the N from GL_TEXTURE0 +N!!!
@@ -255,7 +255,9 @@ void graphics::draw_game_3d()
             const int32_t texture_location = glGetUniformLocation(active_shader, "texture_uniform");
             glUniform1i(texture_location, 1);
         }
+
         //@FIXME: for now, we invoke draw after every object. 
+        const auto& object_data = asset::obj_data()[set_piece.model_name];
         glDrawArrays(GL_TRIANGLES,0, object_data.vertices.size());
         // glUniform1i(d_textureLocation, 0);
     }

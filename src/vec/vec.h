@@ -43,21 +43,30 @@ namespace fmt {
       }
     };
 
+    template <>
+    struct formatter<Vec2i> {
+      template <typename ParseContext>
+      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+      template <typename FormatContext>
+      auto format(const Vec2i &lhs, FormatContext &ctx) {
+        return format_to(ctx.out(), "{:.3f} {:.3f}\n",
+            lhs[0], lhs[1]);
+      }
+    };
+
 }
-
-
 
 
 namespace vec
 {
   // vec3
 
- 	float dot(const Vec3& lhs, const Vec3& rhs);
-	Vec3 cross(const Vec3& lhs, const Vec3& rhs);
+    float dot(const Vec3& lhs, const Vec3& rhs);
+    Vec3 cross(const Vec3& lhs, const Vec3& rhs);
     Vec3 lerp(const Vec3& lhs, const Vec3& rhs, const float ratio);
     void normalize(Vec3& lhs);
     void normalize(Vec4& lhs);
-
  	//vec4
 };
 

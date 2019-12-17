@@ -331,20 +331,14 @@ int WINAPI wWinMain(HINSTANCE instance,
         use_parent = false;
 
     redirect_output_to_console(use_parent);
-
-    // else
-    //     exit(1);
-
     init_windows_key_array();
 
     HWND window = create_window(instance);
     HDC device_context = GetDC(window);
     HGLRC gl_context = init_opengl(device_context);
+
     graphics::global_Win32_context().gl_context = gl_context;
     graphics::global_Win32_context().device_context = device_context;
-    // context.gl_context = gl_context;
-    // context.device_context = device_context;
-    // gl_lite_init();
 
     ShowWindow(window, command_show);
     UpdateWindow(window);
@@ -361,17 +355,22 @@ int WINAPI wWinMain(HINSTANCE instance,
         SetWindowPos(
           window,
           HWND_TOP,
-          500,
-          500,
+          0,
+          0,
           width,
           height,
           SWP_NOMOVE
         );
 
-        // start loading everything.
+        // start by initing everything.
         game::init_everything();
 
-        // Run the message loop.
+        // Run the message & input loop.
+        POINT screen_cursor_pos= {};
+        int cursor_x = 0;
+        int cursor_y = 0;
+
+        // can we escape from the peekmessage loop after n loops?
         bool running = true;
         while (running)
         {
@@ -389,6 +388,13 @@ int WINAPI wWinMain(HINSTANCE instance,
                 }
             }
             //@TODO: when do we look at input?
+            // HERE!
+            GetCursorPos(&screen_cursor_pos);
+            // device coordinates (I think?)
+            ScreenToClient(window, &screen_cursor_pos);
+            cursor_x = screen_cursor_pos.x;
+            cursor_y = screen_cursor_pos.y;
+            input::new_mouse_coordinates() = Vec2i{cursor_x, cursor_y};
             insert_input_in_queue();
             game::main_loop();
         }               
@@ -420,30 +426,25 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window,
                     exit(1);
                     break;
                 }
-                case VK_RIGHT:
-                {
-                    break;
-                }
-                case VK_UP:
-                {
-                    break;
-                }
-                case VK_DOWN:
-                {
-                    break; 
-                }
             }
         }
-        case WM_CHAR:
+        case WM_PAINT:
         {
+            // we need to start painting here, otherwise WM_PAINT stays
+            // in the message queue, and we can never break the peekMessage loop.
+            // sigh. 
+            PAINTSTRUCT ps = {};
+            HDC dc = BeginPaint(window,&ps);
+            // do drawing to 'dc' here -- or don't
+            EndPaint(window,&ps);
 
+            break;
         }
         case WM_CREATE:
         {
             // MessageBoxA(0,(char*)glGetString(GL_VERSION), "OPENGL VERSION",0);
             break;
         }
-
         case WM_SIZE:
         {
             // resize!
@@ -467,19 +468,7 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window,
             PostQuitMessage(0);
             break;
         }
-        
-        case WM_PAINT:
-        {
-            // we need to start painting here, otherwise WM_PAINT stays
-            // in the message queue, and we can never break the peekMessage loop.
-            // sigh. 
-            PAINTSTRUCT ps = {};
-            HDC dc = BeginPaint(window,&ps);
-            // do drawing to 'dc' here -- or don't
-            EndPaint(window,&ps);
 
-            break;
-        }
         case WM_ACTIVATEAPP:
         {
             break;

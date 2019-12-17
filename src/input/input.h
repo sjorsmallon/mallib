@@ -1,7 +1,7 @@
 #ifndef INCLUDED_INPUT_
 #define INCLUDED_INPUT_
 #include <vector>
-
+#include "../vec2/vec2.h"
 enum class Input_Event
 {
     KEYBOARD,
@@ -27,6 +27,7 @@ namespace input
     };
     
     std::vector<Key_Input>& input_queue();
+    Vec2i& new_mouse_coordinates();
 }
 
 #endif

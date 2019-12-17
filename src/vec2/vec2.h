@@ -22,10 +22,33 @@ union Vec2
     float data[2];
 };
 
-struct Vec2i
+union Vec2i
 {
-	int32_t x;
-	int32_t y;
+    struct
+    {
+        int32_t x;
+        int32_t y;
+    };
+    struct
+    {
+        int32_t u;
+        int32_t v;
+    };
+    struct
+    {
+        int32_t width;
+        int32_t height;
+    };
+    int32_t data[2];
+
+    float operator[](size_t idx)
+    {
+        return data[idx];
+    }
+    float const operator[](size_t idx) const
+    {
+        return data[idx];
+    }
 };
 
 struct Vec2u
