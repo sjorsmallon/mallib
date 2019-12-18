@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 
+#include "../globals/globals.h"
 #include "../sound/sound.h"
 #include "../graphics/graphics.h"
 #include "../asset/asset.h"
@@ -12,27 +13,23 @@
 #include "../menu/menu.h"
 #include "../input/input.h"
 
-#include <chrono>
+#include <chrono> // for frame_time.
 
 
-
-
-
+// this is called in the entrypoint.
 // Init -> Load -> main_loop.
 void game::init_everything()
 {
-    // inits
+
     sound::init_sound();
     graphics::init_graphics();
     font::init_font();
     menu::init_menu();
-
-    //@TODO: set some modes? program_mode, play the menu music?
-    auto& program_mode = game::global_program_mode();
-    program_mode = Program_Mode::MENU;
-
+    //
     game::load_everything(); 
     graphics::clear_buffers();
+    //@TODO: set some modes? program_mode, play the menu music?
+    global::globals().program_mode = Program_Mode::MENU;
 }
 
 void game::load_everything()
@@ -41,27 +38,19 @@ void game::load_everything()
     // sound::load_music("assets/music/introduction.mp3");
     // sound::play_music("assets/music/introduction.mp3");
     // load assets
-
     asset::Asset_Folders asset_folders = {};
-    asset_folders.obj_folder = "assets/object_files/";
-    asset_folders.mtl_folder = "assets/mtl_files/";
+    asset_folders.obj_folder     = "assets/object_files/";
+    asset_folders.mtl_folder     = "assets/mtl_files/";
     asset_folders.texture_folder = "assets/texture_files/";
-    asset_folders.scene_folder = "assets/scene_files/";
+    asset_folders.scene_folder   = "assets/scene_files/";
     asset::load_assets_from_file(asset_folders);
 
 
-    graphics::active_scene() = asset::scenes()["test.scene"];
-    
-    for (auto& set_piece: asset::scenes()["test.scene"].set_pieces)
-    {
-        fmt::print("set_piece name: {}\n", set_piece.name);
-        fmt::print("model name name: {}\n", set_piece.model_name);
-    }
 
 
+    graphics::active_scene() = asset::scenes()["test.scene"];    
     graphics::init_texture_settings(asset::texture_data());
-
-
+    
     // generate the VAO/VBO map.
     auto& buffers =  graphics::buffers();
     for (auto &[key, raw_object_data]: asset::obj_data())
@@ -96,13 +85,23 @@ void game::load_everything()
 
 }
 
+
+// this function is invoked from any entrypoint.
+// we expect the entrypoint to update the  input buffer,
+// as well as the mouse coordinates.
 void game::main_loop()
 {
-    graphics::clear_buffers();
+    // update the globals that are updated through the entrypoint.
+    // what if the window resizes?
+    global::globals().previous_mouse_coordinates = game::globals().mouse_coordinates;
+    global::globals().mouse_coordinates = input::new_mouse_coordinates(); 
 
-    // start & end are used for frametime.
+
+    graphics::clear_buffers();
+    const auto program_mode = game::globals().program_mode;
+  
+    // start frame time recording.
     auto start = std::chrono::system_clock::now();
-    const auto program_mode = game::global_program_mode();
 
     if (program_mode == Program_Mode::GAME)
     {
@@ -119,19 +118,17 @@ void game::main_loop()
 
     }
 
-    fmt::print("mouse coordinates in device coords: {}", input::new_mouse_coordinates());
-
     sound::update_audio();
     graphics::render_frame(); 
     // @FIXME FIXME : drawing menu after render_frame. This is because we want to render font last.
     // eventually, the menu will have its own buffer etcetera.
     menu::draw_menu();
     graphics::swap_buffers();
-
     // rudimentary frame time calculation. Eventually, we want this to be in double form.
     auto end = std::chrono::system_clock::now();
-    game::previous_frame_time() = end - start;
+    global::globals().previous_frame_time = end - start;
 }
+
 
 void game::handle_menu_input()
 {

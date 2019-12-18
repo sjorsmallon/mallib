@@ -170,6 +170,9 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
 
 void graphics::draw_game_3d()
 {
+
+
+
     // all matrices are defined in row major fashion. openGL needs to know about that.
     const bool row_major = true;
     // view matrix is identity (i.e. opengl_left_handed, vec3(0.0,0.0,0.)

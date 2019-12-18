@@ -2,30 +2,19 @@
 #define INCLUDED_GAME_
 #include <chrono>
 
+
 namespace game
 {
 
-	enum class Program_Mode
-	{
-		GAME,
-		EDITOR,
-		PAUSED,
-		MENU
-	};
-	//@Refactor: move to globals.
-	Program_Mode& global_program_mode();
-	//@Refactor: change to double for more precision?
-    std::chrono::duration<float, std::milli>& previous_frame_time();
 
-	void load_audio();
-	void load_shaders();
-	void load_models();
+	// //@Refactor: change to double for more precision?
+ 	// std::chrono::duration<float, std::milli>& previous_frame_time();
 
 
-	void simulate_gameplay(); // make this static in the class?
 	//@Refactor: is input handling like this better? or keep it
 	// centralized in one function which then evaluates what the game state is
 	void handle_menu_input();
+	void simulate_gameplay(); // make this static in the class?
 
 
 	// initing
@@ -36,6 +25,9 @@ namespace game
 
 	// loading
 	void load_everything();
+	void load_audio();
+	void load_shaders();
+	void load_models();
 
 	// deiniting
 	void deinit_everything();
