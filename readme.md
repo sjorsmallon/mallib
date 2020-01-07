@@ -1,9 +1,14 @@
 
 # TODO
 
+## Extra
+Partially rewrote the entrypoint for win32. Should help to provide more structure to the input interfacing, 
+as well as hopefully make the graphics thing less painful. Don't be afraid of constructors & destructors,
+they can be pretty useful if used correctly.
+
+
 ## Graphics manager
 Look at how Ogre3D does it. Try something similar. https://ogrecave.github.io/ogre/api/latest/setup.html
-
 
 ## VAO / VBO structure
 How are relevant `entity` meshes combined in the VBO? Do we have one? What do other people use? 
