@@ -6,20 +6,33 @@
 #include <iostream> // redirect_output, string(for CLI arguments)
 #include <algorithm> // std::swap (for keyboard vectors.)
 
+// The input header needs to provide an input queue which all platform files insert content in.
+
+// hmm. maybe the input queue can be something that we do not necessarily need.
+// it can be implemented later. whatever. at game level. Maybe we don't want 
+// an input queue, but want to only listen to the latest actions.
+// then we need to make the key map array agreeable.
+
 //@NOTE: go to create_window in order to skip the openGL / input handling 
 // stuff.
 
-//@TODO: get rid of the static arrays for the keyboard and replace them by heap allocated memory? -> replace them by Keyboard_State that uses a constructor and a destructor. Not sure how to make the type agreeable by both this file and the game in general.
+
+//@TODO: get rid of the static arrays for the keyboard and replace them by heap allocated memory? 
+//-> replace them by Keyboard_State that uses a constructor and a destructor. 
+// Not sure how to make the type agreeable by both this file and the game in general.
 
 
 //@TODO: find an alternative for the global_device_context and the global_gl_context.
 
 
-// WHAT THIS IS: this file is to be used for projects that require an openGL // context, as well as any type of input handling. The context creation should // work fine for any general application (at least, it suits my needs).
+// WHAT THIS IS: this file is to be used for projects that require an openGL
+// context, as well as any type of input handling. The context creation should
+// work fine for any general application (at least, it suits my needs).
 
 // THIS DEPENDS ON: the input header. also provided.
 
-// WHAT THIS IS NOT: an all-encompassing, real-world-ready robust entrypoint. // It's a cludgy part of my own applications.
+// WHAT THIS IS NOT: an all-encompassing, real-world-ready robust entrypoint.
+// It's a cludgy part of my own applications.
 
 // HOW DO I USE IT:
 // INIT: 
@@ -32,7 +45,6 @@
 // Input handling:
     // The recorded key presses are stored in a Key_Array type. this file  
     // provides 
-    //
 
 
 // OpenGL: this file provides a valid  opengl_context and the device_context. // These can be acquired through 
@@ -240,13 +252,6 @@ static HGLRC init_opengl(HDC device_context)
 /// input / output handling..
 
 #include "../input.h" 
-static input::Key_Input windows_key_array[256] = {};
-static uint8_t previous_keyboard_state[256] = {};
-static uint8_t current_keyboard_state[256] = {};
-
-Keyboard_State* keyboard_state;
-Keyboard_State* previous_keyboard_state;
-
 
 // private
 static void redirect_output_to_console(bool use_parent)
@@ -291,31 +296,29 @@ static void redirect_output_to_console(bool use_parent)
 // This mapping needs to be established in the relevant starting points for the application. The mapping is used to "return" the correct input key that we can listen to. I don't know how to do this properly cross platform. 
 
 // private
-static void init_key_mapping_array()
+static void init_key_mapping_array(Keyboard_State& platform_key_map)
 {
     // 0x57: 87
     // 0x41: 65
     // 0x53: 83
     // 0x44: 68
-    windows_key_array[0x57]       = Input::KEY_W;
-    windows_key_array[0x41]       = Input::KEY_A;
-    windows_key_array[0x53]       = Input::KEY_S;
-    windows_key_array[0x44]       = Input::KEY_D;
-    windows_key_array[VK_UP]      = Input::KEY_UP;
-    windows_key_array[VK_DOWN]    = Input::KEY_DOWN;
-    windows_key_array[VK_LEFT]    = Input::KEY_LEFT;
-    windows_key_array[VK_RIGHT]   = Input::KEY_RIGHT;
-    windows_key_array[VK_LBUTTON] = Input::MOUSE_LEFT;
-    windows_key_array[VK_RBUTTON] = Input::MOUSE_RIGHT;
+    platform_key_map[0x57]       = Input::KEY_W;
+    platform_key_map[0x41]       = Input::KEY_A;
+    platform_key_map[0x53]       = Input::KEY_S;
+    platform_key_map[0x44]       = Input::KEY_D;
+    platform_key_map[VK_UP]      = Input::KEY_UP;
+    platform_key_map[VK_DOWN]    = Input::KEY_DOWN;
+    platform_key_map[VK_LEFT]    = Input::KEY_LEFT;
+    platform_key_map[VK_RIGHT]   = Input::KEY_RIGHT;
+    platform_key_map[VK_LBUTTON] = Input::MOUSE_LEFT;
+    platform_key_map[VK_RBUTTON] = Input::MOUSE_RIGHT;
 }
 
 
 // private
 static void insert_input_in_queue()
 {
-    //@refactor: the input queue is maximally the size of the buttons we want to check.
-    // I think? or do we want buffered input?
-    //@Platform:
+    // keys are the keys we are watching. we evaluate the state of the keyboard.    
     int keys[6] = {VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, VK_LBUTTON, VK_RBUTTON};
     std::swap(current_keyboard_state, previous_keyboard_state);
 
@@ -344,7 +347,7 @@ static void application_init()
 
 static void application_loop()
 {
-    // game::main_loop
+    // game::main_loop();
 }
 
 ///---------------------------------------------------------------------------
@@ -413,10 +416,13 @@ int WINAPI wWinMain(HINSTANCE instance,
         use_parent = false;
     redirect_output_to_console(use_parent);
 
+    // @Memory: this is allocated on the stack
     // set up keyboard input.
-    =  new 
-
-    init_key_mapping_array();
+    // these are from input. 
+    Keyboard_State keyboard_state = {};
+    Keyboard_State previous_keyboard_state = {}; 
+    KeyBoard_State platform_key_map = {};
+    init_key_mapping_array(platform_key_map);
 
 
     // actual window stuff.

@@ -1,23 +1,27 @@
-#ifndef INCLUDED_KEY_ARRAY_
-#define INCLUDED_KEY_ARRAY_
+#ifndef INCLUDED_INPUT_
+#define INCLUDED_IO_
 
-
-class Key_Array
+namespace io
 {
-	uint8_t *data;
-	size_t size = 256;
-	public:
-		Key_Array()
-		//:
-		{
-			data = new uint8[256];
-		}
-		~Key_Array()
-		{
-			delete[] data;
-		}
-};
+	struct Keyboard_State 
+	{
+		uint8_t data[256];
 
+		operator[](size_t idx)
+		{
+			return data[idx];
+		}
+	}
+
+	struct Mouse_State
+	{
+		uint8_t lmb;
+		uint8_t rmb;
+		float scroll_up;
+		float scroll_down;
+	}
+
+};
 
 
 
