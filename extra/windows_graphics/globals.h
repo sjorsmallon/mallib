@@ -2,16 +2,19 @@
 #define INCLUDED_GLOBALS_
 #include "io.h" // Keyboard_State, Mouse_State
 
-struct globals
+struct Globals
 {
 	// IO
-	Keyboard_State *keyboard_state;
-	Keyboard_State *previous_keyboard_sate;
-	Mouse_State *mouse_state;
-
+	// Keyboard_State& keyboard_state();
+	// Keyboard_State& previous_keyboard_state();
+	// Mouse_State&    mouse_state();
+	int32_t window_width;
+	int32_t window_height;
+	float aspect_ratio;
 };
 
-globals::init_globals();
+extern Globals globals;
+
 
 
 #endif
