@@ -1,4 +1,7 @@
 
+## actual TODO
+`glLinkProgram` can fail. check the status of the program after linking (i.e. glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+
 # TODO
 
 ## Extra
