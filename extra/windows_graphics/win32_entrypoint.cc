@@ -6,6 +6,9 @@
 #include <iostream> // redirect_output, string(for CLI arguments)
 #include <algorithm> // std::swap (for keyboard vectors.)
 
+#include "io.h" // Keyboard_State, Platform_Key_Map 
+#include "globals.h"  // globals.window_width, globals.window_height
+
 //@NOTE: go to create_window in order to skip the openGL / input handling 
 // stuff.
 
@@ -280,10 +283,10 @@ static void redirect_output_to_console(bool use_parent)
 // init_windows_key_array creates a mapping between the windows key presses (hexadecimal 0-255) and the input events that any application can process.
 // This mapping needs to be established in the relevant starting points for the application. The mapping is used to "return" the correct input key that we can listen to. I don't know how to do this properly cross platform. 
 
-#include "io.h" 
+
 
 // private
-static void init_key_mapping_array(io::Keyboard_State& platform_key_map)
+static void init_key_mapping_array(io::Platform_Key_Map& platform_key_map)
 {
     using  namespace io;
     // 0x57: 87
@@ -316,22 +319,20 @@ static void insert_input_in_queue()
         VK_RBUTTON
     };
 
-    std::swap(io::keyboard_state(), io::previous_keyboard_state());
+    std::swap(io::keyboard_state(), io::prev_keyboard_state());
 
     for (auto key: keys)
     {
         if(GetAsyncKeyState(key))
         {
-            io::keyboard_state()[key] = 1;
-             if (!io::previous_keyboard_state()[key])
+            io::keyboard_state()[key] = true;
+             if (!io::prev_keyboard_state()[key])
              {
-                // pressed this frame but not previous frame.
-                // I don't remember why we did this.
-                // input::input_queue().push_back(windows_key_array[key]);
+                io::input_queue().push_back(io::platform_key_map()[key]);
              }
         }
         else
-            io::keyboard_state()[key] = 0;
+            io::keyboard_state()[key] = false;
     }
 }
 
@@ -403,6 +404,7 @@ static HWND create_window(HINSTANCE instance)
 }
 
 
+
 int WINAPI wWinMain(HINSTANCE instance,
                     HINSTANCE prev_instance,
                     PWSTR command_line,
@@ -424,6 +426,7 @@ int WINAPI wWinMain(HINSTANCE instance,
     HDC device_context = GetDC(window);
     HGLRC gl_context = init_opengl(device_context);
 
+
     // how do we avoid bi-dependency here?
     global_gl_context = gl_context;
     global_device_context = device_context;
@@ -435,9 +438,10 @@ int WINAPI wWinMain(HINSTANCE instance,
         // change window size
         const int width =  1920; // @hardcoded
         const int height = 1080;
-        auto& settings = graphics::window_settings();
-        settings.width = width;
-        settings.height = height;
+
+        //@global:
+        globals.window_width = width;
+        globals.window_height = height;
 
         SetWindowPos(
           window,
@@ -490,10 +494,8 @@ int WINAPI wWinMain(HINSTANCE instance,
 
             // this is TMI I think. We force the inclusion of Vec2i here.
             // how do we publish the new mouse coordinates properly?
-            input::new_mouse_coordinates() = Vec2i{cursor_x, cursor_y};
+            io::update_mouse_coords(cursor_x, cursor_y);
             insert_input_in_queue();
-
-
             application_loop();
         }               
     }
@@ -560,8 +562,10 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window,
         case WM_DESTROY:
         {
             wglMakeCurrent(nullptr, nullptr);
-            graphics::Win32_Context& context = graphics::global_Win32_context();
-            wglDeleteContext(context.gl_context);
+
+            // //@INCOMPLETE: DESTROY THE GL_CONTEXT!
+            // graphics::Win32_Context& context = graphics::global_Win32_context();
+            // wglDeleteContext(context.gl_context);
 
             PostQuitMessage(0);
             break;

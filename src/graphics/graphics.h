@@ -69,13 +69,17 @@ namespace graphics
 	void init_graphics(); //@Note: does that also mean to load all the shaders etc?
 	void init_opengl();
 	void setup_shaders();
-	void get_shader_info(uint32_t shader_program);
 
 	void render_frame();
 	void draw_game_3d();
 	void clear_buffers();
 	void swap_buffers();
 	
+
+	// openGL helpers.
+	void get_shader_info(uint32_t shader_program);
+	bool link_success(uint32_t shader_program);
+
 
 	Shaders& shaders();
 	Window_Settings& window_settings();
@@ -91,10 +95,8 @@ namespace graphics
 	void draw_text();
 	void reload_shaders(uint32_t& program);
 
-	// active_shader?
 	void set_shader(Shader_Type shader);
-	// uint32_t& active_shader();
-
+	
 
 	//@temporary
 	scene::Scene& active_scene();

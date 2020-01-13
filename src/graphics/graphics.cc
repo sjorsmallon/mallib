@@ -42,6 +42,10 @@ void graphics::setup_shaders()
     const uint32_t text_vertex   = graphics::load_compile_attach_shader(shader_programs.text, "assets/shaders/text.vertex");
     const uint32_t text_fragment = graphics::load_compile_attach_shader(shader_programs.text, "assets/shaders/text.fragment");
     glLinkProgram(shader_programs.text);
+    if (!graphics::link_success(shader_programs.gouraud))
+    {
+        fmt::print("error: shader could not be linked.");
+    }
     glDetachShader(shader_programs.text, text_vertex);
     glDetachShader(shader_programs.text, text_fragment);
 
@@ -50,6 +54,10 @@ void graphics::setup_shaders()
     const uint32_t normal_vertex   = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/normals.vertex");
     const uint32_t normal_fragment = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/normals.fragment");
     glLinkProgram(shader_programs.normals);
+    if (!graphics::link_success(shader_programs.gouraud))
+    {
+        fmt::print("error: shader could not be linked.");
+    }
     glDetachShader(shader_programs.normals, normal_vertex);
     glDetachShader(shader_programs.normals, normal_fragment);
 
@@ -58,6 +66,10 @@ void graphics::setup_shaders()
     const uint32_t gouraud_vertex   = graphics::load_compile_attach_shader(shader_programs.gouraud, "assets/shaders/gouraud.vertex");
     const uint32_t gouraud_fragment = graphics::load_compile_attach_shader(shader_programs.gouraud, "assets/shaders/gouraud.fragment");
     glLinkProgram(shader_programs.gouraud);
+    if (!graphics::link_success(shader_programs.gouraud))
+    {
+        fmt::print("error: shader could not be linked.");
+    }
     glDetachShader(shader_programs.gouraud, gouraud_vertex);
     glDetachShader(shader_programs.gouraud, gouraud_fragment);
 
@@ -66,6 +78,10 @@ void graphics::setup_shaders()
     const uint32_t isophotes_vertex = graphics::load_compile_attach_shader(shader_programs.isophotes, "assets/shaders/isophotes.vertex");
     const uint32_t isophotes_fragment = graphics::load_compile_attach_shader(shader_programs.isophotes,"assets/shaders/isophotes.fragment");
     glLinkProgram(shader_programs.isophotes);
+    if (!graphics::link_success(shader_programs.isophotes))
+    {
+        fmt::print("error: shader could not  be linked.");   
+    }
     glDetachShader(shader_programs.isophotes, isophotes_vertex);
     glDetachShader(shader_programs.isophotes, isophotes_fragment);
 
@@ -281,7 +297,7 @@ void graphics::render_frame()
 
 void graphics::swap_buffers()
 {
-	SwapBuffers(graphics::global_Win32_context().device_context);
+    SwapBuffers(graphics::global_Win32_context().device_context);
 }
 
 // returns the shader_id.
@@ -418,10 +434,11 @@ void graphics::get_shader_info(uint32_t prog)
 
         nameData.resize(values[0]); //The length of the name.
         glGetProgramResourceName(prog, GL_PROGRAM_INPUT, attrib, nameData.size(), NULL, &nameData[0]);
-        std::string name((char*)&nameData[0], nameData.size() - 1);
+        std::string name(name_data.begin(), name_data.end());
         fmt::print("attributes: {}\n", name);
-
     }
+
+
     // PROGRAM_UNIFORMS.
     GLint numActiveUniforms = 0;
     glGetProgramInterfaceiv(prog, GL_UNIFORM, GL_ACTIVE_RESOURCES, &numActiveUniforms);
@@ -432,9 +449,15 @@ void graphics::get_shader_info(uint32_t prog)
 
         nameData.resize(values[0]); //The length of the name.
         glGetProgramResourceName(prog, GL_UNIFORM, unif, nameData.size(), NULL, &nameData[0]);
-        std::string name((char*)&nameData[0], nameData.size() - 1);
+        std::string name(name_data.begin(), name_data.end());
         fmt::print("uniform: {}\n", name);
     }
+}
+
+
+bool graphics::link_success(int32_t program_id)
+{
+    return glGetProgram(program_id, GL_LINK_STATUS);
 }
 
 //static

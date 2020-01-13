@@ -5,7 +5,7 @@ The same can be said for the globals.
 
 
 `
-cl /EHsc win32_entrypoint.cc io.cc /I include/ /link opengl32.lib user32.lib Gdi32.lib
+cl.exe /EHsc win32_entrypoint.cc io.cc /I include/ /link opengl32.lib user32.lib Gdi32.lib
 ` 
 
 
