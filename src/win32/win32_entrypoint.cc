@@ -8,6 +8,7 @@
 
 #include "io.h" // Keyboard_State, Platform_Key_Map 
 #include "globals.h"  // globals.window_width, globals.window_height
+#include "../game/game.h"
 
 //@NOTE: go to create_window in order to skip the openGL / input handling 
 // stuff.
@@ -343,12 +344,12 @@ HGLRC global_gl_context;
 
 static void application_init()
 {
-   //game::init();
+    game::init();
 }
 
 static void application_loop()
 {
-    //game::main_loop();
+    game::main_loop();
 }
 
 ///---------------------------------------------------------------------------
@@ -430,6 +431,8 @@ int WINAPI wWinMain(HINSTANCE instance,
     // how do we avoid bi-dependency here?
     global_gl_context = gl_context;
     global_device_context = device_context;
+    //@Global
+    globals.device_context = device_context;
 
     ShowWindow(window, command_show);
     UpdateWindow(window);

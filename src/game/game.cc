@@ -3,7 +3,6 @@
 #include <vector>
 #include <string>
 
-#include "../globals/globals.h"
 #include "../sound/sound.h"
 #include "../graphics/graphics.h"
 #include "../asset/asset.h"
@@ -11,14 +10,14 @@
 #include "../font/font.h"
 #include "../vec3/vec3.h"
 #include "../menu/menu.h"
-#include "../input/input.h"
+#include "../win32/io.h"
 
 #include <chrono> // for frame_time.
 
 
 // this is called in the entrypoint.
 // Init -> Load -> main_loop.
-void game::init_everything()
+void game::init()
 {
 
     sound::init_sound();
@@ -28,8 +27,14 @@ void game::init_everything()
     //
     game::load_everything(); 
     graphics::clear_buffers();
+   
+
     //@TODO: set some modes? program_mode, play the menu music?
-    global::globals().program_mode = Program_Mode::MENU;
+    // global::globals().program_mode = Program_Mode::MENU;
+
+
+
+
 }
 
 void game::load_everything()
@@ -44,8 +49,6 @@ void game::load_everything()
     asset_folders.texture_folder = "assets/texture_files/";
     asset_folders.scene_folder   = "assets/scene_files/";
     asset::load_assets_from_file(asset_folders);
-
-
 
 
     graphics::active_scene() = asset::scenes()["test.scene"];    
@@ -91,15 +94,9 @@ void game::load_everything()
 // as well as the mouse coordinates.
 void game::main_loop()
 {
-    // update the globals that are updated through the entrypoint.
-    // what if the window resizes?
-    global::globals().previous_mouse_coordinates = game::globals().mouse_coordinates;
-    global::globals().mouse_coordinates = input::new_mouse_coordinates(); 
-
-
     graphics::clear_buffers();
-    const auto program_mode = game::globals().program_mode;
-  
+
+    const auto program_mode = Program_Mode::MENU;
     // start frame time recording.
     auto start = std::chrono::system_clock::now();
 
@@ -126,19 +123,20 @@ void game::main_loop()
     graphics::swap_buffers();
     // rudimentary frame time calculation. Eventually, we want this to be in double form.
     auto end = std::chrono::system_clock::now();
-    global::globals().previous_frame_time = end - start;
+    // global::globals().previous_frame_time = end - start;
+
 }
 
 
 void game::handle_menu_input()
 {
-    auto &queue = input::input_queue();
+    auto &queue = io::input_queue();
     int active_menu_item = static_cast<int>(menu::active_start_menu_item());
 
     //@Refactor: look up how to properly deal with key events.
     for (auto key : queue)
     {
-        if (key == input::Key_Input::KEY_UP)
+        if (key == io::Button::KEY_UP)
         {
             if (active_menu_item == menu::Menu_Item::START) {} // do nothing
             else
@@ -147,7 +145,7 @@ void game::handle_menu_input()
             sound::play_sound("assets/music/menu_select.wav");
 
         }
-        if (key == input::Key_Input::KEY_DOWN)
+        if (key == io::Button::KEY_DOWN)
         {
             if(active_menu_item == menu::Menu_Item::EXIT) {} // do nothing
             else
@@ -166,10 +164,10 @@ void game::simulate_gameplay()
     //@FIXME: do we want the keyboard to be bitwise? I think so,
     // Now we are evaluating every value for every key.
     // so we can continue?
-    auto &queue = input::input_queue();
+    auto &queue = io::input_queue();
     for (auto key : queue)
     {
-        if (key == input::Key_Input::KEY_UP)
+        if (key == io::Button::KEY_UP)
         {
         }
     }
@@ -184,11 +182,11 @@ std::chrono::duration<float, std::milli>& game::previous_frame_time()
     return previous_frame_time;
 }
 
-game::Program_Mode& game::global_program_mode()
-{
-    static Program_Mode mode;
-    return mode;
-}
+// game::Program_Mode& game::global_program_mode()
+// {
+//     static Program_Mode mode;
+//     return mode;
+// }
 
 void game::shutdown()
 {

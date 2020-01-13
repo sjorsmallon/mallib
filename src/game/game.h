@@ -3,12 +3,18 @@
 #include <chrono>
 
 
+
 namespace game
 {
-
+	
+	enum class Program_Mode
+	{
+		MENU,
+		GAME
+	};
 
 	// //@Refactor: change to double for more precision?
- 	// std::chrono::duration<float, std::milli>& previous_frame_time();
+ 	std::chrono::duration<float, std::milli>& previous_frame_time();
 
 
 	//@Refactor: is input handling like this better? or keep it
@@ -18,7 +24,7 @@ namespace game
 
 
 	// initing
-	void init_everything();
+	void init();
 	void init_audio();
 	void init_font();
 	void init_graphics();

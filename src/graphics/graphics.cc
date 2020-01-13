@@ -9,6 +9,9 @@
 #include <Wingdi.h>
 #include <stdlib.h>
 
+#include "../win32/globals.h"
+
+
 #define BUFFER_OFFSET(i) ((void*)(i)) //hacky macro for offset.
 #include "../on_leaving_scope/on_leaving_scope.h"
 #include "../file/file.h"
@@ -27,6 +30,31 @@ std::map<std::string, graphics::Buffers>& graphics::buffers()
 {
     static std::map<std::string, graphics::Buffers> buffers;
     return buffers;
+}
+
+void graphics::init_graphics()
+{ 
+    graphics::global_Win32_context().device_context = globals.device_context;
+    graphics::init_opengl();
+    graphics::setup_shaders();
+    graphics::set_shader(graphics::Shader_Type::SHADER_DEFAULT);
+}
+
+
+void graphics::init_opengl()
+{
+    //@NOte::init gl_lite only after the gl_context has been created
+    // (which is done in the win32 section of the program, since that is OS related.)
+    gl_lite_init();
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+
+    //@Refactor: These OpenGL settings are used for font. should we move it there?
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 }
 
 void graphics::setup_shaders()
@@ -87,28 +115,7 @@ void graphics::setup_shaders()
 
 }
 
-void graphics::init_opengl()
-{
-    //@NOte::init gl_lite only after the gl_context has been created
-    // (which is done in the win32 section of the program, since that is OS related.)
-    gl_lite_init();
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
-    //@Refactor: These OpenGL settings are used for font. should we move it there?
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-}
-
-void graphics::init_graphics()
-{ 
-    graphics::init_opengl();
-    graphics::setup_shaders();
-    graphics::set_shader(graphics::Shader_Type::SHADER_DEFAULT);
-}
 
 
 void graphics::set_shader(Shader_Type shader_type)

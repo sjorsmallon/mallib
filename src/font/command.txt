@@ -1,0 +1,1 @@
+cl /std:c++17 main.cc memory.cc /flags /link /subsystem:console
