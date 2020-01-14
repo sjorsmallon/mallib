@@ -8,7 +8,8 @@
 
 #include "io.h" // Keyboard_State, Platform_Key_Map 
 #include "globals.h"  // globals.window_width, globals.window_height
-#include "../game/game.h"
+#include "../game/game.h" 
+#include "../graphics/graphics.h" // this is a test.
 
 //@NOTE: go to create_window in order to skip the openGL / input handling 
 // stuff.

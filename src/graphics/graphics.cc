@@ -5,11 +5,11 @@
 #include <stdint.h>
 #include <string>
 #include <sstream>
-#include "../win32/gl_lite.h"
+
 #include <Wingdi.h>
 #include <stdlib.h>
 
-#include "../win32/globals.h"
+
 
 
 #define BUFFER_OFFSET(i) ((void*)(i)) //hacky macro for offset.
@@ -20,6 +20,8 @@
 #include "../mat3/mat3.h" // for normal matrix.
 #include "../scene/scene.h"
 
+#include "../win32/gl_lite.h"
+#include "../win32/globals.h"
 // game time?
 #include "../game/game.h"
 
@@ -35,9 +37,7 @@ std::map<std::string, graphics::Buffers>& graphics::buffers()
 void graphics::init_graphics()
 { 
     graphics::init_opengl();
-
     graphics::global_Win32_context().device_context = globals.device_context;
-
     graphics::setup_shaders();
     graphics::set_shader(graphics::Shader_Type::SHADER_DEFAULT);
 }
@@ -154,9 +154,10 @@ void graphics::set_shader(Shader_Type shader_type)
 
 void graphics::init_texture_settings(std::map<std::string, asset::Texture>& textures)
 {
+    uint32_t test_texture = 0;
+    glGenTextures(1, &test_texture);
 
-
-    // glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE0);
     // for (auto& [texture_name, texture]: textures)
     // {
     //     glGenTextures(1, &texture.gl_texture_id);
