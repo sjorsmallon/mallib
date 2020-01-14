@@ -160,6 +160,7 @@ static void init_opengl_extensions()
     if (!pixel_format) {
         fatal_error("Failed to find a suitable pixel format.");
     }
+
     if (!SetPixelFormat(dummy_dc, pixel_format, &pfd)) {
         fatal_error("Failed to set the pixel format.");
     }
@@ -433,6 +434,7 @@ int WINAPI wWinMain(HINSTANCE instance,
     global_device_context = device_context;
     //@Global
     globals.device_context = device_context;
+    globals.gl_context = gl_context;
 
     ShowWindow(window, command_show);
     UpdateWindow(window);
@@ -445,7 +447,6 @@ int WINAPI wWinMain(HINSTANCE instance,
         //@global:
         globals.window_width = width;
         globals.window_height = height;
-
         SetWindowPos(
           window,
           HWND_TOP,

@@ -14,14 +14,10 @@ namespace game
 	};
 
 	// //@Refactor: change to double for more precision?
- 	std::chrono::duration<float, std::milli>& previous_frame_time();
+ 	std::chrono::duration<double, std::milli>& previous_frame_time();
 
-
-	//@Refactor: is input handling like this better? or keep it
-	// centralized in one function which then evaluates what the game state is
 	void handle_menu_input();
-	void simulate_gameplay(); // make this static in the class?
-
+	void simulate_gameplay();
 
 	// initing
 	void init();

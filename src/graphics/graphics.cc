@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <string>
 #include <sstream>
-#include "gl_lite.h"
+#include "../win32/gl_lite.h"
 #include <Wingdi.h>
 #include <stdlib.h>
 
@@ -34,8 +34,10 @@ std::map<std::string, graphics::Buffers>& graphics::buffers()
 
 void graphics::init_graphics()
 { 
-    graphics::global_Win32_context().device_context = globals.device_context;
     graphics::init_opengl();
+
+    graphics::global_Win32_context().device_context = globals.device_context;
+
     graphics::setup_shaders();
     graphics::set_shader(graphics::Shader_Type::SHADER_DEFAULT);
 }
@@ -43,13 +45,16 @@ void graphics::init_graphics()
 
 void graphics::init_opengl()
 {
+
     //@NOte::init gl_lite only after the gl_context has been created
     // (which is done in the win32 section of the program, since that is OS related.)
     gl_lite_init();
+
+
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.2f, 0.8f, 0.3f, 1.0f);
 
     //@Refactor: These OpenGL settings are used for font. should we move it there?
     glEnable(GL_BLEND);
@@ -70,7 +75,7 @@ void graphics::setup_shaders()
     const uint32_t text_vertex   = graphics::load_compile_attach_shader(shader_programs.text, "assets/shaders/text.vertex");
     const uint32_t text_fragment = graphics::load_compile_attach_shader(shader_programs.text, "assets/shaders/text.fragment");
     glLinkProgram(shader_programs.text);
-    if (!graphics::link_success(shader_programs.gouraud))
+    if (!graphics::link_success(shader_programs.text))
     {
         fmt::print("error: shader could not be linked.");
     }
@@ -82,9 +87,9 @@ void graphics::setup_shaders()
     const uint32_t normal_vertex   = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/normals.vertex");
     const uint32_t normal_fragment = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/normals.fragment");
     glLinkProgram(shader_programs.normals);
-    if (!graphics::link_success(shader_programs.gouraud))
+    if (!graphics::link_success(shader_programs.normals))
     {
-        fmt::print("error: shader could not be linked.");
+        fmt::print("error: shader could not be linked.\n");
     }
     glDetachShader(shader_programs.normals, normal_vertex);
     glDetachShader(shader_programs.normals, normal_fragment);
@@ -96,7 +101,7 @@ void graphics::setup_shaders()
     glLinkProgram(shader_programs.gouraud);
     if (!graphics::link_success(shader_programs.gouraud))
     {
-        fmt::print("error: shader could not be linked.");
+        fmt::print("error: shader could not be linked.\n");
     }
     glDetachShader(shader_programs.gouraud, gouraud_vertex);
     glDetachShader(shader_programs.gouraud, gouraud_fragment);
@@ -108,7 +113,7 @@ void graphics::setup_shaders()
     glLinkProgram(shader_programs.isophotes);
     if (!graphics::link_success(shader_programs.isophotes))
     {
-        fmt::print("error: shader could not  be linked.");   
+        fmt::print("error: shader could not be linked.\n");   
     }
     glDetachShader(shader_programs.isophotes, isophotes_vertex);
     glDetachShader(shader_programs.isophotes, isophotes_fragment);
@@ -149,29 +154,31 @@ void graphics::set_shader(Shader_Type shader_type)
 
 void graphics::init_texture_settings(std::map<std::string, asset::Texture>& textures)
 {
-    glActiveTexture(GL_TEXTURE0 + 1);
-    for (auto& [texture_name, texture]: textures)
-    {
-        glGenTextures(1, &texture.gl_texture_id);
-        glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
+
+
+    // glActiveTexture(GL_TEXTURE0);
+    // for (auto& [texture_name, texture]: textures)
+    // {
+    //     glGenTextures(1, &texture.gl_texture_id);
+    //     glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
        
-        glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GL_RGB8,
-            texture.dimensions.x,
-            texture.dimensions.y,
-            0,
-            GL_RGB,
-            GL_UNSIGNED_BYTE,
-            texture.data);
+    //     glTexImage2D(
+    //         GL_TEXTURE_2D,
+    //         0,
+    //         GL_RGB8,
+    //         texture.dimensions.x,
+    //         texture.dimensions.y,
+    //         0,
+    //         GL_RGB,
+    //         GL_UNSIGNED_BYTE,
+    //         texture.data);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    }
+    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // }
+    fmt::print("calling glactivetexture crashes the program.\n");
 
 }
 
@@ -193,8 +200,6 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
 
 void graphics::draw_game_3d()
 {
-
-
 
     // all matrices are defined in row major fashion. openGL needs to know about that.
     const bool row_major = true;
@@ -420,10 +425,9 @@ graphics::Win32_Context& graphics::global_Win32_context() //@cleanup: i don't li
 // static
 void graphics::get_shader_info(uint32_t prog)
 {
-
     fmt::print("shader info for program {}:\n", prog);
 
-    std::vector<GLchar> nameData(256);
+    std::vector<GLchar> name_data(256);
     std::vector<GLenum> properties = {};
     properties.push_back(GL_NAME_LENGTH);
     properties.push_back(GL_TYPE);
@@ -439,12 +443,11 @@ void graphics::get_shader_info(uint32_t prog)
         glGetProgramResourceiv(prog, GL_PROGRAM_INPUT, attrib, properties.size(),
         &properties[0], values.size(), NULL, &values[0]);
 
-        nameData.resize(values[0]); //The length of the name.
-        glGetProgramResourceName(prog, GL_PROGRAM_INPUT, attrib, nameData.size(), NULL, &nameData[0]);
+        name_data.resize(values[0]);
+        glGetProgramResourceName(prog, GL_PROGRAM_INPUT, attrib, name_data.size(), NULL, &name_data[0]);
         std::string name(name_data.begin(), name_data.end());
         fmt::print("attributes: {}\n", name);
     }
-
 
     // PROGRAM_UNIFORMS.
     GLint numActiveUniforms = 0;
@@ -454,17 +457,19 @@ void graphics::get_shader_info(uint32_t prog)
         glGetProgramResourceiv(prog, GL_UNIFORM, unif, properties.size(),
         &properties[0], values.size(), NULL, &values[0]);
 
-        nameData.resize(values[0]); //The length of the name.
-        glGetProgramResourceName(prog, GL_UNIFORM, unif, nameData.size(), NULL, &nameData[0]);
+        name_data.resize(values[0]); //The length of the name.
+        glGetProgramResourceName(prog, GL_UNIFORM, unif, name_data.size(), NULL, &name_data[0]);
         std::string name(name_data.begin(), name_data.end());
         fmt::print("uniform: {}\n", name);
     }
 }
 
 
-bool graphics::link_success(int32_t program_id)
+bool graphics::link_success(uint32_t program_id)
 {
-    return glGetProgram(program_id, GL_LINK_STATUS);
+    int gl_params = 0;
+    glGetProgramiv(program_id, GL_LINK_STATUS, &gl_params);
+    return gl_params;
 }
 
 //static

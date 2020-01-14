@@ -8,7 +8,7 @@
 #include <string> // for testing.
 #include <vector>
 
-#include "../graphics/gl_lite.h"
+#include "../win32/gl_lite.h"
 #include "../vec2/vec2.h"
 #include "../vec3/vec3.h"
 

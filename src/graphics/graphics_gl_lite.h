@@ -74,7 +74,7 @@
 #define GL_ARRAY_SIZE                     0x92FB
 
 #define GL_PROGRAM_INPUT                  0x92E3
-
+#define GL_LINK_STATUS                    0x8B82
 
 
 
@@ -85,7 +85,8 @@ typedef ptrdiff_t GLsizeiptr;
 #define MALLIB_GL_LIST_WIN32 \
     /* ret, name, params */ \
     GLE(void,      BlendEquation,           GLenum mode) \
-    GLE(void,      ActiveTexture,           GLenum texture) \
+    /* GLE(void,      ActiveTexture,           GLenum texture)*/
+
     /* end */
 
 #endif // _WIN32
@@ -138,8 +139,8 @@ typedef ptrdiff_t GLsizeiptr;
     GLE(void,      GetProgramiv,            GLuint program, GLenum pname, GLint *params)\
     GLE(void,      GetProgramResourceiv,    GLuint program, GLenum programInterface, GLuint index, GLsizei propCount, const GLenum *props, GLsizei bufSize, GLsizei *length, GLint *params)\
     GLE(void,      GetProgramResourceName,  GLuint program, GLenum programInterface, GLuint index, GLsizei bufSize, GLsizei *length, GLchar *name)\
-
-
+    GLE(void,      glGetProgramiv,          GLuint program, GLenum pname, GLint *params)\
+    GLE(void,      ActiveTexture,           GLenum texture) \
     /* end */
 
 #define GLE(ret, name, ...) typedef ret GLDECL name##proc(__VA_ARGS__); extern name##proc * gl##name;
@@ -180,7 +181,8 @@ bool gl_lite_init()
     #undef GLE
 
 #elif defined(_WIN32)
-
+    OutputDebugStringA("loading opengl functions.\n");     
+    
     HINSTANCE dll = LoadLibraryA("opengl32.dll");
     typedef PROC WINAPI wglGetProcAddressproc(LPCSTR lpszProc);
     if (!dll) {
@@ -196,6 +198,10 @@ bool gl_lite_init()
                 OutputDebugStringA("Function gl" #name " couldn't be loaded from opengl32.dll\n"); \
                 return false;                                                                      \
             }
+            else                                                                                   \
+            {                                                                                      \
+                OutputDebugStringA("Function gl" #name " loaded from opengl32.dll\n");             \
+            }                                                                                      \
         MALLIB_GL_LIST
         MALLIB_GL_LIST_WIN32
     #undef GLE

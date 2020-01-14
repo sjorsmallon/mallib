@@ -10,6 +10,7 @@ struct Globals
 	int32_t window_height;
 	float aspect_ratio;
 	HDC device_context;
+	HGLRC gl_context;
 };
 
 extern Globals globals;

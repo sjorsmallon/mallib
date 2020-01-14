@@ -11,30 +11,20 @@
 #include "../vec3/vec3.h"
 #include "../menu/menu.h"
 #include "../win32/io.h"
-
 #include <chrono> // for frame_time.
-
 
 // this is called in the entrypoint.
 // Init -> Load -> main_loop.
 void game::init()
 {
-
-    sound::init_sound();
     graphics::init_graphics();
+    
+    sound::init_sound();
     font::init_font();
     menu::init_menu();
-    //
+
     game::load_everything(); 
     graphics::clear_buffers();
-   
-
-    //@TODO: set some modes? program_mode, play the menu music?
-    // global::globals().program_mode = Program_Mode::MENU;
-
-
-
-
 }
 
 void game::load_everything()
@@ -50,10 +40,10 @@ void game::load_everything()
     asset_folders.scene_folder   = "assets/scene_files/";
     asset::load_assets_from_file(asset_folders);
 
-
-    graphics::active_scene() = asset::scenes()["test.scene"];    
+    graphics::active_scene() = asset::scenes()["test.scene"];  
     graphics::init_texture_settings(asset::texture_data());
-    
+    fmt::print("after loading assets texture settings.\n");  
+
     // generate the VAO/VBO map.
     auto& buffers =  graphics::buffers();
     for (auto &[key, raw_object_data]: asset::obj_data())
@@ -95,7 +85,6 @@ void game::load_everything()
 void game::main_loop()
 {
     graphics::clear_buffers();
-
     const auto program_mode = Program_Mode::MENU;
     // start frame time recording.
     auto start = std::chrono::system_clock::now();
@@ -116,10 +105,12 @@ void game::main_loop()
     }
 
     sound::update_audio();
-    graphics::render_frame(); 
+
     // @FIXME FIXME : drawing menu after render_frame. This is because we want to render font last.
+    graphics::render_frame(); 
     // eventually, the menu will have its own buffer etcetera.
-    menu::draw_menu();
+
+    //menu::draw_menu();
     graphics::swap_buffers();
     // rudimentary frame time calculation. Eventually, we want this to be in double form.
     auto end = std::chrono::system_clock::now();
@@ -160,33 +151,25 @@ void game::handle_menu_input()
 
 void game::simulate_gameplay()
 {
-    //@FIXME: where is the input queue emptied?
-    //@FIXME: do we want the keyboard to be bitwise? I think so,
-    // Now we are evaluating every value for every key.
-    // so we can continue?
-    auto &queue = io::input_queue();
-    for (auto key : queue)
+    auto &input_queue = io::input_queue();
+    for (auto key : input_queue)
     {
         if (key == io::Button::KEY_UP)
         {
         }
     }
 
-    queue.clear();
+    // clear input queue.
+    input_queue.clear();
 }
 
 
-std::chrono::duration<float, std::milli>& game::previous_frame_time()
+std::chrono::duration<double, std::milli>& game::previous_frame_time()
 {
-    static std::chrono::duration<float, std::milli> previous_frame_time;
+    static std::chrono::duration<double, std::milli> previous_frame_time;
     return previous_frame_time;
 }
 
-// game::Program_Mode& game::global_program_mode()
-// {
-//     static Program_Mode mode;
-//     return mode;
-// }
 
 void game::shutdown()
 {
@@ -200,6 +183,13 @@ void game::deinit_everything()
     //graphics::deinit_graphics();
     //font::deinit_font();  
 }
+
+// game::Program_Mode& game::global_program_mode()
+// {
+//     static Program_Mode mode;
+//     return mode;
+// }
+
 
 // Jon Blow main loop.
 // graphics::render_frame();
