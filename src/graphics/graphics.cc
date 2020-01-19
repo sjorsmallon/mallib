@@ -9,9 +9,6 @@
 #include <Wingdi.h>
 #include <stdlib.h>
 
-
-
-
 #define BUFFER_OFFSET(i) ((void*)(i)) //hacky macro for offset.
 #include "../on_leaving_scope/on_leaving_scope.h"
 #include "../file/file.h"

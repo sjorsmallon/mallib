@@ -19,7 +19,6 @@ namespace mat
     static inline const float DEG2RAD = mat::PI / 180.0f;
     static inline const float RAD2DEG = 180.0f / mat::PI;
 
-
     // mat4
     Mat4 model_from_xform_state(const Xform_State& state);
     Mat4 mat4_from_quat(const Vec4& quaternion);
@@ -30,7 +29,6 @@ namespace mat
     void to_transpose(Mat4& lhs);
     Mat4 transpose(const Mat4& lhs);
     void to_identity(Mat4 &lhs);
-
 
     Mat4 translate(const Mat4& matrix, const Vec3& vector);
     Mat4 scale(const Mat4& matrix, const float scale_factor);
@@ -44,12 +42,12 @@ namespace mat
     Mat4 translation(const Vec3& position);
     Mat4 view(const Vec3& eye, const Vec3& center, const Vec3& up);
     Mat4 look_at(const Vec3& eye, const Vec3& center, const Vec3& up);
-    Mat4 ortho( const float left,
-                const float right,
-                const float top,
-                const float bottom,
-                const float z_near,
-                const float z_far
+    Mat4 ortho(const float left,
+               const float right,
+               const float top,
+               const float bottom,
+               const float z_near,
+               const float z_far
               );
 
     // mat3
@@ -239,7 +237,7 @@ inline bool mat::try_inverse(Mat3& lhs)
     inverse[0][2] = lhs[0][1] * lhs[1][2] - lhs[1][1] * lhs[0][2];
 
     double det = lhs[0][0] * inverse[0][0] + lhs[1][0] * inverse[0][1] + lhs[2][0] * inverse[0][2];
-
+    //@FIXME:::FIXME::
     // if det is too small, the inverse does not exist.
     // if ( ) {
     //     return false;

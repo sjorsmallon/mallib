@@ -19,16 +19,6 @@
 
 namespace graphics
 {
-	// struct Render_Settings
-	// {
-	// 	bool render_isophotes;
-	// 	bool render_normals;
-	// 	bool 
-	// 	bool
-	// 	bool
-	// 	bool
-	// }
-
 	struct Light
 	{
 		Vec3 position;
@@ -58,14 +48,6 @@ namespace graphics
 		uint32_t default;
 	};
 
-	struct Window_Settings
-	{
-		float width;
-		float height;
-		bool v_sync;
-	};
-
-
 	void init_graphics(); //@Note: does that also mean to load all the shaders etc?
 	void init_opengl();
 	void setup_shaders();
@@ -80,11 +62,8 @@ namespace graphics
 	void get_shader_info(uint32_t shader_program);
 	bool link_success(uint32_t shader_program);
 
-
 	Shaders& shaders();
-	Window_Settings& window_settings();
 	
-
 	//@Refactor what does this return? shader_id, program, id?
 	// using program_id, shader_id = uint32_t;
 	uint32_t load_compile_attach_shader(uint32_t program, std::string file_name);

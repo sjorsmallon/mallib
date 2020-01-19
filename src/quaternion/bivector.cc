@@ -1,6 +1,4 @@
 
-
-
 struct Bivector3
 {
 	float b01 = 0;

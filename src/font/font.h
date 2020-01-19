@@ -64,8 +64,6 @@ namespace font
 	gl_Objects& gl_objects();
 
 	Font& default_font();
-	// std::array<Character, 255>& default_font();
-
 	void init_font();
 	void init_font_gl_objects();
 	void gl_text_mode();

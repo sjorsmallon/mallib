@@ -14,9 +14,8 @@
 #include "../vec2/vec2.h"
 #include <cmath> // sin, PI
 
-// #include "../mat4/mat4.h" // projection.
-// #include "../mat/mat.h"
 #include "../game/game.h" //@Refactor: replace this with globals for previous_frame_time.
+#include "../globals/globals.h" // for the window dimensions.
 
 
 font::Font& font::default_font()
@@ -97,7 +96,10 @@ void font::draw_text(std::string text,
     //@Refactor: this should match the Active Texture (i.e. GL_TEXTURE0). we're lucky that it does right now.
     glUniform1i(glGetUniformLocation(graphics::shaders().text, "text"), 0);
 
-    const auto& settings  = graphics::window_settings();
+    // const auto& settings  = graphics::window_settings();
+    //@FIXME: This requires accessing the globals for window width and window_height.
+    int32_t window_width = globals.window_width;
+    int32_t window_height = globals.window_height;
     glViewport(0, 0,static_cast<int>(settings.width),static_cast<int>(settings.height));
 
     float top   = settings.height; // viewport 
