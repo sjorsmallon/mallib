@@ -1,13 +1,14 @@
 
 ## actual TODO
-`glLinkProgram` can fail. check the status of the program after linking (i.e. glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+
+## Loading shaders
+Move this partially to the `game` thing instead of in graphics. All gl code should be there,
+but the loading is now implicit.
+
 
 # TODO
 
-## Extra
-Partially rewrote the entrypoint for win32. Should help to provide more structure to the input interfacing, 
-as well as hopefully make the graphics thing less painful. Don't be afraid of constructors & destructors,
-they can be pretty useful if used correctly.
+
 
 
 ## Graphics manager
@@ -19,13 +20,8 @@ according to  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Prac
 as few VBOs as possible. I'm wondering whether it's possible to keep data on the gpu and re-render that data (instead of needing to supply
 a model multiple times in the same VBO.) (this is possible.)
 
-### Ideas of how to handle the VAO/VBO situation
-use a VAO for generic drawings (for now, just update the VBO everytime. We could look at concatenating it. or switching to an IBO.)
-secondly, use a VAO/VBO combo for entity placement (i.e. light locations.)
-
 ## Contracts for namespaces
 What do namespaces need in order to function? i.e. some sort of mandatory "constructor". I am leaning to a `Settings` struct.
-
 
 ## Rotating the Scene Objects with Input
 we want to manipulate the scene using the mouse / keyboard. 
@@ -173,6 +169,13 @@ I need to document how to build soloud, as it uses this weird build system. It's
 
 
 # HAVE DONE
+
+## Extra
+Partially rewrote the entrypoint for win32. Should help to provide more structure to the input interfacing, 
+as well as hopefully make the graphics thing less painful.
+
+
+`glLinkProgram` can fail. check the status of the program after linking (i.e. glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
 
 ## See how to fix font / texture rendering
 The way font renders textures does something funky with the `glPixelParameteri` that we need to undo before trying to render our own textures.
