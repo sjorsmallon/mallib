@@ -1,13 +1,28 @@
 
-## actual TODO
 
-## Loading shaders
-Move this partially to the `game` thing instead of in graphics. All gl code should be there,
-but the loading is now implicit.
+# shortlist TODO
+
+## re-enable textures
+ 
+## Rotating the Scene Objects Correctly
+currently, the ordering w.r.t translation/ rotation is borked because of the row major decision.
+Maybe we should keep it fire & forget for now.. or just abstract it as a whole.
+
+refactor the namespaces to some sort of init -> alloc pattern. (alloc can be called in init, but just that that is the regular pattern).
+
+refactor the graphics namespace. keep the state in game instead.
+
+start working on actually making something.
+
+switch to the custom allocator for trying new stuff out.
+
+implement font waving up and down.
+
+## include IMGUI
+We want to use IMGUI as some sort of debugging UI menu. IMGUI extension: allow IMGUI to run as detached window.
 
 
-# TODO
-
+# longlist TODO
 
 
 
@@ -20,17 +35,16 @@ according to  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Prac
 as few VBOs as possible. I'm wondering whether it's possible to keep data on the gpu and re-render that data (instead of needing to supply
 a model multiple times in the same VBO.) (this is possible.)
 
-## Contracts for namespaces
-What do namespaces need in order to function? i.e. some sort of mandatory "constructor". I am leaning to a `Settings` struct.
+### Ideas of how to handle the VAO/VBO situation
+use a VAO for generic drawings (for now, just update the VBO everytime. We could look at concatenating it. or switching to an IBO.)
+secondly, use a VAO/VBO combo for entity placement (i.e. light locations.)
 
 ## Rotating the Scene Objects with Input
 we want to manipulate the scene using the mouse / keyboard. 
 
-## Rename shader uniforms (projection_model -> projection_matrix)
 
-## Rotating the Scene Objects Correctly
-currently, the ordering w.r.t translation/ rotation is borked because of the row major decision.
-Maybe we should keep it fire & forget for now.. or just abstract it as a whole.
+
+## look at input polling thread.
 
 
 ## Unify normalize & transpose syntax.
@@ -38,17 +52,11 @@ Maybe we should keep it fire & forget for now.. or just abstract it as a whole.
 ## Fix how we set Active Shader
 we want some `active_shader` pointer or reference in graphics, since the way we do it now is convoluted.
 
-
-## include IMGUI
-We want to use IMGUI as some sort of debugging UI menu. IMGUI extension: allow IMGUI to run as detached window.
-
 ##  Texture descriptions
 Devise some sort of construct / order / layout which specifies the texture resolution.
 
-
 ## Better errors when things are not specified in the scene format
 We need to know when textures etc are not specified properly, so we can save some debugging time.
-
 
 ## Shader reloading && Refactor adding shaders.
 Shader reloading is almost there. Let's finish it.
@@ -109,17 +117,8 @@ be a problem for a later date.
 
 
 # The const curse
-constness spreads throughout the application as a virus. What's mostly annoying is that constness should be more like 
-a contract in terms of what we are trying to do with it, but it also forces us to write more operator overloads.
-which is kind of annoying. I'm not sure what road I should go yet. I feel constness should actually be that 
-by default: let everything be const instead of mutable. sigh.
-
-
-# Long Term Goals
-This repository should contain a set of classes and structures that allow any user
-to easily construct a game engine. This is very work-in-progress; don't expect things to stay the same for very long.
-
-
+constness spreads throughout the application. What's mostly annoying is that constness should be more like 
+a contract in terms of what we are trying to do with it, but it also forces us to write more operator overloads and stricter function definitions, which is kind of annoying.
 
 
 ## openGL extension loading
@@ -127,11 +126,7 @@ openGL on windows is convoluted. windows' `Gl\Gl.h` only includes the basic open
 
 Furthermore, openGL extension loading is also tricky. Normally, libraries like GLEW handle the loading of extensions. The problem with those libraries is distribution: it is one more thing to deploy and link against, etc. The way we do it now is sort of manually: using `gl_lite.h`, we can define and include types and functions, specified in `gl_ext.h`(the official gl_extensions header). This will result in lower compile times & less code bloat overall. It feels archaic, but it works.
 
-The way it works is we need to include "gl_lite.h" everywhere we would use openGL functions. In one of the source files, we need a `#define`. I would suggest putting this define in the entrypoint of your application.
-
-
-## Writing as we go
-I'll keep updating `main_test.cc` as we go along. I have a habit of writing code I may or may not use. Keeping the YAGNI principle in mind, I'll just write what I need. I do want to think about APIs for these tools that I will need (such as the renderer or the audio player), but superficial substitutions will do.
+The way it works is we need to include `"gl_lite.h"` everywhere we would use openGL functions. In one of the source files, we need a `#define`. I would suggest putting this define in the entrypoint of your application.
 
 
 ## sound API Design
@@ -170,12 +165,15 @@ I need to document how to build soloud, as it uses this weird build system. It's
 
 # HAVE DONE
 
-## Extra
-Partially rewrote the entrypoint for win32. Should help to provide more structure to the input interfacing, 
-as well as hopefully make the graphics thing less painful.
 
+## Contracts for namespaces
+What do namespaces need in order to function? i.e. some sort of mandatory "constructor". I am leaning to a `Settings` struct.
+
+Rename shader uniforms (projection_model -> projection_matrix)
 
 `glLinkProgram` can fail. check the status of the program after linking (i.e. glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+
+
 
 ## See how to fix font / texture rendering
 The way font renders textures does something funky with the `glPixelParameteri` that we need to undo before trying to render our own textures.

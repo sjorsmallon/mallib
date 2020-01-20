@@ -10,8 +10,6 @@ bool config::load_config(std::string filename)
     std::string data;
 
     constexpr const int max_string_length = 50;
-
-
     //@Refactor: take a look at how load_obj works, and refactor
     // the line incrementing into the file handler.
     file::file_to_string(filename, data);

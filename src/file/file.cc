@@ -55,9 +55,6 @@ std::vector<std::string> file::list_files_in_dir(const std::string& dir_name)
 }
 
 
-
-
-
 // returns 0 when something's not right.
 size_t file::get_file_size(const std::string& filename)
 {
@@ -67,7 +64,7 @@ size_t file::get_file_size(const std::string& filename)
 }
 
 // platform specific.
-void find_or_create_folder(const std::string& foldername)
+void file::find_or_create_folder(const std::string& foldername)
 {
     fs::create_directory(foldername);
     // otherwise:

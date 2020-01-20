@@ -60,7 +60,6 @@ void menu::draw_menu()
     font::Text_Effect settings_effect   = font::Text_Effect::NONE;
     font::Text_Effect exit_game_effect  = font::Text_Effect::NONE;
 
-
     //@Refactor: make a struct for this?
     switch(menu::active_start_menu_item())
     {
@@ -92,9 +91,7 @@ void menu::draw_menu()
     // Menu Item: Start Game
     //
     {
-        //if ()
-
-        std::string start_game = "Start game";
+        std::string start_game{"Start game"};
         uint32_t start_game_width = font::get_string_width_in_pixels(start_game, menu_font);
         uint32_t start_game_x = center_x - 0.5 * start_game_width;
         font::draw_text(start_game,
@@ -110,7 +107,7 @@ void menu::draw_menu()
     // Menu Item: Settings
     //
     {
-        std::string settings = "Settings";
+        std::string settings{"Settings"};
         uint32_t settings_width = font::get_string_width_in_pixels(settings, menu_font);
         uint32_t settings_x = center_x - 0.5 * settings_width;
         cursor_y -= vertical_stride;
@@ -126,7 +123,7 @@ void menu::draw_menu()
     // Menu Item: Exit
     //
     {
-        std::string exit = "Exit";
+        std::string exit{"Exit"};
         uint32_t exit_width = font::get_string_width_in_pixels(exit, menu_font);
         uint32_t exit_x = center_x - 0.5 * exit_width;
         cursor_y -= vertical_stride;

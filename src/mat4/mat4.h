@@ -20,7 +20,7 @@ struct Mat4
 // free mat4 functions.
 
 //@Todo: is this matmul row major?
-inline Mat4 operator*(Mat4& lhs, Mat4& rhs)
+inline Mat4 operator*(Mat4& lhs, const Mat4& rhs)
 {
     const float *m1Ptr, *m2Ptr;
     float *dstPtr;
@@ -41,6 +41,19 @@ inline Mat4 operator*(Mat4& lhs, Mat4& rhs)
         m1Ptr += 4;
     }
     return dst;
+
+    // Mat4 result = {};
+    // for (int row = 0; row != 4; ++row)
+    // {
+    //     for (int col = 0; col != 4; ++col)
+    //     {
+            
+    //         result[row][col] = lhs[row][col] * rhs[col][row]
+    //     }
+    // }
+    // result[0][0] = lhs[0][0] * lhs[0][0] + lhs[0][1] * rhs[1][0]
+    // result[1][0] = lhs[1][0] * rhs[1][0]
+
 }
 
 inline Mat4& operator*=(Mat4& lhs, const float factor)
@@ -54,6 +67,7 @@ inline Mat4& operator*=(Mat4& lhs, const float factor)
             lhs[row][col] *= factor;
         }
     }
+
     
     return lhs;
 }
