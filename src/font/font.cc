@@ -15,7 +15,7 @@
 #include <cmath> // sin, PI
 
 #include "../game/game.h" //@Refactor: replace this with globals for previous_frame_time.
-#include "../globals/globals.h" // for the window dimensions.
+#include "../win32/globals.h" // for the window dimensions.
 
 
 font::Font& font::default_font()
@@ -58,7 +58,10 @@ void font::gl_text_mode()
     //@Note: this now happens in the init_font function.
     // glEnable(GL_BLEND);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    graphics::set_shader(graphics::Shader_Type::SHADER_TEXT); 
+
+    int32_t window_width = globals.window_width;
+    int32_t window_height = globals.window_height;
+    glViewport(0, 0,static_cast<int>(window_width),static_cast<int>(window_height));
 }
 
 
@@ -86,42 +89,31 @@ void font::draw_text(std::string text,
         float sin_t = ratio * 2 * 3.14;
         // use previous_frame_time? how do we calculate this?
         float distance_t = (std::sin(sin_t) + 1.0f) /2.0f;
-        // fmt::print("distance_t: {}", distance_t);
         color = vec::lerp(color, {1.0f,1.0f,1.0f}, distance_t);
     }
 
-    glUniform3f(glGetUniformLocation(graphics::shaders().text, "text_color"), color.x, color.y, color.z);
+    graphics::set_shader(graphics::Shader_Type::SHADER_TEXT); 
+    int32_t text_color_uniform = glGetUniformLocation(graphics::shaders().text, "text_color");
+    glUniform3f(text_color_uniform, color.x, color.y, color.z);
+
+    // maybe we should rename these. 
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(gl_font.VAO);   
     //@Refactor: this should match the Active Texture (i.e. GL_TEXTURE0). we're lucky that it does right now.
     glUniform1i(glGetUniformLocation(graphics::shaders().text, "text"), 0);
 
-    // const auto& settings  = graphics::window_settings();
-    //@FIXME: This requires accessing the globals for window width and window_height.
-    int32_t window_width = globals.window_width;
-    int32_t window_height = globals.window_height;
-    glViewport(0, 0,static_cast<int>(settings.width),static_cast<int>(settings.height));
+    const float top   = window_height; // viewport 
+    const float bot   = 0.0f;
+    const float left  = 0.0f;
+    const float right = window_width; // viewport
+    const float z_near  = 0.0f;
+    const float z_far   = 1.0f; // near and far are reserved by windows???
 
-    float top   = settings.height; // viewport 
-    float bot   = 0.0f;
-    float left  = 0.0f;
-    float right = settings.width; // viewport
-    float near_  = 0.0f;
-    float far_   = 1.0f; // near and far are reserved by windows???
-
-    //@Refactor: incorporate this intro matrices.
-    float projectionmatrix[16] =   {2.0f / (right - left),   0.0f,                 0.0f,                 - (right + left) / (right - left),
-                                    0.0f,            2.0f / (top - bot),           0.0f,                   - (top + bot) / (top - bot),
-                                    0.0f,                   0.0f,          (-2.0f / (far_ - near_)),     -(far_ + near_) / (far_ - near_),
-                                    0.0f,                   0.0f,                   0.0f,                    1};
-
-    //@refactor: this projection matrix does not ever change.
-    // do we want to store this somewhere?
-    // Mat4 projection_matrix = mat::ortho(left, right, top, bot, near_, far_);
+    Mat4 projection_matrix = mat::ortho(left, right, top, bot, z_near, z_far); 
     glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text, "projection_matrix"), 1, true, &projectionmatrix[0]);
+
     
     const auto& glyph_array = font.characters;
-    
     for (const auto& single_char: text)
     {
         const auto& char_glyph = glyph_array.at(single_char); //Character&?

@@ -448,6 +448,7 @@ int WINAPI wWinMain(HINSTANCE instance,
         //@global:
         globals.window_width = width;
         globals.window_height = height;
+        
         SetWindowPos(
           window,
           HWND_TOP,

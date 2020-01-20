@@ -10,6 +10,8 @@
 #include "../quaternion/quaternion.h"
 #include "../xform_state/xform_state.h"
 
+#include <limits> // for double det.
+
 //idea: instead of creating a translation / scale / rotation matrix everytime,
 // keep a static one in the namespace?
 namespace mat
@@ -80,6 +82,7 @@ inline Mat4 mat::mat4_from_row_vec3(const Vec3& v0, const Vec3& v1, const Vec3& 
             0,      0,     0, 1};
 }
 
+//@Refactor: rotation matrix is generated as transpose. hm..
 inline Mat4 mat::mat4_from_quat(const Vec4& quaternion)
 {
     Vec3 v0 = rotate_by_quat(Vec3{1,0,0}, quaternion);  
@@ -87,6 +90,9 @@ inline Mat4 mat::mat4_from_quat(const Vec4& quaternion)
     Vec3 v2 = rotate_by_quat(Vec3{0,0,1}, quaternion);
 
     Mat4 result =  mat::mat4_from_row_vec3(v0, v1, v2); // in mat4.
+    result = to_transpose(result);
+
+
     return result;
 }
 
@@ -94,18 +100,15 @@ inline Mat4 mat::model_from_xform_state(const Xform_State& state)
 {
     Mat4 model_matrix       = mat::mat4_identity();
     Mat4 rotation_matrix    = mat4_from_quat(state.q_orientation); // in mat4.
-    //@Refactor: rotation matrix is generated as transpose. hm..
-    to_transpose(rotation_matrix);
     Mat4 translation_matrix = mat::translation(state.position);
-    // translation_matrix = mat::mat4_identity();
 
+    //@Note: since we are in a row-matrix world, we apply the transformations in the  reverse order.""
+    // translation_matrix = mat::mat4_identity();
+    model_matrix *= translation_matrix;
+    model_matrix *= rotation_matrix;
     model_matrix[0][0] *= state.scale;
     model_matrix[1][1] *= state.scale;
     model_matrix[2][2] *= state.scale;
-
-    model_matrix *= translation_matrix;
-    model_matrix *= rotation_matrix;
-
       
     return model_matrix;
 }
@@ -152,11 +155,6 @@ inline Mat4 mat::mat4_identity()
          };
 }
 
-// inline void mat::to_identity(Mat4& lhs)
-// {
-//    // nothing happens.
-// }
-
 inline Mat4 mat::ortho(const float left,
                            const float right,
                            const float top,
@@ -166,11 +164,11 @@ inline Mat4 mat::ortho(const float left,
                            )
 {
 
-    return Mat4{2.0f / right - left, 0.0f, 0.0f, - (right + left / right - left),
-                                    0.0f,  2.0f / top - bot, 0.0f, - ( top + bot / top - bot),
-                                    0.0f, 0.0f, (-2.0f / (z_far - z_near)), -(z_far + z_near / z_far - z_near),
-                                    0.0f,  0.0f,  0.0f,  1};  
-}
+    return Mat4{2.0f / right - left,             0.0f,                       0.0f,    - (right + left / right - left),
+                               0.0f, 2.0f / top - bot,                       0.0f,           -(top + bot / top - bot),
+                               0.0f,             0.0f, (-2.0f / (z_far - z_near)), -(z_far + z_near / z_far - z_near),
+                               0.0f,             0.0f,                       0.0f,                                  1};  
+}   
 
 
 
@@ -239,9 +237,9 @@ inline bool mat::try_inverse(Mat3& lhs)
     double det = lhs[0][0] * inverse[0][0] + lhs[1][0] * inverse[0][1] + lhs[2][0] * inverse[0][2];
     //@FIXME:::FIXME::
     // if det is too small, the inverse does not exist.
-    // if ( ) {
-    //     return false;
-    // }
+    if (det <= std::numeric_limits<double>::lowest()) {
+        return false;
+    }
     double inv_det = 1.0f / det;
     inverse[1][0] = lhs[2][0] * lhs[1][2] - lhs[1][0] * lhs[2][2];
     inverse[2][0] = lhs[1][0] * lhs[2][1] - lhs[2][0] * lhs[1][1];

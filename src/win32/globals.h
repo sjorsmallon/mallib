@@ -9,6 +9,7 @@ struct Globals
 	int32_t window_width;
 	int32_t window_height;
 	float aspect_ratio;
+	// previous_frame_time;
 	HDC device_context;
 	HGLRC gl_context;
 };

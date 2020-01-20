@@ -149,29 +149,27 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
     glGenTextures(1, &test_texture);
 
     glActiveTexture(GL_TEXTURE0);
-    // for (auto& [texture_name, texture]: textures)
-    // {
-    //     glGenTextures(1, &texture.gl_texture_id);
-    //     glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
+    for (auto& [texture_name, texture]: textures)
+    {
+        glGenTextures(1, &texture.gl_texture_id);
+        glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
        
-    //     glTexImage2D(
-    //         GL_TEXTURE_2D,
-    //         0,
-    //         GL_RGB8,
-    //         texture.dimensions.x,
-    //         texture.dimensions.y,
-    //         0,
-    //         GL_RGB,
-    //         GL_UNSIGNED_BYTE,
-    //         texture.data);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGB8,
+            texture.dimensions.x,
+            texture.dimensions.y,
+            0,
+            GL_RGB,
+            GL_UNSIGNED_BYTE,
+            texture.data);
 
-    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // }
-    fmt::print("calling glactivetexture crashes the program.\n");
-
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    }
 }
 
 // do we want to update the buffer content? does anyone else do that?

@@ -1,10 +1,11 @@
 #include "menu.h"
-#include "../font/font.h"
-#include "../graphics/graphics.h"
+
 #include "fmt/core.h"
 
-// @Refactor: sigh. menu is dependent on font and on graphics. 
-// how do we properly restructure?
+#include "../font/font.h"
+#include "../graphics/graphics.h"
+#include "../win32/globals.h" // screen dimensions.
+
 font::Font& menu::menu_font()
 {
     static font::Font menu_font;
@@ -13,10 +14,9 @@ font::Font& menu::menu_font()
 
 void menu::init_menu()
 {
-    const uint32_t font_height = 50; // in pixels
+    const uint32_t font_height = uint32_t{50}; // in pixels
     font::generate_font_at_size(menu::menu_font(), "assets/fonts/opensans.ttf", font_height);
 }
-
 
 menu::Menu_Item& menu::active_start_menu_item()
 {
@@ -24,33 +24,24 @@ menu::Menu_Item& menu::active_start_menu_item()
     return active_start_menu_item;
 }
 
-
 void menu::draw_menu()
 {
     // selected_menu_item
 	// graphics::render_2d_left_handed_unit();
- 	const auto& window_settings = graphics::window_settings(); // also render target?
+    // glViewport?
+    const uint32_t window_width = globals.window_width;
+    const uint32_t window_height = globals.window_height;
 
  	float vertical_offset = 200.0f;
  	float vertical_stride = 100.0f;
- 	float center_x = window_settings.width  / 2.0f;
- 	float cursor_y = (window_settings.height - vertical_offset);
+ 	float center_x = window_width  / 2.0f;
+ 	float cursor_y = (window_height - vertical_offset);
 
-    //@Refactor: use this?
-    // struct Text_Layout
-    // {
-    //     int string_width;
-    //     int pixel_height;
-    //     float at_x;
-    //     float at_y;
-    // }
-
-    //@Refactor: should we change this to a pointer or use some sort of font_manager?
+    // retrieve the menu font.
     auto& menu_font = menu::menu_font();
 
-    const float scale = 1.0f; // we shouldn't ever scale, I think.
-
-    const Vec3 default_color =  {0.19f, 0.717f,0.17f};
+    const float scale = 1.0f; // we shouldn't ever scale font since we can just request the wanted size (otherwise we get stretching)
+    const Vec3 default_color  = {0.19f, 0.717f,0.17f};
     const Vec3 selected_color = {0.12f, 0.76f, 0.717f};
     Vec3 start_game_color = default_color;
     Vec3 settings_color   = default_color;
@@ -93,7 +84,7 @@ void menu::draw_menu()
     {
         std::string start_game{"Start game"};
         uint32_t start_game_width = font::get_string_width_in_pixels(start_game, menu_font);
-        uint32_t start_game_x = center_x - 0.5 * start_game_width;
+        uint32_t start_game_x = center_x - 0.5f * start_game_width;
         font::draw_text(start_game,
                         menu_font,
                         start_game_x,
@@ -109,7 +100,7 @@ void menu::draw_menu()
     {
         std::string settings{"Settings"};
         uint32_t settings_width = font::get_string_width_in_pixels(settings, menu_font);
-        uint32_t settings_x = center_x - 0.5 * settings_width;
+        uint32_t settings_x = center_x - 0.5f * settings_width;
         cursor_y -= vertical_stride;
         font::draw_text(settings,
                         menu_font,
@@ -125,7 +116,7 @@ void menu::draw_menu()
     {
         std::string exit{"Exit"};
         uint32_t exit_width = font::get_string_width_in_pixels(exit, menu_font);
-        uint32_t exit_x = center_x - 0.5 * exit_width;
+        uint32_t exit_x = center_x - 0.5f * exit_width;
         cursor_y -= vertical_stride;
         font::draw_text(exit,
                         menu_font,

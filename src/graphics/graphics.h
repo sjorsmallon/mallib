@@ -13,7 +13,6 @@
 #include "../asset/asset.h"
 #include "../scene/scene.h"
 #include "../vec3/vec3.h" // Light
-
 #include <map> // for VAO/VBO stuff. will move.
 
 
@@ -48,10 +47,13 @@ namespace graphics
 		uint32_t default;
 	};
 
+
+
 	void init_graphics(); //@Note: does that also mean to load all the shaders etc?
 	void init_opengl();
-	void setup_shaders();
 
+	
+	void setup_shaders();
 	void render_frame();
 	void draw_game_3d();
 	void clear_buffers();
@@ -73,7 +75,6 @@ namespace graphics
 	void gl_text_mode();
 	void draw_text();
 	void reload_shaders(uint32_t& program);
-
 	void set_shader(Shader_Type shader);
 	
 
@@ -92,8 +93,10 @@ namespace graphics
 	std::map<std::string, graphics::Buffers>& buffers();
 
 	// draw modes.
-	// void draw_2d_right_handed_normalized()
-	// void draw_3d_right_hand_perspective();
+	// void draw_2d_left_handed_orthographic();
+	// void draw_3d_left_handed__perspective();
+	// void draw_2d_left_handed_normalized();
+
 
 	// platform graphics?
 	#ifdef _WIN32
