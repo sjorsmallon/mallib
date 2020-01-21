@@ -90,8 +90,7 @@ inline Mat4 mat::mat4_from_quat(const Vec4& quaternion)
     Vec3 v2 = rotate_by_quat(Vec3{0,0,1}, quaternion);
 
     Mat4 result =  mat::mat4_from_row_vec3(v0, v1, v2); // in mat4.
-    result = to_transpose(result);
-
+    mat::to_transpose(result);
 
     return result;
 }

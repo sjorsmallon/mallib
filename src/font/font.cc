@@ -14,8 +14,10 @@
 #include "../vec2/vec2.h"
 #include <cmath> // sin, PI
 
+#include "../mat/mat.h" // projection matrix.
 #include "../game/game.h" //@Refactor: replace this with globals for previous_frame_time.
 #include "../win32/globals.h" // for the window dimensions.
+
 
 
 font::Font& font::default_font()
@@ -102,6 +104,8 @@ void font::draw_text(std::string text,
     //@Refactor: this should match the Active Texture (i.e. GL_TEXTURE0). we're lucky that it does right now.
     glUniform1i(glGetUniformLocation(graphics::shaders().text, "text"), 0);
 
+    const uint32_t window_height = globals.window_height;
+    const uint32_t window_width = globals.window_width;
     const float top   = window_height; // viewport 
     const float bot   = 0.0f;
     const float left  = 0.0f;
@@ -110,7 +114,7 @@ void font::draw_text(std::string text,
     const float z_far   = 1.0f; // near and far are reserved by windows???
 
     Mat4 projection_matrix = mat::ortho(left, right, top, bot, z_near, z_far); 
-    glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text, "projection_matrix"), 1, true, &projectionmatrix[0]);
+    glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text, "projection_matrix"), 1, true, &projection_matrix[0][0]);
 
     
     const auto& glyph_array = font.characters;

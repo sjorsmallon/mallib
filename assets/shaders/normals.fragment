@@ -1,4 +1,4 @@
-#version 330 core
+#version 430 core
 
 // Specify the inputs to the fragment shader
 // These must have the same type and name!

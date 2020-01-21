@@ -1,9 +1,9 @@
-#version 330 core
+#version 430 core
 
 layout (location = 0) in vec4 vertex; // <vec2 pos, vec2 tex>
 out vec2 tex_coords;
 
-uniform mat4 projection_matrix;
+layout (location = 5) uniform mat4 projection_matrix;
 
 void main()
 {

@@ -1,4 +1,4 @@
-#version 330 core
+#version 430 core
 
 // Specify the input locations of attributes
 layout(location = 0) in vec3 position_in;
@@ -6,10 +6,11 @@ layout(location = 1) in vec2 texture_coordinates_in;
 layout(location = 2) in vec3 normal_in;
 
 // Specify the Uniforms of the vertex shader
-uniform mat4 model_matrix;
-uniform mat4 projection_matrix;
-uniform mat4 view_matrix;
-uniform mat3 normal_transform;
+layout (location = 5) uniform mat4 projection_matrix;
+layout (location = 6) uniform mat4 model_matrix;
+layout (location = 7) uniform mat4 view_matrix;
+layout (location = 8) uniform mat3 normal_transform;
+
 
 // unique to gouraud
 uniform vec4 light_position;

@@ -203,7 +203,7 @@ void graphics::draw_game_3d()
     const float fov_in_degrees     = 90.0f;
     const float perspective_near_z = 0.1f;
     const float perspective_far_z  = 100.0f;
-    const float aspect_ratio = graphics::window_settings().width / graphics::window_settings().height;
+    const float aspect_ratio = static_cast<float>(globals.window_width) / static_cast<float>(globals.window_height);
     Mat4 projection_matrix = mat::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
 
     bool render_isophotes = true;
@@ -258,6 +258,7 @@ void graphics::draw_game_3d()
     {
         // Model Matrix
         //@Refactor: should all xform_state quaternions be unit quaternions?
+        set_piece.xform_state.scale = 2.0;
         Mat4 model_matrix = mat::model_from_xform_state(set_piece.xform_state);
         glUniformMatrix4fv(model_matrix_location, 1, row_major, &model_matrix[0][0]);
 
@@ -395,11 +396,11 @@ graphics::Shaders& graphics::shaders()
     return shaders;
 }
 
-graphics::Window_Settings& graphics::window_settings()
-{
-    static Window_Settings settings;
-    return settings;
-}
+// graphics::Window_Settings& graphics::window_settings()
+// {
+//     static Window_Settings settings;
+//     return settings;
+// }
 
 
 graphics::Win32_Context& graphics::global_Win32_context() //@cleanup: i don't like this.

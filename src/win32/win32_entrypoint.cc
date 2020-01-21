@@ -228,18 +228,18 @@ static HGLRC init_opengl(HDC device_context)
     // Specify that we want to create an OpenGL 4.1 core profile context
     int gl33_attribs[] = {
         WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
-        WGL_CONTEXT_MINOR_VERSION_ARB, 1,
+        WGL_CONTEXT_MINOR_VERSION_ARB, 3,
         WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
         0,
     };
 
     HGLRC opengl_context = wglCreateContextAttribsARB(device_context, 0, gl33_attribs);
     if (!opengl_context) {
-        fatal_error("Failed to create OpenGL 4.1 context.");
+        fatal_error("Failed to create OpenGL 4.3 context.");
     }
 
     if (!wglMakeCurrent(device_context, opengl_context)) {
-        fatal_error("Failed to activate OpenGL 4.1 rendering context.");
+        fatal_error("Failed to activate OpenGL 4.3 rendering context.");
     }
     return opengl_context;
 } 
