@@ -4,6 +4,22 @@
 #include <algorithm>
 
 
+// jon blow's play_sound
+
+// Entity_Issued_Sound* sound::play_sound(Entity* entity, std::string name)
+// {
+// 	Entity_Issued_Sound* sound = play_sound(e.entity_manager, name);
+// 	if sound
+// 	{
+// 		sound.flags |= issued_sound_spatialized;
+// 		sound.position = e.visual_position;
+// 		sound.orientatiokn = e.orientation;
+// 		sound.source_entity_id = e.entity_id;
+// 	}
+// 	return sound;
+// }
+
+
 std::vector<sound::Sound>& sound::active_sounds()
 {
 	static std::vector<sound::Sound> active_sounds;

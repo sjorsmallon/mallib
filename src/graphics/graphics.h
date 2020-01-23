@@ -33,6 +33,7 @@ namespace graphics
 		SHADER_GOURAUD,
 		SHADER_ISOPHOTES,
 		SHADER_REFLECTION_LINES,
+		SHADER_CEL,
 		SHADER_BOMB
 	};
 
@@ -44,6 +45,7 @@ namespace graphics
 		uint32_t gouraud;
 		uint32_t isophotes;
 		uint32_t reflection_lines;
+		uint32_t cel;
 		uint32_t default;
 	};
 

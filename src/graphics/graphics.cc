@@ -52,7 +52,6 @@ void graphics::init_opengl()
     //@Refactor: These OpenGL settings are used for font. should we move it there?
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 }
 
 void graphics::setup_shaders()
@@ -111,8 +110,19 @@ void graphics::setup_shaders()
     glDetachShader(shader_programs.isophotes, isophotes_vertex);
     glDetachShader(shader_programs.isophotes, isophotes_fragment);
 
-}
+    // cel
+    shader_programs.cel = glCreateProgram();
+    const uint32_t cel_vertex = graphics::load_compile_attach_shader(shader_programs.cel, "assets/shaders/cel.vertex");
+    const uint32_t cel_fragment = graphics::load_compile_attach_shader(shader_programs.cel, "assets/shaders/cel.fragment");
+    glLinkProgram(shader_programs.cel);
+    if (!graphics::link_success(shader_programs.cel))
+    {
+        fmt::print("error: shader could not be linked.\n");   
+    }
+    glDetachShader(shader_programs.cel, cel_vertex);
+    glDetachShader(shader_programs.cel, cel_fragment); 
 
+}
 
 void graphics::set_shader(Shader_Type shader_type)
 {
@@ -140,6 +150,10 @@ void graphics::set_shader(Shader_Type shader_type)
     else if (shader_type == Shader_Type::SHADER_NORMALS)
     {
         glUseProgram(shader_programs.normals);
+    }
+    else if (shader_type == Shader_Type::SHADER_CEL)
+    {
+        glUseProgram(shader_programs.cel);
     }
 }
 
@@ -283,8 +297,6 @@ void graphics::draw_game_3d()
         glDrawArrays(GL_TRIANGLES,0, object_data.vertices.size());
         // glUniform1i(d_textureLocation, 0);
     }
-
-
 }
 
 // static
