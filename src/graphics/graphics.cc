@@ -22,6 +22,52 @@
 // game time?
 #include "../game/game.h"
 
+
+void graphics::render_2d_left_handed_dc(const uint32_t active_shader)
+{
+
+    const uint32_t window_height = globals.window_height;
+    const uint32_t window_width = globals.window_width;
+    const float top   = window_height; // viewport 
+    const float bot   = 0.0f;
+    const float left  = 0.0f;
+    const float right = window_width; // viewport
+    const float z_near  = 0.0f;
+    const float z_far   = 1.0f; // near and far are reserved by windows???
+
+    const bool row_major = true;
+    Mat4 projection_matrix = mat::ortho(left, right, top, bot, z_near, z_far); 
+    glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text, "projection_matrix"), 1, row_major, &projection_matrix[0][0]);
+
+}
+
+void graphics::render_3d_left_handed_perspective(const uint32_t active_shader)
+{
+    // all matrices are defined in row major fashion. openGL needs to know about that.
+    const bool row_major = true;
+    // view matrix is identity (i.e. opengl_left_handed, vec3(0.0,0.0,0.)
+    // Mat4 view_matrix = mat::mat4_identity();
+    Vec3 camera_position = {};
+    Vec3 target_position = {0.0f, 0.0f, -1.0f};
+    Vec3 up_vector{0.0f, 1.0f, 0.0f};
+    Mat4 view_matrix = mat::view(camera_position, target_position, up_vector);
+    // @Note: near_z and far_z should be positive in this context.
+    const float fov_in_degrees     = 90.0f;
+    const float perspective_near_z = 0.1f;
+    const float perspective_far_z  = 100.0f;
+    const float aspect_ratio = static_cast<float>(globals.window_width) / static_cast<float>(globals.window_height);
+    Mat4 projection_matrix = mat::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
+
+    // bind view matrix
+    const int32_t view_matrix_location = glGetUniformLocation(active_shader, "view_matrix");
+    glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
+    // bind projection matrix.
+    const int32_t projection_matrix_location = glGetUniformLocation(active_shader, "projection_matrix");
+    glUniformMatrix4fv(projection_matrix_location, 1, row_major, &projection_matrix[0][0]);
+
+}
+
+
 //@TODO: set up texture bookkeeping. Who gets which GL_TEXTURE0 + N?
 //@TODO: set up shader initialization. Do we want a shared shader? do we want to load shaders per folder?
 
@@ -204,38 +250,16 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
 
 void graphics::draw_game_3d()
 {
-
-    // all matrices are defined in row major fashion. openGL needs to know about that.
-    const bool row_major = true;
-    // view matrix is identity (i.e. opengl_left_handed, vec3(0.0,0.0,0.)
-    // Mat4 view_matrix = mat::mat4_identity();
-    Vec3 camera_position = {};
-    Vec3 target_position = {0.0f, 0.0f, -1.0f};
-    Vec3 up_vector{0.0f, 1.0f, 0.0f};
-    Mat4 view_matrix = mat::view(camera_position, target_position, up_vector);
-    // @Note: near_z and far_z should be positive in this context.
-    const float fov_in_degrees     = 90.0f;
-    const float perspective_near_z = 0.1f;
-    const float perspective_far_z  = 100.0f;
-    const float aspect_ratio = static_cast<float>(globals.window_width) / static_cast<float>(globals.window_height);
-    Mat4 projection_matrix = mat::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
-
-    bool render_isophotes = true;
     uint32_t active_shader = graphics::shaders().default;
+    bool render_isophotes = true;
     if (render_isophotes)
     {
         graphics::set_shader(graphics::Shader_Type::SHADER_ISOPHOTES);
         active_shader = graphics::shaders().isophotes;
     }
     auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
+    render_3d_left_handed_perspective(active_shader);
 
-
-    // bind view matrix
-    const int32_t view_matrix_location = glGetUniformLocation(active_shader, "view_matrix");
-    glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
-    // bind projection matrix.
-    const int32_t projection_matrix_location = glGetUniformLocation(active_shader, "projection_matrix");
-    glUniformMatrix4fv(projection_matrix_location, 1, row_major, &projection_matrix[0][0]);
 
     // are there any lights in the scene?
     if (active_shader == graphics::shaders().gouraud)

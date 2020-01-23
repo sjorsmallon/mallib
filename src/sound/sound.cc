@@ -71,7 +71,7 @@ void sound::update_audio()
 	//@Speed: think about how to do this better. we Iterate
 	// over all sounds instead of only over the done ones.
 	//@Memory: we are deleting the sounds now.
-	auto& sounds = sound::active_sounds();
+	 auto& sounds = sound::active_sounds();
 	for (auto sound_ptr = sounds.begin(); sound_ptr != sounds.end();)
 	{
 		if(!sound::soloud().isValidVoiceHandle(sound_ptr->handle))

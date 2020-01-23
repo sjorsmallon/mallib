@@ -25,6 +25,15 @@ namespace graphics
 		// what kind of light is this?
 	};
 
+	enum class Shader_Stage
+	{
+		VERTEX,
+		COMPUTE,
+		TESSELLATION_CONTROL,
+		TESSELLATION_EVALUATION,
+		FRAGMENT
+	};
+
 	enum class Shader_Type
 	{
 		SHADER_TEXT,
@@ -95,10 +104,10 @@ namespace graphics
 	std::map<std::string, graphics::Buffers>& buffers();
 
 	// draw modes.
+	void render_2d_left_handed_dc();
+	void draw_3d_left_handed_perspective();
 	// void draw_2d_left_handed_orthographic();
-	// void draw_3d_left_handed__perspective();
 	// void draw_2d_left_handed_normalized();
-
 
 	// platform graphics?
 	#ifdef _WIN32
