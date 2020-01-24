@@ -25,7 +25,6 @@
 
 void graphics::render_2d_left_handed_dc(const uint32_t active_shader)
 {
-
     const uint32_t window_height = globals.window_height;
     const uint32_t window_width = globals.window_width;
     const float top   = window_height; // viewport 
@@ -35,19 +34,19 @@ void graphics::render_2d_left_handed_dc(const uint32_t active_shader)
     const float z_near  = 0.0f;
     const float z_far   = 1.0f; // near and far are reserved by windows???
 
+    //@Note: do NOT forget this.
     const bool row_major = true;
     Mat4 projection_matrix = mat::ortho(left, right, top, bot, z_near, z_far); 
     glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text, "projection_matrix"), 1, row_major, &projection_matrix[0][0]);
-
 }
 
 void graphics::render_3d_left_handed_perspective(const uint32_t active_shader)
 {
-    // all matrices are defined in row major fashion. openGL needs to know about that.
+    //@Note: do NOT forget this.
     const bool row_major = true;
-    // view matrix is identity (i.e. opengl_left_handed, vec3(0.0,0.0,0.)
-    // Mat4 view_matrix = mat::mat4_identity();
-    Vec3 camera_position = {};
+
+    //@Note: view matrix is identity (i.e. opengl_left_handed, vec3(0.0,0.0,0.)
+    Vec3 camera_position = {0};
     Vec3 target_position = {0.0f, 0.0f, -1.0f};
     Vec3 up_vector{0.0f, 1.0f, 0.0f};
     Mat4 view_matrix = mat::view(camera_position, target_position, up_vector);
@@ -61,6 +60,7 @@ void graphics::render_3d_left_handed_perspective(const uint32_t active_shader)
     // bind view matrix
     const int32_t view_matrix_location = glGetUniformLocation(active_shader, "view_matrix");
     glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
+
     // bind projection matrix.
     const int32_t projection_matrix_location = glGetUniformLocation(active_shader, "projection_matrix");
     glUniformMatrix4fv(projection_matrix_location, 1, row_major, &projection_matrix[0][0]);
@@ -70,7 +70,6 @@ void graphics::render_3d_left_handed_perspective(const uint32_t active_shader)
 
 //@TODO: set up texture bookkeeping. Who gets which GL_TEXTURE0 + N?
 //@TODO: set up shader initialization. Do we want a shared shader? do we want to load shaders per folder?
-
 std::map<std::string, graphics::Buffers>& graphics::buffers()
 {
     static std::map<std::string, graphics::Buffers> buffers;
@@ -105,8 +104,6 @@ void graphics::setup_shaders()
 
     graphics::Shaders& shader_programs = graphics::shaders(); // @Refactor:create_shader_programs.
     shader_programs.default = glCreateProgram();
-    shader_programs.bomb    = glCreateProgram();
-    shader_programs.reflection_lines = glCreateProgram();
 
     // text
     shader_programs.text    = glCreateProgram();
@@ -177,10 +174,6 @@ void graphics::set_shader(Shader_Type shader_type)
     {
         glUseProgram(shader_programs.text);
     }
-    else if (shader_type == Shader_Type::SHADER_BOMB)
-    {
-        glUseProgram(shader_programs.bomb);
-    }
     else if (shader_type == Shader_Type::SHADER_DEFAULT)
     {
         glUseProgram(shader_programs.default);
@@ -232,11 +225,9 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
     }
 }
 
-// do we want to update the buffer content? does anyone else do that?
 // draw_game-3d:
-// - (set row major true)
-// - check whether or not view / projection matrix have changed before updating
 // - set active shader
+// - check whether or not view / projection matrix have changed before updating
 // - for each light in the scene:
 //       -- do something.
 // - for all types of object
@@ -244,9 +235,6 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
 // - for all instances of that type (now implemented as - for each object in the active scene:)
 //       - maybe render texture
 //       - draw object 
-// Everything happens in here. I need to think about what to separate to which extent.
-// The problem we face here is that a lot of global / "internal" data structures are used here.
-// it's unclear now what happens inside this function. I am not sure how to restructure.
 
 void graphics::draw_game_3d()
 {
@@ -260,18 +248,9 @@ void graphics::draw_game_3d()
     auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
     render_3d_left_handed_perspective(active_shader);
 
-
-    // are there any lights in the scene?
+    //@Incomplete: should be an array of lights.
     if (active_shader == graphics::shaders().gouraud)
     {
-        // for each light in the active scene:
-        // lights are a property of the scene. 
-        // however, this implies that the properties of the scene
-        // are bound to uniforms in openGL. I don't necessarily think
-        // that that is a good idea. Or do we insert an array of lights to openGL?
-        // is there an uniform array?
-       // bind light position. not necessary for the normals, but necessary for every other shader.
-       // uint32_t normal_shader = graphics::shaders().normals;
         int32_t light_position_location = glGetUniformLocation(active_shader, "light_position");
         int32_t light_color_location    = glGetUniformLocation(active_shader, "light_color");
         int32_t material_location       = glGetUniformLocation(active_shader, "material");
@@ -287,8 +266,6 @@ void graphics::draw_game_3d()
     // do we need to update the buffer?
     glBindVertexArray(graphics::buffers()["cat.obj"].VAO);
     //@TODO: allow grouping in scene by model.
-    // for now, assume that all objects share the same model.
-    // for all objects of that specific type:
     // find model matrix and normal transform matrix locations.
     const int32_t model_matrix_location = glGetUniformLocation(active_shader, "model_matrix");
     const int32_t normal_transform_matrix_location = glGetUniformLocation(active_shader, "normal_transform");

@@ -41,24 +41,18 @@ namespace graphics
 		SHADER_NORMALS,
 		SHADER_GOURAUD,
 		SHADER_ISOPHOTES,
-		SHADER_REFLECTION_LINES,
-		SHADER_CEL,
-		SHADER_BOMB
+		SHADER_CEL
 	};
 
 	struct Shaders //@Note: shader_programs?
 	{
-		uint32_t bomb;
 		uint32_t text;
+		uint32_t default;
 		uint32_t normals;
 		uint32_t gouraud;
 		uint32_t isophotes;
-		uint32_t reflection_lines;
 		uint32_t cel;
-		uint32_t default;
 	};
-
-
 
 	void init_graphics(); //@Note: does that also mean to load all the shaders etc?
 	void init_opengl();
