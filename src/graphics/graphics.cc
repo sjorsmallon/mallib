@@ -276,7 +276,6 @@ void graphics::draw_game_3d()
         set_piece.xform_state.scale = 2.0;
         Mat4 model_matrix = mat::model_from_xform_state(set_piece.xform_state);
         glUniformMatrix4fv(model_matrix_location, 1, row_major, &model_matrix[0][0]);
-
         // Normal transform Matrix
         Mat3 normal_transform_matrix = mat::normal_transform(model_matrix);
         glUniformMatrix3fv(normal_transform_matrix_location, 1, row_major, &normal_transform_matrix[0][0]);

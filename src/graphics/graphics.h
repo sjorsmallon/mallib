@@ -16,6 +16,15 @@
 #include <map> // for VAO/VBO stuff. will move.
 
 
+/*
+ *  init_graphics()->init_opengl()
+ *  setup_shaders()->load_compile_attach_shader();
+ *  set_shader()
+ *  render_nd_whatever();
+ *  actually render objects.
+ */
+
+
 namespace graphics
 {
 	struct Light
