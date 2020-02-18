@@ -84,10 +84,10 @@ void game::load_everything()
 // as well as the mouse coordinates.
 void game::main_loop()
 {
+    auto start = std::chrono::system_clock::now();
+
     graphics::clear_buffers();
     const auto program_mode = Program_Mode::MENU;
-    // start frame time recording.
-    auto start = std::chrono::system_clock::now();
 
     if (program_mode == Program_Mode::GAME)
     {

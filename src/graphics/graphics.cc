@@ -269,6 +269,8 @@ void graphics::draw_game_3d()
     // find model matrix and normal transform matrix locations.
     const int32_t model_matrix_location = glGetUniformLocation(active_shader, "model_matrix");
     const int32_t normal_transform_matrix_location = glGetUniformLocation(active_shader, "normal_transform");
+
+    bool row_major = true;
     for (auto &set_piece: graphics::active_scene().set_pieces)
     {
         // Model Matrix

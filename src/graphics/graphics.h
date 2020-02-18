@@ -107,8 +107,8 @@ namespace graphics
 	std::map<std::string, graphics::Buffers>& buffers();
 
 	// draw modes.
-	void render_2d_left_handed_dc();
-	void draw_3d_left_handed_perspective();
+	void render_2d_left_handed_dc(const uint32_t active_shader);
+	void render_3d_left_handed_perspective(const uint32_t active_shader);
 	// void draw_2d_left_handed_orthographic();
 	// void draw_2d_left_handed_normalized();
 
