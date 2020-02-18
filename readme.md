@@ -2,17 +2,29 @@
 
 # shortlist TODO
 
+## move math functionality into their own library. (move all .mat functions to source file?)
+
 ## re-enable textures
- 
+
+## remove IO from windows folder in some way. Look at how Casey does platform specific functionality.
+
+## implement Uniform Buffer object for matrices (no need to rebind these between shaders!)
+Look at the learnopenGL implementation how to do this.
+
+
+## move towards MVP mode of operation. Rethink scene stuff. 
+
+## create simple ECS
+
+## switch to tinySTL (with custom allocator).
+
+
 ## Rotating the Scene Objects Correctly
 currently, the ordering w.r.t translation/ rotation is borked because of the row major decision.
 Maybe we should keep it fire & forget for now.. or just abstract it as a whole.
 
 refactor the namespaces to some sort of init -> alloc pattern. (alloc can be called in init, but just that that is the regular pattern).
 
-refactor the graphics namespace. keep the state in game instead.
-
-start working on actually making something.
 
 switch to the custom allocator for trying new stuff out.
 
