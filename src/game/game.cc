@@ -18,11 +18,9 @@
 void game::init()
 {
     graphics::init_graphics();
-    
     sound::init_sound();
     font::init_font();
     menu::init_menu();
-
     game::load_everything(); 
     graphics::clear_buffers();
 }
