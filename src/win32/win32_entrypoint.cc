@@ -529,7 +529,7 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window,
             {
                 case VK_ESCAPE:
                 {
-                    exit(1);
+                    DestroyWindow(window);
                     break;
                 }
             }

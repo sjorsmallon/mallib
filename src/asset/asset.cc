@@ -1,14 +1,15 @@
 #include "asset.h"
-#include "../file/file.h"
+
+#include <sstream>
+#include <fstream>
+#include <fmt/core.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "../image/stb_image.h"
 
+#include "../file/file.h"
+#include "../on_leaving_scope/on_leaving_scope.h" // FILE*
 
-#include "fmt/core.h"
-#include "../on_leaving_scope/on_leaving_scope.h" // for the file pointer.
-#include <sstream>
-#include <fstream>
 
 // hmm. For now, asset manages all assets.
 std::map<std::string, asset::Raw_Obj_Data>& asset::obj_data()
@@ -34,10 +35,6 @@ std::map<std::string, scene::Scene>& asset::scenes()
     return scenes;
 }
 
-
-//@Incomplete: these are now hardcoded. Where do we define these folders?
-//@Refactor: does it even make sense to separate these assets?
-//use from_to? do we supply folder names here? does this function assume a certain folder structure?
 void asset::load_assets_from_file(const Asset_Folders& asset_folders)
 {
 
@@ -287,10 +284,8 @@ void asset::load_obj_from_file(asset::Raw_Obj_Data& raw_data, const std::string&
             fmt::print("[asset] ERROR: load_obj: no matching indicator. line number: {}. content: {}\n", line_number, line);
     }
     generate_vertices_from_raw_data(raw_data);
-
     fmt::print("[asset] Obj: succesfully loaded {}. num_faces: {}\n", filename, raw_data.faces.size());
 }
-
 
 void asset::load_mtl_from_file(std::map<std::string, asset::Material>& materials, const std::string& filename)
 {
@@ -299,9 +294,8 @@ void asset::load_mtl_from_file(std::map<std::string, asset::Material>& materials
     std::stringstream data_stream(data);
     constexpr const int max_string_length = 20;
     constexpr const int max_string_read_length = 9;
-    char garbage_buffer[20] = {}; // used for the garbage at the start of    each line. 
+    char garbage_buffer[20] = {}; // used for the garbage at the start of each line. 
 
-    // there is at least one mtl in a mtl file, I think.
     //@Refactor: raw pointer here. not very nice.
     Material *material_ptr = nullptr;
 
@@ -373,6 +367,7 @@ void asset::load_mtl_from_file(std::map<std::string, asset::Material>& materials
         else if (line[0] == 'm' && line[1] == 'a' && line[2] == 'p') // map_Ka
         {
             //@Incomplete:
+            fmt::print("INCOMPLETE", __FILE__, __LINE__);
         }
     }
     fmt::print("[asset] Mtl: loaded {} materials.\n", materials.size());
@@ -387,7 +382,7 @@ void asset::load_mtl_from_file(std::map<std::string, asset::Material>& materials
 void asset::load_texture_from_file(Texture& new_texture, const std::string& filename)
 {
 
-    fmt::print("[asset] Warning: flip_Vertically is active.\n");
+    fmt::print("[asset] Warning: flip_Vertically is active.\n", __FILE__);
     stbi_set_flip_vertically_on_load(true);
     new_texture.data = stbi_load(filename.c_str(), &new_texture.dimensions.x, &new_texture.dimensions.y, &new_texture.channels, STBI_rgb);
 

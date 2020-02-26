@@ -24,7 +24,6 @@
  *  actually render objects.
  */
 
-
 namespace graphics
 {
 	struct Light

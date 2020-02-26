@@ -2,8 +2,6 @@
 #define INCLUDED_GAME_
 #include <chrono>
 
-
-
 namespace game
 {
 	
@@ -26,7 +24,7 @@ namespace game
 	void init_graphics();
 
 	// loading
-	void load_everything();
+	void load_assets();
 	void load_audio();
 	void load_shaders();
 	void load_models();
@@ -36,6 +34,9 @@ namespace game
 
 	void main_loop();
 	void shutdown();
+
+
+	std::map<std::string, uint32_t>& shaders();
 
 };
 

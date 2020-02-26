@@ -13,19 +13,36 @@
 #include "../win32/io.h"
 #include <chrono> // for frame_time.
 
-// this is called in the entrypoint.
+// these functions are expected to be called in the entrypoint.
 // Init -> Load -> main_loop.
+
 void game::init()
 {
     graphics::init_graphics();
     sound::init_sound();
     font::init_font();
     menu::init_menu();
-    game::load_everything(); 
-    graphics::clear_buffers();
+    game::load_assets();
+    game::load_shaders();
 }
 
-void game::load_everything()
+void game::load_shaders()
+{ 
+    uint32_t text_shader      = graphics::load_shader("assets/shaders/text/");
+    uint32_t cel_shader       = graphics::load_shader("assets/shaders/cel/");
+    uint32_t isophotes_shader = graphics::load_shader("assets/shaders/isophotes/");
+    uint32_t gouraud_shader   = graphics::load_shader("assets/shaders/gouraud/");
+    uint32_t normals_shader   = graphics::load_shader("assets/shaders/normals/");  
+    // uint32_t error_shader     = graphics::load_shader("assets/shaders/error");
+    game::shaders()["text"]      = text_shader;
+    game::shaders()["cel"]       = cell_shader;
+    game::shaders()["isophotes"] = isophotes_shader;
+    game::shaders()["gouraud"]   = gouraud_shader;
+    game::shaders()["normals"]   = normals_shader;
+    // game::shaders()["error"]     = error_shader; // error shader should draw a red ERROR?
+}
+
+void game::load_assets()
 {
     // load sound
     // sound::load_music("assets/music/introduction.mp3");
@@ -38,12 +55,13 @@ void game::load_everything()
     asset_folders.scene_folder   = "assets/scene_files/";
     asset::load_assets_from_file(asset_folders);
 
-    graphics::active_scene() = asset::scenes()["test.scene"];  
+    graphics::active_scene() = asset::scenes()["test.scene"];  // framegraph?
     graphics::init_texture_settings(asset::texture_data());
-    fmt::print("after loading assets texture settings.\n");  
+
 
     // generate the VAO/VBO map.
-    auto& buffers =  graphics::buffers();
+      auto& buffers =  graphics::buffers();
+
     for (auto &[key, raw_object_data]: asset::obj_data())
     {
         graphics::Buffers new_buffer= {};
@@ -68,18 +86,9 @@ void game::load_everything()
         buffers[key] = new_buffer;
     }
 
-    for (auto &[key,value]: buffers)
-    {
-        fmt::print("{}: buffer.", key);
-    }
-
-
 }
 
 
-// this function is invoked from any entrypoint.
-// we expect the entrypoint to update the  input buffer,
-// as well as the mouse coordinates.
 void game::main_loop()
 {
     auto start = std::chrono::system_clock::now();
@@ -102,7 +111,7 @@ void game::main_loop()
 
     }
 
-    sound::update_audio();
+     sound::update_audio();
 
     // @FIXME FIXME : drawing menu after render_frame. This is because we want to render font last.
     graphics::render_frame(); 
@@ -202,3 +211,8 @@ void game::deinit_everything()
 // }
 // update_audio();
 
+std::map<std::string, uint32_t>& game::shaders()
+{ 
+    static std::map<std::string, uint32_t> shaders;
+    return shaders;
+}
