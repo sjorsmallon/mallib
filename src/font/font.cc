@@ -94,15 +94,15 @@ void font::draw_text(std::string text,
         color = vec::lerp(color, {1.0f,1.0f,1.0f}, distance_t);
     }
 
-    graphics::set_shader(graphics::Shader_Type::SHADER_TEXT); 
-    int32_t text_color_uniform = glGetUniformLocation(graphics::shaders().text, "text_color");
+    graphics::set_shader("text"); 
+    int32_t text_color_uniform = glGetUniformLocation(graphics::shaders()["text"], "text_color");
     glUniform3f(text_color_uniform, color.x, color.y, color.z);
 
     // maybe we should rename these. 
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(gl_font.VAO);   
     //@Refactor: this should match the Active Texture (i.e. GL_TEXTURE0). we're lucky that it does right now.
-    glUniform1i(glGetUniformLocation(graphics::shaders().text, "text"), 0);
+    glUniform1i(glGetUniformLocation(graphics::shaders()["text"], "text"), 0);
 
     const uint32_t window_height = globals.window_height;
     const uint32_t window_width = globals.window_width;
@@ -114,7 +114,7 @@ void font::draw_text(std::string text,
     const float z_far   = 1.0f; // near and far are reserved by windows???
 
     Mat4 projection_matrix = mat::ortho(left, right, top, bot, z_near, z_far); 
-    glUniformMatrix4fv(glGetUniformLocation(graphics::shaders().text, "projection_matrix"), 1, true, &projection_matrix[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(graphics::shaders()["text"], "projection_matrix"), 1, true, &projection_matrix[0][0]);
 
     
     const auto& glyph_array = font.characters;

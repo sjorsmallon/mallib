@@ -77,10 +77,12 @@ namespace graphics
 	void get_shader_info(uint32_t shader_program);
 	bool link_success(uint32_t shader_program);
 
-	Shaders& shaders();
+	// Shaders& shaders();
+
+	std::map<std::string, uint32_t>& shaders();
 	
-	//@Refactor what does this return? shader_id, program, id?
 	// using program_id, shader_id = uint32_t;
+	uint32_t load_shader(const std::string& shader_folder_path);
 	uint32_t load_compile_attach_shader(uint32_t program, std::string file_name);
 	uint32_t shader_type_from_extension(const std::string& filename);
 
@@ -88,7 +90,8 @@ namespace graphics
 	void gl_text_mode();
 	void draw_text();
 	void reload_shaders(uint32_t& program);
-	void set_shader(Shader_Type shader);
+	void set_shader(const std::string& shader_name);
+
 	
 
 	//@temporary
