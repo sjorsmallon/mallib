@@ -18,55 +18,15 @@
 
 /*
  *  init_graphics()->init_opengl()
- *  setup_shaders()->load_compile_attach_shader();
- *  set_shader()
  *  render_nd_whatever();
  *  actually render objects.
  */
 
 namespace graphics
 {
-	struct Light
-	{
-		Vec3 position;
-		Vec3 light_color;
-		// what kind of light is this?
-	};
-
-	enum class Shader_Stage
-	{
-		VERTEX,
-		COMPUTE,
-		TESSELLATION_CONTROL,
-		TESSELLATION_EVALUATION,
-		FRAGMENT
-	};
-
-	enum class Shader_Type
-	{
-		SHADER_TEXT,
-		SHADER_DEFAULT,
-		SHADER_NORMALS,
-		SHADER_GOURAUD,
-		SHADER_ISOPHOTES,
-		SHADER_CEL
-	};
-
-	struct Shaders //@Note: shader_programs?
-	{
-		uint32_t text;
-		uint32_t default;
-		uint32_t normals;
-		uint32_t gouraud;
-		uint32_t isophotes;
-		uint32_t cel;
-	};
-
-	void init_graphics(); //@Note: does that also mean to load all the shaders etc?
+	void init_graphics();
 	void init_opengl();
-
 	
-	void setup_shaders();
 	void render_frame();
 	void draw_game_3d();
 	void clear_buffers();
@@ -92,9 +52,6 @@ namespace graphics
 	void reload_shaders(uint32_t& program);
 	void set_shader(const std::string& shader_name);
 
-	
-
-	//@temporary
 	scene::Scene& active_scene();
 	void init_texture_settings(std::map<std::string, asset::Texture>& textures);
 

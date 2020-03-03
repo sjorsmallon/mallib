@@ -38,9 +38,6 @@ void graphics::init_graphics()
 { 
     graphics::global_Win32_context().device_context = globals.device_context;
     graphics::init_opengl();
-
-    graphics::setup_shaders();
-    // graphics::set_shader(graphics::Shader_Type::SHADER_DEFAULT);
     graphics::clear_buffers();
 }
 
@@ -64,14 +61,14 @@ uint32_t graphics::load_shader(const std::string& shader_folder_path)
     uint32_t shader_program = glCreateProgram();
     std::vector<uint32_t> shader_ids;
     if (!fs::exists(shader_folder_path))
-        fmt::print("error: shader folder does not exist. {}.", shader_folder_path);
+        fmt::print("[graphics] error: shader folder {} does not exist. .", shader_folder_path);
 
     for (const auto& file: fs::directory_iterator(shader_folder_path))
         shader_ids.push_back(graphics::load_compile_attach_shader(shader_program, file.path().string()));
 
     glLinkProgram(shader_program);
     if (!graphics::link_success(shader_program))
-        fmt::print("error: shader {} could not be linked.", shader_folder_path);
+        fmt::print("[graphics] error: shader {} could not be linked.", shader_folder_path);
     for (const auto& shader_id: shader_ids)
         glDetachShader(shader_program, shader_id);
 
@@ -79,102 +76,9 @@ uint32_t graphics::load_shader(const std::string& shader_folder_path)
 }
 
 
-void graphics::setup_shaders()
-{
-
-    // graphics::Shaders& shader_programs = graphics::shaders(); // @Refactor:create_shader_programs.
-    // shader_programs.default = glCreateProgram();
-
-    // // text
-    // shader_programs.text    = glCreateProgram();
-    // const uint32_t text_vertex   = graphics::load_compile_attach_shader(shader_programs.text, "assets/shaders/text.vertex");
-    // const uint32_t text_fragment = graphics::load_compile_attach_shader(shader_programs.text, "assets/shaders/text.fragment");
-    // glLinkProgram(shader_programs.text);
-    // if (!graphics::link_success(shader_programs.text))
-    // {
-    //     fmt::print("error: shader could not be linked.");
-    // }
-    // glDetachShader(shader_programs.text, text_vertex);
-    // glDetachShader(shader_programs.text, text_fragment);
-
-    // // normals
-    // shader_programs.normals = glCreateProgram(); 
-    // const uint32_t normal_vertex   = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/normals.vertex");
-    // const uint32_t normal_fragment = graphics::load_compile_attach_shader(shader_programs.normals, "assets/shaders/normals.fragment");
-    // glLinkProgram(shader_programs.normals);
-    // if (!graphics::link_success(shader_programs.normals))
-    // {
-    //     fmt::print("error: shader could not be linked.\n");
-    // }
-    // glDetachShader(shader_programs.normals, normal_vertex);
-    // glDetachShader(shader_programs.normals, normal_fragment);
-
-    // // gouraud
-    // shader_programs.gouraud = glCreateProgram();
-    // const uint32_t gouraud_vertex   = graphics::load_compile_attach_shader(shader_programs.gouraud, "assets/shaders/gouraud.vertex");
-    // const uint32_t gouraud_fragment = graphics::load_compile_attach_shader(shader_programs.gouraud, "assets/shaders/gouraud.fragment");
-    // glLinkProgram(shader_programs.gouraud);
-    // if (!graphics::link_success(shader_programs.gouraud))
-    // {
-    //     fmt::print("error: shader could not be linked.\n");
-    // }
-    // glDetachShader(shader_programs.gouraud, gouraud_vertex);
-    // glDetachShader(shader_programs.gouraud, gouraud_fragment);
-
-    // // isophotes
-    // shader_programs.isophotes = glCreateProgram();
-    // const uint32_t isophotes_vertex = graphics::load_compile_attach_shader(shader_programs.isophotes, "assets/shaders/isophotes.vertex");
-    // const uint32_t isophotes_fragment = graphics::load_compile_attach_shader(shader_programs.isophotes,"assets/shaders/isophotes.fragment");
-    // glLinkProgram(shader_programs.isophotes);
-    // if (!graphics::link_success(shader_programs.isophotes))
-    // {
-    //     fmt::print("error: shader could not be linked.\n");   
-    // }
-    // glDetachShader(shader_programs.isophotes, isophotes_vertex);
-    // glDetachShader(shader_programs.isophotes, isophotes_fragment);
-
-    // // cel
-    // shader_programs.cel = glCreateProgram();
-    // const uint32_t cel_vertex = graphics::load_compile_attach_shader(shader_programs.cel, "assets/shaders/cel.vertex");
-    // const uint32_t cel_fragment = graphics::load_compile_attach_shader(shader_programs.cel, "assets/shaders/cel.fragment");
-    // glLinkProgram(shader_programs.cel);
-    // if (!graphics::link_success(shader_programs.cel))
-    // {
-    //     fmt::print("error: shader could not be linked.\n");   
-    // }
-    // glDetachShader(shader_programs.cel, cel_vertex);
-    // glDetachShader(shader_programs.cel, cel_fragment); 
-
-}
-
 void graphics::set_shader(const std::string& shader_name)
 {
     glUseProgram(graphics::shaders()[shader_name]);
-    // graphics::Shaders& shader_programs = graphics::shaders();
-    // if (shader_type == Shader_Type::SHADER_TEXT)
-    // {
-    //     glUseProgram(shader_programs.text);
-    // }
-    // else if (shader_type == Shader_Type::SHADER_DEFAULT)
-    // {
-    //     glUseProgram(shader_programs.default);
-    // }
-    // else if (shader_type == Shader_Type::SHADER_GOURAUD)
-    // {
-    //     glUseProgram(shader_programs.gouraud);
-    // }
-    // else if (shader_type == Shader_Type::SHADER_ISOPHOTES)
-    // {
-    //     glUseProgram(shader_programs.isophotes);
-    // }
-    // else if (shader_type == Shader_Type::SHADER_NORMALS)
-    // {
-    //     glUseProgram(shader_programs.normals);
-    // }
-    // else if (shader_type == Shader_Type::SHADER_CEL)
-    // {
-    //     glUseProgram(shader_programs.cel);
-    // }
 }
 
 void graphics::init_texture_settings(std::map<std::string, asset::Texture>& textures)
@@ -219,25 +123,17 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
 
 void graphics::draw_game_3d()
 {
-    uint32_t active_shader = 0;
-    // uint32_t active_shader = graphics::shaders().default;
-     // graphics::shaders().default;
+    uint32_t active_shader_id = 0;
     bool render_isophotes = true;
     if (render_isophotes)
     {
-        // graphics::set_shader(graphics::Shader_Type::SHADER_ISOPHOTES);
         graphics::set_shader("isophotes");
-
-        // active_shader = graphics::shaders().isophotes;
-        active_shader = graphics::shaders()["isophotes"];
-
+        active_shader_id = graphics::shaders()["isophotes"];
     }
-    // auto defer_shader_state = On_Leaving_Scope([]{set_shader(graphics::Shader_Type::SHADER_DEFAULT);});
+    auto defer_shader_state = On_Leaving_Scope([]{graphics::set_shader("gouraud");});
     render_3d_left_handed_perspective(active_shader);
 
-    //@Incomplete: should be an array of lights.
-    // if (active_shader == graphics::shaders().gouraud)
-    if (active_shader == graphics::shaders()["gouraud"])
+    if (active_shader_id == graphics::shaders()["gouraud"])
     {
         int32_t light_position_location = glGetUniformLocation(active_shader, "light_position");
         int32_t light_color_location    = glGetUniformLocation(active_shader, "light_color");
@@ -250,28 +146,23 @@ void graphics::draw_game_3d()
         glUniform4fv(material_location,       1, &material.data[0]);
     }
 
-    // for a specific type of object:
-    // do we need to update the buffer?
     glBindVertexArray(graphics::buffers()["cat.obj"].VAO);
-    //@TODO: allow grouping in scene by model.
-    // find model matrix and normal transform matrix locations.
     const int32_t model_matrix_location = glGetUniformLocation(active_shader, "model_matrix");
-    const int32_t normal_transform_matrix_location = glGetUniformLocation(active_shader, "normal_transform");
+    const int32_t normal_transform_matrix_location = glGetUniformLocation(active_shader_id, "normal_transform");
 
     bool row_major = true;
     for (auto &set_piece: graphics::active_scene().set_pieces)
     {
-        // Model Matrix
         //@Refactor: should all xform_state quaternions be unit quaternions?
         set_piece.xform_state.scale = 2.0;
+
         Mat4 model_matrix = mat::model_from_xform_state(set_piece.xform_state);
         glUniformMatrix4fv(model_matrix_location, 1, row_major, &model_matrix[0][0]);
-        // Normal transform Matrix
+
         Mat3 normal_transform_matrix = mat::normal_transform(model_matrix);
         glUniformMatrix3fv(normal_transform_matrix_location, 1, row_major, &normal_transform_matrix[0][0]);
 
-        // if (active_shader == graphics::shaders().gouraud)
-        if (active_shader == graphics::shaders()["gouraud"])
+        if (active_shader_id == graphics::shaders()["gouraud"])
         {
             //@NOTE!!! this uniform does not take the texture ID, but takes the N from GL_TEXTURE0 +N!!!
             // so the question is: which gl_texture owns which textures?
@@ -279,7 +170,7 @@ void graphics::draw_game_3d()
             // gl_texture0 is the wall on which the picture frames hang. Sounds good to me.
             glActiveTexture(GL_TEXTURE0 + 1);
             glBindTexture(GL_TEXTURE_2D, asset::texture_data()[set_piece.texture_name].gl_texture_id);
-            const int32_t texture_location = glGetUniformLocation(active_shader, "texture_uniform");
+            const int32_t texture_location = glGetUniformLocation(active_shader_id, "texture_uniform");
             glUniform1i(texture_location, 1);
         }
 
@@ -306,46 +197,43 @@ void graphics::swap_buffers()
     SwapBuffers(graphics::global_Win32_context().device_context);
 }
 
-// returns the shader_id.
+////
 uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file_name)
 {
-    // set shader type based on the extension. 
+    constexpr const int GL_FAILURE = 0;
     std::string filename = file_name;
-    GLenum shader_type = shader_type_from_extension(filename);
-    if (shader_type == 0)
-        fmt::print("[graphics] incorrect shader type.\n");
-    //set Shader
-    uint32_t shader_id = glCreateShader(shader_type);
-    if (shader_id == 0)
-        fmt::print("[graphics] glCreateShader failed.\n");
-    else{
-        fmt::print("[graphics] glCreateShader succeeded. created shader ID {}\n", shader_id);
-    }
+    GLenum shader_type = graphics::shader_type_from_extension(filename);
 
-    //@Cleanup:to const char* buffer?
+    if (shader_type == GL_FAILURE)
+        fmt::print("[graphics] incorrect shader type.\n");
+    uint32_t shader_id = glCreateShader(shader_type);
+
+    if (shader_id == GL_FAILURE)
+        fmt::print("[graphics] glCreateShader failed.\n");
+    else
+        fmt::print("[graphics] glCreateShader succeeded. created shader ID {}\n", shader_id);
+
     std::string target = {};
+
     file::file_to_string(filename, target);
     const char* shader_c_str = target.c_str();
-
     glShaderSource(shader_id, 1, &shader_c_str, NULL);
     glCompileShader(shader_id);
 
     GLint shader_compiled = GL_FALSE;
     glGetShaderiv(shader_id, GL_COMPILE_STATUS, &shader_compiled);
-
     if (shader_compiled != GL_TRUE)
     {
         fmt::print("[graphics] shader_from_file: unable to compile shader {}\n", filename);
+
         GLint max_length = 0;
         glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &max_length);
-
-        //  maxLength includes the NULL character.
-        std::vector<GLchar> error_log(max_length);
+        std::vector<GLchar> error_log(max_length);        
         glGetShaderInfoLog(shader_id, max_length, &max_length, &error_log[0]);
-        // Provide the infolog in whatever manner you deem best.
-        auto string_log = std::string(error_log.begin(), error_log.end());
+        
+        std::string string_log = std::string(error_log.begin(), error_log.end());
         fmt::print("[graphics] shader error log: {}\n", string_log);
-        // Exit with failure.
+
         glDeleteShader(shader_id); // Don't leak the shader.
     }
     else
@@ -353,6 +241,7 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
         fmt::print("[graphics] shader_from_file: successfully compiled {}\n", filename);
         glAttachShader(program, shader_id);
     }
+
     return shader_id;
 }
 
@@ -363,19 +252,6 @@ scene::Scene& graphics::active_scene()
     static scene::Scene active_scene;
     return active_scene;
 }
-
-// graphics::Shaders& graphics::shaders()
-// {
-//     static Shaders shaders = {};
-//     return shaders;
-// }
-
-// graphics::Window_Settings& graphics::window_settings()
-// {
-//     static Window_Settings settings;
-//     return settings;
-// }
-
 
 graphics::Win32_Context& graphics::global_Win32_context() //@cleanup: i don't like this.
 {
