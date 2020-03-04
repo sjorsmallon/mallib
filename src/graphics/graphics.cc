@@ -1,18 +1,14 @@
 #include "graphics.h"
+
 #undef max
 #undef min
 #include <fmt/core.h>
+#include <filesystem> // for directory iteration for the shader.
 #include <stdint.h>
 #include <string>
 #include <sstream>
-#include <filesystem> // for directory iteration for the shader.
-namespace fs = std::filesystem;
-
-
 #include <Wingdi.h>
 #include <stdlib.h>
-
-#define BUFFER_OFFSET(i) ((void*)(i)) //hacky macro for offset.
 
 #include "../on_leaving_scope/on_leaving_scope.h"
 #include "../win32/gl_lite.h"
@@ -22,9 +18,10 @@ namespace fs = std::filesystem;
 #include "../mat4/mat4.h"
 #include "../mat3/mat3.h" // for normal matrix.
 #include "../scene/scene.h"
+#include "../game/game.h" // game time?
 
-// game time?
-#include "../game/game.h"
+#define BUFFER_OFFSET(i) ((void*)(i)) //hacky macro for offset.
+namespace fs = std::filesystem;
 
 //@TODO: set up texture bookkeeping. Who gets which GL_TEXTURE0 + N?
 //@TODO: set up shader initialization. Do we want a shared shader? do we want to load shaders per folder?
@@ -40,7 +37,6 @@ void graphics::init_graphics()
     graphics::init_opengl();
     graphics::clear_buffers();
 }
-
 
 void graphics::init_opengl()
 {
@@ -60,8 +56,9 @@ uint32_t graphics::load_shader(const std::string& shader_folder_path)
 {
     uint32_t shader_program = glCreateProgram();
     std::vector<uint32_t> shader_ids;
+
     if (!fs::exists(shader_folder_path))
-        fmt::print("[graphics] error: shader folder {} does not exist. .", shader_folder_path);
+        fmt::print("[graphics] error: shader folder {} does not exist.", shader_folder_path);
 
     for (const auto& file: fs::directory_iterator(shader_folder_path))
         shader_ids.push_back(graphics::load_compile_attach_shader(shader_program, file.path().string()));
@@ -75,6 +72,15 @@ uint32_t graphics::load_shader(const std::string& shader_folder_path)
     return shader_program;
 }
 
+/// returns a free active texture ID and increments the value.
+uint32_t graphics::next_active_texture_id()
+{
+    static uint32_t active_texture_id;
+    uint32_t free_active_texture_id = active_texture_id;
+    active_texture_id += 1;
+
+    return free_active_texture_id;
+}
 
 void graphics::set_shader(const std::string& shader_name)
 {
@@ -83,13 +89,12 @@ void graphics::set_shader(const std::string& shader_name)
 
 void graphics::init_texture_settings(std::map<std::string, asset::Texture>& textures)
 {
-    uint32_t test_texture = 0;
-    glGenTextures(1, &test_texture);
 
-    glActiveTexture(GL_TEXTURE0);
     for (auto& [texture_name, texture]: textures)
     {
         glGenTextures(1, &texture.gl_texture_id);
+
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
        
         glTexImage2D(

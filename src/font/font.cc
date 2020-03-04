@@ -98,7 +98,6 @@ void font::draw_text(std::string text,
     int32_t text_color_uniform = glGetUniformLocation(graphics::shaders()["text"], "text_color");
     glUniform3f(text_color_uniform, color.x, color.y, color.z);
 
-    // maybe we should rename these. 
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(gl_font.VAO);   
     //@Refactor: this should match the Active Texture (i.e. GL_TEXTURE0). we're lucky that it does right now.

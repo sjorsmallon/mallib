@@ -1,9 +1,8 @@
 #ifndef INCLUDE_GRAPHICS
 #define INCLUDE_GRAPHICS_
 #include <string>
-#include <vector> // load_obj_to_vertex
 #include <stdint.h>
-// #include "gl_lite.h"
+#include <map> // textures, buffers, shaders.
 
 #ifdef _WIN32
 	#include <windows.h>
@@ -13,47 +12,54 @@
 #include "../asset/asset.h"
 #include "../scene/scene.h"
 #include "../vec3/vec3.h" // Light
-#include <map> // for VAO/VBO stuff. will move.
-
 
 /*
- *  init_graphics()->init_opengl()
+ *  init_graphics()
+ * init_opengl()
  *  render_nd_whatever();
- *  actually render objects.
  */
 
 namespace graphics
 {
+	//--- init. ---------------------------
 	void init_graphics();
 	void init_opengl();
+	void init_texture_settings(std::map<std::string, asset::Texture>& textures);
 	
-	void render_frame();
-	void draw_game_3d();
-	void clear_buffers();
-	void swap_buffers();
-	
-
-	// openGL helpers.
+	//--- openGL helpers. ---------------------------
 	void get_shader_info(uint32_t shader_program);
 	bool link_success(uint32_t shader_program);
 
-	// Shaders& shaders();
-
+	//--- openGL bookkeeping. ---------------------------
 	std::map<std::string, uint32_t>& shaders();
-	
-	// using program_id, shader_id = uint32_t;
+	uint32_t graphics::next_active_texture_id();
+	scene::Scene& active_scene();
+	std::map<std::string, graphics::Buffers>& buffers();
+
+	//--- shader helpers. ---------------------------
+	void set_shader(const std::string& shader_name);
+	void reload_shaders(uint32_t& program);
 	uint32_t load_shader(const std::string& shader_folder_path);
 	uint32_t load_compile_attach_shader(uint32_t program, std::string file_name);
 	uint32_t shader_type_from_extension(const std::string& filename);
 
-	// font/text mode.
+	//--- font/text mode. ---------------------------
 	void gl_text_mode();
 	void draw_text();
-	void reload_shaders(uint32_t& program);
-	void set_shader(const std::string& shader_name);
 
-	scene::Scene& active_scene();
-	void init_texture_settings(std::map<std::string, asset::Texture>& textures);
+	//--- rendering ----------------------------------
+	void render_frame();
+	void draw_game_3d();
+	void clear_buffers();
+	void swap_buffers();
+
+	//--- drawing modes -------------------------------
+	void render_2d_left_handed_dc(const uint32_t active_shader);
+	void render_3d_left_handed_perspective(const uint32_t active_shader);
+	// void draw_2d_left_handed_orthographic();
+	// void draw_2d_left_handed_normalized();
+
+
 
 	//@Incomplete: these draw modes / VBO&VAO management should move to the manager.
 	struct Buffers
@@ -63,13 +69,6 @@ namespace graphics
 		uint32_t IBO;
 	};
 
-	std::map<std::string, graphics::Buffers>& buffers();
-
-	// draw modes.
-	void render_2d_left_handed_dc(const uint32_t active_shader);
-	void render_3d_left_handed_perspective(const uint32_t active_shader);
-	// void draw_2d_left_handed_orthographic();
-	// void draw_2d_left_handed_normalized();
 
 	// platform graphics?
 	#ifdef _WIN32
