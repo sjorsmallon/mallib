@@ -35,7 +35,7 @@ void graphics::init_graphics()
 { 
     graphics::global_Win32_context().device_context = globals.device_context;
     graphics::init_opengl();
-    graphics::clear_buffers();
+    graphics::clear_buffer_bits();
 }
 
 void graphics::init_opengl()
@@ -64,7 +64,7 @@ uint32_t graphics::load_shader(const std::string& shader_folder_path)
         shader_ids.push_back(graphics::load_compile_attach_shader(shader_program, file.path().string()));
 
     glLinkProgram(shader_program);
-    if (!graphics::link_success(shader_program))
+    if (!graphics::get_link_success(shader_program))
         fmt::print("[graphics] error: shader {} could not be linked.", shader_folder_path);
     for (const auto& shader_id: shader_ids)
         glDetachShader(shader_program, shader_id);
@@ -73,13 +73,13 @@ uint32_t graphics::load_shader(const std::string& shader_folder_path)
 }
 
 /// returns a free active texture ID and increments the value.
-uint32_t graphics::next_active_texture_id()
+uint32_t graphics::next_free_texture_frame()
 {
-    static uint32_t active_texture_id;
-    uint32_t free_active_texture_id = active_texture_id;
-    active_texture_id += 1;
+    static uint32_t free_texture_frame;
+    uint32_t new_free_texture_frame = free_texture_frame;
+    free_texture_frame += 1;
 
-    return free_active_texture_id;
+    return new_free_texture_frame;
 }
 
 void graphics::set_shader(const std::string& shader_name)
@@ -94,7 +94,8 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
     {
         glGenTextures(1, &texture.gl_texture_id);
 
-        glActiveTexture(GL_TEXTURE0);
+        uint32_t free_texture_frame = graphics::next_active_texture_id();
+        glActiveTexture(GL_TEXTURE0 + free_texture_frame);
         glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
        
         glTexImage2D(
@@ -107,12 +108,12 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
             GL_RGB,
             GL_UNSIGNED_BYTE,
             texture.data);
-
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
+    //@TODO: generate mipmaps.
 }
 
 // draw_game-3d:
@@ -135,6 +136,7 @@ void graphics::draw_game_3d()
         graphics::set_shader("isophotes");
         active_shader_id = graphics::shaders()["isophotes"];
     }
+
     auto defer_shader_state = On_Leaving_Scope([]{graphics::set_shader("gouraud");});
     render_3d_left_handed_perspective(active_shader);
 
@@ -152,14 +154,15 @@ void graphics::draw_game_3d()
     }
 
     glBindVertexArray(graphics::buffers()["cat.obj"].VAO);
-    const int32_t model_matrix_location = glGetUniformLocation(active_shader, "model_matrix");
+
+    const int32_t model_matrix_location            = glGetUniformLocation(active_shader,    "model_matrix");
     const int32_t normal_transform_matrix_location = glGetUniformLocation(active_shader_id, "normal_transform");
 
     bool row_major = true;
     for (auto &set_piece: graphics::active_scene().set_pieces)
     {
         //@Refactor: should all xform_state quaternions be unit quaternions?
-        set_piece.xform_state.scale = 2.0;
+        set_piece.xform_state.scale = 2.0f;
 
         Mat4 model_matrix = mat::model_from_xform_state(set_piece.xform_state);
         glUniformMatrix4fv(model_matrix_location, 1, row_major, &model_matrix[0][0]);
@@ -169,14 +172,13 @@ void graphics::draw_game_3d()
 
         if (active_shader_id == graphics::shaders()["gouraud"])
         {
-            //@NOTE!!! this uniform does not take the texture ID, but takes the N from GL_TEXTURE0 +N!!!
-            // so the question is: which gl_texture owns which textures?
-            // An analogy we can use is that texture_2D is a picture frame to which we bind the "actual" picture using the texture_id.
-            // gl_texture0 is the wall on which the picture frames hang. Sounds good to me.
-            glActiveTexture(GL_TEXTURE0 + 1);
-            glBindTexture(GL_TEXTURE_2D, asset::texture_data()[set_piece.texture_name].gl_texture_id);
+            Texture& texture = asset::texture_data()[set_piece.texture_name];
+
+            glActiveTexture(GL_TEXTURE0 + texture.gl_texture_frame);
+            glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
             const int32_t texture_location = glGetUniformLocation(active_shader_id, "texture_uniform");
-            glUniform1i(texture_location, 1);
+            glUniform1i(texture_location, 0); // should be gl_texture_frame.
+            glUniform1i(texture_location, texture.gl_texture_frame);
         }
 
         //@FIXME: for now, we invoke draw after every object. 
@@ -184,10 +186,12 @@ void graphics::draw_game_3d()
         glDrawArrays(GL_TRIANGLES,0, object_data.vertices.size());
         // glUniform1i(d_textureLocation, 0);
     }
+    glBindVertexArray(0);
+
 }
 
 // static
-void graphics::clear_buffers()
+void graphics::clear_buffer_bits()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -202,7 +206,7 @@ void graphics::swap_buffers()
     SwapBuffers(graphics::global_Win32_context().device_context);
 }
 
-////
+
 uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file_name)
 {
     constexpr const int GL_FAILURE = 0;
@@ -311,7 +315,7 @@ void graphics::get_shader_info(uint32_t prog)
 }
 
 
-bool graphics::link_success(uint32_t program_id)
+bool graphics::get_link_success(uint32_t program_id)
 {
     int gl_params = 0;
     glGetProgramiv(program_id, GL_LINK_STATUS, &gl_params);

@@ -28,19 +28,19 @@ namespace graphics
 	
 	//--- openGL helpers. ---------------------------
 	void get_shader_info(uint32_t shader_program);
-	bool link_success(uint32_t shader_program);
+	bool get_link_success(uint32_t shader_program);
 
 	//--- openGL bookkeeping. ---------------------------
 	std::map<std::string, uint32_t>& shaders();
-	uint32_t graphics::next_active_texture_id();
+	uint32_t graphics::next_free_texture_frame();
 	scene::Scene& active_scene();
 	std::map<std::string, graphics::Buffers>& buffers();
 
 	//--- shader helpers. ---------------------------
-	void set_shader(const std::string& shader_name);
-	void reload_shaders(uint32_t& program);
+	void     set_shader(const std::string& shader_name);
 	uint32_t load_shader(const std::string& shader_folder_path);
 	uint32_t load_compile_attach_shader(uint32_t program, std::string file_name);
+	void     reload_shaders(uint32_t& program);
 	uint32_t shader_type_from_extension(const std::string& filename);
 
 	//--- font/text mode. ---------------------------
@@ -50,7 +50,7 @@ namespace graphics
 	//--- rendering ----------------------------------
 	void render_frame();
 	void draw_game_3d();
-	void clear_buffers();
+	void clear_buffer_bits();
 	void swap_buffers();
 
 	//--- drawing modes -------------------------------
