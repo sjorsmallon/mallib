@@ -21,6 +21,14 @@
 
 namespace graphics
 {
+	//@Incomplete: these draw modes / VBO&VAO management should move to the manager.
+	struct Buffers
+	{
+		uint32_t VAO;
+		uint32_t VBO;
+		uint32_t IBO;
+	};
+
 	//--- init. ---------------------------
 	void init_graphics();
 	void init_opengl();
@@ -32,7 +40,7 @@ namespace graphics
 
 	//--- openGL bookkeeping. ---------------------------
 	std::map<std::string, uint32_t>& shaders();
-	uint32_t graphics::next_free_texture_frame();
+	uint32_t next_free_texture_frame();
 	scene::Scene& active_scene();
 	std::map<std::string, graphics::Buffers>& buffers();
 
@@ -61,13 +69,7 @@ namespace graphics
 
 
 
-	//@Incomplete: these draw modes / VBO&VAO management should move to the manager.
-	struct Buffers
-	{
-		uint32_t VAO;
-		uint32_t VBO;
-		uint32_t IBO;
-	};
+
 
 
 	// platform graphics?

@@ -70,6 +70,7 @@ namespace asset
         int    channels;
         size_t data_size;
         uint32_t gl_texture_id;
+        uint32_t gl_texture_frame;
         ~Texture()
         {
             free(data);

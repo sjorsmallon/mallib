@@ -89,12 +89,11 @@ void graphics::set_shader(const std::string& shader_name)
 
 void graphics::init_texture_settings(std::map<std::string, asset::Texture>& textures)
 {
-
     for (auto& [texture_name, texture]: textures)
     {
         glGenTextures(1, &texture.gl_texture_id);
 
-        uint32_t free_texture_frame = graphics::next_active_texture_id();
+        uint32_t free_texture_frame = graphics::next_free_texture_frame();
         glActiveTexture(GL_TEXTURE0 + free_texture_frame);
         glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
        
@@ -138,13 +137,13 @@ void graphics::draw_game_3d()
     }
 
     auto defer_shader_state = On_Leaving_Scope([]{graphics::set_shader("gouraud");});
-    render_3d_left_handed_perspective(active_shader);
+    render_3d_left_handed_perspective(active_shader_id);
 
     if (active_shader_id == graphics::shaders()["gouraud"])
     {
-        int32_t light_position_location = glGetUniformLocation(active_shader, "light_position");
-        int32_t light_color_location    = glGetUniformLocation(active_shader, "light_color");
-        int32_t material_location       = glGetUniformLocation(active_shader, "material");
+        int32_t light_position_location = glGetUniformLocation(active_shader_id, "light_position");
+        int32_t light_color_location    = glGetUniformLocation(active_shader_id, "light_color");
+        int32_t material_location       = glGetUniformLocation(active_shader_id, "material");
         Vec3 light_position = {0.0f, 0.0f, -0.5f};
         Vec3 light_color =    {1.0f, 1.0f, 1.0f};
         Vec4 material =       {0.4f, 0.6f, 0.8f, 64.0f};
@@ -155,7 +154,7 @@ void graphics::draw_game_3d()
 
     glBindVertexArray(graphics::buffers()["cat.obj"].VAO);
 
-    const int32_t model_matrix_location            = glGetUniformLocation(active_shader,    "model_matrix");
+    const int32_t model_matrix_location            = glGetUniformLocation(active_shader_id,    "model_matrix");
     const int32_t normal_transform_matrix_location = glGetUniformLocation(active_shader_id, "normal_transform");
 
     bool row_major = true;
@@ -172,7 +171,7 @@ void graphics::draw_game_3d()
 
         if (active_shader_id == graphics::shaders()["gouraud"])
         {
-            Texture& texture = asset::texture_data()[set_piece.texture_name];
+            asset::Texture& texture = asset::texture_data()[set_piece.texture_name];
 
             glActiveTexture(GL_TEXTURE0 + texture.gl_texture_frame);
             glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
@@ -367,7 +366,7 @@ void graphics::reload_shaders(uint32_t& program)
 
 
 
-void graphics::render_2d_left_handed_dc(const uint32_t active_shader)
+void graphics::render_2d_left_handed_dc(const uint32_t active_shader_id)
 {
     const uint32_t window_height = globals.window_height;
     const uint32_t window_width = globals.window_width;
@@ -384,7 +383,7 @@ void graphics::render_2d_left_handed_dc(const uint32_t active_shader)
     glUniformMatrix4fv(glGetUniformLocation(graphics::shaders()["text"], "projection_matrix"), 1, row_major, &projection_matrix[0][0]);
 }
 
-void graphics::render_3d_left_handed_perspective(const uint32_t active_shader)
+void graphics::render_3d_left_handed_perspective(const uint32_t active_shader_id)
 {
     //@Note: do NOT forget this.
     const bool row_major = true;
@@ -402,11 +401,11 @@ void graphics::render_3d_left_handed_perspective(const uint32_t active_shader)
     Mat4 projection_matrix = mat::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
 
     // bind view matrix
-    const int32_t view_matrix_location = glGetUniformLocation(active_shader, "view_matrix");
+    const int32_t view_matrix_location = glGetUniformLocation(active_shader_id, "view_matrix");
     glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
 
     // bind projection matrix.
-    const int32_t projection_matrix_location = glGetUniformLocation(active_shader, "projection_matrix");
+    const int32_t projection_matrix_location = glGetUniformLocation(active_shader_id, "projection_matrix");
     glUniformMatrix4fv(projection_matrix_location, 1, row_major, &projection_matrix[0][0]);
 
 }

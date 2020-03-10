@@ -29,13 +29,14 @@ void game::init()
 void game::load_shaders()
 { 
     uint32_t text_shader      = graphics::load_shader("assets/shaders/text/");
-    // uint32_t cel_shader       = graphics::load_shader("assets/shaders/cel/");
+    uint32_t cel_shader       = graphics::load_shader("assets/shaders/cel/");
     uint32_t isophotes_shader = graphics::load_shader("assets/shaders/isophotes/");
-    // uint32_t gouraud_shader   = graphics::load_shader("assets/shaders/gouraud/");
     uint32_t normals_shader   = graphics::load_shader("assets/shaders/normals/");  
+    // uint32_t gouraud_shader   = graphics::load_shader("assets/shaders/gouraud/");
     // uint32_t error_shader     = graphics::load_shader("assets/shaders/error");
+    
     graphics::shaders()["text"]      = text_shader;
-    // graphics::shaders()["cel"]       = cel_shader;
+    graphics::shaders()["cel"]       = cel_shader;
     graphics::shaders()["isophotes"] = isophotes_shader;
     // graphics::shaders()["gouraud"]   = gouraud_shader;
     graphics::shaders()["normals"]   = normals_shader;
@@ -92,7 +93,7 @@ void game::main_loop()
 {
     auto start = std::chrono::system_clock::now();
 
-    graphics::clear_buffers();
+    graphics::clear_buffer_bits();
     const auto program_mode = Program_Mode::MENU;
 
     if (program_mode == Program_Mode::GAME)
