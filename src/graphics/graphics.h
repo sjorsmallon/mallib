@@ -21,6 +21,13 @@
 
 namespace graphics
 {
+	struct Shader
+	{
+		uint32_t program;
+		std::vector<std::string> uniforms;
+		std::vector<std::string> attributes;
+	}
+
 	//@Incomplete: these draw modes / VBO&VAO management should move to the manager.
 	struct Buffers
 	{
@@ -35,10 +42,14 @@ namespace graphics
 	void init_texture_settings(std::map<std::string, asset::Texture>& textures);
 	
 	//--- openGL helpers. ---------------------------
-	void get_shader_info(uint32_t shader_program);
+	void get_shader_info(const std::string& shader_name);
+	void get_shader_info(graphics::Shader& shader);
 	bool get_link_success(uint32_t shader_program);
 
 	//--- openGL bookkeeping. ---------------------------
+	std::map<std::string, graphics::Shader>& shader_info_map();
+
+
 	std::map<std::string, uint32_t>& shaders();
 	uint32_t next_free_texture_frame();
 	scene::Scene& active_scene();

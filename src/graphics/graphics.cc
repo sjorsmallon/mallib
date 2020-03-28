@@ -52,22 +52,33 @@ void graphics::init_opengl()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+
 uint32_t graphics::load_shader(const std::string& shader_folder_path)
 {
     uint32_t shader_program = glCreateProgram();
     std::vector<uint32_t> shader_ids;
 
     if (!fs::exists(shader_folder_path))
+    {
         fmt::print("[graphics] error: shader folder {} does not exist.", shader_folder_path);
+    }
 
     for (const auto& file: fs::directory_iterator(shader_folder_path))
+    {
         shader_ids.push_back(graphics::load_compile_attach_shader(shader_program, file.path().string()));
-
+    }
     glLinkProgram(shader_program);
     if (!graphics::get_link_success(shader_program))
         fmt::print("[graphics] error: shader {} could not be linked.", shader_folder_path);
     for (const auto& shader_id: shader_ids)
         glDetachShader(shader_program, shader_id);
+
+
+    // record uniforms.
+    fmt::print("[graphics] recording uniforms for shader {}", shader_folder_path);
+    graphics::Shader& shader = graphics::shader_info_map()[shader_folder_path];
+
+
 
     return shader_program;
 }
@@ -272,7 +283,7 @@ graphics::Win32_Context& graphics::global_Win32_context() //@cleanup: i don't li
 //@TODO:turn this into multiple things? i.e. get_shader_info,.
 // get_program_info, get_opengl_state.
 // static
-void graphics::get_shader_info(uint32_t prog)
+void graphics::get_shader_info(graphics::Shader& shader)
 {
     fmt::print("shader info for program {}:\n", prog);
 
@@ -294,8 +305,8 @@ void graphics::get_shader_info(uint32_t prog)
 
         name_data.resize(values[0]);
         glGetProgramResourceName(prog, GL_PROGRAM_INPUT, attrib, name_data.size(), NULL, &name_data[0]);
-        std::string name(name_data.begin(), name_data.end());
-        fmt::print("attributes: {}\n", name);
+        std::string attribute_name(name_data.begin(), name_data.end());
+        shader.attributes.push_back(attribute_name);
     }
 
     // PROGRAM_UNIFORMS.
@@ -305,11 +316,10 @@ void graphics::get_shader_info(uint32_t prog)
     {
         glGetProgramResourceiv(prog, GL_UNIFORM, unif, properties.size(),
         &properties[0], values.size(), NULL, &values[0]);
-
         name_data.resize(values[0]); //The length of the name.
         glGetProgramResourceName(prog, GL_UNIFORM, unif, name_data.size(), NULL, &name_data[0]);
-        std::string name(name_data.begin(), name_data.end());
-        fmt::print("uniform: {}\n", name);
+        std::string uniform_name(name_data.begin(), name_data.end());
+        shader.uniforms.push_back(uniform_name);
     }
 }
 
@@ -417,6 +427,11 @@ std::map<std::string, uint32_t>& graphics::shaders()
     return shaders;
 }
 
+std::map<std::string, graphics::Shader>& graphics::shader_info_map()
+{
+    static std::map<std::string graphics::Shader> shader_info_map;
+    return shader_info_map;
+}
 
 
 // Jon Blow's render_frame call.
