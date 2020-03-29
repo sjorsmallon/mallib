@@ -46,57 +46,12 @@ void graphics::init_opengl()
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
-    glClearColor(0.2f, 0.8f, 0.3f, 1.0f);
+    glClearColor(40.0f/255.0f, 45.0f/255.0f, 54.0f/ 255.0f, 1.0f);
     //@Refactor: These OpenGL settings are used for font. should we move it there?
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-
-uint32_t graphics::load_shader(const std::string& shader_folder_path)
-{
-    uint32_t shader_program = glCreateProgram();
-    std::vector<uint32_t> shader_ids;
-
-    if (!fs::exists(shader_folder_path))
-    {
-        fmt::print("[graphics] error: shader folder {} does not exist.", shader_folder_path);
-    }
-
-    for (const auto& file: fs::directory_iterator(shader_folder_path))
-    {
-        shader_ids.push_back(graphics::load_compile_attach_shader(shader_program, file.path().string()));
-    }
-    glLinkProgram(shader_program);
-    if (!graphics::get_link_success(shader_program))
-        fmt::print("[graphics] error: shader {} could not be linked.", shader_folder_path);
-    for (const auto& shader_id: shader_ids)
-        glDetachShader(shader_program, shader_id);
-
-
-    // record uniforms.
-    fmt::print("[graphics] recording uniforms for shader {}", shader_folder_path);
-    graphics::Shader& shader = graphics::shader_info_map()[shader_folder_path];
-
-
-
-    return shader_program;
-}
-
-/// returns a free active texture ID and increments the value.
-uint32_t graphics::next_free_texture_frame()
-{
-    static uint32_t free_texture_frame;
-    uint32_t new_free_texture_frame = free_texture_frame;
-    free_texture_frame += 1;
-
-    return new_free_texture_frame;
-}
-
-void graphics::set_shader(const std::string& shader_name)
-{
-    glUseProgram(graphics::shaders()[shader_name]);
-}
 
 void graphics::init_texture_settings(std::map<std::string, asset::Texture>& textures)
 {
@@ -126,6 +81,16 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
     //@TODO: generate mipmaps.
 }
 
+/// returns a free active texture ID and increments the value.
+uint32_t graphics::next_free_texture_frame()
+{
+    static uint32_t free_texture_frame;
+    uint32_t new_free_texture_frame = free_texture_frame;
+    free_texture_frame += 1;
+
+    return new_free_texture_frame;
+}
+
 // draw_game-3d:
 // - set active shader
 // - check whether or not view / projection matrix have changed before updating
@@ -136,6 +101,7 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
 // - for all instances of that type (now implemented as - for each object in the active scene:)
 //       - maybe render texture
 //       - draw object 
+
 
 void graphics::draw_game_3d()
 {
@@ -205,7 +171,6 @@ void graphics::clear_buffer_bits()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
-
 void graphics::render_frame()
 {
     graphics::draw_game_3d();
@@ -214,6 +179,77 @@ void graphics::render_frame()
 void graphics::swap_buffers()
 {
     SwapBuffers(graphics::global_Win32_context().device_context);
+}
+
+scene::Scene& graphics::active_scene()
+{
+    static scene::Scene active_scene;
+    return active_scene;
+}
+
+graphics::Win32_Context& graphics::global_Win32_context() //@cleanup: i don't like this.
+{
+    static Win32_Context context;
+    return context;
+}
+
+
+///--- Shaders --------------------------------------------------
+std::map<std::string, uint32_t>& graphics::shaders()
+{
+    static std::map<std::string, uint32_t> shaders;
+    return shaders;
+}
+
+std::map<std::string, graphics::Shader>& graphics::shader_info_map()
+{
+    static std::map<std::string, graphics::Shader> shader_info_map;
+    return shader_info_map;
+}
+
+
+// shader_name refers to the relative folder path. e.g. "normals" for the folder "assets/shaders/normals".
+uint32_t graphics::load_shader(const std::string& shader_name)
+{
+    std::string shader_folder_path = "assets/shaders/" + shader_name;
+    uint32_t shader_program = glCreateProgram();
+    std::vector<uint32_t> shader_ids(8);
+
+    if (!fs::exists(shader_folder_path))
+        fmt::print("[graphics] error: shader folder {} does not exist.", shader_folder_path);
+
+    for (const auto& file: fs::directory_iterator(shader_folder_path))
+        shader_ids.push_back(graphics::load_compile_attach_shader(shader_program, file.path().string()));
+
+
+    glLinkProgram(shader_program);
+
+    if (!graphics::get_shader_link_success(shader_program))
+        fmt::print("[graphics] error: shader {} could not be linked.", shader_folder_path);
+
+    for (const auto& shader_id: shader_ids)
+        glDetachShader(shader_program, shader_id);
+
+    // gather uniforms & attributes.
+    graphics::Shader& shader = graphics::shader_info_map()[shader_name];
+    shader.program_id =  shader_program;
+
+    get_shader_info(shader);
+
+    fmt::print("[graphics] uniforms: \n");
+    for (auto&& uniform_name: shader.uniforms)
+        fmt::print("    {} \n", uniform_name);
+
+    fmt::print("[graphics] attributes: \n");
+    for (auto&& attribute_name: shader.attributes)
+        fmt::print("    {} \n", attribute_name);
+
+    return shader_program;
+}
+
+void graphics::set_shader(const std::string& shader_name)
+{
+    glUseProgram(graphics::shaders()[shader_name]);
 }
 
 
@@ -239,7 +275,7 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
     glShaderSource(shader_id, 1, &shader_c_str, NULL);
     glCompileShader(shader_id);
 
-    GLint shader_compiled = GL_FALSE;
+    GLint shader_compiled = GL_FALSE; 
     glGetShaderiv(shader_id, GL_COMPILE_STATUS, &shader_compiled);
     if (shader_compiled != GL_TRUE)
     {
@@ -251,7 +287,7 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
         glGetShaderInfoLog(shader_id, max_length, &max_length, &error_log[0]);
         
         std::string string_log = std::string(error_log.begin(), error_log.end());
-        fmt::print("[graphics] shader error log: {}\n", string_log);
+        fmt::print("[graphics] shader error log:\n {}\n ", string_log);
 
         glDeleteShader(shader_id); // Don't leak the shader.
     }
@@ -264,28 +300,14 @@ uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file
     return shader_id;
 }
 
-
-
-scene::Scene& graphics::active_scene()
-{
-    static scene::Scene active_scene;
-    return active_scene;
-}
-
-graphics::Win32_Context& graphics::global_Win32_context() //@cleanup: i don't like this.
-{
-    static Win32_Context context;
-    return context;
-}
-
-
 // helper functions
 //@TODO:turn this into multiple things? i.e. get_shader_info,.
 // get_program_info, get_opengl_state.
 // static
 void graphics::get_shader_info(graphics::Shader& shader)
 {
-    fmt::print("shader info for program {}:\n", prog);
+
+    fmt::print("shader info for program {}:\n", shader.program_id);
 
     std::vector<GLchar> name_data(256);
     std::vector<GLenum> properties = {};
@@ -296,35 +318,34 @@ void graphics::get_shader_info(graphics::Shader& shader)
 
     // PROGRAM_ATTRIBUTES
     GLint numActiveAttribs = 0;
-    glGetProgramInterfaceiv(prog, GL_PROGRAM_INPUT, GL_ACTIVE_RESOURCES, &numActiveAttribs);
+    glGetProgramInterfaceiv(shader.program_id, GL_PROGRAM_INPUT, GL_ACTIVE_RESOURCES, &numActiveAttribs);
 
     for(int attrib = 0; attrib < numActiveAttribs; ++attrib)
     {
-        glGetProgramResourceiv(prog, GL_PROGRAM_INPUT, attrib, properties.size(),
+        glGetProgramResourceiv(shader.program_id, GL_PROGRAM_INPUT, attrib, properties.size(),
         &properties[0], values.size(), NULL, &values[0]);
 
         name_data.resize(values[0]);
-        glGetProgramResourceName(prog, GL_PROGRAM_INPUT, attrib, name_data.size(), NULL, &name_data[0]);
+        glGetProgramResourceName(shader.program_id, GL_PROGRAM_INPUT, attrib, name_data.size(), NULL, &name_data[0]);
         std::string attribute_name(name_data.begin(), name_data.end());
         shader.attributes.push_back(attribute_name);
     }
 
     // PROGRAM_UNIFORMS.
     GLint numActiveUniforms = 0;
-    glGetProgramInterfaceiv(prog, GL_UNIFORM, GL_ACTIVE_RESOURCES, &numActiveUniforms);
+    glGetProgramInterfaceiv(shader.program_id, GL_UNIFORM, GL_ACTIVE_RESOURCES, &numActiveUniforms);
     for(int unif = 0; unif < numActiveUniforms; ++unif)
     {
-        glGetProgramResourceiv(prog, GL_UNIFORM, unif, properties.size(),
+        glGetProgramResourceiv(shader.program_id, GL_UNIFORM, unif, properties.size(),
         &properties[0], values.size(), NULL, &values[0]);
         name_data.resize(values[0]); //The length of the name.
-        glGetProgramResourceName(prog, GL_UNIFORM, unif, name_data.size(), NULL, &name_data[0]);
+        glGetProgramResourceName(shader.program_id, GL_UNIFORM, unif, name_data.size(), NULL, &name_data[0]);
         std::string uniform_name(name_data.begin(), name_data.end());
         shader.uniforms.push_back(uniform_name);
     }
 }
 
-
-bool graphics::get_link_success(uint32_t program_id)
+bool graphics::get_shader_link_success(uint32_t program_id)
 {
     int gl_params = 0;
     glGetProgramiv(program_id, GL_LINK_STATUS, &gl_params);
@@ -353,7 +374,6 @@ uint32_t graphics::shader_type_from_extension(const std::string& filename)
         return 0;
 }
 
-
 void graphics::reload_shaders(uint32_t& program)
 {
     //@Incomplete: either know which shaders to reload or reload all shaders
@@ -375,9 +395,13 @@ void graphics::reload_shaders(uint32_t& program)
 }
 
 
+///--- Render Modes -------------------------------------------------------
 
 void graphics::render_2d_left_handed_dc(const uint32_t active_shader_id)
 {
+    //@Note: do NOT forget this.
+    const bool row_major = true;
+
     const uint32_t window_height = globals.window_height;
     const uint32_t window_width = globals.window_width;
     const float top   = window_height; // viewport 
@@ -387,8 +411,7 @@ void graphics::render_2d_left_handed_dc(const uint32_t active_shader_id)
     const float z_near  = 0.0f;
     const float z_far   = 1.0f; // near and far are reserved by windows???
 
-    //@Note: do NOT forget this.
-    const bool row_major = true;
+
     Mat4 projection_matrix = mat::ortho(left, right, top, bot, z_near, z_far); 
     glUniformMatrix4fv(glGetUniformLocation(graphics::shaders()["text"], "projection_matrix"), 1, row_major, &projection_matrix[0][0]);
 }
@@ -417,21 +440,8 @@ void graphics::render_3d_left_handed_perspective(const uint32_t active_shader_id
     // bind projection matrix.
     const int32_t projection_matrix_location = glGetUniformLocation(active_shader_id, "projection_matrix");
     glUniformMatrix4fv(projection_matrix_location, 1, row_major, &projection_matrix[0][0]);
-
 }
 
-
-std::map<std::string, uint32_t>& graphics::shaders()
-{
-    static std::map<std::string, uint32_t> shaders;
-    return shaders;
-}
-
-std::map<std::string, graphics::Shader>& graphics::shader_info_map()
-{
-    static std::map<std::string graphics::Shader> shader_info_map;
-    return shader_info_map;
-}
 
 
 // Jon Blow's render_frame call.

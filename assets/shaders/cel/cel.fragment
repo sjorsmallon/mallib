@@ -10,33 +10,37 @@ layout (location = 3) in vec3 world_position_fs;
 layout (location = 0) out vec4 fragment_color;
 
 //--- Uniforms -------------------------------------
-layout (location = 9)  uniform vec4 light_position; // in world coordinates, methinks.
+layout (location = 9)  uniform vec4 light_position; // light is defined in world coordinates.
 layout (location = 10) uniform vec3 light_color;
 layout (location = 11) uniform vec4 material; // , x = kd, y = ks, z = n, w = ka
 
 void main()
 {
-    vec3 N = normalize(normal_in);
-    vec3 R = normalize(reflect(L, N));
+    // using blinn-phong with half normal.
     vec3 world_position_light = light_position.xyz;
+
     vec3 L = normalize(world_position_light.xyz - position_fs);
-    vec3 V = vec3(0.0f,0.0f,0.0f);
+    vec3 N = normalize(normal_fs);
+    vec3 R = normalize(reflect(L, N));
+
+    
+    vec3 V = vec3(0.0f,0.0f,0.0f); // camera position. assume at the origin for now.
+
     V = normalize(V - world_position_fs);
 
-    // half vectorfor blinn phong.
+    // half vector for blinn-phong.
     vec3 H = normalize(L + V);
-
  
     vec3 material_color = vec3(100.0f/255.0f, 149.0f/255.0f, 237/255.0f);
 
-
     float NdotL = dot(N,L);
+
     // binarize based on normal
+
     float light_intensity = NdotL > 0.0f ? 1.0f : 0.0f;
-    light_intensity = smoothstep(0, 0.01, NdotL);
-    vec4 additive_light = vec4(light_intensity,1.0f) * light_colour;
+    light_intensity = smoothstep(0.0f, 0.01f, NdotL);
+    vec3 additive_light = light_intensity * light_color;
 
-    float specular_component = 
 
-    fragment_color = vec4(material_color * lightIntensity,1.0f);
+    fragment_color = vec4(material_color * light_intensity,1.0f);
 }

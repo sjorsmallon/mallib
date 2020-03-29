@@ -22,7 +22,8 @@ void main()
 {
 
     gl_Position = projection_matrix * view_matrix * model_matrix * vec4(position_in, 1.0);
-    position_fs = vec4(projection_matrix * view_matrix * model_matrix * vec4(position_in, 1.0)).xyz;
+    position_fs = gl_Position.xyz;
+
     world_position_fs = view_matrix * model_matrix * vec4(position_in, 1.0);
     normal_fs = normal_transform * normal_in;
     texture_coordinates_fs = texture_coordinates_in;
