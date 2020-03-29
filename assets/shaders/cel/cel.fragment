@@ -12,19 +12,21 @@ layout (location = 0) out vec4 fragment_color;
 //--- Uniforms -------------------------------------
 layout (location = 9)  uniform vec4 light_position; // light is defined in world coordinates.
 layout (location = 10) uniform vec3 light_color;
-layout (location = 11) uniform vec4 material; // , x = kd, y = ks, z = n, w = ka
+layout (location = 11) uniform vec4 material; // , x = kd, y = ks, z = n, w = ka (glossiness).
 
 void main()
 {
     // using blinn-phong with half normal.
-    vec3 world_position_light = light_position.xyz;
+
+    //vec3 world_position_light = light_position.xyz;
+    vec3 world_position_light = vec3(50.0f, 100.0f, 100.0f);
 
     vec3 L = normalize(world_position_light.xyz - position_fs);
     vec3 N = normalize(normal_fs);
     vec3 R = normalize(reflect(L, N));
 
-    
-    vec3 V = vec3(0.0f,0.0f,0.0f); // camera position. assume at the origin for now.
+    // camera position. assume at the origin for now.
+    vec3 V = vec3(0.0f,0.0f,1.0f); 
 
     V = normalize(V - world_position_fs);
 
@@ -34,13 +36,22 @@ void main()
     vec3 material_color = vec3(100.0f/255.0f, 149.0f/255.0f, 237/255.0f);
 
     float NdotL = dot(N,L);
+    float NdotH = dot(N,H);
 
     // binarize based on normal
 
-    float light_intensity = NdotL > 0.0f ? 1.0f : 0.0f;
+     float light_intensity = NdotL > 0.0f ? 1.0f : 0.0f;
+
     light_intensity = smoothstep(0.0f, 0.01f, NdotL);
-    vec3 additive_light = light_intensity * light_color;
+    vec3 ambient_light = vec3(0.2f, 0.0f, 0.0f);
 
+    vec3 ambient_component = ambient_light;
+    vec3 diffuse_component = material_color;
+    vec3 lighting_component = light_intensity * light_color;
+    float glossiness = material.w;
+    float specular_intensity = pow(NdotH * light_intensity, glossiness * glossiness);
+    float smooth_specular_intensity = smoothstep(0.0005f, 0.01f, specular_intensity);
+    float specular_component = smooth_specular_intensity;
 
-    fragment_color = vec4(material_color * light_intensity,1.0f);
+    fragment_color = vec4(material_color * (ambient_component + lighting_component + specular_component), 1.0f);
 }

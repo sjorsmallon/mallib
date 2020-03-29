@@ -106,12 +106,21 @@ uint32_t graphics::next_free_texture_frame()
 void graphics::draw_game_3d()
 {
     uint32_t active_shader_id = 0;
-    bool render_isophotes = true;
+    bool render_isophotes = false;
+    bool render_cel = true;
     if (render_isophotes)
     {
         graphics::set_shader("isophotes");
         active_shader_id = graphics::shaders()["isophotes"];
     }
+
+    if (render_cel)
+    {
+        graphics::set_shader("cel");
+        active_shader_id = graphics::shaders()["cel"];
+    }
+
+
 
     auto defer_shader_state = On_Leaving_Scope([]{graphics::set_shader("gouraud");});
     render_3d_left_handed_perspective(active_shader_id);
@@ -124,6 +133,19 @@ void graphics::draw_game_3d()
         Vec3 light_position = {0.0f, 0.0f, -0.5f};
         Vec3 light_color =    {1.0f, 1.0f, 1.0f};
         Vec4 material =       {0.4f, 0.6f, 0.8f, 64.0f};
+        glUniform3fv(light_position_location, 1, &light_position.data[0]);
+        glUniform3fv(light_color_location,    1, &light_color.data[0]);
+        glUniform4fv(material_location,       1, &material.data[0]);
+    }
+
+    if (active_shader_id == graphics::shaders()["cel"])
+    {
+        int32_t light_position_location = glGetUniformLocation(active_shader_id, "light_position");
+        int32_t light_color_location    = glGetUniformLocation(active_shader_id, "light_color");
+        int32_t material_location       = glGetUniformLocation(active_shader_id, "material");
+        Vec3 light_position = {0.0f, 0.0f, -0.2f};
+        Vec3 light_color =    {0.2f, 0.0f, 1.0f};
+        Vec4 material =       {0.9f, 0.9f, 0.9f, 32.0f};
         glUniform3fv(light_position_location, 1, &light_position.data[0]);
         glUniform3fv(light_color_location,    1, &light_color.data[0]);
         glUniform4fv(material_location,       1, &material.data[0]);
@@ -422,8 +444,8 @@ void graphics::render_3d_left_handed_perspective(const uint32_t active_shader_id
     const bool row_major = true;
 
     //@Note: view matrix is identity (i.e. opengl_left_handed, vec3(0.0,0.0,0.)
-    Vec3 camera_position = {0};
-    Vec3 target_position = {0.0f, 0.0f, -1.0f};
+    Vec3 camera_position{0.0f,0.0f, 0.0f};
+    Vec3 target_position{0.0f, 0.0f, -1.0f};
     Vec3 up_vector{0.0f, 1.0f, 0.0f};
     Mat4 view_matrix = mat::view(camera_position, target_position, up_vector);
     // @Note: near_z and far_z should be positive in this context.
