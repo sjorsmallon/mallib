@@ -42,9 +42,9 @@ void main()
      float light_intensity = NdotL > 0.0f ? 1.0f : 0.0f;
 
     light_intensity = smoothstep(0.0f, 0.01f, NdotL);
-    vec3 ambient_light = vec3(0.1f, 0.1f, 0.1f);
+    vec3 ambient_light_color = vec3(0.1f, 0.1f, 0.5f);
 
-    vec3 ambient_component = ambient_light;
+    vec3 ambient_component = ambient_light_color;
     vec3 diffuse_component = material_color;
     vec3 lighting_component = light_intensity * light_color;
     float glossiness = material.w;
@@ -53,7 +53,7 @@ void main()
     float specular_component = smooth_specular_intensity;
 
     // Rim Lighting
-    vec3 rim_color = vec3(1.0f,1.0f,1.0f);
+    vec3 rim_color = vec3(0.8f,0.8f,0.8f);
     float rim_dot = 1 - dot(V, N);
     float rim_amount = 0.716f;
     float rim_threshold = 0.1f;
@@ -61,10 +61,9 @@ void main()
 
     vec3 rim_component =  rim_intensity * rim_amount * rim_color;
 
+    vec4 white = vec4(1.0f,1.0f,1.0f, 1.0f);
 
+    // fragment_color = vec4(material_color * (ambient_component + lighting_component + specular_component + rim_component), 1.0f);
+    fragment_color = vec4(lighting_component + specular_component + rim_component  + ambient_component, 1.0f) * white;
 
-
-
-
-    fragment_color = vec4(material_color * (ambient_component + lighting_component + specular_component + rim_component), 1.0f);
 }

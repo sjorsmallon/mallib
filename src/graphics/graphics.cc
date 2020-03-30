@@ -144,7 +144,7 @@ void graphics::draw_game_3d()
         int32_t light_color_location    = glGetUniformLocation(active_shader_id, "light_color");
         int32_t material_location       = glGetUniformLocation(active_shader_id, "material");
         Vec3 light_position = {0.0f, 0.0f, -0.2f};
-        Vec3 light_color =    {0.2f, 0.0f, 1.0f};
+        Vec3 light_color =    {0.0f, 0.0f, 0.1f};
         Vec4 material =       {0.9f, 0.9f, 0.9f, 32.0f};
         glUniform3fv(light_position_location, 1, &light_position.data[0]);
         glUniform3fv(light_color_location,    1, &light_color.data[0]);
