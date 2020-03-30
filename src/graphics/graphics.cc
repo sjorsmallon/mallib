@@ -243,7 +243,6 @@ uint32_t graphics::load_shader(const std::string& shader_name)
     for (const auto& file: fs::directory_iterator(shader_folder_path))
         shader_ids.push_back(graphics::load_compile_attach_shader(shader_program, file.path().string()));
 
-
     glLinkProgram(shader_program);
 
     if (!graphics::get_shader_link_success(shader_program))

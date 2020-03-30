@@ -86,7 +86,6 @@ void game::load_assets()
 
 }
 
-
 void game::main_loop()
 {
     auto start = std::chrono::system_clock::now();
