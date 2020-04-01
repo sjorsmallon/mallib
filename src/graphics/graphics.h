@@ -39,6 +39,7 @@ namespace graphics
 	//--- init. ---------------------------
 	void init_graphics();
 	void init_opengl();
+	void init_imgui();
 	void init_texture_settings(std::map<std::string, asset::Texture>& textures);
 	
 	//--- openGL helpers. ---------------------------

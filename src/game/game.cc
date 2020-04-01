@@ -113,6 +113,8 @@ void game::main_loop()
     // @FIXME FIXME : drawing menu after render_frame. This is because we want to render font last.
     graphics::render_frame(); 
     // eventually, the menu will have its own buffer etcetera.
+    graphics::draw_ui();
+
 
     //menu::draw_menu();
     graphics::swap_buffers();

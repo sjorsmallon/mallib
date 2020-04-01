@@ -12,6 +12,12 @@
 
 #include <gl_lite/gl_lite.h>
 
+//--- imgui ---------------
+#include "imgui.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_opengl3.h"
+
+// file includes to sort out.
 #include "../on_leaving_scope/on_leaving_scope.h"
 #include "../win32/globals.h"
 #include "../file/file.h"
@@ -36,9 +42,11 @@ void graphics::init_graphics()
 { 
     graphics::global_Win32_context().device_context = globals.device_context;
     graphics::init_opengl();
+    graphics::init_imgui();
     graphics::clear_buffer_bits();
 }
 
+// static
 void graphics::init_opengl()
 {
     //@NOte::init gl_lite only after the gl_context has been created
@@ -53,6 +61,11 @@ void graphics::init_opengl()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+//static
+void graphics::init_imgui()
+{
+
+}
 
 void graphics::init_texture_settings(std::map<std::string, asset::Texture>& textures)
 {
@@ -186,6 +199,12 @@ void graphics::draw_game_3d()
         // glUniform1i(d_textureLocation, 0);
     }
     glBindVertexArray(0);
+
+}
+
+void graphics::draw_ui()
+{
+
 
 }
 
