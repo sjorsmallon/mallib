@@ -10,8 +10,9 @@
 #include <Wingdi.h>
 #include <stdlib.h>
 
+#include <gl_lite/gl_lite.h>
+
 #include "../on_leaving_scope/on_leaving_scope.h"
-#include "../win32/gl_lite.h"
 #include "../win32/globals.h"
 #include "../file/file.h"
 #include "../mat/mat.h"
@@ -160,7 +161,7 @@ void graphics::draw_game_3d()
     for (auto &set_piece: graphics::active_scene().set_pieces)
     {
         //@Refactor: should all xform_state quaternions be unit quaternions?
-        set_piece.xform_state.scale = 2.0f;
+        // set_piece.xform_state.scale = 2.0f;
 
         Mat4 model_matrix = mat::model_from_xform_state(set_piece.xform_state);
         glUniformMatrix4fv(model_matrix_location, 1, row_major, &model_matrix[0][0]);

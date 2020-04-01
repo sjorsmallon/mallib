@@ -5,7 +5,7 @@
 
 #include <fmt/core.h>
 
-#include "../win32/gl_lite.h"
+#include <gl_lite/gl_lite.h>
 #include "../graphics/graphics.h"
 
 #include "../on_leaving_scope/on_leaving_scope.h"

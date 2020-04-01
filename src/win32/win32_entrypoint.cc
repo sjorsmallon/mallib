@@ -55,7 +55,7 @@
 
 // gl_lite for extension loading.
 #define GL_LITE_IMPLEMENTATION
-#include "gl_lite.h"
+#include <gl_lite/gl_lite.h>
 
 typedef HGLRC WINAPI wglCreateContextAttribsARB_type(HDC hdc, HGLRC hShareContext,
         const int *attribList);
