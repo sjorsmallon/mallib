@@ -1,0 +1,62 @@
+// created by florian berger (flockaroo) - 2018
+// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+
+// oil paint brush drawing
+
+// original geometry version of this: https://shaderoo.org/?shader=N6DFZT
+
+// some relief lighting
+
+#define ImageTex iChannel0
+
+#define Res  iResolution.xy
+#define Res0 vec2(textureSize(iChannel0,0))
+#define Res1 vec2(textureSize(iChannel1,0))
+#define Res2 vec2(textureSize(iChannel2,0))
+#define Res3 vec2(textureSize(iChannel3,0))
+
+float getVal(vec2 uv)
+{
+    return length(textureLod(ImageTex,uv,.5+.5*log2(Res.x/1920.)).xyz)*1.;
+}
+    
+vec2 getGrad(vec2 uv,float delta)
+{
+    vec2 d=vec2(delta,0);
+    return vec2(
+        getVal(uv+d.xy)-getVal(uv-d.xy),
+        getVal(uv+d.yx)-getVal(uv-d.yx)
+    )/delta;
+}
+
+float PaintSpec = .15;
+
+float Vignette = 1.5;
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+	vec2 uv = fragCoord/Res;
+    vec3 n = vec3(getGrad(uv,1.0/iResolution.y),150.0);
+    //n *= n;
+    n=normalize(n);
+    fragColor=vec4(n,1);
+    vec3 light = normalize(vec3(-1,1,1.4));
+    float diff=clamp(dot(n,light),0.,1.0);
+    float spec=clamp(dot(reflect(light,n),vec3(0,0,-1)),0.0,1.0);
+    spec=pow(spec,12.0)*PaintSpec;
+    float sh=clamp(dot(reflect(light*vec3(-1,-1,1),n),vec3(0,0,-1)),0.0,1.0);
+    sh=pow(sh,4.0)*.1;
+	fragColor = texture(ImageTex,uv)*mix(diff,1.,.9)+spec*vec4(.85,1.,1.15,1.)+sh*vec4(.85,1.,1.15,1.);
+	fragColor.w=1.;
+    vec2 uv2 = (fragCoord-.5*Res)*min(Res2.y/Res.y,Res2.x/Res.x)/Res2+.5;
+    vec4 col0 = texture(iChannel2,uv2);
+    
+    if(true)
+    {
+        vec2 scc=(fragCoord-.5*iResolution.xy)/iResolution.x;
+        float vign = 1.1-Vignette*dot(scc,scc);
+        vign*=1.-.7*Vignette*exp(-sin(fragCoord.x/iResolution.x*3.1416)*40.);
+        vign*=1.-.7*Vignette*exp(-sin(fragCoord.y/iResolution.y*3.1416)*20.);
+        fragColor.xyz *= vign;
+    }
+}

@@ -13,9 +13,9 @@
 #include <gl_lite/gl_lite.h>
 
 //--- imgui ---------------
-#include "imgui.h"
-#include "imgui_impl_win32.h"
-#include "imgui_impl_opengl3.h"
+#include <imgui.h>
+#include <imgui_impl_win32.h>
+#include <imgui_impl_opengl3.h>
 
 // file includes to sort out.
 #include "../on_leaving_scope/on_leaving_scope.h"
