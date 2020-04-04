@@ -11,6 +11,7 @@
 #include "../game/game.h" 
 #include "../graphics/graphics.h" // this is a test.
 
+
 //@NOTE: go to create_window in order to skip the openGL / input handling 
 // stuff.
 
@@ -354,6 +355,10 @@ static void application_loop()
     game::main_loop();
 }
 
+///--- IMGUI ------------------------------------------------------------------ 
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+
 ///---------------------------------------------------------------------------
 /// Windows API stuff.
 
@@ -515,12 +520,15 @@ static void on_size_changed(HWND hwnd, UINT flag, const int width, const int hei
     // fmt::print("on_size_changed is not yet implemented.\n");
 }
 
-static LRESULT CALLBACK win32_main_window_callback(HWND window,
-                                                   UINT message, 
-                                                   WPARAM wParam,
-                                                   LPARAM lParam)
+static LRESULT CALLBACK win32_main_window_callback(
+    HWND window,
+    UINT message, 
+    WPARAM wParam,
+    LPARAM lParam)
 {
+    ImGui_ImplWin32_WndProcHandler(window, message, wParam, lParam);
     LRESULT result = 0;
+
     switch (message)
     {
         // all  keyboard nonsense
@@ -534,6 +542,7 @@ static LRESULT CALLBACK win32_main_window_callback(HWND window,
                     break;
                 }
             }
+            break;
         }
         case WM_PAINT:
         {
