@@ -12,6 +12,7 @@ struct Globals
 	// previous_frame_time;
 	HDC device_context;
 	HGLRC gl_context;
+	HWND window_handle;
 };
 
 extern Globals globals;

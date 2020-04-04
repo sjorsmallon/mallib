@@ -13,9 +13,9 @@
 #include <gl_lite/gl_lite.h>
 
 //--- imgui ---------------
-#include <imgui.h>
-#include <imgui_impl_win32.h>
-#include <imgui_impl_opengl3.h>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_win32.h>
+#include <imgui/imgui_impl_opengl3.h>
 
 // file includes to sort out.
 #include "../on_leaving_scope/on_leaving_scope.h"
@@ -41,7 +41,9 @@ std::map<std::string, graphics::Buffers>& graphics::buffers()
 void graphics::init_graphics()
 { 
     graphics::global_Win32_context().device_context = globals.device_context;
+    graphics::global_Win32_context().window_handle = globals.window_handle;
     graphics::init_opengl();
+
     graphics::init_imgui();
     graphics::clear_buffer_bits();
 }
@@ -64,6 +66,20 @@ void graphics::init_opengl()
 //static
 void graphics::init_imgui()
 {
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    // Setup Platform/Renderer bindings
+    ImGui_ImplWin32_Init(graphics::global_Win32_context().window_handle);
+    std::string glsl_version = "#version 430";
+    ImGui_ImplOpenGL3_Init(glsl_version.c_str());
+
 
 }
 
@@ -204,8 +220,22 @@ void graphics::draw_game_3d()
 
 void graphics::draw_ui()
 {
+      // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
 
+    bool show_demo_window = true;
+    if (show_demo_window)
+            ImGui::ShowDemoWindow(&show_demo_window);
+    
+    ImGui::Render();
 
+    glViewport(0, 0, globals.window_width, globals.window_height);
+    // glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+    // glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    // don't swap buffers yet.
 }
 
 // static

@@ -215,17 +215,17 @@ static HGLRC init_opengl(HDC device_context)
         &num_formats);
 
     if (!num_formats) {
-        fatal_error("Failed to set the OpenGL 4.1 pixel format.");
+        fatal_error("Failed to set the OpenGL 4.3 pixel format.");
     }
 
     PIXELFORMATDESCRIPTOR pfd;
     DescribePixelFormat(device_context, pixel_format, sizeof(pfd), &pfd);
 
     if (!SetPixelFormat(device_context, pixel_format, &pfd)) {
-        fatal_error("Failed to set the OpenGL 4.1 pixel format.");
+        fatal_error("Failed to set the OpenGL 4.3 pixel format.");
     }
 
-    // Specify that we want to create an OpenGL 4.1 core profile context
+    // Specify that we want to create an OpenGL 4.3 core profile context
     int gl33_attribs[] = {
         WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
         WGL_CONTEXT_MINOR_VERSION_ARB, 3,
@@ -436,6 +436,7 @@ int WINAPI wWinMain(HINSTANCE instance,
     //@Global
     globals.device_context = device_context;
     globals.gl_context = gl_context;
+    globals.window_handle = window;
 
     ShowWindow(window, command_show);
     UpdateWindow(window);

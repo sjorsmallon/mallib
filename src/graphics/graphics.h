@@ -69,6 +69,7 @@ namespace graphics
 
 	//--- rendering ----------------------------------
 	void render_frame();
+	void draw_ui();
 	void draw_game_3d();
 	void clear_buffer_bits();
 	void swap_buffers();
@@ -90,6 +91,7 @@ namespace graphics
 	{
 		HGLRC gl_context;
 		HDC	device_context;
+		HWND window_handle;
 	};
 	Win32_Context& global_Win32_context(); // this is abysmal.
 	#endif

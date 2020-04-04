@@ -131,6 +131,7 @@ using namespace gl;
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_CUSTOM)
 #include <gl_lite/gl_lite.h>
 #else
+#include <gl_lite/gl_lite.h>
 #include IMGUI_IMPL_OPENGL_LOADER_CUSTOM
 #endif
 #endif
