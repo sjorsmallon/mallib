@@ -16,7 +16,7 @@ layout (location = 3) out vec3 world_position_fs;
 layout (location = 0) uniform mat4 projection_matrix;
 layout (location = 1) uniform mat4 model_matrix;
 layout (location = 2) uniform mat4 view_matrix;
-layout (location = 3) uniform mat3 normal_transform;
+layout (location = 3) uniform mat3 model_normal_matrix;
 
 void main()
 {
@@ -25,6 +25,6 @@ void main()
     position_fs = gl_Position.xyz;
 
     world_position_fs = vec3(view_matrix * model_matrix * vec4(position_in, 1.0));
-    normal_fs = normal_transform * normal_in;
+    normal_fs = model_normal_matrix * normal_in;
     texture_coordinates_fs = texture_coordinates_in;
 }

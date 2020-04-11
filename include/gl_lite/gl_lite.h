@@ -111,6 +111,24 @@
 #define GL_BLEND_EQUATION_RGB             0x8009
 #define GL_BLEND_EQUATION_ALPHA           0x883D
 
+#define GL_FLOAT_VEC2                     0x8B50
+#define GL_FLOAT_VEC3                     0x8B51
+#define GL_FLOAT_VEC4                     0x8B52
+#define GL_INT_VEC2                       0x8B53
+#define GL_INT_VEC3                       0x8B54
+#define GL_INT_VEC4                       0x8B55
+#define GL_BOOL                           0x8B56
+#define GL_BOOL_VEC2                      0x8B57
+#define GL_BOOL_VEC3                      0x8B58
+#define GL_BOOL_VEC4                      0x8B59
+#define GL_FLOAT_MAT2                     0x8B5A
+#define GL_FLOAT_MAT3                     0x8B5B
+#define GL_FLOAT_MAT4                     0x8B5C
+#define GL_UNIFORM_TYPE                   0x8A37
+#define GL_SAMPLER_2D                     0x8B5E
+
+
+
 
 
 typedef char GLchar;
@@ -177,7 +195,10 @@ typedef ptrdiff_t GLsizeiptr;
     GLE(void,      DeleteVertexArrays,      GLsizei n, const GLuint *arrays) \
     GLE(void,      BlendEquationSeparate,   GLenum modeRGB, GLenum modeAlpha) \
     GLE(void,      BlendFuncSeparate,       GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha) \
-    GLE(void,      GetProgramInfoLog,       GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog) 
+    GLE(void,      GetProgramInfoLog,       GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog) \
+    GLE(void,      GetUniformIndices,       GLuint program, GLsizei uniformCount, const GLchar *const*uniformNames, GLuint *uniformIndices) \
+    GLE(void,      GetActiveUniformsiv,     GLuint program, GLsizei uniformCount, const GLuint *uniformIndices, GLenum pname, GLint *params) 
+
 
 
     /* end */
