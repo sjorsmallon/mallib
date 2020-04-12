@@ -36,6 +36,7 @@ namespace graphics
 	struct Shader
 	{
 		uint32_t program_id;
+		std::string shader_name;
 		std::vector<std::string> uniform_names;
 		std::vector<std::string> attribute_names;	
 		std::map<std::string, Uniform> uniforms;
@@ -53,17 +54,11 @@ namespace graphics
 		void init_opengl();
 		void init_imgui();
 		void init_texture_settings(std::map<std::string, asset::Texture>& textures);
-	
-
-	//--- openGL helpers
-	// void get_shader_info(const std::string& shader_name);
-	void get_shader_info(graphics::Shader& shader);
-	bool shader_link_succeeded(uint32_t shader_program);
 
 	//--- openGL bookkeeping
 	scene::Scene& active_scene();
 
-	std::map<std::string, graphics::Shader>& shader_info_map();
+	std::map<std::string, graphics::Shader>& shader_info();
 	std::map<std::string, uint32_t>& shaders();
 	std::map<std::string, graphics::Buffers>& buffers();
 
@@ -74,8 +69,15 @@ namespace graphics
 	void     set_shader(const std::string& shader_name);
 	uint32_t load_shader(const std::string& shader_folder_path);
 	uint32_t load_compile_attach_shader(uint32_t program, std::string file_name);
+	void 	 get_shader_info(graphics::Shader& shader);
+	bool 	 shader_link_succeeded(uint32_t shader_program);
 	void     reload_shaders(uint32_t& program);
 	uint32_t shader_type_from_extension(const std::string& filename);
+	void 	 update_uniform(const std::string& uniform_name, uniform_t data);
+
+
+	std::string& active_shader_name();
+	uint32_t& active_shader_id();
 
 	//--- font/text mode
 	void gl_text_mode();

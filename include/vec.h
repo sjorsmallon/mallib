@@ -68,8 +68,38 @@ namespace vec
     Vec3 lerp(const Vec3& lhs, const Vec3& rhs, const float ratio);
     void normalize(Vec3& lhs);
     void normalize(Vec4& lhs);
+    float* value_ptr(Vec3& lhs);
  	//vec4
+    float* value_ptr(Vec4& lhs);
+
+  //vec2
+    float* value_ptr(Vec2& lhs);
+
+  //vec2i
+    int32_t* value_ptr(Vec2i& lhs);
+
+
 };
+
+inline int32_t* vec::value_ptr(Vec2i& lhs)
+{
+  return &lhs.data[0];
+}
+
+inline float* vec::value_ptr(Vec2& lhs)
+{
+  return &lhs.data[0];
+}
+
+inline float* vec::value_ptr(Vec3& lhs)
+{
+  return &lhs.data[0];
+}
+
+inline float* vec::value_ptr(Vec4& lhs)
+{
+  return &lhs.data[0];
+}
 
 // mathy functions.
 

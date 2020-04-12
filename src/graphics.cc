@@ -258,10 +258,10 @@ std::map<std::string, uint32_t>& graphics::shaders()
     return shaders;
 }
 
-std::map<std::string, graphics::Shader>& graphics::shader_info_map()
+std::map<std::string, graphics::Shader>& graphics::shader_info()
 {
-    static std::map<std::string, graphics::Shader> shader_info_map;
-    return shader_info_map;
+    static std::map<std::string, graphics::Shader> shader_info;
+    return shader_info;
 }
 
 
@@ -287,7 +287,7 @@ uint32_t graphics::load_shader(const std::string& shader_name)
         glDetachShader(shader_program, shader_id);
 
     // gather uniforms & attributes.
-    graphics::Shader& shader = graphics::shader_info_map()[shader_name];
+    graphics::Shader& shader = graphics::shader_info()[shader_name];
     shader.program_id =  shader_program;
 
     get_shader_info(shader);
@@ -303,11 +303,25 @@ uint32_t graphics::load_shader(const std::string& shader_name)
     return shader_program;
 }
 
-void graphics::set_shader(const std::string& shader_name)
+std::string& graphics::active_shader_name()
 {
-    glUseProgram(graphics::shaders()[shader_name]);
+    static std::string active_shader_name;
+    return active_shader_name;
 }
 
+uint32_t& graphics::active_shader_id()
+{
+    static uint32_t active_shader_id;
+    return active_shader_id;
+}
+
+void graphics::set_shader(const std::string& shader_name)
+{
+    uint32_t shader_id = graphics::shaders()[shader_name];
+    glUseProgram(shader_id);
+    graphics::active_shader_name() = shader_name;
+    graphics::active_shader_id() = shader_id; 
+}
 
 uint32_t graphics::load_compile_attach_shader(uint32_t program, std::string file_name)
 {
@@ -573,25 +587,92 @@ uint32_t graphics::shader_type_from_extension(const std::string& filename)
         return 0;
 }
 
-void graphics::reload_shaders(uint32_t& program)
+// void graphics::reload_shaders(uint32_t& program)
+// {
+//     //@Incomplete: either know which shaders to reload or reload all shaders
+//     // associated with this program.
+//     std::string vertex_shader  = "assets/shaders/text.vertex";
+//     std::string fragment_shader = "assets/shaders/text.fragment";
+//     glDeleteProgram(program);
+
+//     program = glCreateProgram();
+//     uint32_t vertex   = graphics::load_compile_attach_shader(program, vertex_shader);
+//     uint32_t fragment = graphics::load_compile_attach_shader(program, "assets/shaders/text.fragment");
+//     glLinkProgram(program);
+//     glDetachShader(program, vertex);
+//     glDetachShader(program, fragment);
+
+//     // unlink the shader from the program?
+//     // deleteShader
+//     // load_compile_attach_shader?
+// }
+
+//--- Pre:  active shader.
+void graphics::update_uniform(const std::string& uniform_name, uniform_t data)
 {
-    //@Incomplete: either know which shaders to reload or reload all shaders
-    // associated with this program.
-    std::string vertex_shader  = "assets/shaders/text.vertex";
-    std::string fragment_shader = "assets/shaders/text.fragment";
-    glDeleteProgram(program);
+    auto& uniforms = graphics::shader_info()[graphics::active_shader_name()].uniforms;
 
-    program = glCreateProgram();
-    uint32_t vertex   = graphics::load_compile_attach_shader(program, vertex_shader);
-    uint32_t fragment = graphics::load_compile_attach_shader(program, "assets/shaders/text.fragment");
-    glLinkProgram(program);
-    glDetachShader(program, vertex);
-    glDetachShader(program, fragment);
 
-    // unlink the shader from the program?
-    // deleteShader
-    // load_compile_attach_shader?
+    if (uniforms.find(uniform_name) == uniforms.end())
+    {
+        fmt::print("key {} does not exist.\n", uniform_name);
+    }
+
+    Uniform& uniform = uniforms[uniform_name];
+    std::visit([&](auto&& uniform_data, auto&& new_data)
+    {
+        using T = std::decay_t<decltype(uniform_data)>;
+        using my_T = std::decay_t<decltype(new_data)>;
+        if constexpr(!(std::is_same_v<T, my_T>))
+        {
+            fmt::print("[graphics] update_uniform: type mismatch. uniform name: {}\n",uniform.name);
+        }
+
+        if constexpr (std::is_same_v<T, Vec4>)
+        {
+            uniform.data = data;
+            glUniform4fv(uniform.location, 1, vec::value_ptr(std::get<Vec4>(uniform.data)));
+        }
+        else if constexpr (std::is_same_v<T, Vec3>)
+        {
+            uniform.data = data;
+            glUniform3fv(uniform.location, 1,  vec::value_ptr(std::get<Vec3>( uniform.data)));
+        }
+
+        else if constexpr (std::is_same_v<T, Mat3>)
+        {
+            uniform.data = data;
+            glUniformMatrix3fv(uniform.location, 1, GL_TRUE, mat::value_ptr(std::get<Mat3>(uniform.data)));
+        }
+        else if constexpr (std::is_same_v<T, Mat4>)
+        {
+            uniform.data = data;
+            glUniformMatrix4fv(uniform.location, 1, GL_TRUE, mat::value_ptr( std::get<Mat4>( uniform.data)));
+        }
+        else if constexpr (std::is_same_v<T, float>)
+        {
+            uniform.data = data;
+            glUniform1f(uniform.location, std::get<float>(data));
+        }
+        else if constexpr (std::is_same_v<T, Vec2i>)
+        {
+            uniform.data = data;
+            glUniform2iv(uniform.location, 1,  vec::value_ptr(std::get<Vec2i>(uniform.data)));
+        }
+        else if constexpr (std::is_same_v<T, int32_t>)
+        {
+            uniform.data = data;
+            glUniform1i(uniform.location, std::get<int32_t>(uniform.data));
+        }
+        else if constexpr(std::is_same_v<T, uint32_t>)
+        {
+            uniform.data = data;
+            glUniform1ui(uniform.location, std::get<uint32_t>(uniform.data));
+        }
+
+    }, uniform.data, data);
 }
+
 
 
 ///--- Render Modes -------------------------------------------------------

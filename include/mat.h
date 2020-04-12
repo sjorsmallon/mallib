@@ -22,6 +22,7 @@ namespace mat
     static inline const float RAD2DEG = 180.0f / mat::PI;
 
     // mat4
+    float* value_ptr(Mat4& lhs);
     Mat4 model_from_xform_state(const Xform_State& state);
     Mat4 mat4_from_quat(const Vec4& quaternion);
     Mat4 mat4_from_mat3(const Mat4& lhs);
@@ -53,6 +54,7 @@ namespace mat
               );
 
     // mat3
+    float* value_ptr(Mat3& lhs);
     Mat3 mat3_identity();
     Mat3 normal_transform(const Mat4& model_view_matrix);
     Mat3 mat3_from_mat4(const Mat4& matrix);
@@ -65,6 +67,16 @@ namespace mat
 
 
 };
+
+inline float* mat::value_ptr(Mat4& lhs)
+{
+  return &lhs.data[0][0];
+}
+
+inline float* mat::value_ptr(Mat3& lhs)
+{
+  return &lhs.data[0][0];
+}
 
 // @Refactor: either write templated swap, use an intrinsic or include it from utility.
 static void swap(float & lhs, float& rhs)
