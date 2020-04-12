@@ -18,27 +18,21 @@ io::Keyboard_State& io::prev_keyboard_state()
 	static Keyboard_State previous_keyboard_state = {};
 	return previous_keyboard_state;
 }
+
 io::Mouse_State& io::mouse_state()
 {
 	static Mouse_State mouse_state = {};
 	return mouse_state;
 }
 
-io::Mouse_Coords& io::mouse_coords()
+io::Mouse_State& io::prev_mouse_state()
 {
-	static Mouse_Coords mouse_coords = {};
-	return mouse_coords;
-}
-
-io::Mouse_Coords& io::prev_mouse_coords()
-{
-	static Mouse_Coords prev_mouse_coords = {};
-	return prev_mouse_coords;
+	static Mouse_State prev_mouse_state = {};
+	return prev_mouse_state;
 }
 
 std::vector<io::Button>& io::input_queue()
 {
-	//@Hardcoded
 	static std::vector<io::Button> input_queue;
 	return input_queue;
 }

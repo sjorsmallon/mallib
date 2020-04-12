@@ -499,8 +499,9 @@ int WINAPI wWinMain(HINSTANCE instance,
                  DispatchMessage(&message);
                 }
             }
-            GetCursorPos(&screen_cursor_pos);
 
+
+            GetCursorPos(&screen_cursor_pos);
             // device coordinates (I think?)
             ScreenToClient(window, &screen_cursor_pos);
             cursor_x = screen_cursor_pos.x;
@@ -533,7 +534,7 @@ static LRESULT CALLBACK win32_main_window_callback(
 
     switch (message)
     {
-        // all  keyboard nonsense
+        //--- Keyboard 
         case WM_KEYUP:
         {
             switch (wParam)
@@ -548,6 +549,14 @@ static LRESULT CALLBACK win32_main_window_callback(
             }
             break;
         }
+        --- Mouse scroll
+        case WM_MOUSEWHEEL:
+        {
+            double vertical_scroll_delta = static_cast<double>(HIWORD(wParam)) / static_cast<double>(WHEEL_DELTA);
+            io::update_scroll_delta(vertical_scroll_delta );
+            break;
+        }
+
         case WM_PAINT:
         {
             // we need to start painting here, otherwise WM_PAINT stays

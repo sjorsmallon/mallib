@@ -54,6 +54,7 @@ void game::load_assets()
     asset_folders.mtl_folder     = "assets/mtl_files/";
     asset_folders.texture_folder = "assets/texture_files/";
     asset_folders.scene_folder   = "assets/scene_files/";
+
     asset::load_assets_from_file(asset_folders);
 
     graphics::active_scene() = asset::scenes()["test.scene"];  // framegraph?
@@ -98,34 +99,60 @@ void game::main_loop()
 
     if (program_mode == Program_Mode::GAME)
     {
-        // handle input -> simulate gameplay
         simulate_gameplay();
     }
     else if (program_mode == Program_Mode::MENU)
     {
-        //@Refactor: how do we handle input in the menu?
         game::handle_menu_input();
-        // draw 3d stuff for the menu. 
-        //
-       // menu::draw_menu();
-
+    }
+    else if (program_mode == Program_Mode::DEBUG)
+    {
+        game::handle_debug_input();
     }
 
      sound::update_audio();
 
     // @FIXME FIXME : drawing menu after render_frame. This is because we want to render font last.
     graphics::render_frame(); 
-    // eventually, the menu will have its own buffer etcetera.
     graphics::render_ui();
 
-
-    //menu::draw_menu();
     graphics::swap_buffers();
-    // rudimentary frame time calculation. Eventually, we want this to be in double form.
+   
+    // rudimentary frame time calculation. This can be replaced by an OpenGL query.
     auto end = std::chrono::system_clock::now();
     // global::globals().previous_frame_time = end - start;
 
 }
+
+void game::handle_debug_input()
+{
+    auto& queue = io::input_queue();
+    // auto& mouse_input = io::mouse_input();
+
+    auto& mouse_state = io::mouse_state();
+    graphics::update_active_camera(mouse_state);
+
+    for (auto key : queue)
+    {
+       
+    }
+    // menu::active_start_menu_item() = static_cast<menu::Menu_Item>(active_menu_item);
+    queue.clear();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void game::handle_menu_input()
@@ -133,7 +160,7 @@ void game::handle_menu_input()
     auto &queue = io::input_queue();
     int active_menu_item = static_cast<int>(menu::active_start_menu_item());
 
-    //@Refactor: look up how to properly deal with key events.
+
     for (auto key : queue)
     {
         if (key == io::Button::KEY_UP)

@@ -36,14 +36,13 @@ namespace mat
     Mat4 translate(const Mat4& matrix, const Vec3& vector);
     Mat4 scale(const Mat4& matrix, const float scale_factor);
     Mat4 scale(const float s);
-    Mat4 rotate(const Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z); //expects identity
+    Mat4 rotate(Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z); //expects identity
     Mat4 perspective(const float fov_y,
                      const float aspect_ratio,
                      const float near_plane,
                      const float far_plane);
 
     Mat4 translation(const Vec3& position);
-    Mat4 view(const Vec3& eye, const Vec3& center, const Vec3& up);
     Mat4 look_at(const Vec3& eye, const Vec3& center, const Vec3& up);
     Mat4 ortho(const float left,
                const float right,
@@ -210,7 +209,7 @@ inline Mat4 mat::perspective(const float fov_y,
 }
 
 
-inline Mat4 mat::view(const Vec3& eye, const Vec3& target, const Vec3& up)
+inline Mat4 mat::look_at(const Vec3& eye, const Vec3& target, const Vec3& up)
 {
    // modeled after gluLookAt. 
 

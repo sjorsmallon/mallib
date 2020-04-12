@@ -27,6 +27,7 @@
 #include <mat3.h> // for normal matrix.
 #include <scene.h>
 #include <game.h> // game time?
+#include <camera.h>
 
 #define BUFFER_OFFSET(i) ((void*)(i)) //hacky macro for offset.
 
@@ -42,6 +43,8 @@ void graphics::init_graphics()
 { 
     graphics::global_Win32_context().device_context = globals.device_context;
     graphics::global_Win32_context().window_handle = globals.window_handle;
+
+    graphics::active_camera() = cam::default_camera();
     graphics::init_opengl();
     graphics::init_imgui();
     graphics::clear_buffer_bits();
@@ -111,6 +114,60 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
     //@TODO: generate mipmaps.
 }
 
+void graphics ::update_active_camera(io::Mouse_State &mouse_state)
+{
+    static float camera_z_accumulator = 0.0f;
+    static float x_rotation_accumulator = 0.0f;
+    static float z_rotation_accumulator = 0.0f;
+
+
+    auto& camera = graphics::active_camera();
+    switch (camera.control_mode)
+    {
+        case cam::Control_Mode::CAM_ORBIT:
+        {
+          
+            x_rotation_accumulator += mouse_state.pos_delta_x * 0.005f;
+            x_rotation_accumulator =  fmod(x_rotation_accumulator, 360.0f);
+            z_rotation_accumulator += mouse_state.pos_delta_y * 0.005f;
+            z_rotation_accumulator =  fmod(z_rotation_accumulator, 360.0f);
+
+            if (mouse_state.scroll_delta_y != 0.0f)
+                 camera_z_accumulator = (mouse_state.scroll_delta_y > 0.0f) ? camera_z_accumulator - 0.5f : camera_z_accumulator + 0.5f;                 
+
+            Vec3 camera_position{0.0f,0.0f, camera_z_accumulator};
+            Vec3 target_position{0.0f, 0.0f, -1.0f};
+            Vec3 up_vector{0.0f, 1.0f, 0.0f};        
+            Mat4 rotation_matrix = mat::rotate(Mat4{1.0f}, x_rotation_accumulator, 0, z_rotation_accumulator);
+
+            
+            up_vector       = vec::make_vec3(rotation_matrix * vec::make_vec4(up_vector, 1.0f));
+            camera_position = vec::make_vec3(rotation_matrix * vec::make_vec4(camera_position, 1.0f));
+
+
+            Mat4 view_matrix = mat::look_at(camera_position, target_position, up_vector);
+            break;
+        }
+        case CAM_ISOMETRIC:
+        {
+            break;
+        }
+        case CAM_FPS:
+        {
+            break;
+        }
+
+        default:
+        {
+            break;
+        }
+    }
+}
+
+
+
+
+
 /// returns a free active texture ID and increments the value.
 uint32_t graphics::next_free_active_texture_ID()
 {
@@ -165,7 +222,6 @@ void graphics::render_game_3d()
         //@FIXME: for now, we invoke draw after every object. 
         const auto& object_data = asset::obj_data()[set_piece.model_name];
         glDrawArrays(GL_TRIANGLES,0, object_data.vertices.size());
-        // glUniform1i(d_textureLocation, 0);
     }
 
     glBindVertexArray(0);
@@ -204,10 +260,7 @@ void graphics::render_ui()
     ImGui::Render();
 
     glViewport(0, 0, globals.window_width, globals.window_height);
-    // glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
-    // glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    // don't swap buffers yet.
 }
 
 // static
@@ -236,7 +289,6 @@ graphics::Win32_Context& graphics::global_Win32_context() //@cleanup: i don't li
     static Win32_Context context;
     return context;
 }
-
 
 ///--- Shaders --------------------------------------------------
 std::map<std::string, uint32_t>& graphics::shaders()
@@ -552,7 +604,6 @@ bool graphics::shader_link_succeeded(uint32_t program_id)
     return gl_params;
 }
 
-//static
 uint32_t graphics::shader_type_from_extension(const std::string& filename)
 {
     std::string_view view(filename);
@@ -670,7 +721,7 @@ void graphics::render_3d_left_handed_perspective(const uint32_t active_shader_id
     Vec3 camera_position{0.0f,0.0f, 0.0f};
     Vec3 target_position{0.0f, 0.0f, -1.0f};
     Vec3 up_vector{0.0f, 1.0f, 0.0f};
-    Mat4 view_matrix = mat::view(camera_position, target_position, up_vector);
+    Mat4 view_matrix = mat::look_at(camera_position, target_position, up_vector);
    
     // @Note: near_z and far_z should be positive in this context (DISTANCE to camera).
     const float fov_in_degrees     = 90.0f;

@@ -9,13 +9,15 @@ namespace game
 	enum class Program_Mode
 	{
 		MENU,
-		GAME
+		GAME,
+		DEBUG
 	};
 
 	// //@Refactor: change to double for more precision?
  	std::chrono::duration<double, std::milli>& previous_frame_time();
 
 	void handle_menu_input();
+	void handle_debug_input();
 	void simulate_gameplay();
 
 	// initing

@@ -1,5 +1,6 @@
-// #include <mat.ih"
+#include <mat.h>
 
+#define PI 3.14159265359f
 //@Incomplete: when do we need identity? keep a static const identity matrix
 // in the namespace? (see id's implementation)
 
@@ -41,47 +42,45 @@
 // }
 
 
-// Mat4 mat::rotate(const Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z)
-// {
-//     // the matrix should be in identity.
-//     // toIdentity();
+Mat4& mat::rotate(Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z)
+{
+    // the matrix should be in identity.
+    matrix = mat::mat4_identity();
 
-    // float rad_x = degrees_x * PI / 180.0f;
-    // float rad_y = degrees_y * PI / 180.0f;
-    // float rad_z = degrees_z * PI / 180.0f;
+    float rad_x = degrees_x * PI / 180.0f;
+    float rad_y = degrees_y * PI / 180.0f;
+    float rad_z = degrees_z * PI / 180.0f;
 
-    // float cosx = cos(rad_x);
-    // float sinx = sin(rad_x);
+    float cosx = cos(rad_x);
+    float sinx = sin(rad_x);
     
-    // float cosy = cos(rad_y) ;
-    // float siny = sin(rad_y);
+    float cosy = cos(rad_y) ;
+    float siny = sin(rad_y);
     
-    // float cosz = cos(rad_z);
-    // float sinz = sin(rad_z);
+    float cosz = cos(rad_z);
+    float sinz = sin(rad_z);
 
-    // Mat4 matrix{};
+    Mat4 x_axis(1,   0,      0,   0,
+                0,  cosx, -sinx,  0,
+                0,  sinx,  cosx,  0,
+                0,   0,      0,   1);
     
-    // Mat4 x_axis(1,   0,      0,   0,
-    //             0,  cosx, -sinx,  0,
-    //             0,  sinx,  cosx,  0,
-    //             0,   0,      0,   1);
+    Mat4 y_axis(cosy,  0,   siny,   0,
+                0,     1,      0,   0,
+               -siny,  0,    cosy,  0,
+                0,     0,      0,   1);
     
-    // Mat4 y_axis(cosy,  0,   siny,   0,
-    //             0,     1,      0,   0,
-    //            -siny,  0,    cosy,  0,
-    //             0,     0,      0,   1);
+    Mat4 z_axis(cosz, -sinz,   0,   0,
+                sinz,  cosz,   0,   0,
+                0,     0,      1,   0,
+                0,     0,      0,   1);
     
-    // Mat4 z_axis(cosz, -sinz,   0,   0,
-    //             sinz,  cosz,   0,   0,
-    //             0,     0,      1,   0,
-    //             0,     0,      0,   1);
-    
-    // matrix *= x_axis; 
-    // matrix *= y_axis;
-    // matrix *= z_axis;
+    matrix *= x_axis; 
+    matrix *= y_axis;
+    matrix *= z_axis;
 
-    // return matrix;
-//}
+    return matrix;
+}
 
 // Mat4 mat::scale(const Mat4& matrix, const float scale_factor)
 // {

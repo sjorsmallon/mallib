@@ -78,8 +78,21 @@ namespace vec
   //vec2i
     int32_t* value_ptr(Vec2i& lhs);
 
+    Vec4 make_vec4(const Vec3& lhs, float w);
+    Vec3 make_vec3(const Vec4& rhs);
+
 
 };
+
+inline Vec3 make_vec3(const Vec4& rhs)
+{
+  return Vec3{rhs.x, rhs.y, rhs.z};
+}
+
+inline Vec4 vec::make_vec4(const Vec3& lhs, float w)
+{
+  return Vec4{lhs.x, lhs.y, lhs.z, w};
+}
 
 inline int32_t* vec::value_ptr(Vec2i& lhs)
 {

@@ -58,30 +58,46 @@ namespace io
 		uint8_t rmb_pressed;
 		int64_t pos_x;
 		int64_t pos_y;
+		int64_t pos_delta_x;
+		int64_t pos_delta_y;
 		double scroll_delta_y;
 		double scroll_delta_x;
 	};
 
-	Platform_Key_Map& platform_key_map();
+
 	Keyboard_State& keyboard_state();
 	Keyboard_State& prev_keyboard_state();
 	Mouse_State&  mouse_state();
-	Mouse_Coords& mouse_coords();
-	Mouse_Coords& prev_mouse_coords();
+	Mouse_State&  prev_mouse_state();
+
+	Platform_Key_Map& platform_key_map();
 
 	std::vector<io::Button>& input_queue();
 
 	void update_mouse_coords(const int32_t x, const int32_t y);
+	void update_scroll_delta_y(double scroll_delta_y);
+
 
 };
 
 inline void io::update_mouse_coords(const int32_t x, const int32_t y)
 {
-	io::prev_mouse_coords().x = io::mouse_coords().x;
-	io::prev_mouse_coords().y = io::mouse_coords().y;
+	auto& mouse_state = io::mouse_state();
+	auto& prev_mouse_state = io::prev_mouse_state();
 
-	io::mouse_coords().x = x;
-	io::mouse_coords().y = y;
+	prev_mouse_state = mouse_state;
+
+	mouse_state.pos_delta_x = x - mouse_state.pos_x;
+	mouse_state.pos_delta_y = y - mouse_state.pos_y;
+	mouse_state.pos_x = x;
+	mouse_state.pos_y = y;
+	
+}
+
+inline void io::update_scroll_delta_y(double scroll_delta_y)
+{
+	auto& mouse_state = io::mouse_state();
+	mouse_state.scroll_delta_y = scroll_delta_y;
 }
 
 

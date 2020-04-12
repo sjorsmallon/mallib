@@ -1,27 +1,27 @@
 #ifndef INCLUDE_GRAPHICS
 #define INCLUDE_GRAPHICS_
+#include <map> // textures, buffers, shaders.
 #include <string>
 #include <stdint.h>
-#include <map> // textures, buffers, shaders.
 #include <variant>
+#include <vector>
 
 #ifdef _WIN32
 	#include <windows.h>
 #endif
 
+// forward declarations.
 #include <asset.h>
 #include <scene.h>
-
-#include <vector>
-
-// forward declarations.
 #include <vec2.h>
 #include <vec3.h> // Light
 #include <vec4.h>
 #include <mat4.h>
 #include <mat3.h>
+#include <camera.h>
+#include <io.h> // for mouse_input 
 
-using uniform_t =  std::variant<float, int32_t, uint32_t, Vec2i, Vec4, Vec3, Mat4, Mat3>;
+using uniform_t = std::variant<float, int32_t, uint32_t, Vec2i, Vec4, Vec3, Mat4, Mat3>;
 
 namespace graphics
 {
@@ -55,8 +55,11 @@ namespace graphics
 		void init_imgui();
 		void init_texture_settings(std::map<std::string, asset::Texture>& textures);
 
-	//--- openGL bookkeeping
+	//--- active elements.
 	scene::Scene& active_scene();
+	cam::Camera&  active_camera();
+	std::string&  active_shader_name();
+	uint32_t& 	  active_shader_id();
 
 	std::map<std::string, graphics::Shader>& shader_info();
 	std::map<std::string, uint32_t>& shaders();
@@ -72,25 +75,26 @@ namespace graphics
 	void 	 get_shader_info(graphics::Shader& shader);
 	bool 	 shader_link_succeeded(uint32_t shader_program);
 	uint32_t shader_type_from_extension(const std::string& filename);
-	void 	 update_uniform(const std::string& uniform_name, uniform_t data);
+	
+
+	//--- update (can / ought to be called per-frame)
+	void update_uniform(const std::string& uniform_name, uniform_t data);
+	void update_active_camera(io::Mouse_State& mouse_state); // camera occupies view & perspective matrices.
 
 
-	std::string& active_shader_name();
-	uint32_t& active_shader_id();
 
 	//--- font/text mode
 	void gl_text_mode();
 	void draw_text();
 
-	//--- rendering ----------------------------------
+	//--- rendering 
 	void render_frame();
 		void render_ui();
 		void render_game_3d();
-
 		void clear_buffer_bits();
 		void swap_buffers();
 
-	//--- drawing modes -------------------------------
+	//--- drawing modes
 	void render_2d_left_handed_dc(const uint32_t active_shader);
 	void render_3d_left_handed_perspective(const uint32_t active_shader);
 
