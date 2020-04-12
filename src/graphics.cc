@@ -155,15 +155,19 @@ void graphics::render_game_3d()
 
     if (active_shader_id == graphics::shaders()["cel"])
     {
-        int32_t light_position_location = glGetUniformLocation(active_shader_id, "light_position");
-        int32_t light_color_location    = glGetUniformLocation(active_shader_id, "light_color");
-        int32_t material_location       = glGetUniformLocation(active_shader_id, "material");
-        Vec3 light_position = {0.0f, 0.0f, -0.2f};
-        Vec3 light_color =    {0.0f, 0.0f, 0.1f};
-        Vec4 material =       {0.9f, 0.9f, 0.9f, 32.0f};
-        glUniform3fv(light_position_location, 1, &light_position.data[0]);
-        glUniform3fv(light_color_location,    1, &light_color.data[0]);
-        glUniform4fv(material_location,       1, &material.data[0]);
+        // int32_t light_position_location = glGetUniformLocation(active_shader_id, "light_position");
+        // int32_t light_color_location    = glGetUniformLocation(active_shader_id, "light_color");
+        // int32_t material_location       = glGetUniformLocation(active_shader_id, "material");
+        // Vec3 light_position = {0.0f, 0.0f, -0.2f};
+        // Vec3 light_color =    {0.0f, 0.0f, 0.1f};
+        // Vec4 material =       {0.9f, 0.9f, 0.9f, 32.0f};
+        // glUniform3fv(light_position_location, 1, &light_position.data[0]);
+        // glUniform3fv(light_color_location,    1, &light_color.data[0]);
+        // glUniform4fv(material_location,       1, &material.data[0]);
+
+        update_uniform("light_position", Vec3{50.0f, 100.0f, 100.0f});
+        update_uniform("light_color", Vec3{0.0f, 0.0f, 0.1f});
+        update_uniform("material", Vec4{0.9f, 0.9f, 0.9f, 32.0f});
     }
 
     glBindVertexArray(graphics::buffers()["cat.obj"].VAO);
@@ -611,8 +615,6 @@ uint32_t graphics::shader_type_from_extension(const std::string& filename)
 void graphics::update_uniform(const std::string& uniform_name, uniform_t data)
 {
     auto& uniforms = graphics::shader_info()[graphics::active_shader_name()].uniforms;
-
-
     if (uniforms.find(uniform_name) == uniforms.end())
     {
         fmt::print("key {} does not exist.\n", uniform_name);

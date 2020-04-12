@@ -10,7 +10,7 @@ layout (location = 3) in vec3 world_position_fs;
 layout (location = 0) out vec4 fragment_color;
 
 //--- Uniforms -------------------------------------
-layout (location = 9)  uniform vec4 light_position; // light is defined in world coordinates.
+layout (location = 9)  uniform vec3 light_position; // light is defined in world coordinates.
 layout (location = 10) uniform vec3 light_color;
 layout (location = 11) uniform vec4 material; // , x = kd, y = ks, z = n, w = ka (glossiness).
 
@@ -18,8 +18,8 @@ void main()
 {
     // using blinn-phong with half normal.
 
-    //vec3 world_position_light = light_position.xyz;
-    vec3 world_position_light = vec3(50.0f, 100.0f, 100.0f);
+    vec3 world_position_light = light_position.xyz;
+    //vec3 world_position_light = vec3(50.0f, 100.0f, 100.0f);
 
     vec3 L = normalize(world_position_light.xyz - position_fs);
     vec3 N = normalize(normal_fs);
