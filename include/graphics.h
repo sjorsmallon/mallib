@@ -71,7 +71,6 @@ namespace graphics
 	uint32_t load_compile_attach_shader(uint32_t program, std::string file_name);
 	void 	 get_shader_info(graphics::Shader& shader);
 	bool 	 shader_link_succeeded(uint32_t shader_program);
-	void     reload_shaders(uint32_t& program);
 	uint32_t shader_type_from_extension(const std::string& filename);
 	void 	 update_uniform(const std::string& uniform_name, uniform_t data);
 

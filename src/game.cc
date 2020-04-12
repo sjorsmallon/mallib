@@ -39,6 +39,8 @@ void game::load_shaders()
     graphics::shaders()["isophotes"] = isophotes_shader;
     graphics::shaders()["normals"]   = normals_shader;
 
+    graphics::set_shader("cel");
+
 }
 
 void game::load_assets()

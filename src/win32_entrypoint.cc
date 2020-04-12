@@ -248,13 +248,15 @@ static HGLRC init_opengl(HDC device_context)
 // private
 static void redirect_output_to_console(bool use_parent)
 {
+    bool attach_to_parent_succeeded = false;
     //Create the console window and set the window title.
     if (use_parent)
     {
         //  attach to the launch console.
-        AttachConsole(ATTACH_PARENT_PROCESS);
+       attach_to_parent_succeeded = AttachConsole(ATTACH_PARENT_PROCESS);
     }
-    else
+
+    if (!attach_to_parent_succeeded)
     {
         // create a new console to write to (useful for renderDoc)
         if (AllocConsole() == 0)
@@ -538,7 +540,9 @@ static LRESULT CALLBACK win32_main_window_callback(
             {
                 case VK_ESCAPE:
                 {
+                    FreeConsole();
                     DestroyWindow(window);
+                    exit(0);
                     break;
                 }
             }
@@ -578,10 +582,10 @@ static LRESULT CALLBACK win32_main_window_callback(
         case WM_DESTROY:
         {
             wglMakeCurrent(nullptr, nullptr);
-
             // //@INCOMPLETE: DESTROY THE GL_CONTEXT!
             // graphics::Win32_Context& context = graphics::global_Win32_context();
             // wglDeleteContext(context.gl_context);
+            FreeConsole();
 
             PostQuitMessage(0);
             break;

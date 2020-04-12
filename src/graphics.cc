@@ -45,6 +45,7 @@ void graphics::init_graphics()
     graphics::init_opengl();
     graphics::init_imgui();
     graphics::clear_buffer_bits();
+
 }
 
 // static
@@ -122,80 +123,43 @@ uint32_t graphics::next_free_active_texture_ID()
 
 void graphics::render_game_3d()
 {
-    uint32_t active_shader_id = 0;
-    bool render_isophotes = false;
-    bool render_cel = true;
-    if (render_isophotes)
-    {
-        graphics::set_shader("isophotes");
-        active_shader_id = graphics::shaders()["isophotes"];
-    }
 
-    if (render_cel)
-    {
-        graphics::set_shader("cel");
-        active_shader_id = graphics::shaders()["cel"];
-    }
-
+    uint32_t active_shader_id = graphics::active_shader_id();
     auto defer_shader_state = On_Leaving_Scope([]{graphics::set_shader("gouraud");});
-    render_3d_left_handed_perspective(active_shader_id);
+
+
+    render_3d_left_handed_perspective(active_shader_id); // perspective matrix.
 
     if (active_shader_id == graphics::shaders()["gouraud"])
     {
-        int32_t light_position_location = glGetUniformLocation(active_shader_id, "light_position");
-        int32_t light_color_location    = glGetUniformLocation(active_shader_id, "light_color");
-        int32_t material_location       = glGetUniformLocation(active_shader_id, "material");
-        Vec3 light_position = {0.0f, 0.0f, -0.5f};
-        Vec3 light_color =    {1.0f, 1.0f, 1.0f};
-        Vec4 material =       {0.4f, 0.6f, 0.8f, 64.0f};
-        glUniform3fv(light_position_location, 1, &light_position.data[0]);
-        glUniform3fv(light_color_location,    1, &light_color.data[0]);
-        glUniform4fv(material_location,       1, &material.data[0]);
-    }
-
-    if (active_shader_id == graphics::shaders()["cel"])
-    {
-        // int32_t light_position_location = glGetUniformLocation(active_shader_id, "light_position");
-        // int32_t light_color_location    = glGetUniformLocation(active_shader_id, "light_color");
-        // int32_t material_location       = glGetUniformLocation(active_shader_id, "material");
-        // Vec3 light_position = {0.0f, 0.0f, -0.2f};
-        // Vec3 light_color =    {0.0f, 0.0f, 0.1f};
-        // Vec4 material =       {0.9f, 0.9f, 0.9f, 32.0f};
-        // glUniform3fv(light_position_location, 1, &light_position.data[0]);
-        // glUniform3fv(light_color_location,    1, &light_color.data[0]);
-        // glUniform4fv(material_location,       1, &material.data[0]);
-
         update_uniform("light_position", Vec3{50.0f, 100.0f, 100.0f});
         update_uniform("light_color", Vec3{0.0f, 0.0f, 0.1f});
         update_uniform("material", Vec4{0.9f, 0.9f, 0.9f, 32.0f});
     }
 
+    if (active_shader_id == graphics::shaders()["cel"])
+    {
+        update_uniform("light_position", Vec3{50.0f, 100.0f, 100.0f});
+        update_uniform("light_color", Vec3{0.0f, 0.0f, 0.1f});
+        update_uniform("material", Vec4{0.9f, 0.9f, 0.9f, 32.0f});
+    }
+
+
     glBindVertexArray(graphics::buffers()["cat.obj"].VAO);
 
-    const int32_t model_matrix_location            = glGetUniformLocation(active_shader_id,    "model_matrix");
-    const int32_t normal_transform_matrix_location = glGetUniformLocation(active_shader_id, "model_normal_matrix");
-
-    bool row_major = true;
     for (auto &set_piece: graphics::active_scene().set_pieces)
     {
-        //@Refactor: should all xform_state quaternions be unit quaternions?
-        // set_piece.xform_state.scale = 2.0f;
-
         Mat4 model_matrix = mat::model_from_xform_state(set_piece.xform_state);
-        glUniformMatrix4fv(model_matrix_location, 1, row_major, &model_matrix[0][0]);
-
-        Mat3 normal_transform_matrix = mat::normal_transform(model_matrix);
-        glUniformMatrix3fv(normal_transform_matrix_location, 1, row_major, &normal_transform_matrix[0][0]);
+        Mat3 model_normal_matrix = mat::normal_transform(model_matrix);
+        update_uniform("model_matrix", model_matrix);
+        update_uniform("model_normal_matrix", model_normal_matrix);
 
         if (active_shader_id == graphics::shaders()["gouraud"])
         {
             asset::Texture& texture = asset::texture_data()[set_piece.texture_name];
-
             glActiveTexture(GL_TEXTURE0 + texture.gl_texture_frame);
             glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
-            const int32_t texture_location = glGetUniformLocation(active_shader_id, "texture_uniform");
-            glUniform1i(texture_location, 0); // should be gl_texture_frame.
-            glUniform1i(texture_location, texture.gl_texture_frame);
+            update_uniform("texture_uniform",  texture.gl_texture_frame);
         }
 
         //@FIXME: for now, we invoke draw after every object. 
@@ -203,6 +167,7 @@ void graphics::render_game_3d()
         glDrawArrays(GL_TRIANGLES,0, object_data.vertices.size());
         // glUniform1i(d_textureLocation, 0);
     }
+
     glBindVertexArray(0);
 
 }
@@ -214,9 +179,27 @@ void graphics::render_ui()
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    bool show_demo_window = true;
+    bool show_demo_window = false;
     if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
+
+    std::vector<const char *> shader_names;
+    for (auto& [shader_name, _]: graphics::shader_info())
+    {
+        shader_names.push_back(shader_name.c_str());
+    }
+    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+    {
+        ImGui::Begin("Menu");                        
+        ImGui::Text("Render Settings");
+
+        // List box
+        static int selected_shader = 1;
+        ImGui::ListBox("listbox\n(single select)", &selected_shader, shader_names.data(), shader_names.size(), 4);
+        graphics::set_shader(shader_names[selected_shader]);
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::End();
+    }
     
     ImGui::Render();
 
@@ -575,41 +558,21 @@ uint32_t graphics::shader_type_from_extension(const std::string& filename)
     std::string_view view(filename);
     view = view.substr(view.find_last_of(".") + 1);
 
-    if (view == "vertex")
+    if (view == "vs")
         return GL_VERTEX_SHADER;
-    else if (view == "fragment")
+    else if (view == "fs")
         return GL_FRAGMENT_SHADER;
-    else if (view == "geometry")
+    else if (view == "gs")
         return GL_GEOMETRY_SHADER;
-    else if (view == "tess_control")
+    else if (view == "tcs")
         return GL_TESS_CONTROL_SHADER;
-    else if (view == "tess_eval")
+    else if (view == "tes")
         return GL_TESS_EVALUATION_SHADER;
     // else if (view == "compute")
     //     return GL_COMPUTE_SHADER;
     else
         return 0;
 }
-
-// void graphics::reload_shaders(uint32_t& program)
-// {
-//     //@Incomplete: either know which shaders to reload or reload all shaders
-//     // associated with this program.
-//     std::string vertex_shader  = "assets/shaders/text.vertex";
-//     std::string fragment_shader = "assets/shaders/text.fragment";
-//     glDeleteProgram(program);
-
-//     program = glCreateProgram();
-//     uint32_t vertex   = graphics::load_compile_attach_shader(program, vertex_shader);
-//     uint32_t fragment = graphics::load_compile_attach_shader(program, "assets/shaders/text.fragment");
-//     glLinkProgram(program);
-//     glDetachShader(program, vertex);
-//     glDetachShader(program, fragment);
-
-//     // unlink the shader from the program?
-//     // deleteShader
-//     // load_compile_attach_shader?
-// }
 
 //--- Pre:  active shader.
 void graphics::update_uniform(const std::string& uniform_name, uniform_t data)
@@ -708,20 +671,16 @@ void graphics::render_3d_left_handed_perspective(const uint32_t active_shader_id
     Vec3 target_position{0.0f, 0.0f, -1.0f};
     Vec3 up_vector{0.0f, 1.0f, 0.0f};
     Mat4 view_matrix = mat::view(camera_position, target_position, up_vector);
-    // @Note: near_z and far_z should be positive in this context.
+   
+    // @Note: near_z and far_z should be positive in this context (DISTANCE to camera).
     const float fov_in_degrees     = 90.0f;
     const float perspective_near_z = 0.1f;
     const float perspective_far_z  = 100.0f;
     const float aspect_ratio = static_cast<float>(globals.window_width) / static_cast<float>(globals.window_height);
     Mat4 projection_matrix = mat::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
 
-    // bind view matrix
-    const int32_t view_matrix_location = glGetUniformLocation(active_shader_id, "view_matrix");
-    glUniformMatrix4fv(view_matrix_location, 1, row_major, &view_matrix[0][0]);
-
-    // bind projection matrix.
-    const int32_t projection_matrix_location = glGetUniformLocation(active_shader_id, "projection_matrix");
-    glUniformMatrix4fv(projection_matrix_location, 1, row_major, &projection_matrix[0][0]);
+    update_uniform("projection_matrix", projection_matrix);
+    update_uniform("view_matrix", view_matrix);
 }
 
 
