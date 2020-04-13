@@ -95,7 +95,7 @@ void game::main_loop()
     auto start = std::chrono::system_clock::now();
 
     graphics::clear_buffer_bits();
-    const auto program_mode = Program_Mode::MENU;
+    const auto program_mode = Program_Mode::DEBUG;
 
     if (program_mode == Program_Mode::GAME)
     {
@@ -115,13 +115,23 @@ void game::main_loop()
     // @FIXME FIXME : drawing menu after render_frame. This is because we want to render font last.
     graphics::render_frame(); 
     graphics::render_ui();
-
     graphics::swap_buffers();
    
     // rudimentary frame time calculation. This can be replaced by an OpenGL query.
     auto end = std::chrono::system_clock::now();
     // global::globals().previous_frame_time = end - start;
+}
 
+
+void start_frame()
+{
+    // wipe memory?
+    // 
+}
+
+void finish_frame()
+{
+    // clear input queue & mouse.
 }
 
 void game::handle_debug_input()
@@ -138,6 +148,7 @@ void game::handle_debug_input()
     }
     // menu::active_start_menu_item() = static_cast<menu::Menu_Item>(active_menu_item);
     queue.clear();
+    memset(&mouse_state,0, sizeof(mouse_state));
 }
 
 

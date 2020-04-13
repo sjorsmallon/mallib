@@ -549,11 +549,12 @@ static LRESULT CALLBACK win32_main_window_callback(
             }
             break;
         }
-        --- Mouse scroll
+        //--- Mouse scroll
         case WM_MOUSEWHEEL:
         {
-            double vertical_scroll_delta = static_cast<double>(HIWORD(wParam)) / static_cast<double>(WHEEL_DELTA);
-            io::update_scroll_delta(vertical_scroll_delta );
+            auto scroll_delta_y = GET_WHEEL_DELTA_WPARAM(wParam);
+            double vertical_scroll_delta = static_cast<double>(scroll_delta_y) / static_cast<double>(WHEEL_DELTA);
+            io::update_scroll_delta_y(vertical_scroll_delta);
             break;
         }
 

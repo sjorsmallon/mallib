@@ -36,7 +36,7 @@ namespace mat
     Mat4 translate(const Mat4& matrix, const Vec3& vector);
     Mat4 scale(const Mat4& matrix, const float scale_factor);
     Mat4 scale(const float s);
-    Mat4 rotate(Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z); //expects identity
+    Mat4& rotate(Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z); //expects identity
     Mat4 perspective(const float fov_y,
                      const float aspect_ratio,
                      const float near_plane,

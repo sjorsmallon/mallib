@@ -13,6 +13,6 @@ out vec4 fColor;
 
 void main()
 {
-
-    fColor = vec4(normalize(vert_normal), 1.0);
+	vec3 normal = (0.5f * normalize(vert_normal)) + 0.5f;
+    fColor = vec4(normal, 1.0);
 }

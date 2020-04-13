@@ -33,6 +33,12 @@
 
 namespace fs = std::filesystem;
 
+cam::Camera& graphics::active_camera()
+{
+    static cam::Camera active_camera;
+    return active_camera;
+}
+
 std::map<std::string, graphics::Buffers>& graphics::buffers()
 {
     static std::map<std::string, graphics::Buffers> buffers;
@@ -119,12 +125,13 @@ void graphics ::update_active_camera(io::Mouse_State &mouse_state)
     static float camera_z_accumulator = 0.0f;
     static float x_rotation_accumulator = 0.0f;
     static float z_rotation_accumulator = 0.0f;
+    using namespace cam;
 
 
     auto& camera = graphics::active_camera();
     switch (camera.control_mode)
     {
-        case cam::Control_Mode::CAM_ORBIT:
+        case Control_Mode::CAM_ORBIT:
         {
           
             x_rotation_accumulator += mouse_state.pos_delta_x * 0.005f;
@@ -133,7 +140,7 @@ void graphics ::update_active_camera(io::Mouse_State &mouse_state)
             z_rotation_accumulator =  fmod(z_rotation_accumulator, 360.0f);
 
             if (mouse_state.scroll_delta_y != 0.0f)
-                 camera_z_accumulator = (mouse_state.scroll_delta_y > 0.0f) ? camera_z_accumulator - 0.5f : camera_z_accumulator + 0.5f;                 
+                 camera_z_accumulator = (mouse_state.scroll_delta_y > 0.0f) ? camera_z_accumulator - 0.1f : camera_z_accumulator + 0.1f;                 
 
             Vec3 camera_position{0.0f,0.0f, camera_z_accumulator};
             Vec3 target_position{0.0f, 0.0f, -1.0f};
@@ -141,18 +148,27 @@ void graphics ::update_active_camera(io::Mouse_State &mouse_state)
             Mat4 rotation_matrix = mat::rotate(Mat4{1.0f}, x_rotation_accumulator, 0, z_rotation_accumulator);
 
             
-            up_vector       = vec::make_vec3(rotation_matrix * vec::make_vec4(up_vector, 1.0f));
-            camera_position = vec::make_vec3(rotation_matrix * vec::make_vec4(camera_position, 1.0f));
-
-
+            // up_vector       = vec::make_vec3(rotation_matrix * vec::make_vec4(up_vector, 1.0f));
+            // camera_position = vec::make_vec3(rotation_matrix * vec::make_vec4(camera_position, 1.0f));
             Mat4 view_matrix = mat::look_at(camera_position, target_position, up_vector);
+
+            // @Note: near_z and far_z should be positive in this context (DISTANCE to camera).
+            const float fov_in_degrees     = 90.0f;
+            const float perspective_near_z = 0.1f;
+            const float perspective_far_z  = 100.0f;
+            const float aspect_ratio = static_cast<float>(globals.window_width) / static_cast<float>(globals.window_height);
+            Mat4 projection_matrix = mat::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
+
+            update_uniform("projection_matrix", projection_matrix);
+            update_uniform("view_matrix", view_matrix);
+
             break;
         }
-        case CAM_ISOMETRIC:
+        case Control_Mode::CAM_ISOMETRIC:
         {
             break;
         }
-        case CAM_FPS:
+        case Control_Mode::CAM_FPS:
         {
             break;
         }
@@ -185,7 +201,7 @@ void graphics::render_game_3d()
     auto defer_shader_state = On_Leaving_Scope([]{graphics::set_shader("gouraud");});
 
 
-    render_3d_left_handed_perspective(active_shader_id); // perspective matrix.
+    // render_3d_left_handed_perspective(active_shader_id); // perspective matrix.
 
     if (active_shader_id == graphics::shaders()["gouraud"])
     {
