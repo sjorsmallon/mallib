@@ -22,26 +22,13 @@
 #include <on_leaving_scope.h>
 #include <globals.h>
 #include <file.h>
-// #include <mat.h>
-// #include <mgl::mat4.h>
-// #include <mgl::mat3.h> // for normal matrix.
 #include <scene.h>
 #include <game.h> // game time?
 #include <camera.h>
 
-
 #include <mgl/mat.h>
 #include <mgl/mat4.h>
 #include <mgl/mat3.h>
-// #include <mgl/vec.h>
-// #include <mgl/vec2.h>
-// #include <mgl/mgl::vec3.h>
-// #include <mgl/mgl::vec4.h>
-// #include <mgl/xform_state.h>
-
-
-
-
 
 #define BUFFER_OFFSET(i) ((void*)(i)) //hacky macro for offset.
 
@@ -147,26 +134,32 @@ void graphics ::update_active_camera(io::Mouse_State &mouse_state)
     {
         case Control_Mode::CAM_ORBIT:
         {
-          
-            x_rotation_accumulator += mouse_state.pos_delta_x * 0.005f;
-            x_rotation_accumulator =  fmod(x_rotation_accumulator, 360.0f);
-            z_rotation_accumulator += mouse_state.pos_delta_y * 0.005f;
-            z_rotation_accumulator =  fmod(z_rotation_accumulator, 360.0f);
+            if (mouse_state.lmb_pressed)
+            {
+                // fmt::print("lmb_pressed!\n");
+                x_rotation_accumulator += mouse_state.pos_delta_x * 0.0005f;
+                x_rotation_accumulator =  fmod(x_rotation_accumulator, 360.0f);
+                z_rotation_accumulator += mouse_state.pos_delta_y * 0.0005f;
+                z_rotation_accumulator =  fmod(z_rotation_accumulator, 360.0f);
+            }
+   
 
             if (mouse_state.scroll_delta_y != 0.0f)
-                 camera_z_accumulator = (mouse_state.scroll_delta_y > 0.0f) ? camera_z_accumulator - 0.1f : camera_z_accumulator + 0.1f;                 
+                 camera_z_accumulator = (mouse_state.scroll_delta_y > 0.0f) ? camera_z_accumulator - 0.5f : camera_z_accumulator + 0.5f;                 
+
 
             mgl::vec3 camera_position{0.0f,0.0f, camera_z_accumulator};
-            mgl::vec3 target_position{0.0f, 0.0f, -1.0f};
+            mgl::vec3 target_position{0.0f, 0.0f, -1.0f}; 
             mgl::vec3 up_vector{0.0f, 1.0f, 0.0f};        
             mgl::mat4 rotation_matrix = mgl::rotate(mgl::mat4{1.0f}, x_rotation_accumulator, 0, z_rotation_accumulator);
-            
-            // up_vector       = mgl::make_vec3(rotation_matrix * mgl::make_vec4(up_vector, 1.0f));
-            // camera_position = mgl::make_vec3(rotation_matrix * mgl::make_vec4(camera_position, 1.0f));
+                
+            // up_vector      = mgl::make_vec3(rotation_matrix * mgl::make_vec4(up_vector, 1.0f));
+            camera_position = mgl::make_vec3(rotation_matrix * mgl::make_vec4(camera_position, 1.0f));
             mgl::mat4 view_matrix = mgl::look_at(camera_position, target_position, up_vector);
 
             // @Note: near_z and far_z should be positive in this context (DISTANCE to camera).
-            const float fov_in_degrees     = 90.0f;
+            // why, if FOV == 90, does the cat disappear?
+            const float fov_in_degrees     = 89.0f;
             const float perspective_near_z = 0.1f;
             const float perspective_far_z  = 100.0f;
             const float aspect_ratio = static_cast<float>(globals.window_width) / static_cast<float>(globals.window_height);
@@ -192,9 +185,6 @@ void graphics ::update_active_camera(io::Mouse_State &mouse_state)
         }
     }
 }
-
-
-
 
 
 /// returns a free active texture ID and increments the value.
@@ -233,10 +223,14 @@ void graphics::render_game_3d()
 
     glBindVertexArray(graphics::buffers()["cat.obj"].VAO);
 
+    mgl::mat4 view_matrix = std::get<mgl::mat4>(graphics::shader_info()[graphics::active_shader_name()].uniforms["view_matrix"].data);
+
     for (auto &set_piece: graphics::active_scene().set_pieces)
     {
         mgl::mat4 model_matrix = mgl::model_from_xform_state(set_piece.xform_state);
+        mgl::mat4 model_view_matrix =  model_matrix * view_matrix; // reverse order. 
         mgl::mat3 model_normal_matrix = mgl::normal_transform(model_matrix);
+
         update_uniform("model_matrix", model_matrix);
         update_uniform("model_normal_matrix", model_normal_matrix);
 

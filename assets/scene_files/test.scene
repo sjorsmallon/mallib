@@ -12,9 +12,9 @@
 :/ cat_1
 model cat.obj
 texture cat_diff.png
-position 0.0 0.0 -4.0
+position 0.0 0.0 -5
 q_orientation 0.0 0.0 0.0 1.0
-scale 5.0
+scale 1.0
 
 # :/ cat_2
 # model cat.obj

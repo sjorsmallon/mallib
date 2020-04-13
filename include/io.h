@@ -75,10 +75,25 @@ namespace io
 	std::vector<io::Button>& input_queue();
 
 	void update_mouse_coords(const int32_t x, const int32_t y);
+	void update_lmb(bool true_if_down);
+	void update_rmb(bool true_if_down);
 	void update_scroll_delta_y(double scroll_delta_y);
 
 
 };
+
+inline void io::update_lmb(bool true_if_down)
+{
+	auto& mouse_state = io::mouse_state();
+	mouse_state.lmb_pressed = true_if_down;
+}
+
+inline void io::update_rmb(bool true_if_down)
+{
+	auto& mouse_state = io::mouse_state();
+	mouse_state.rmb_pressed = true_if_down;
+}
+
 
 inline void io::update_mouse_coords(const int32_t x, const int32_t y)
 {

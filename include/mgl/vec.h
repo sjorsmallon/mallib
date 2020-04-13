@@ -65,10 +65,13 @@ namespace mgl
     float dot(const vec3& lhs, const vec3& rhs);
     vec3 cross(const vec3& lhs, const vec3& rhs);
     vec3 lerp(const vec3& lhs, const vec3& rhs, const float ratio);
-    void normalize(vec3& lhs);
-    void normalize(vec4& lhs);
+    // void normalize(vec3& lhs);
+    // void normalize(vec4& lhs);
+    vec3 normalize(const mgl::vec3& lhs);
+    vec4 normalize(const mgl::vec4& lhs);
     float* value_ptr(vec3& lhs);
  	//vec4
+    float dot(const vec4& lhs, const vec4& rhs);
     float* value_ptr(vec4& lhs);
 
   //vec2
@@ -118,6 +121,11 @@ inline float mgl::dot(const mgl::vec3& lhs, const mgl::vec3& rhs)
     return (lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z);
 }
 
+inline float mgl::dot(const mgl::vec4& lhs, const mgl::vec4& rhs)
+{
+  return (lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w);
+}
+
 inline mgl::vec3 mgl::cross(const mgl::vec3& lhs, const mgl::vec3& rhs)
 {
     mgl::vec3 result = {};
@@ -134,25 +142,32 @@ inline mgl::vec3 mgl::lerp(const mgl::vec3& lhs, const mgl::vec3& rhs, const flo
     return  (t * lhs + (1.0f - t) * rhs);
 }
 
-inline void mgl::normalize(mgl::vec3& lhs)
+inline mgl::vec3 mgl::normalize(const mgl::vec3& lhs)
 {
+    vec3 result = lhs;
     //@FIXME: what if lhs is zero?
     // assert(lhs.x + lhs.y +lhs.z > 0)
-    float one_over_sum = 1.0f / (lhs.x + lhs.y + lhs.z);
-    lhs.x *= one_over_sum;
-    lhs.y *= one_over_sum;
-    lhs.z *= one_over_sum;
+    float one_over_sum =  1.0f / sqrt(powf(lhs.x,2.0f) + powf(lhs.y, 2.0f) + powf(lhs.z, 2.0f));
+    
+    result.x *= one_over_sum;
+    result.y *= one_over_sum;
+    result.z *= one_over_sum;
+    return result;
 }
 
-inline void mgl::normalize(mgl::vec4& lhs)
+inline mgl::vec4 mgl::normalize(const mgl::vec4& lhs)
 {
+  vec4 result = lhs;
   //@FIXME: what if lhs is zero?
     // assert(lhs.x + lhs.y +lhs.z > 0)
-  float one_over_sum = 1.0f / (lhs.x + lhs.y + lhs.z + lhs.w);
-  lhs.x *= one_over_sum;
-  lhs.y *= one_over_sum;
-  lhs.z *= one_over_sum;
-  lhs.w *= one_over_sum;
+  
+  float one_over_sum =  1.0f / sqrt(powf(lhs.x,2.0f) + powf(lhs.y, 2.0f) + powf(lhs.z, 2.0f) + powf(lhs.w, 2.0f));
+
+  result.x *= one_over_sum;
+  result.y *= one_over_sum;
+  result.z *= one_over_sum;
+  result.w *= one_over_sum;
+  return result;
 }
 
 

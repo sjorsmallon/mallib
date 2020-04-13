@@ -549,6 +549,32 @@ static LRESULT CALLBACK win32_main_window_callback(
             }
             break;
         }
+        case WM_RBUTTONUP:
+        {
+            bool true_if_mb_down = false;
+            io::update_rmb(true_if_mb_down);
+            break;
+        }
+        case WM_RBUTTONDOWN:
+        {   
+            bool true_if_mb_down = true;
+            io::update_rmb(true_if_mb_down);
+            break;
+        }
+        case WM_LBUTTONUP:
+        {
+            bool true_if_mb_down = false;
+
+            io::update_lmb(true_if_mb_down);
+            break;
+        }
+        case WM_LBUTTONDOWN:
+        {
+            bool true_if_mb_down = true;
+            io::update_lmb(true_if_mb_down);
+            break;
+        }
+
         //--- Mouse scroll
         case WM_MOUSEWHEEL:
         {
@@ -586,7 +612,9 @@ static LRESULT CALLBACK win32_main_window_callback(
         }
         case WM_CLOSE:
         {
+            FreeConsole();
             DestroyWindow(window);
+            exit(0);
             break;
         }
         case WM_DESTROY:

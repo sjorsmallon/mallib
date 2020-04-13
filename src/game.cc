@@ -18,12 +18,15 @@
 
 void game::init()
 {
+    // init
     graphics::init_graphics();
     sound::init_sound();
     font::init_font();
     menu::init_menu();
+    // load
     game::load_assets();
     game::load_shaders();
+    // main_loop
 }
 
 void game::load_shaders()
@@ -136,9 +139,8 @@ void finish_frame()
 void game::handle_debug_input()
 {
     auto& queue = io::input_queue();
-    // auto& mouse_input = io::mouse_input();
-
     auto& mouse_state = io::mouse_state();
+
     graphics::update_active_camera(mouse_state);
 
     for (auto key : queue)
@@ -147,22 +149,14 @@ void game::handle_debug_input()
     }
     // menu::active_start_menu_item() = static_cast<menu::Menu_Item>(active_menu_item);
     queue.clear();
+
+    // reset mouse input, except for the pressed state.
+    bool lmb_pressed = mouse_state.lmb_pressed;
+    bool rmb_pressed = mouse_state.rmb_pressed;
     memset(&mouse_state,0, sizeof(mouse_state));
+    mouse_state.lmb_pressed = lmb_pressed;
+    mouse_state.rmb_pressed = rmb_pressed;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 void game::handle_menu_input()

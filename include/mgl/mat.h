@@ -110,7 +110,7 @@ inline mgl::mat4 mgl::mat4_from_quat(const mgl::vec4& quaternion)
 inline mgl::mat4 mgl::model_from_xform_state(const Xform_State& state)
 {
     mgl::mat4 model_matrix       = mgl::mat4_identity();
-    mgl::mat4 rotation_matrix    = mat4_from_quat(state.q_orientation); // in mat4.
+    mgl::mat4 rotation_matrix    = mgl::mat4_identity();//mat4_from_quat(state.q_orientation); // in mat4.
     mgl::mat4 translation_matrix = mgl::translation(state.position);
 
     //@Note: since we are in a row-matrix world, we apply the transformations in the  reverse order.""
@@ -197,13 +197,15 @@ inline mgl::mat4 mgl::perspective(const float fov_y,
     mgl::mat4 matrix = {}; // identity?
 
     float rad_fov = fov_y * mgl::DEG2RAD;
-    float tan_half_fov = tanf(rad_fov / 2.0f);
+    float tan_half_fov = tanf(rad_fov * 0.5f);
     matrix[0][0] = 1.0f /(aspect_ratio * tan_half_fov);
     matrix[1][1] = 1.0f / tan_half_fov;
-    matrix[2][2] = - (far_plane + near_plane) / (far_plane - near_plane);
-    matrix[2][3] = - (2.0f * far_plane * near_plane) / (far_plane - near_plane);
+    matrix[2][2] = -(far_plane + near_plane) / (far_plane - near_plane);
+    matrix[2][3] = -(2.0f * far_plane * near_plane) / (far_plane - near_plane);
     matrix[3][2] = - 1.0f;
     matrix[3][3] = 0.0f;
+
+
 
     return matrix;
 }
@@ -214,22 +216,57 @@ inline mgl::mat4 mgl::look_at(const vec3& eye, const vec3& target, const vec3& u
    // modeled after gluLookAt. 
 
    vec3 forward = target - eye; // f = coord_system
-   mgl::normalize(forward);
-   vec3 tmp = {0,1,0};
-   mgl::normalize(tmp);
-   vec3 right = mgl::cross(tmp, forward);
-   vec3 up_norm = up;
-   mgl::normalize(up_norm);
-
-
+   forward      = mgl::normalize(forward);
+   vec3 up_norm = mgl::normalize(up);
+   vec3 right   = mgl::cross(forward, up_norm);
+   vec3 new_up  = mgl::cross(right, forward);
    // The up vector must not be parallel to the line of sight from the
-   //           eye point to the reference point.
-    return {  right.x,    right.y,    right.z, -mgl::dot(right, eye),
-              up_norm.x,  up_norm.y,   up_norm.z, -mgl::dot(up_norm,eye),
-              forward.x,   forward.y,  forward.z, -mgl::dot(forward,eye),
-                      0,          0,          0,    1};
+   //           eye point to the reference point.  
+    return {  right.x, new_up.x,   forward.x,      0.0f,
+              right.y, new_up.y,   forward.y,      0.0f, 
+              right.z, new_up.z,   1.0f,      0.0f,
+              eye.x, eye.y,  eye.z,    1.0f};
+
+   // return {right.x,  right.y,     right.z,                  mgl::dot(right, eye),
+   //         new_up.x, new_up.y,    new_up.z,                 mgl::dot(new_up, eye), 
+   //         forward.x, forward.y,   forward.z,               -mgl::dot(forward, eye),
+   //          0.0f, 0.0f, 0.0f,    1.0f};
+
+
 }
    
+
+inline mgl::vec4 operator*(const float lhs, mgl::vec4& rhs)
+{
+    return mgl::vec4{rhs.x * lhs, rhs.y * lhs, rhs.z * lhs, rhs.w * lhs};
+}
+
+
+//@NOTE/IC: since our matrices are row-major, but we want them to behave as if they are column major,
+// we need to "transpose" the matrix in question.
+inline mgl::vec4 operator*(mgl::mat4& lhs, const mgl::vec4& rhs)
+{
+    mgl::vec4 result{};
+    // result.x = mgl::dot(rhs, mgl::vec4{lhs[0][0], lhs[1][0], lhs[2][0], lhs[3][0]});
+    // result.y = mgl::dot(rhs, mgl::vec4{lhs[0][1], lhs[1][1], lhs[2][1], lhs[3][1]});
+    // result.z = mgl::dot(rhs, mgl::vec4{lhs[0][2], lhs[1][2], lhs[2][2], lhs[3][2]});
+    // result.w = mgl::dot(rhs, mgl::vec4{lhs[0][3], lhs[1][3], lhs[2][3], lhs[3][3]});
+
+    result.x = mgl::dot(rhs, mgl::vec4{lhs[0][0], lhs[0][1], lhs[0][2], lhs[0][3]});
+    result.y = mgl::dot(rhs, mgl::vec4{lhs[1][0], lhs[1][1], lhs[1][2], lhs[1][3]});
+    result.z = mgl::dot(rhs, mgl::vec4{lhs[2][0], lhs[2][1], lhs[2][2], lhs[2][3]});
+    result.w = mgl::dot(rhs, mgl::vec4{lhs[3][0], lhs[3][1], lhs[3][2], lhs[3][3]});
+    return result;
+}
+
+
+
+
+
+
+
+
+
 inline mgl::mat3 mgl::mat3_from_mat4(const mat4& matrix)
 {
     return {matrix[0][0], matrix[0][1], matrix[0][2],
