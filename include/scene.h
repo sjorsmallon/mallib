@@ -1,6 +1,6 @@
 #ifndef INCLUDED_SCENE_
 #define INCLUDED_SCENE_
-#include <xform_state.h>
+#include <mgl/xform_state.h>
 
 #include <string>
 #include <vector>

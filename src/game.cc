@@ -9,7 +9,6 @@
 #include <asset.h>
 #include <file.h>
 #include <font.h>
-#include <vec3.h>
 #include <menu.h>
 #include <io.h>
 #include <chrono> // for frame_time.

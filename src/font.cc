@@ -10,11 +10,10 @@
 
 #include <on_leaving_scope.h>
 
-#include <vec.h> // lerp
-#include <vec2.h>
+#include <mgl/vec.h> // lerp
+#include <mgl/mat.h> // mgl::ortho
 #include <cmath> // sin, PI
 
-#include <mat.h> // projection matrix.
 #include <game.h> //@Refactor: replace this with globals for previous_frame_time.
 #include <globals.h> // for the window dimensions.
 
@@ -72,7 +71,7 @@ void font::draw_text(std::string text,
                      uint32_t start_x,
                      uint32_t start_y,
                      float scale,
-                     Vec3 color,
+                     mgl::vec3 color,
                      Text_Effect effect)
 {
 
@@ -91,7 +90,7 @@ void font::draw_text(std::string text,
         float sin_t = ratio * 2 * 3.14;
         // use previous_frame_time? how do we calculate this?
         float distance_t = (std::sin(sin_t) + 1.0f) /2.0f;
-        color = vec::lerp(color, {1.0f,1.0f,1.0f}, distance_t);
+        color = mgl::lerp(color, {1.0f,1.0f,1.0f}, distance_t);
     }
 
     graphics::set_shader("text"); 
@@ -112,7 +111,7 @@ void font::draw_text(std::string text,
     const float z_near  = 0.0f;
     const float z_far   = 1.0f; // near and far are reserved by windows???
 
-    Mat4 projection_matrix = mat::ortho(left, right, top, bot, z_near, z_far); 
+    mgl::mat4 projection_matrix = mgl::ortho(left, right, top, bot, z_near, z_far); 
     glUniformMatrix4fv(glGetUniformLocation(graphics::shaders()["text"], "projection_matrix"), 1, true, &projection_matrix[0][0]);
 
     

@@ -22,12 +22,26 @@
 #include <on_leaving_scope.h>
 #include <globals.h>
 #include <file.h>
-#include <mat.h>
-#include <mat4.h>
-#include <mat3.h> // for normal matrix.
+// #include <mat.h>
+// #include <mgl::mat4.h>
+// #include <mgl::mat3.h> // for normal matrix.
 #include <scene.h>
 #include <game.h> // game time?
 #include <camera.h>
+
+
+#include <mgl/mat.h>
+#include <mgl/mat4.h>
+#include <mgl/mat3.h>
+// #include <mgl/vec.h>
+// #include <mgl/vec2.h>
+// #include <mgl/mgl::vec3.h>
+// #include <mgl/mgl::vec4.h>
+// #include <mgl/xform_state.h>
+
+
+
+
 
 #define BUFFER_OFFSET(i) ((void*)(i)) //hacky macro for offset.
 
@@ -142,22 +156,21 @@ void graphics ::update_active_camera(io::Mouse_State &mouse_state)
             if (mouse_state.scroll_delta_y != 0.0f)
                  camera_z_accumulator = (mouse_state.scroll_delta_y > 0.0f) ? camera_z_accumulator - 0.1f : camera_z_accumulator + 0.1f;                 
 
-            Vec3 camera_position{0.0f,0.0f, camera_z_accumulator};
-            Vec3 target_position{0.0f, 0.0f, -1.0f};
-            Vec3 up_vector{0.0f, 1.0f, 0.0f};        
-            Mat4 rotation_matrix = mat::rotate(Mat4{1.0f}, x_rotation_accumulator, 0, z_rotation_accumulator);
-
+            mgl::vec3 camera_position{0.0f,0.0f, camera_z_accumulator};
+            mgl::vec3 target_position{0.0f, 0.0f, -1.0f};
+            mgl::vec3 up_vector{0.0f, 1.0f, 0.0f};        
+            mgl::mat4 rotation_matrix = mgl::rotate(mgl::mat4{1.0f}, x_rotation_accumulator, 0, z_rotation_accumulator);
             
-            // up_vector       = vec::make_vec3(rotation_matrix * vec::make_vec4(up_vector, 1.0f));
-            // camera_position = vec::make_vec3(rotation_matrix * vec::make_vec4(camera_position, 1.0f));
-            Mat4 view_matrix = mat::look_at(camera_position, target_position, up_vector);
+            // up_vector       = mgl::make_vec3(rotation_matrix * mgl::make_vec4(up_vector, 1.0f));
+            // camera_position = mgl::make_vec3(rotation_matrix * mgl::make_vec4(camera_position, 1.0f));
+            mgl::mat4 view_matrix = mgl::look_at(camera_position, target_position, up_vector);
 
             // @Note: near_z and far_z should be positive in this context (DISTANCE to camera).
             const float fov_in_degrees     = 90.0f;
             const float perspective_near_z = 0.1f;
             const float perspective_far_z  = 100.0f;
             const float aspect_ratio = static_cast<float>(globals.window_width) / static_cast<float>(globals.window_height);
-            Mat4 projection_matrix = mat::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
+            mgl::mat4 projection_matrix = mgl::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
 
             update_uniform("projection_matrix", projection_matrix);
             update_uniform("view_matrix", view_matrix);
@@ -205,16 +218,16 @@ void graphics::render_game_3d()
 
     if (active_shader_id == graphics::shaders()["gouraud"])
     {
-        update_uniform("light_position", Vec3{50.0f, 100.0f, 100.0f});
-        update_uniform("light_color", Vec3{0.0f, 0.0f, 0.1f});
-        update_uniform("material", Vec4{0.9f, 0.9f, 0.9f, 32.0f});
+        update_uniform("light_position", mgl::vec3{50.0f, 100.0f, 100.0f});
+        update_uniform("light_color", mgl::vec3{0.0f, 0.0f, 0.1f});
+        update_uniform("material", mgl::vec4{0.9f, 0.9f, 0.9f, 32.0f});
     }
 
     if (active_shader_id == graphics::shaders()["cel"])
     {
-        update_uniform("light_position", Vec3{50.0f, 100.0f, 100.0f});
-        update_uniform("light_color", Vec3{0.0f, 0.0f, 0.1f});
-        update_uniform("material", Vec4{0.9f, 0.9f, 0.9f, 32.0f});
+        update_uniform("light_position", mgl::vec3{50.0f, 100.0f, 100.0f});
+        update_uniform("light_color", mgl::vec3{0.0f, 0.0f, 0.1f});
+        update_uniform("material", mgl::vec4{0.9f, 0.9f, 0.9f, 32.0f});
     }
 
 
@@ -222,8 +235,8 @@ void graphics::render_game_3d()
 
     for (auto &set_piece: graphics::active_scene().set_pieces)
     {
-        Mat4 model_matrix = mat::model_from_xform_state(set_piece.xform_state);
-        Mat3 model_normal_matrix = mat::normal_transform(model_matrix);
+        mgl::mat4 model_matrix = mgl::model_from_xform_state(set_piece.xform_state);
+        mgl::mat3 model_normal_matrix = mgl::normal_transform(model_matrix);
         update_uniform("model_matrix", model_matrix);
         update_uniform("model_normal_matrix", model_normal_matrix);
 
@@ -505,7 +518,7 @@ void graphics::get_shader_info(graphics::Shader& shader)
             {
                 Uniform uniform;
                 uniform.type = GL_FLOAT_VEC3;
-                uniform.data = Vec3{0};
+                uniform.data = mgl::vec3{0};
                 uniform.name = shader.uniform_names[idx];
                 shader.uniforms[uniform.name] = uniform;
                 fmt::print(" {}, GL_FLOAT_VEC3\n", uniform.name);
@@ -517,7 +530,7 @@ void graphics::get_shader_info(graphics::Shader& shader)
                 
                 Uniform uniform;
                 uniform.type = GL_FLOAT_VEC4;
-                uniform.data = Vec4{0};
+                uniform.data = mgl::vec4{0};
                 uniform.name = shader.uniform_names[idx];
                 shader.uniforms[uniform.name] = uniform;
                 fmt::print(" {}, GL_FLOAT_VEC4\n", uniform.name);
@@ -538,7 +551,7 @@ void graphics::get_shader_info(graphics::Shader& shader)
             {
                 Uniform uniform;
                 uniform.type = GL_FLOAT_MAT4;
-                uniform.data = mat::mat4_identity();
+                uniform.data = mgl::mat4_identity();
                 uniform.name = shader.uniform_names[idx];
                 shader.uniforms[uniform.name] = uniform;
                 fmt::print(" {}, GL_FLOAT_MAT4\n", uniform.name);
@@ -548,7 +561,7 @@ void graphics::get_shader_info(graphics::Shader& shader)
             {
                 Uniform uniform;
                 uniform.type = GL_FLOAT_MAT3;
-                uniform.data = mat::mat3_identity();
+                uniform.data = mgl::mat3_identity();
                 uniform.name = shader.uniform_names[idx];
                 shader.uniforms[uniform.name] = uniform;
                 fmt::print(" {}, GL_FLOAT_MAT3\n", uniform.name);
@@ -568,7 +581,7 @@ void graphics::get_shader_info(graphics::Shader& shader)
             {
                 Uniform uniform;
                 uniform.type = GL_INT_VEC2;
-                uniform.data = Vec2i{0};
+                uniform.data = mgl::ivec2{0};
                 uniform.name = shader.uniform_names[idx];
                 shader.uniforms[uniform.name] = uniform;
                 fmt::print(" {}, GL_INT_VEC2\n", uniform.name);
@@ -660,36 +673,36 @@ void graphics::update_uniform(const std::string& uniform_name, uniform_t data)
             fmt::print("[graphics] update_uniform: type mismatch. uniform name: {}\n",uniform.name);
         }
 
-        if constexpr (std::is_same_v<T, Vec4>)
+        if constexpr (std::is_same_v<T, mgl::vec4>)
         {
             uniform.data = data;
-            glUniform4fv(uniform.location, 1, vec::value_ptr(std::get<Vec4>(uniform.data)));
+            glUniform4fv(uniform.location, 1, mgl::value_ptr(std::get<mgl::vec4>(uniform.data)));
         }
-        else if constexpr (std::is_same_v<T, Vec3>)
+        else if constexpr (std::is_same_v<T, mgl::vec3>)
         {
             uniform.data = data;
-            glUniform3fv(uniform.location, 1,  vec::value_ptr(std::get<Vec3>( uniform.data)));
+            glUniform3fv(uniform.location, 1,  mgl::value_ptr(std::get<mgl::vec3>( uniform.data)));
         }
 
-        else if constexpr (std::is_same_v<T, Mat3>)
+        else if constexpr (std::is_same_v<T, mgl::mat3>)
         {
             uniform.data = data;
-            glUniformMatrix3fv(uniform.location, 1, GL_TRUE, mat::value_ptr(std::get<Mat3>(uniform.data)));
+            glUniformMatrix3fv(uniform.location, 1, GL_TRUE, mgl::value_ptr(std::get<mgl::mat3>(uniform.data)));
         }
-        else if constexpr (std::is_same_v<T, Mat4>)
+        else if constexpr (std::is_same_v<T, mgl::mat4>)
         {
             uniform.data = data;
-            glUniformMatrix4fv(uniform.location, 1, GL_TRUE, mat::value_ptr( std::get<Mat4>( uniform.data)));
+            glUniformMatrix4fv(uniform.location, 1, GL_TRUE, mgl::value_ptr( std::get<mgl::mat4>( uniform.data)));
         }
         else if constexpr (std::is_same_v<T, float>)
         {
             uniform.data = data;
             glUniform1f(uniform.location, std::get<float>(data));
         }
-        else if constexpr (std::is_same_v<T, Vec2i>)
+        else if constexpr (std::is_same_v<T, mgl::ivec2>)
         {
             uniform.data = data;
-            glUniform2iv(uniform.location, 1,  vec::value_ptr(std::get<Vec2i>(uniform.data)));
+            glUniform2iv(uniform.location, 1,  mgl::value_ptr(std::get<mgl::ivec2>(uniform.data)));
         }
         else if constexpr (std::is_same_v<T, int32_t>)
         {
@@ -724,7 +737,7 @@ void graphics::render_2d_left_handed_dc(const uint32_t active_shader_id)
     const float z_far   = 1.0f; // near and far are reserved by windows???
 
 
-    Mat4 projection_matrix = mat::ortho(left, right, top, bot, z_near, z_far); 
+    mgl::mat4 projection_matrix = mgl::ortho(left, right, top, bot, z_near, z_far); 
     glUniformMatrix4fv(glGetUniformLocation(graphics::shaders()["text"], "projection_matrix"), 1, row_major, &projection_matrix[0][0]);
 }
 
@@ -733,18 +746,18 @@ void graphics::render_3d_left_handed_perspective(const uint32_t active_shader_id
     //@Note: do NOT forget this.
     const bool row_major = true;
 
-    //@Note: view matrix is identity (i.e. opengl_left_handed, vec3(0.0,0.0,0.)
-    Vec3 camera_position{0.0f,0.0f, 0.0f};
-    Vec3 target_position{0.0f, 0.0f, -1.0f};
-    Vec3 up_vector{0.0f, 1.0f, 0.0f};
-    Mat4 view_matrix = mat::look_at(camera_position, target_position, up_vector);
+    //@Note: view matrix is identity (i.e. opengl_left_handed, mgl::vec3(0.0,0.0,0.)
+    mgl::vec3 camera_position{0.0f,0.0f, 0.0f};
+    mgl::vec3 target_position{0.0f, 0.0f, -1.0f};
+    mgl::vec3 up_vector{0.0f, 1.0f, 0.0f};
+    mgl::mat4 view_matrix = mgl::look_at(camera_position, target_position, up_vector);
    
     // @Note: near_z and far_z should be positive in this context (DISTANCE to camera).
     const float fov_in_degrees     = 90.0f;
     const float perspective_near_z = 0.1f;
     const float perspective_far_z  = 100.0f;
     const float aspect_ratio = static_cast<float>(globals.window_width) / static_cast<float>(globals.window_height);
-    Mat4 projection_matrix = mat::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
+    mgl::mat4 projection_matrix = mgl::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
 
     update_uniform("projection_matrix", projection_matrix);
     update_uniform("view_matrix", view_matrix);

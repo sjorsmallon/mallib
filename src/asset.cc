@@ -170,13 +170,13 @@ void asset::load_scene_from_file(scene::Scene& scene, const std::string& filenam
         }
         else if (line[0] == 'p' && line[1] == 'o') // position
         {
-            Vec3 position = {};
+            mgl::vec3 position = {};
             sscanf(line.c_str(), "%15s %f %f %f", garbage_buffer, &position.x, &position.y, &position.z);
             set_piece->xform_state.position = position;
         }
         else if (line[0] == 'q' && line[1] == '_') // q_orientation
         {
-            Vec4 q_orientation = {};
+            mgl::vec4 q_orientation = {};
             sscanf(line.c_str(), "%15s %f %f %f %f", garbage_buffer, &q_orientation.x, &q_orientation.y, &q_orientation.z, &q_orientation.w);
             set_piece->xform_state.q_orientation = q_orientation;
         }
@@ -244,19 +244,19 @@ void asset::load_obj_from_file(asset::Raw_Obj_Data& raw_data, const std::string&
         }
         else if (line[0] ==  'v' && line[1] == ' ') // vertex
         {
-            Vec3 pos = {};
+            mgl::vec3 pos = {};
             sscanf(line.c_str(), "%9s %f %f %f", garbage_buffer, &pos.x, &pos.y, &pos.z);
             raw_data.positions.emplace_back(pos);
         } 
         else if (line[0] == 'v' && line[1] == 't') // texture coordinates
         {
-            Vec2 tex_coords = {};
+            mgl::vec2 tex_coords = {};
             sscanf(line.c_str(), "%9s %f %f", garbage_buffer, &tex_coords.x, &tex_coords.y);
             raw_data.tex_coords.emplace_back(tex_coords);
         }
         else if (line[0] == 'v' && line[1] == 'n') // vertex normals
         {
-            Vec3 normal = {};
+            mgl::vec3 normal = {};
             sscanf(line.c_str(), "%9s %f %f %f", garbage_buffer, &normal.x, &normal.y, &normal.z);
             raw_data.normals.emplace_back(normal);
         }
@@ -326,20 +326,20 @@ void asset::load_mtl_from_file(std::map<std::string, asset::Material>& materials
         }
         else if (line[0] == 'K' && line[1] == 'a') // ambient color
         {
-            Vec3 color = {};
+            mgl::vec3 color = {};
             sscanf(line.c_str(), "%2s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
             material_ptr->Ka = color;
         }
         else if (line[0] == 'K' && line[1] == 'd') // diffuse color
         {
             fmt::print("{}\n",line);
-            Vec3 color = {};
+            mgl::vec3 color = {};
             sscanf(line.c_str(), "%2s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
             material_ptr->Kd = color;
         }
         else if (line[0] == 'K' && line[1] == 's') // specular color
         {
-            Vec3 color = {};
+            mgl::vec3 color = {};
             sscanf(line.c_str(), "%2s %f %f %f", garbage_buffer, &color.r, &color.g, &color.b);
             material_ptr->Ks = color;
         }

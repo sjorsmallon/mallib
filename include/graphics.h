@@ -13,15 +13,16 @@
 // forward declarations.
 #include <asset.h>
 #include <scene.h>
-#include <vec2.h>
-#include <vec3.h> // Light
-#include <vec4.h>
-#include <mat4.h>
-#include <mat3.h>
-#include <camera.h>
 #include <io.h> // for mouse_input 
 
-using uniform_t = std::variant<float, int32_t, uint32_t, Vec2i, Vec4, Vec3, Mat4, Mat3>;
+#include <mgl/vec2.h>
+#include <mgl/vec3.h> // Light
+#include <mgl/vec4.h>
+#include <mgl/mat4.h>
+#include <mgl/mat3.h>
+#include <camera.h>
+
+using uniform_t = std::variant<float, int32_t, uint32_t, mgl::ivec2, mgl::vec4, mgl::vec3, mgl::mat4, mgl::mat3>;
 
 namespace graphics
 {

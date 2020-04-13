@@ -1,8 +1,8 @@
 #ifndef INCLUDED_ASSET_
 #define INCLUDED_ASSET_
 #include <scene.h>
-#include <vec3.h>
-#include <vec2.h>
+// #include <mglmgl::vec3.h>
+// #include <mgl::vec2.h>
 #include <vector>
 #include <map>
 #include <string>
@@ -30,33 +30,33 @@ namespace asset
 
     struct Face
     {
-        Vec3u v0_indices;
-        Vec3u v1_indices;
-        Vec3u v2_indices;
+        mgl::uivec3 v0_indices;
+        mgl::uivec3 v1_indices;
+        mgl::uivec3 v2_indices;
     };
 
     //@Refactor: put this in a shared header.
     struct Vertex
     {
-        Vec3 position;
-        Vec2 tex_coords;
-        Vec3 normals;
+        mgl::vec3 position;
+        mgl::vec2 tex_coords;
+        mgl::vec3 normals;
     };
 
     struct Raw_Obj_Data
     {
-        std::vector<Vec3> positions;
-        std::vector<Vec3> normals;
-        std::vector<Vec2> tex_coords;
+        std::vector<mgl::vec3> positions;
+        std::vector<mgl::vec3> normals;
+        std::vector<mgl::vec2> tex_coords;
         std::vector<Face> faces; // these indices are offset by 1.
         std::vector<Vertex> vertices;
     };
 
     struct Material
     {
-        Vec3 Ka; // ambient color
-        Vec3 Kd; // diffuse color
-        Vec3 Ks; // specular color
+        mgl::vec3 Ka; // ambient color
+        mgl::vec3 Kd; // diffuse color
+        mgl::vec3 Ks; // specular color
         float Ns; // specular exponent?
         uint16_t illum; // if illum == 1, skip Ks.
         float alpha; // either d or inverse transparency.
@@ -66,7 +66,7 @@ namespace asset
     struct Texture
     {
         unsigned char* data; // hmm. this is malloc'd by stb. do we just call free on delete?
-        Vec2i  dimensions;
+        mgl::ivec2  dimensions;
         int    channels;
         size_t data_size;
         uint32_t gl_texture_id;

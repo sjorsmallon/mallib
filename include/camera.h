@@ -1,6 +1,6 @@
 #ifndef INCLUDED_CAMERA
 #define INCLUDED_CAMERA
-#include <vec3.h>
+#include <mgl/vec3.h>
 
 
 namespace cam
@@ -15,9 +15,9 @@ namespace cam
 	struct Camera
 	{
 		Control_Mode control_mode = Control_Mode::CAM_ORBIT;
-	    Vec3 position{0.0f,0.0f,0.0f};
-	    Vec3 target{0.0f,0.0f, -1.0f};
-	    Vec3 up{0.0f, 1.0f, 0.0f};
+	    mgl::vec3 position{0.0f,0.0f,0.0f};
+	    mgl::vec3 target{0.0f,0.0f, -1.0f};
+	    mgl::vec3 up{0.0f, 1.0f, 0.0f};
 	    float near_clip_plane = 0.1f;
 	    float far_clip_plane = 1000.0f;
 	    float field_of_view = 90.0f;

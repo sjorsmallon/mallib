@@ -10,8 +10,8 @@
 
 #include <gl_lite/gl_lite.h>
 
-#include <vec2.h>
-#include <vec3.h>
+#include <mgl/vec2.h>
+#include <mgl/vec3.h>
 
 
 //@Todo: for now, a default font lives in the namespace.
@@ -32,8 +32,8 @@ namespace font
 	struct Character
 	{
 		GLuint textureID;
-		Vec2i size;
-		Vec2u bearing;
+		mgl::ivec2 size;
+		mgl::uivec2 bearing;
 		int32_t advance;
 	};
 
@@ -73,7 +73,7 @@ namespace font
 				   uint32_t start_x,
 				   uint32_t start_y,
 				   float scale,
-				   Vec3 color,
+				   mgl::vec3 color,
 					Text_Effect effect = Text_Effect::NONE
 				   );
 

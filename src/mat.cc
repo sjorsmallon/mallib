@@ -1,4 +1,4 @@
-#include <mat.h>
+#include <mgl/mat.h>
 
 #define PI 3.14159265359f
 //@Incomplete: when do we need identity? keep a static const identity matrix
@@ -42,10 +42,10 @@
 // }
 
 
-Mat4& mat::rotate(Mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z)
+mgl::mat4& mgl::rotate(mgl::mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z)
 {
     // the matrix should be in identity.
-    matrix = mat::mat4_identity();
+    matrix = mgl::mat4_identity();
 
     float rad_x = degrees_x * PI / 180.0f;
     float rad_y = degrees_y * PI / 180.0f;
@@ -60,17 +60,17 @@ Mat4& mat::rotate(Mat4& matrix, const int degrees_x, const int degrees_y, const 
     float cosz = cos(rad_z);
     float sinz = sin(rad_z);
 
-    Mat4 x_axis{1,   0,      0,   0,
+    mgl::mat4 x_axis{1,   0,      0,   0,
                 0,  cosx, -sinx,  0,
                 0,  sinx,  cosx,  0,
                 0,   0,      0,   1};
     
-    Mat4 y_axis{cosy,  0,   siny,   0,
+    mgl::mat4 y_axis{cosy,  0,   siny,   0,
                 0,     1,      0,   0,
                -siny,  0,    cosy,  0,
                 0,     0,      0,   1};
     
-    Mat4 z_axis{cosz, -sinz,   0,   0,
+    mgl::mat4 z_axis{cosz, -sinz,   0,   0,
                 sinz,  cosz,   0,   0,
                 0,     0,      1,   0,
                 0,     0,      0,   1};

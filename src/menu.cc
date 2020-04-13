@@ -41,11 +41,11 @@ void menu::draw_menu()
     auto& menu_font = menu::menu_font();
 
     const float scale = 1.0f; // we shouldn't ever scale font since we can just request the wanted size (otherwise we get stretching)
-    const Vec3 default_color  = {0.19f, 0.717f,0.17f};
-    const Vec3 selected_color = {0.12f, 0.76f, 0.717f};
-    Vec3 start_game_color = default_color;
-    Vec3 settings_color   = default_color;
-    Vec3 exit_game_color  = default_color;
+    const mgl::vec3 default_color  = {0.19f, 0.717f,0.17f};
+    const mgl::vec3 selected_color = {0.12f, 0.76f, 0.717f};
+    mgl::vec3 start_game_color = default_color;
+    mgl::vec3 settings_color   = default_color;
+    mgl::vec3 exit_game_color  = default_color;
 
     font::Text_Effect start_game_effect = font::Text_Effect::NONE;
     font::Text_Effect settings_effect   = font::Text_Effect::NONE;
