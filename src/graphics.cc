@@ -30,6 +30,10 @@
 #include <mgl/mat4.h>
 #include <mgl/mat3.h>
 
+#include <glm/gtx/string_cast.hpp>
+#include <glm/glm.hpp>
+
+
 #define BUFFER_OFFSET(i) ((void*)(i)) //hacky macro for offset.
 
 namespace fs = std::filesystem;
@@ -164,6 +168,10 @@ void graphics ::update_active_camera(io::Mouse_State &mouse_state)
             const float perspective_far_z  = 100.0f;
             const float aspect_ratio = static_cast<float>(globals.window_width) / static_cast<float>(globals.window_height);
             mgl::mat4 projection_matrix = mgl::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
+            glm::mat4  actual_projection_matrix = glm::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
+            fmt::print("my projection matrix: {}\n", projection_matrix);
+            fmt::print("their projection matrix: {}\n", glm::to_string(actual_projection_matrix));
+
 
             update_uniform("projection_matrix", projection_matrix);
             update_uniform("view_matrix", view_matrix);

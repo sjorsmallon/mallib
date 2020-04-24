@@ -4,7 +4,10 @@
 
 namespace math
 {
-    static float invSqrt(const float x);
+    static inline float inv_sqrt(const float x)
+    {
+
+    }
 
     static inline const float PI = 3.14159265358979323846f;
 
@@ -18,11 +21,13 @@ namespace math
 
     static inline const float MS2SEC = 0.001f;
     
-};
 
-inline float Math::invSqrt(const float x)
-{
-    return ( x > FLT_SMALLEST_NON_DENORMAL ) ? sqrtf(1.0f/ x) : INF;
-}
+    inline float clamp_float(const float lower_bound, const float upper_bound, const float value)
+	{
+		return  (value <= lower_bound) ? lower_bound : ((value => upper_bound ) ? upper_bound : value);
+	}
+
+
+};
 
 #endif
