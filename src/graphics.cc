@@ -125,13 +125,13 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
     //@TODO: generate mipmaps.
 }
 
-void graphics ::update_active_camera(io::Mouse_State &mouse_state)
+void graphics::update_active_camera(io::Mouse_State &mouse_state)
 {
-    static float camera_z_accumulator = 0.0f;
+    static float camera_z_accumulator = 2.0f;
     static float x_rotation_accumulator = 0.0f;
     static float z_rotation_accumulator = 0.0f;
-    using namespace cam;
 
+    using namespace cam;
 
     auto& camera = graphics::active_camera();
     switch (camera.control_mode)
@@ -140,38 +140,36 @@ void graphics ::update_active_camera(io::Mouse_State &mouse_state)
         {
             if (mouse_state.lmb_pressed)
             {
-                // fmt::print("lmb_pressed!\n");
-                x_rotation_accumulator += mouse_state.pos_delta_x * 0.0005f;
+                x_rotation_accumulator += mouse_state.pos_delta_y * 0.5f;
                 x_rotation_accumulator =  fmod(x_rotation_accumulator, 360.0f);
-                z_rotation_accumulator += mouse_state.pos_delta_y * 0.0005f;
+                z_rotation_accumulator += mouse_state.pos_delta_x * 0.5f;
                 z_rotation_accumulator =  fmod(z_rotation_accumulator, 360.0f);
             }
    
-
             if (mouse_state.scroll_delta_y != 0.0f)
-                 camera_z_accumulator = (mouse_state.scroll_delta_y > 0.0f) ? camera_z_accumulator - 0.5f : camera_z_accumulator + 0.5f;                 
-
+            {
+                camera_z_accumulator = (mouse_state.scroll_delta_y > 0.0f) ? camera_z_accumulator - 0.05f : camera_z_accumulator + 0.05f;                 
+            }
 
             mgl::vec3 camera_position{0.0f,0.0f, camera_z_accumulator};
             mgl::vec3 target_position{0.0f, 0.0f, -1.0f}; 
             mgl::vec3 up_vector{0.0f, 1.0f, 0.0f};        
             mgl::mat4 rotation_matrix = mgl::rotate(mgl::mat4{1.0f}, x_rotation_accumulator, 0, z_rotation_accumulator);
                 
-            // up_vector      = mgl::make_vec3(rotation_matrix * mgl::make_vec4(up_vector, 1.0f));
+            up_vector       = mgl::make_vec3(rotation_matrix * mgl::make_vec4(up_vector, 1.0f));
             camera_position = mgl::make_vec3(rotation_matrix * mgl::make_vec4(camera_position, 1.0f));
+
             mgl::mat4 view_matrix = mgl::look_at(camera_position, target_position, up_vector);
 
             // @Note: near_z and far_z should be positive in this context (DISTANCE to camera).
-            // why, if FOV == 90, does the cat disappear?
-            const float fov_in_degrees     = 89.0f;
+            const float fov_in_degrees     = 45.0f;
             const float perspective_near_z = 0.1f;
-            const float perspective_far_z  = 100.0f;
+            const float perspective_far_z  = 200.0f;
             const float aspect_ratio = static_cast<float>(globals.window_width) / static_cast<float>(globals.window_height);
             mgl::mat4 projection_matrix = mgl::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
-            glm::mat4  actual_projection_matrix = glm::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
-            fmt::print("my projection matrix: {}\n", projection_matrix);
-            fmt::print("their projection matrix: {}\n", glm::to_string(actual_projection_matrix));
 
+
+            // glm::mat4  actual_projection_matrix = glm::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
 
             update_uniform("projection_matrix", projection_matrix);
             update_uniform("view_matrix", view_matrix);
@@ -184,6 +182,8 @@ void graphics ::update_active_camera(io::Mouse_State &mouse_state)
         }
         case Control_Mode::CAM_FPS:
         {
+
+            
             break;
         }
 
@@ -210,7 +210,6 @@ void graphics::render_game_3d()
 
     uint32_t active_shader_id = graphics::active_shader_id();
     auto defer_shader_state = On_Leaving_Scope([]{graphics::set_shader("gouraud");});
-
 
     // render_3d_left_handed_perspective(active_shader_id); // perspective matrix.
 
@@ -282,7 +281,7 @@ void graphics::render_ui()
 
         // List box
         static int selected_shader = 1;
-        ImGui::ListBox("listbox\n(single select)", &selected_shader, shader_names.data(), shader_names.size(), 4);
+        ImGui::ListBox("Shader Mode", &selected_shader, shader_names.data(), shader_names.size(), 4);
         graphics::set_shader(shader_names[selected_shader]);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
@@ -320,6 +319,18 @@ graphics::Win32_Context& graphics::global_Win32_context() //@cleanup: i don't li
     static Win32_Context context;
     return context;
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 ///--- Shaders --------------------------------------------------
 std::map<std::string, uint32_t>& graphics::shaders()
@@ -359,7 +370,6 @@ uint32_t graphics::load_shader(const std::string& shader_name)
     // gather uniforms & attributes.
     graphics::Shader& shader = graphics::shader_info()[shader_name];
     shader.program_id =  shader_program;
-
     get_shader_info(shader);
 
     fmt::print("[graphics] uniforms: \n");
@@ -495,7 +505,6 @@ void graphics::get_shader_info(graphics::Shader& shader)
     assert(shader.uniform_names.size() == string_pointers.size());
     assert(uniform_indices.size() == shader.uniform_names.size());
 
-
     glGetUniformIndices(
         shader.program_id,
         shader.uniform_names.size(),
@@ -600,7 +609,6 @@ void graphics::get_shader_info(graphics::Shader& shader)
 
                 break;
             }
-
             case GL_SAMPLER_2D:
             {
                 Uniform uniform;

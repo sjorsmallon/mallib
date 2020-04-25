@@ -189,6 +189,7 @@ inline mgl::mat4 mgl::ortho(const float left,
 // rather than on a plane that lies one unit away from the camera position.
 // note that near_z and far_z should be positive.
 //@Incomplete: the ordering here is inverted because of the column vs row major.
+// RH, row major
 inline mgl::mat4 mgl::perspective(const float fov_y,
                      const float aspect_ratio,
                      const float near_plane,
@@ -196,8 +197,8 @@ inline mgl::mat4 mgl::perspective(const float fov_y,
 {
     mgl::mat4 matrix = {}; // identity?
 
-    float rad_fov = fov_y * mgl::DEG2RAD;
-    float tan_half_fov = tanf(rad_fov * 0.5f);
+    const float tan_half_fov = tanf(fov_y * 0.5f);
+
     matrix[0][0] = 1.0f /(aspect_ratio * tan_half_fov);
     matrix[1][1] = 1.0f / tan_half_fov;
     matrix[2][2] = -(far_plane + near_plane) / (far_plane - near_plane);
@@ -211,6 +212,7 @@ inline mgl::mat4 mgl::perspective(const float fov_y,
 }
 
 
+// RH, row major
 inline mgl::mat4 mgl::look_at(const vec3& eye, const vec3& target, const vec3& up)
 {
    // modeled after gluLookAt. 
@@ -220,17 +222,16 @@ inline mgl::mat4 mgl::look_at(const vec3& eye, const vec3& target, const vec3& u
    vec3 up_norm = mgl::normalize(up);
    vec3 right   = mgl::cross(forward, up_norm);
    vec3 new_up  = mgl::cross(right, forward);
+
+
    // The up vector must not be parallel to the line of sight from the
    //           eye point to the reference point.  
-    return {  right.x, new_up.x,   forward.x,      0.0f,
-              right.y, new_up.y,   forward.y,      0.0f, 
-              right.z, new_up.z,   1.0f,      0.0f,
-              eye.x, eye.y,  eye.z,    1.0f};
+   // assert(!(up_norm == forward));
 
-   // return {right.x,  right.y,     right.z,                  mgl::dot(right, eye),
-   //         new_up.x, new_up.y,    new_up.z,                 mgl::dot(new_up, eye), 
-   //         forward.x, forward.y,   forward.z,               -mgl::dot(forward, eye),
-   //          0.0f, 0.0f, 0.0f,    1.0f};
+   return {right.x, right.y,  right.z,          -mgl::dot(right, eye),
+           new_up.x, new_up.y, new_up.z,         -mgl::dot(new_up, eye), 
+           -forward.x, -forward.y, -forward.z,   mgl::dot(forward, eye),
+            0.0f, 0.0f, 0.0f,                     1.0f};
 
 
 }

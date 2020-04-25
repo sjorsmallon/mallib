@@ -2,6 +2,7 @@
 #define INCLUDED_IO_
 #include <stdint.h>
 #include <vector>
+#include <fmt/core.h>
 
 // What this is:
 
@@ -16,18 +17,18 @@ namespace io
 		int y;
 	};
 
-	enum class Button : uint8_t
+	enum class Button : uint16_t
 	{
-		KEY_W,
-		KEY_A,
-		KEY_S,
-		KEY_D,
-		KEY_UP,
-		KEY_DOWN,
-		KEY_LEFT,
-		KEY_RIGHT,
-		MOUSE_LEFT,
-		MOUSE_RIGHT,
+		KEY_W       = 0,
+		KEY_A       = 1,
+		KEY_S       = 2,
+		KEY_D       = 4,
+		KEY_UP      = 8,
+		KEY_DOWN    = 16,
+		KEY_LEFT    = 32,
+		KEY_RIGHT   = 64,
+		MOUSE_LEFT  = 128,
+		MOUSE_RIGHT = 256,
 	};
 
 	struct Keyboard_State 
@@ -70,8 +71,10 @@ namespace io
 	Mouse_State&  mouse_state();
 	Mouse_State&  prev_mouse_state();
 
+	// used to map OS keys to internal buttons.
 	Platform_Key_Map& platform_key_map();
-
+	
+	// button of queues. This could be 
 	std::vector<io::Button>& input_queue();
 
 	void update_mouse_coords(const int32_t x, const int32_t y);

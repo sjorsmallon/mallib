@@ -150,12 +150,8 @@ void game::handle_debug_input()
     // menu::active_start_menu_item() = static_cast<menu::Menu_Item>(active_menu_item);
     queue.clear();
 
-    // reset mouse input, except for the pressed state.
-    bool lmb_pressed = mouse_state.lmb_pressed;
-    bool rmb_pressed = mouse_state.rmb_pressed;
-    memset(&mouse_state,0, sizeof(mouse_state));
-    mouse_state.lmb_pressed = lmb_pressed;
-    mouse_state.rmb_pressed = rmb_pressed;
+    //@FIXME: reset mouse scroll delta.
+    mouse_state.scroll_delta_y = double{0.0};
 }
 
 

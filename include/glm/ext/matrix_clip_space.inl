@@ -1,3 +1,5 @@
+#include <iostream>
+
 namespace glm
 {
 	template<typename T>
@@ -324,13 +326,23 @@ namespace glm
 	GLM_FUNC_QUALIFIER mat<4, 4, T, defaultp> perspective(T fovy, T aspect, T zNear, T zFar)
 	{
 		GLM_IF_CONSTEXPR(GLM_CONFIG_CLIP_CONTROL == GLM_CLIP_CONTROL_LH_ZO)
+		{
 			return perspectiveLH_ZO(fovy, aspect, zNear, zFar);
+		}
 		else GLM_IF_CONSTEXPR(GLM_CONFIG_CLIP_CONTROL == GLM_CLIP_CONTROL_LH_NO)
+		{
+
 			return perspectiveLH_NO(fovy, aspect, zNear, zFar);
+		}
 		else GLM_IF_CONSTEXPR(GLM_CONFIG_CLIP_CONTROL == GLM_CLIP_CONTROL_RH_ZO)
+		{
+
 			return perspectiveRH_ZO(fovy, aspect, zNear, zFar);
+		}
 		else GLM_IF_CONSTEXPR(GLM_CONFIG_CLIP_CONTROL == GLM_CLIP_CONTROL_RH_NO)
+		{
 			return perspectiveRH_NO(fovy, aspect, zNear, zFar);
+		}
 	}
 
 	template<typename T>
