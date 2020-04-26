@@ -31,15 +31,17 @@ void game::init()
 
 void game::load_shaders()
 { 
-    uint32_t text_shader      = graphics::load_shader("text");
-    uint32_t cel_shader       = graphics::load_shader("cel");
-    uint32_t isophotes_shader = graphics::load_shader("isophotes");
-    uint32_t normals_shader   = graphics::load_shader("normals");  
+    uint32_t text_shader                = graphics::load_shader("text");
+    uint32_t cel_shader                 = graphics::load_shader("cel");
+    uint32_t isophotes_shader           = graphics::load_shader("isophotes");
+    uint32_t normals_shader             = graphics::load_shader("normals");  
+    uint32_t line_position_color_shader = graphics::load_shader("line_position_color");
     
     graphics::shaders()["text"]      = text_shader;
     graphics::shaders()["cel"]       = cel_shader;
     graphics::shaders()["isophotes"] = isophotes_shader;
     graphics::shaders()["normals"]   = normals_shader;
+    graphics::shaders()["line_position_color"] = line_position_color_shader;
 
     graphics::set_shader("cel");
 
@@ -104,8 +106,8 @@ void game::load_assets()
     const uint32_t position_element_count = 4;
     const uint32_t color_element_count = 4;
 
-    glVertexAttribPointer(position_idx, position_element_count, GL_FALSE, 2 * sizeof(glm::vec4), 0);
-    glVertexAttribPointer(color_idx, color_element_count, GL_FALSE, 2 * sizeof(glm::vec4), ((void*)(sizeof(glm::vec4))) ); // skip p.x, p.y,p.z, p.w;
+    glVertexAttribPointer(position_idx, position_element_count, GL_FLOAT, GL_FALSE, 2 * sizeof(mgl::vec4), 0);
+    glVertexAttribPointer(color_idx, color_element_count, GL_FLOAT, GL_FALSE, 2 * sizeof(mgl::vec4), ((void*)(sizeof(mgl::vec4))) ); // skip p.x, p.y,p.z, p.w;
 
     glBindVertexArray(0);
     buffers["line_position_color"] = new_buffer;

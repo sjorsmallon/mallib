@@ -258,7 +258,7 @@ void graphics::render_game_3d()
     }
 
 
-
+    render_centroid_axes();
 
 
     glBindVertexArray(0);
@@ -267,14 +267,17 @@ void graphics::render_game_3d()
 // render axes for the 0,0,0 point.
 void graphics::render_centroid_axes()
 {
-    graphics::set_shader("line_position_color");
 
-    mgl::vec4 x_axis_end{1.0f,0.0f,0.0f, 1.0f};
-    mgl::vec4 y_axis_end{0.0f,1.0f,0.0f, 1.0f};
-    mgl::vec4 z_axis_end{0.0f,0.0f,1.0f, 1.0f};
+    mgl::vec4 x_axis_end{100.0f,0.0f,0.0f, 1.0f};
+    mgl::vec4 y_axis_end{0.0f,100.0f,0.0f, 1.0f};
+    mgl::vec4 z_axis_end{0.0f,0.0f,100.0f, 1.0f};
     mgl::vec4 zero_start{0.0f,0.0f,0.0f,1.0f};
-    mgl::mat4 view_matrix       = std::get<mgl::mat4>(graphics::shader_info()[graphics::active_shader_name()].uniforms["view_matrix"].data);
-    mgl::mat4 projection_matrix = std::get<mgl::mat4>(graphics::shader_info()[graphics::active_shader_name()].uniforms["projection_matrix"].data);
+
+    graphics::set_shader("cel");
+    mgl::mat4 view_matrix       = std::get<mgl::mat4>(graphics::shader_info()["cel"].uniforms["view_matrix"].data);
+    mgl::mat4 projection_matrix = std::get<mgl::mat4>(graphics::shader_info()["cel"].uniforms["projection_matrix"].data);
+
+    graphics::set_shader("line_position_color");
 
     x_axis_end = view_matrix * projection_matrix * x_axis_end;
     y_axis_end = view_matrix * projection_matrix * y_axis_end;
@@ -284,6 +287,8 @@ void graphics::render_centroid_axes()
     mgl::vec4 x_axis_color{1.0f, 0.0f, 0.0f, 1.0f};
     mgl::vec4 y_axis_color{0.0f, 1.0f, 0.0f, 1.0f};
     mgl::vec4 z_axis_color{0.0f, 0.0f, 1.0f, 1.0f};
+
+    glBindVertexArray(graphics::buffers()["line_position_color"].VAO);
 
     std::vector<mgl::vec4> data{
         zero_start,
@@ -299,7 +304,12 @@ void graphics::render_centroid_axes()
         z_axis_end,
         z_axis_color
     };
+    glBufferData(GL_ARRAY_BUFFER,
+        static_cast<int32_t>(data.size() * sizeof(mgl::vec4)),
+        data.data(),
+        GL_STATIC_DRAW);
 
+    glDrawArrays(GL_LINES,0, data.size() / 2);
 
 
 
