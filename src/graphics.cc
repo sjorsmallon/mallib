@@ -205,6 +205,9 @@ uint32_t graphics::next_free_active_texture_ID()
     return new_free_texture_frame;
 }
 
+
+//------ render
+
 void graphics::render_game_3d()
 {
 
@@ -254,9 +257,54 @@ void graphics::render_game_3d()
         glDrawArrays(GL_TRIANGLES,0, object_data.vertices.size());
     }
 
+
+
+
+
     glBindVertexArray(0);
+}
+
+// render axes for the 0,0,0 point.
+void graphics::render_centroid_axes()
+{
+    graphics::set_shader("line_position_color");
+
+    mgl::vec4 x_axis_end{1.0f,0.0f,0.0f, 1.0f};
+    mgl::vec4 y_axis_end{0.0f,1.0f,0.0f, 1.0f};
+    mgl::vec4 z_axis_end{0.0f,0.0f,1.0f, 1.0f};
+    mgl::vec4 zero_start{0.0f,0.0f,0.0f,1.0f};
+    mgl::mat4 view_matrix       = std::get<mgl::mat4>(graphics::shader_info()[graphics::active_shader_name()].uniforms["view_matrix"].data);
+    mgl::mat4 projection_matrix = std::get<mgl::mat4>(graphics::shader_info()[graphics::active_shader_name()].uniforms["projection_matrix"].data);
+
+    x_axis_end = view_matrix * projection_matrix * x_axis_end;
+    y_axis_end = view_matrix * projection_matrix * y_axis_end;
+    z_axis_end = view_matrix * projection_matrix * z_axis_end;
+    zero_start = view_matrix * projection_matrix * zero_start;
+
+    mgl::vec4 x_axis_color{1.0f, 0.0f, 0.0f, 1.0f};
+    mgl::vec4 y_axis_color{0.0f, 1.0f, 0.0f, 1.0f};
+    mgl::vec4 z_axis_color{0.0f, 0.0f, 1.0f, 1.0f};
+
+    std::vector<mgl::vec4> data{
+        zero_start,
+        x_axis_color,
+        x_axis_end,
+        x_axis_color,
+        zero_start,
+        y_axis_color,
+        y_axis_end,
+        y_axis_color,
+        zero_start,
+        z_axis_color,
+        z_axis_end,
+        z_axis_color
+    };
+
+
+
 
 }
+
 
 void graphics::render_ui()
 {

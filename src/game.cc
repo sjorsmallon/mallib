@@ -90,6 +90,27 @@ void game::load_assets()
         buffers[key] = new_buffer;
     }
 
+    //@FIXME: this is a 
+    graphics::Buffers new_buffer{};
+    glGenVertexArrays(1, &new_buffer.VAO);
+    glBindVertexArray(new_buffer.VAO);
+    glGenBuffers(1, &new_buffer.VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, new_buffer.VBO);
+    const uint32_t position_idx = 0;
+    const uint32_t color_idx = 1;
+    glEnableVertexAttribArray(position_idx);
+    glEnableVertexAttribArray(color_idx);
+
+    const uint32_t position_element_count = 4;
+    const uint32_t color_element_count = 4;
+
+    glVertexAttribPointer(position_idx, position_element_count, GL_FALSE, 2 * sizeof(glm::vec4), 0);
+    glVertexAttribPointer(color_idx, color_element_count, GL_FALSE, 2 * sizeof(glm::vec4), ((void*)(sizeof(glm::vec4))) ); // skip p.x, p.y,p.z, p.w;
+
+    glBindVertexArray(0);
+    buffers["line_position_color"] = new_buffer;
+
+
 }
 
 void game::main_loop()

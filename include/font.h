@@ -33,7 +33,7 @@ namespace font
 	{
 		GLuint textureID;
 		mgl::ivec2 size;
-		mgl::uivec2 bearing;
+		mgl::ivec2 bearing;
 		int32_t advance;
 	};
 

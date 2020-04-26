@@ -2,21 +2,34 @@
 
 # shortlist TODO
 
-## move math functionality into their own library. (move all .mat functions to source file?)
+## draw Axes of centroid point.
 
-## re-enable textures
-
-## remove IO from windows folder in some way. Look at how Casey does platform specific functionality.
 
 ## implement Uniform Buffer object for matrices (no need to rebind these between shaders!)
 Look at the learnopenGL implementation how to do this.
 
+## start with cvars.
 
-## move towards MVP mode of operation. Rethink scene stuff. 
+## draw OOBB of model
+
+## draw Axes of model
+
+## re-enable textures
+
+## rename `Character` in Font to `Glyph`
+
+## Think about how to fix matrix multiplication.  switch to column major & just don't allow raw manipulation?
+
+## decide on log levels
+
+## wrap fmt in logging 
+
+## move IMGUI to its own window.
+
+
+## move towards MVP 
 
 ## create simple ECS
-
-## switch to tinySTL (with custom allocator).
 
 
 ## Rotating the Scene Objects Correctly
@@ -26,16 +39,11 @@ Maybe we should keep it fire & forget for now.. or just abstract it as a whole.
 refactor the namespaces to some sort of init -> alloc pattern. (alloc can be called in init, but just that that is the regular pattern).
 
 
-switch to the custom allocator for trying new stuff out.
+## switch to the custom allocator for trying new stuff out.
 
-implement font waving up and down.
-
-## include IMGUI
-We want to use IMGUI as some sort of debugging UI menu. IMGUI extension: allow IMGUI to run as detached window.
-
+## implement font waving up and down when selected.
 
 # longlist TODO
-
 
 
 ## Graphics manager
@@ -53,7 +61,6 @@ secondly, use a VAO/VBO combo for entity placement (i.e. light locations.)
 
 ## Rotating the Scene Objects with Input
 we want to manipulate the scene using the mouse / keyboard. 
-
 
 
 ## look at input polling thread.
@@ -176,6 +183,19 @@ I need to document how to build soloud, as it uses this weird build system. It's
 
 
 # HAVE DONE
+
+
+## include IMGUI
+We want to use IMGUI as some sort of debugging UI menu. 
+
+## finish mat / vec implementations (as far as necessary!)
+
+
+## remove IO from windows folder in some way. Look at how Casey / GLFW does platform specific functionality.
+
+
+## move math functionality into their own library. (move all .mat functions to source file?)
+
 
 
 ## Contracts for namespaces

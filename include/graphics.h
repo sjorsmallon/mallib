@@ -91,6 +91,7 @@ namespace graphics
 	//--- rendering 
 	void render_frame();
 		void render_ui();
+		void render_centroid_axes();
 		void render_game_3d();
 		void clear_buffer_bits();
 		void swap_buffers();
