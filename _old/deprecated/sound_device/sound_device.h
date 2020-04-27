@@ -10,7 +10,6 @@
 #endif
 
 #include <vector>
-#include <variant>
 
 #include <iostream>
 #include <string>

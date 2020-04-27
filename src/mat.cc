@@ -42,14 +42,14 @@
 // }
 
 
-mgl::mat4& mgl::rotate(mgl::mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z)
+mgl::mat4 mgl::rotate(mgl::mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z)
 {
     // the matrix should be in identity.
     matrix = mgl::mat4_identity();
 
-    float rad_x = degrees_x * PI / 180.0f;
-    float rad_y = degrees_y * PI / 180.0f;
-    float rad_z = degrees_z * PI / 180.0f;
+    float rad_x = degrees_x * (PI / 180.0f);
+    float rad_y = degrees_y * (PI / 180.0f);
+    float rad_z = degrees_z * (PI / 180.0f);
 
     float cosx = cos(rad_x);
     float sinx = sin(rad_x);
@@ -61,26 +61,59 @@ mgl::mat4& mgl::rotate(mgl::mat4& matrix, const int degrees_x, const int degrees
     float sinz = sin(rad_z);
 
     mgl::mat4 x_axis{1,   0,      0,   0,
-                0,  cosx, -sinx,  0,
-                0,  sinx,  cosx,  0,
-                0,   0,      0,   1};
+                     0,  cosx, -sinx,  0,
+                     0,  sinx,  cosx,  0,
+                     0,   0,      0,   1};
     
     mgl::mat4 y_axis{cosy,  0,   siny,   0,
-                0,     1,      0,   0,
-               -siny,  0,    cosy,  0,
-                0,     0,      0,   1};
-    
+                     0,     1,      0,   0,
+                    -siny,  0,    cosy,  0,
+                     0,     0,      0,   1};
+      
     mgl::mat4 z_axis{cosz, -sinz,   0,   0,
                 sinz,  cosz,   0,   0,
                 0,     0,      1,   0,
                 0,     0,      0,   1};
     
-    matrix *= x_axis; 
+    matrix *= z_axis; 
     matrix *= y_axis;
-    matrix *= z_axis;
+    matrix *= x_axis;
 
     return matrix;
 }
+
+mgl::rotate(mgl::mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z()
+{
+
+    const float a = angle;
+    const c = cos(a);
+    const s = sin(a);
+
+    vec<3, T, Q> axis(normalize(v));
+    vec<3, T, Q> temp((T(1) - c) * axis);
+
+    mat<4, 4, T, Q> Rotate;
+    Rotate[0][0] = c + temp[0] * axis[0];
+    Rotate[0][1] = temp[0] * axis[1] + s * axis[2];
+    Rotate[0][2] = temp[0] * axis[2] - s * axis[1];
+
+    Rotate[1][0] = temp[1] * axis[0] - s * axis[2];
+    Rotate[1][1] = c + temp[1] * axis[1];
+    Rotate[1][2] = temp[1] * axis[2] + s * axis[0];
+
+    Rotate[2][0] = temp[2] * axis[0] + s * axis[1];
+    Rotate[2][1] = temp[2] * axis[1] - s * axis[0];
+    Rotate[2][2] = c + temp[2] * axis[2];
+
+    mat<4, 4, T, Q> Result;
+    Result[0] = m[0] * Rotate[0][0] + m[1] * Rotate[0][1] + m[2] * Rotate[0][2];
+    Result[1] = m[0] * Rotate[1][0] + m[1] * Rotate[1][1] + m[2] * Rotate[1][2];
+    Result[2] = m[0] * Rotate[2][0] + m[1] * Rotate[2][1] + m[2] * Rotate[2][2];
+    Result[3] = m[3];
+    return Result;
+}
+
+
 
 // Mat4 mat::scale(const Mat4& matrix, const float scale_factor)
 // {

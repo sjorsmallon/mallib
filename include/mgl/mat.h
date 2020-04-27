@@ -36,7 +36,7 @@ namespace mgl
     mgl::mat4 translate(const mgl::mat4& matrix, const mgl::vec3& vector);
     mgl::mat4 scale(const mgl::mat4& matrix, const float scale_factor);
     mgl::mat4 scale(const float s);
-    mgl::mat4& rotate(mgl::mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z); //expects identity
+    mgl::mat4 rotate(mgl::mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z); //expects identity
     mgl::mat4 perspective(const float fov_y,
                      const float aspect_ratio,
                      const float near_plane,
@@ -216,6 +216,7 @@ inline mgl::mat4 mgl::perspective(const float fov_y,
 inline mgl::mat4 mgl::look_at(const vec3& eye, const vec3& target, const vec3& up)
 {
    // modeled after gluLookAt. 
+
 
    vec3 forward = target - eye; // f = coord_system
    forward      = mgl::normalize(forward);

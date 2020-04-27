@@ -30,9 +30,9 @@
 #include <mgl/mat4.h>
 #include <mgl/mat3.h>
 
-#include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/string_cast.hpp> // to_string
 #include <glm/glm.hpp>
-
+#include <glm/gtx/transform.hpp>   // rotation_matrix 
 
 #define BUFFER_OFFSET(i) ((void*)(i)) //hacky macro for offset.
 
@@ -140,9 +140,9 @@ void graphics::update_active_camera(io::Mouse_State &mouse_state)
         {
             if (mouse_state.lmb_pressed)
             {
-                x_rotation_accumulator += mouse_state.pos_delta_y * 0.5f;
+                x_rotation_accumulator += mouse_state.pos_delta_x * 0.5f;
                 x_rotation_accumulator =  fmod(x_rotation_accumulator, 360.0f);
-                z_rotation_accumulator += mouse_state.pos_delta_x * 0.5f;
+                z_rotation_accumulator += mouse_state.pos_delta_y * 0.5f;
                 z_rotation_accumulator =  fmod(z_rotation_accumulator, 360.0f);
             }
    
@@ -154,10 +154,16 @@ void graphics::update_active_camera(io::Mouse_State &mouse_state)
             mgl::vec3 camera_position{0.0f,0.0f, camera_z_accumulator};
             mgl::vec3 target_position{0.0f, 0.0f, -1.0f}; 
             mgl::vec3 up_vector{0.0f, 1.0f, 0.0f};        
-            mgl::mat4 rotation_matrix = mgl::rotate(mgl::mat4{1.0f}, x_rotation_accumulator, 0, z_rotation_accumulator);
+            mgl::mat4 rotation_matrix = mgl::rotate(mgl::mat4_identity(), x_rotation_accumulator, 0, z_rotation_accumulator);
+
+            glm::mat4 actual_rotation_matrix = glm::rotate(static_cast<float>(x_rotation_accumulator), glm::vec3(0.0f, 0.0f, 1.0f)) *  // z
+                                               glm::rotate(static_cast<float>(z_rotation_accumulator), glm::vec3(1.0f, 0.0f, 0.0f)); // x
+
+            fmt::print("my rotation matrix: {}\n", rotation_matrix);
+            fmt::print("actual rotation matrix: {}\n", glm::to_string(actual_rotation_matrix));
                 
             up_vector       = mgl::make_vec3(rotation_matrix * mgl::make_vec4(up_vector, 1.0f));
-            camera_position = mgl::make_vec3(rotation_matrix * mgl::make_vec4(camera_position, 1.0f));
+             camera_position = mgl::make_vec3(rotation_matrix * mgl::make_vec4(camera_position, 1.0f));
 
             mgl::mat4 view_matrix = mgl::look_at(camera_position, target_position, up_vector);
 
@@ -211,51 +217,51 @@ uint32_t graphics::next_free_active_texture_ID()
 void graphics::render_game_3d()
 {
 
-    uint32_t active_shader_id = graphics::active_shader_id();
-    auto defer_shader_state = On_Leaving_Scope([]{graphics::set_shader("gouraud");});
+    // uint32_t active_shader_id = graphics::active_shader_id();
+    // auto defer_shader_state = On_Leaving_Scope([]{graphics::set_shader("gouraud");});
 
-    // render_3d_left_handed_perspective(active_shader_id); // perspective matrix.
+    // // render_3d_left_handed_perspective(active_shader_id); // perspective matrix.
 
-    if (active_shader_id == graphics::shaders()["gouraud"])
-    {
-        update_uniform("light_position", mgl::vec3{50.0f, 100.0f, 100.0f});
-        update_uniform("light_color", mgl::vec3{0.0f, 0.0f, 0.1f});
-        update_uniform("material", mgl::vec4{0.9f, 0.9f, 0.9f, 32.0f});
-    }
+    // if (active_shader_id == graphics::shaders()["gouraud"])
+    // {
+    //     update_uniform("light_position", mgl::vec3{50.0f, 100.0f, 100.0f});
+    //     update_uniform("light_color", mgl::vec3{0.0f, 0.0f, 0.1f});
+    //     update_uniform("material", mgl::vec4{0.9f, 0.9f, 0.9f, 32.0f});
+    // }
 
-    if (active_shader_id == graphics::shaders()["cel"])
-    {
-        update_uniform("light_position", mgl::vec3{50.0f, 100.0f, 100.0f});
-        update_uniform("light_color", mgl::vec3{0.0f, 0.0f, 0.1f});
-        update_uniform("material", mgl::vec4{0.9f, 0.9f, 0.9f, 32.0f});
-    }
+    // if (active_shader_id == graphics::shaders()["cel"])
+    // {
+    //     update_uniform("light_position", mgl::vec3{50.0f, 100.0f, 100.0f});
+    //     update_uniform("light_color", mgl::vec3{0.0f, 0.0f, 0.1f});
+    //     update_uniform("material", mgl::vec4{0.9f, 0.9f, 0.9f, 32.0f});
+    // }
 
 
-    glBindVertexArray(graphics::buffers()["cat.obj"].VAO);
+    // glBindVertexArray(graphics::buffers()["cat.obj"].VAO);
 
-    mgl::mat4 view_matrix = std::get<mgl::mat4>(graphics::shader_info()[graphics::active_shader_name()].uniforms["view_matrix"].data);
+    // mgl::mat4 view_matrix = std::get<mgl::mat4>(graphics::shader_info()[graphics::active_shader_name()].uniforms["view_matrix"].data);
 
-    for (auto &set_piece: graphics::active_scene().set_pieces)
-    {
-        mgl::mat4 model_matrix = mgl::model_from_xform_state(set_piece.xform_state);
-        mgl::mat4 model_view_matrix =  model_matrix * view_matrix; // reverse order. 
-        mgl::mat3 model_normal_matrix = mgl::normal_transform(model_matrix);
+    // for (auto &set_piece: graphics::active_scene().set_pieces)
+    // {
+    //     mgl::mat4 model_matrix = mgl::model_from_xform_state(set_piece.xform_state);
+    //     mgl::mat4 model_view_matrix =  model_matrix * view_matrix; // reverse order. 
+    //     mgl::mat3 model_normal_matrix = mgl::normal_transform(model_matrix);
 
-        update_uniform("model_matrix", model_matrix);
-        update_uniform("model_normal_matrix", model_normal_matrix);
+    //     update_uniform("model_matrix", model_matrix);
+    //     update_uniform("model_normal_matrix", model_normal_matrix);
 
-        if (active_shader_id == graphics::shaders()["gouraud"])
-        {
-            asset::Texture& texture = asset::texture_data()[set_piece.texture_name];
-            glActiveTexture(GL_TEXTURE0 + texture.gl_texture_frame);
-            glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
-            update_uniform("texture_uniform",  texture.gl_texture_frame);
-        }
+    //     if (active_shader_id == graphics::shaders()["gouraud"])
+    //     {
+    //         asset::Texture& texture = asset::texture_data()[set_piece.texture_name];
+    //         glActiveTexture(GL_TEXTURE0 + texture.gl_texture_frame);
+    //         glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
+    //         update_uniform("texture_uniform",  texture.gl_texture_frame);
+    //     }
 
-        //@FIXME: for now, we invoke draw after every object. 
-        const auto& object_data = asset::obj_data()[set_piece.model_name];
-        glDrawArrays(GL_TRIANGLES,0, object_data.vertices.size());
-    }
+    //     //@FIXME: for now, we invoke draw after every object. 
+    //     const auto& object_data = asset::obj_data()[set_piece.model_name];
+    //     glDrawArrays(GL_TRIANGLES,0, object_data.vertices.size());
+    // }
 
 
     render_centroid_axes();
@@ -268,9 +274,9 @@ void graphics::render_game_3d()
 void graphics::render_centroid_axes()
 {
 
-    mgl::vec4 x_axis_end{100.0f,0.0f,0.0f, 1.0f};
-    mgl::vec4 y_axis_end{0.0f,100.0f,0.0f, 1.0f};
-    mgl::vec4 z_axis_end{0.0f,0.0f,100.0f, 1.0f};
+    mgl::vec4 x_axis_end{1.0f,0.0f,0.0f, 1.0f};
+    mgl::vec4 y_axis_end{0.0f,1.0f,0.0f, 1.0f};
+    mgl::vec4 z_axis_end{0.0f,0.0f,1.0f, 1.0f};
     mgl::vec4 zero_start{0.0f,0.0f,0.0f,1.0f};
 
     graphics::set_shader("cel");
@@ -279,10 +285,10 @@ void graphics::render_centroid_axes()
 
     graphics::set_shader("line_position_color");
 
-    x_axis_end = view_matrix * projection_matrix * x_axis_end;
-    y_axis_end = view_matrix * projection_matrix * y_axis_end;
-    z_axis_end = view_matrix * projection_matrix * z_axis_end;
-    zero_start = view_matrix * projection_matrix * zero_start;
+    x_axis_end =  projection_matrix * view_matrix * x_axis_end;
+    y_axis_end =  projection_matrix * view_matrix * y_axis_end;
+    z_axis_end =  projection_matrix * view_matrix * z_axis_end;
+    zero_start =  projection_matrix * view_matrix * zero_start;
 
     mgl::vec4 x_axis_color{1.0f, 0.0f, 0.0f, 1.0f};
     mgl::vec4 y_axis_color{0.0f, 1.0f, 0.0f, 1.0f};
@@ -740,8 +746,7 @@ void graphics::update_uniform(const std::string& uniform_name, uniform_t data)
         {
             fmt::print("[graphics] update_uniform: type mismatch. uniform name: {}\n",uniform.name);
         }
-
-        if constexpr (std::is_same_v<T, mgl::vec4>)
+        else if constexpr (std::is_same_v<T, mgl::vec4>)
         {
             uniform.data = data;
             glUniform4fv(uniform.location, 1, mgl::value_ptr(std::get<mgl::vec4>(uniform.data)));
@@ -815,13 +820,13 @@ void graphics::render_3d_left_handed_perspective(const uint32_t active_shader_id
     const bool row_major = true;
 
     //@Note: view matrix is identity (i.e. opengl_left_handed, mgl::vec3(0.0,0.0,0.)
-    mgl::vec3 camera_position{0.0f,0.0f, 0.0f};
-    mgl::vec3 target_position{0.0f, 0.0f, -1.0f};
+    mgl::vec3 camera_position{0.0f,0.0f, 2.0f};
+    mgl::vec3 target_position{0.0f, 0.0f, 0.0f};
     mgl::vec3 up_vector{0.0f, 1.0f, 0.0f};
     mgl::mat4 view_matrix = mgl::look_at(camera_position, target_position, up_vector);
    
     // @Note: near_z and far_z should be positive in this context (DISTANCE to camera).
-    const float fov_in_degrees     = 90.0f;
+    const float fov_in_degrees     = 45.0f;
     const float perspective_near_z = 0.1f;
     const float perspective_far_z  = 100.0f;
     const float aspect_ratio = static_cast<float>(globals.window_width) / static_cast<float>(globals.window_height);
