@@ -313,7 +313,7 @@ static void init_key_mapping_array(io::Platform_Key_Map& platform_key_map)
 // private
 static void insert_input_in_queue()
 {
-    // keys are the keys we are watching. we evaluate the state of the keyboard.    
+    // keys here are evaluated keys of the keyboard.    
     int keys[6] = {
         VK_UP,
         VK_DOWN,
@@ -322,7 +322,7 @@ static void insert_input_in_queue()
         VK_LBUTTON,
         VK_RBUTTON
     };
-
+    // make current keyboard the previous keyboard, so we can overwrite the "previous" keyboard)
     std::swap(io::keyboard_state(), io::prev_keyboard_state());
 
     for (auto key: keys)

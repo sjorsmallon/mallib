@@ -127,9 +127,9 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
 
 void graphics::update_active_camera(io::Mouse_State &mouse_state)
 {
-    static float camera_z_accumulator = 2.0f;
+    static float camera_z_accumulator = 5.0f;
     static float x_rotation_accumulator = 0.0f;
-    static float z_rotation_accumulator = 0.0f;
+    static float y_rotation_accumulator = 0.0f;
 
     using namespace cam;
 
@@ -140,10 +140,10 @@ void graphics::update_active_camera(io::Mouse_State &mouse_state)
         {
             if (mouse_state.lmb_pressed)
             {
-                x_rotation_accumulator += mouse_state.pos_delta_x * 0.5f;
+                x_rotation_accumulator += mouse_state.pos_delta_x * 0.005f;
                 x_rotation_accumulator =  fmod(x_rotation_accumulator, 360.0f);
-                z_rotation_accumulator += mouse_state.pos_delta_y * 0.5f;
-                z_rotation_accumulator =  fmod(z_rotation_accumulator, 360.0f);
+                y_rotation_accumulator += mouse_state.pos_delta_y * 0.005f;
+                y_rotation_accumulator =  fmod(y_rotation_accumulator, 360.0f);
             }
    
             if (mouse_state.scroll_delta_y != 0.0f)
@@ -152,24 +152,16 @@ void graphics::update_active_camera(io::Mouse_State &mouse_state)
             }
 
             mgl::vec3 camera_position{0.0f,0.0f, camera_z_accumulator};
-            mgl::vec3 target_position{0.0f, 0.0f, -1.0f}; 
-            mgl::vec3 up_vector{0.0f, 1.0f, 0.0f};        
-            mgl::mat4 x_rotation_matrix = mgl::rotate(mgl::mat4_identity(), x_rotation_accumulator, mgl::vec3{1.0f, 0.0f, 0.0f});
-            mgl::mat4 z_rotation_matrix = mgl::rotate(mgl::mat4_identity(), z_rotation_accumulator, mgl::vec3{0.0f, 0.0f, 1.0f});                   
+            mgl::vec3 target_position{0.0f, 0.0f, 0.0f}; 
+            mgl::vec3 up_vector{0.0f, 1.0f, 0.0f}; 
 
-            glm::mat4 actual_x_rotation_matrix = glm::rotate(static_cast<float>(x_rotation_accumulator), glm::vec3(1.0f, 0.0f, 0.0f));
-            glm::mat4 actual_z_rotation_matrix = glm::rotate(static_cast<float>(z_rotation_accumulator), glm::vec3(0.0f, 0.0f, 1.0f));
+            mgl::mat4 x_rotation_matrix = mgl::rotate(mgl::mat4_identity(), y_rotation_accumulator, mgl::vec3{1.0f, 0.0f, 0.0f});
+            mgl::mat4 y_rotation_matrix = mgl::rotate(mgl::mat4_identity(), x_rotation_accumulator, mgl::vec3{0.0f, 1.0f, 0.0f});                   
 
+            mgl::mat4 rotation_matrix = y_rotation_matrix * x_rotation_matrix;
 
-            fmt::print("my x matrix: {}\n", x_rotation_matrix);
-            fmt::print("actual x matrix: {}\n", glm::to_string(actual_x_rotation_matrix));
-            fmt::print("my z matrix: {}\n", z_rotation_matrix);
-            fmt::print("actual z matrix: {}\n", glm::to_string(actual_z_rotation_matrix));
-
-
-                
-            // up_vector       = mgl::make_vec3(rotation_matrix * mgl::make_vec4(up_vector, 1.0f));
-            // camera_position = mgl::make_vec3(rotation_matrix * mgl::make_vec4(camera_position, 1.0f));
+            up_vector       = mgl::make_vec3(rotation_matrix * mgl::make_vec4(up_vector, 1.0f));
+            camera_position = mgl::make_vec3(rotation_matrix * mgl::make_vec4(camera_position, 1.0f));
 
             mgl::mat4 view_matrix = mgl::look_at(camera_position, target_position, up_vector);
 
@@ -179,9 +171,6 @@ void graphics::update_active_camera(io::Mouse_State &mouse_state)
             const float perspective_far_z  = 200.0f;
             const float aspect_ratio = static_cast<float>(globals.window_width) / static_cast<float>(globals.window_height);
             mgl::mat4 projection_matrix = mgl::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
-
-
-            // glm::mat4  actual_projection_matrix = glm::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
 
             update_uniform("projection_matrix", projection_matrix);
             update_uniform("view_matrix", view_matrix);
@@ -226,7 +215,7 @@ void graphics::render_game_3d()
     uint32_t active_shader_id = graphics::active_shader_id();
     // auto defer_shader_state = On_Leaving_Scope([]{graphics::set_shader("gouraud");});
 
-    render_3d_left_handed_perspective(active_shader_id); // perspective matrix.
+    // render_3d_left_handed_perspective(active_shader_id); // perspective matrix.
 
     // if (active_shader_id == graphics::shaders()["gouraud"])
     // {

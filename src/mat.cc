@@ -96,15 +96,6 @@ mgl::mat4 mgl::rotate(mgl::mat4& lhs, const float angle, const mgl::vec3& input_
     // return Result;
 
 
-
-
-// mgl::rotate(mgl::mat4& matrix, )
-// {
-
-// }
-
-
-
 // Mat4 mat::scale(const Mat4& matrix, const float scale_factor)
 // {
 //     mat4 matrix{};

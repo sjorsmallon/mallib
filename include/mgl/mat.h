@@ -258,7 +258,6 @@ inline mgl::mat4 mgl::look_at(const vec3& eye, const vec3& target, const vec3& u
    vec3 right   = mgl::cross(forward, up_norm);
    vec3 new_up  = mgl::cross(right, forward);
 
-
    // The up vector must not be parallel to the line of sight from the
    //           eye point to the reference point.  
    // assert(!(up_norm == forward));
@@ -287,8 +286,6 @@ inline mgl::mat4 mgl::look_at(const vec3& eye, const vec3& target, const vec3& u
 
 
    return result;
-
-
 }
    
 
@@ -302,7 +299,6 @@ inline mgl::vec4 operator*(const float lhs, mgl::vec4& rhs)
 inline mgl::vec4 operator*(mgl::mat4& lhs, const mgl::vec4& rhs)
 {
     mgl::vec4 result{};
-
 
     // row major:
     // result.x = mgl::dot(rhs, mgl::vec4{lhs[0][0], lhs[0][1], lhs[0][2], lhs[0][3]});
