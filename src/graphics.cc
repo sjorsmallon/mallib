@@ -154,7 +154,9 @@ void graphics::update_active_camera(io::Mouse_State &mouse_state)
             mgl::vec3 camera_position{0.0f,0.0f, camera_z_accumulator};
             mgl::vec3 target_position{0.0f, 0.0f, -1.0f}; 
             mgl::vec3 up_vector{0.0f, 1.0f, 0.0f};        
-            mgl::mat4 rotation_matrix = mgl::rotate(mgl::mat4_identity(), x_rotation_accumulator, 0, z_rotation_accumulator);
+            mgl::mat4 x_rotation_matrix = mgl::rotate(mgl::mat4_identity(), x_rotation_accumulator, mgl::vec3{1.0f, 0.0f, 0.0f});
+            mgl::mat4 z_rotation_matrix = mgl::rotate(mgl::mat4_identity(), z_rotation_accumulator, mgl::vec3{0.0f, 0.0f, 1.0f});
+
 
             glm::mat4 actual_rotation_matrix = glm::rotate(static_cast<float>(x_rotation_accumulator), glm::vec3(0.0f, 0.0f, 1.0f)) *  // z
                                                glm::rotate(static_cast<float>(z_rotation_accumulator), glm::vec3(1.0f, 0.0f, 0.0f)); // x
@@ -811,7 +813,7 @@ void graphics::render_2d_left_handed_dc(const uint32_t active_shader_id)
 
 
     mgl::mat4 projection_matrix = mgl::ortho(left, right, top, bot, z_near, z_far); 
-    glUniformMatrix4fv(glGetUniformLocation(graphics::shaders()["text"], "projection_matrix"), 1, row_major, &projection_matrix[0][0]);
+    update_uniform("text", projection_matrix);
 }
 
 void graphics::render_3d_left_handed_perspective(const uint32_t active_shader_id)

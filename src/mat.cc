@@ -42,76 +42,74 @@
 // }
 
 
-mgl::mat4 mgl::rotate(mgl::mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z)
-{
-    // the matrix should be in identity.
-    matrix = mgl::mat4_identity();
 
-    float rad_x = degrees_x * (PI / 180.0f);
-    float rad_y = degrees_y * (PI / 180.0f);
-    float rad_z = degrees_z * (PI / 180.0f);
-
-    float cosx = cos(rad_x);
-    float sinx = sin(rad_x);
-    
-    float cosy = cos(rad_y) ;
-    float siny = sin(rad_y);
-    
-    float cosz = cos(rad_z);
-    float sinz = sin(rad_z);
-
-    mgl::mat4 x_axis{1,   0,      0,   0,
-                     0,  cosx, -sinx,  0,
-                     0,  sinx,  cosx,  0,
-                     0,   0,      0,   1};
-    
-    mgl::mat4 y_axis{cosy,  0,   siny,   0,
-                     0,     1,      0,   0,
-                    -siny,  0,    cosy,  0,
-                     0,     0,      0,   1};
-      
-    mgl::mat4 z_axis{cosz, -sinz,   0,   0,
-                sinz,  cosz,   0,   0,
-                0,     0,      1,   0,
-                0,     0,      0,   1};
-    
-    matrix *= z_axis; 
-    matrix *= y_axis;
-    matrix *= x_axis;
-
-    return matrix;
-}
-
-mgl::rotate(mgl::mat4& matrix, const int degrees_x, const int degrees_y, const int degrees_z()
+///----- modeled after glm::rotate (modeled after gl's rotate matrix.)
+///----- lhs will be rotated by the constructed rotation matrix.
+///----- If unsure, pass identity to this function.
+mgl::mat4 mgl::rotate(mgl::mat4& lhs, const float angle, const mgl::vec3& axis)
 {
 
-    const float a = angle;
-    const c = cos(a);
-    const s = sin(a);
+    float cos_angle = cos(a);
+    float sin_angle= sin(a);
 
-    vec<3, T, Q> axis(normalize(v));
-    vec<3, T, Q> temp((T(1) - c) * axis);
+    axis = mgl::normalize(axis);
 
-    mat<4, 4, T, Q> Rotate;
-    Rotate[0][0] = c + temp[0] * axis[0];
-    Rotate[0][1] = temp[0] * axis[1] + s * axis[2];
-    Rotate[0][2] = temp[0] * axis[2] - s * axis[1];
+    mgl::vec3 temp =  (1.0f - cos_angle) * axis;
 
-    Rotate[1][0] = temp[1] * axis[0] - s * axis[2];
-    Rotate[1][1] = c + temp[1] * axis[1];
-    Rotate[1][2] = temp[1] * axis[2] + s * axis[0];
+    mgl::mat4 rotation_matrix = mgl::mat4_identity();
 
-    Rotate[2][0] = temp[2] * axis[0] + s * axis[1];
-    Rotate[2][1] = temp[2] * axis[1] - s * axis[0];
-    Rotate[2][2] = c + temp[2] * axis[2];
+    rotation_matrix[0][0] = cos_angle + (temp.x * axis.x);
+    rotation_matrix[1][0] = (temp.x * axis.y) + (sin_angle * axis.z);
+    rotation_matrix[2][0] = (temp.x * axis.z) - (sin_angle * axis.y);
 
-    mat<4, 4, T, Q> Result;
-    Result[0] = m[0] * Rotate[0][0] + m[1] * Rotate[0][1] + m[2] * Rotate[0][2];
-    Result[1] = m[0] * Rotate[1][0] + m[1] * Rotate[1][1] + m[2] * Rotate[1][2];
-    Result[2] = m[0] * Rotate[2][0] + m[1] * Rotate[2][1] + m[2] * Rotate[2][2];
-    Result[3] = m[3];
-    return Result;
+    rotation_matrix[0][1] = (temp.y * axis.x) - (sin_angle * axis.z);
+    rotation_matrix[1][1] = cos_angle + (temp.y * axis.y);
+    rotation_matrix[2][1] = (temp.y * axis.z) + (sin_angle * axis.z);
+
+    rotation_matrix[0][2] = (temp.z * axis.x) + (sin_angle * axis.y);
+    rotation_matrix[1][2] = (temp.z * axis.y) - (sin_angle * axis.x);
+    rotation_matrix[2][2] = cos_angle + (temp.z * axis.z);
+
+
+
+    // Result[0] = m[0] * Rotate[0][0] + m[1] * Rotate[0][1] + m[2] * Rotate[0][2];
+    // Result[1] = m[0] * Rotate[1][0] + m[1] * Rotate[1][1] + m[2] * Rotate[1][2];
+    // Result[2] = m[0] * Rotate[2][0] + m[1] * Rotate[2][1] + m[2] * Rotate[2][2];
+    // Result[3] = m[3];
+
+    // result 
+
+    return rotation_matrix;
+
 }
+
+// column major!
+    // rotation_matrix[0][0] = cos_angle + temp[0] * axis[0];
+    // rotation_matrix[0][1] = temp[0] * axis[1] + s * axis[2];
+    // rotation_matrix[0][2] = temp[0] * axis[2] - s * axis[1];
+
+    // rotation_matrix[1][0] = temp[1] * axis[0] - s * axis[2];
+    // rotation_matrix[1][1] = cos_angle + temp[1] * axis[1];
+    // rotation_matrix[1][2] = temp[1] * axis[2] + s * axis[0];
+
+    // rotation_matrix[2][0] = temp[2] * axis[0] + s * axis[1];
+    // rotation_matrix[2][1] = temp[2] * axis[1] - s * axis[0];
+    // rotation_matrix[2][2] = cos_angle + temp[2] * axis[2];
+
+    // mat<4, 4, T, Q> Result;
+    // Result[0] = m[0] * Rotate[0][0] + m[1] * Rotate[0][1] + m[2] * Rotate[0][2];
+    // Result[1] = m[0] * Rotate[1][0] + m[1] * Rotate[1][1] + m[2] * Rotate[1][2];
+    // Result[2] = m[0] * Rotate[2][0] + m[1] * Rotate[2][1] + m[2] * Rotate[2][2];
+    // Result[3] = m[3];
+    // return Result;
+
+
+
+
+// mgl::rotate(mgl::mat4& matrix, )
+// {
+
+// }
 
 
 
