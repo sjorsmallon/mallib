@@ -1,32 +1,33 @@
-// #ifndef INCLUDED_CVAR_
-// #define INCLUDED_CVAR_
-// #include <map>
+#ifndef INCLUDED_CVAR_
+#define INCLUDED_CVAR_
+#include <map>
 
-// enum class cvar_type : int32_t
-// {
-// 	CT_BOOL =       0,  // 0
-// 	CT_FLOAT = 1 << 0,  // 1
-// 	CT_INT =   1 << 1,  // 2
-// 	CT_STRING  1 << 2   // 4
-// };
-
-// // struct cvar
-// // {
-
-// // }
-
-// static void make_cvar(const char* name, const char* value, int32_t flags, cvar_t type, ...);
+enum class Cvar_Flags : int64_t
+{
+	CVAR_SERIALIZE =       0,  // 0
+	CVAR_NOCHEAT     = 1 << 0,  // 1
+	CVAR_CHEAT       = 1 << 1,  // 2
+    CVAR_SOUND       = 1 << 2,  // 4
+    CVAR_RENDERER    = 1 << 3   // 8
+};
 
 
-// namespace cvar
-// {
+using cvar_data_type = std::variant<bool, float, int32_t>;
 
-// 	std::map<std::string, whatever> cvar
+namespace cvar
+{
+	struct Cvar
+	{
+		const char *name;
+		cvar_data_type value;
+		int64_t Cvar_Flags;
+		const char* preview_text;
+	}
 
 	
-// }
+}
 
 
-// #endif
+#endif
 
 
