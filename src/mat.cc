@@ -46,40 +46,32 @@
 ///----- modeled after glm::rotate (modeled after gl's rotate matrix.)
 ///----- lhs will be rotated by the constructed rotation matrix.
 ///----- If unsure, pass identity to this function.
-mgl::mat4 mgl::rotate(mgl::mat4& lhs, const float angle, const mgl::vec3& axis)
+mgl::mat4 mgl::rotate(mgl::mat4& lhs, const float angle, const mgl::vec3& input_axis)
 {
 
-    float cos_angle = cos(a);
-    float sin_angle= sin(a);
+    float cos_angle = cos(angle);
+    float sin_angle= sin(angle);
 
-    axis = mgl::normalize(axis);
+    mgl::vec3 axis = mgl::normalize(input_axis);
 
     mgl::vec3 temp =  (1.0f - cos_angle) * axis;
 
     mgl::mat4 rotation_matrix = mgl::mat4_identity();
 
     rotation_matrix[0][0] = cos_angle + (temp.x * axis.x);
-    rotation_matrix[1][0] = (temp.x * axis.y) + (sin_angle * axis.z);
-    rotation_matrix[2][0] = (temp.x * axis.z) - (sin_angle * axis.y);
+    rotation_matrix[0][1] = (temp.x * axis.y) + (sin_angle * axis.z);
+    rotation_matrix[0][2] = (temp.x * axis.z) - (sin_angle * axis.y);
 
-    rotation_matrix[0][1] = (temp.y * axis.x) - (sin_angle * axis.z);
+    rotation_matrix[1][0] = (temp.y * axis.x) - (sin_angle * axis.z);
     rotation_matrix[1][1] = cos_angle + (temp.y * axis.y);
-    rotation_matrix[2][1] = (temp.y * axis.z) + (sin_angle * axis.z);
-
-    rotation_matrix[0][2] = (temp.z * axis.x) + (sin_angle * axis.y);
-    rotation_matrix[1][2] = (temp.z * axis.y) - (sin_angle * axis.x);
+    rotation_matrix[1][2] = (temp.y * axis.z) + (sin_angle * axis.x);
+   
+    rotation_matrix[2][0] = (temp.z * axis.x) + (sin_angle * axis.y);
+    rotation_matrix[2][1] = (temp.z * axis.y) - (sin_angle * axis.x);
     rotation_matrix[2][2] = cos_angle + (temp.z * axis.z);
 
-
-
-    // Result[0] = m[0] * Rotate[0][0] + m[1] * Rotate[0][1] + m[2] * Rotate[0][2];
-    // Result[1] = m[0] * Rotate[1][0] + m[1] * Rotate[1][1] + m[2] * Rotate[1][2];
-    // Result[2] = m[0] * Rotate[2][0] + m[1] * Rotate[2][1] + m[2] * Rotate[2][2];
-    // Result[3] = m[3];
-
-    // result 
-
-    return rotation_matrix;
+    
+    return rotation_matrix * lhs;
 
 }
 

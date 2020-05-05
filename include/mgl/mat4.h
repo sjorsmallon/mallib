@@ -1,7 +1,7 @@
 #ifndef INCLUDED_mat4_
 #define INCLUDED_mat4_
 
-// ROW MAJOR. otherwise my brain breaks w.r.t. initialization.
+// COLUMN MAJOR
 
 namespace mgl 
 {
@@ -22,43 +22,46 @@ namespace mgl
 };
 
 
-// free mat4 functions.
-//@Todo: is this matmul row major?
+// operator*
 inline mgl::mat4 operator*(mgl::mat4& lhs, const mgl::mat4& rhs)
 {
-    const float *m1Ptr, *m2Ptr;
-    float *dstPtr;
-    mgl::mat4 dst;
 
-    m1Ptr = reinterpret_cast<const float *>(&lhs);
-    m2Ptr = reinterpret_cast<const float *>(&rhs);
-    dstPtr = reinterpret_cast<float *>(&dst);
+    mgl::mat4 result{};
+    float* result_ptr = reinterpret_cast<float *>(&result);
 
-    for (int i = 0; i < 4; i++ ) {
-        for (int j = 0; j < 4; j++ ) {
-            *dstPtr = m1Ptr[0] * m2Ptr[ 0 * 4 + j ]
-            + m1Ptr[1] * m2Ptr[ 1 * 4 + j ]
-            + m1Ptr[2] * m2Ptr[ 2 * 4 + j ]
-            + m1Ptr[3] * m2Ptr[ 3 * 4 + j ];
-            dstPtr++;
-        }
-        m1Ptr += 4;
-    }
-    return dst;
-
-    // mat4 result = {};
-    // for (int row = 0; row != 4; ++row)
+    // row major
+    // for (int col_idx = 0; col_idx < 4; ++col_idx )
     // {
-    //     for (int col = 0; col != 4; ++col)
+    //     for (int row_idx = 0; row_idx < 4; ++row_idx)
     //     {
-            
-    //         result[row][col] = lhs[row][col] * rhs[col][row]
+    //         *result_ptr = lhs_ptr[0] * rhs_ptr[ 0 * 4 + row_idx]
+    //         + lhs_ptr[1] * rhs_ptr[ 1 * 4 + j ]
+    //         + lhs_ptr[2] * rhs_ptr[ 2 * 4 + j ]
+    //         + lhs_ptr[3] * rhs_ptr[ 3 * 4 + j ];
+    //         result_ptr++;
     //     }
+    //     lhs_ptr += 4;
     // }
-    // result[0][0] = lhs[0][0] * lhs[0][0] + lhs[0][1] * rhs[1][0]
-    // result[1][0] = lhs[1][0] * rhs[1][0]
+
+    // column major
+    for (int rhs_col_idx = 0; rhs_col_idx != 4; ++rhs_col_idx)
+    {
+        for (int row_idx = 0; row_idx != 4; ++row_idx)
+        {
+            *result_ptr = lhs[0][row_idx] * rhs[rhs_col_idx][0]
+            + lhs[1][row_idx] * rhs[rhs_col_idx][1]
+            + lhs[2][row_idx] * rhs[rhs_col_idx][2]
+            + lhs[3][row_idx] * rhs[rhs_col_idx][3];
+            result_ptr++;
+        }
+    }
+
+    return result;
 
 }
+
+
+
 
 inline mgl::mat4& operator*=(mgl::mat4& lhs, const float factor)
 {
