@@ -2,6 +2,9 @@
 
 # shortlist TODO
 
+## Unify `_t` to `_type` for POD structures.
+
+
 ## draw Axes of centroid point.
 
 
