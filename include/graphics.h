@@ -22,7 +22,7 @@
 #include <mgl/mat3.h>
 #include <camera.h>
 
-using uniform_t = std::variant<float, int32_t, uint32_t, mgl::ivec2, mgl::vec4, mgl::vec3, mgl::mat4, mgl::mat3>;
+using uniform_type = std::variant<float, int32_t, uint32_t, mgl::ivec2, mgl::vec4, mgl::vec3, mgl::mat4, mgl::mat3>;
 
 namespace graphics
 {
@@ -30,7 +30,7 @@ namespace graphics
 	{
 		int32_t type;
 		std::string name;
-		uniform_t data;
+		uniform_type data;
 		int32_t location;
 	};
 
@@ -55,6 +55,7 @@ namespace graphics
 		void init_opengl();
 		void init_imgui();
 		void init_texture_settings(std::map<std::string, asset::Texture>& textures);
+		void init_cvars();
 
 	//--- active elements.
 	scene::Scene& active_scene();
@@ -79,7 +80,7 @@ namespace graphics
 	
 
 	//--- update (can / ought to be called per-frame)
-	void update_uniform(const std::string& uniform_name, uniform_t data);
+	void update_uniform(const std::string& uniform_name, uniform_type data);
 	void update_active_camera(io::Mouse_State& mouse_state); // camera occupies view & perspective matrices.
 
 

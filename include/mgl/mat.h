@@ -21,6 +21,16 @@ namespace mgl
     static inline const float DEG2RAD = mgl::PI / 180.0f;
     static inline const float RAD2DEG = 180.0f / mgl::PI;
 
+    inline float radians(float angle_in_degrees)
+    {
+      return angle_in_degrees * DEG2RAD;
+    }
+
+    inline float degrees(float angle_in_radians)
+    {
+      return angle_in_radians * RAD2DEG;
+    }
+
     // mat4
     float* value_ptr(mgl::mat4& lhs);
     mgl::mat4 model_from_xform_state(const Xform_State& state);
@@ -226,6 +236,7 @@ inline mgl::mat4 mgl::perspective(const float fov_y,
     mgl::mat4 matrix = {}; // identity?
 
     const float tan_half_fov = tanf(fov_y * 0.5f);
+
     // row major
     // matrix[0][0] = 1.0f /(aspect_ratio * tan_half_fov);
     // matrix[1][1] = 1.0f / tan_half_fov;

@@ -22,15 +22,16 @@ namespace game
 
 	// initing
 	void init();
-	void init_audio();
-	void init_font();
-	void init_graphics();
+		void init_audio();
+		void init_font();
+		void init_graphics();
+		void init_cvars();
 
 	// loading
-	void load_assets();
-	void load_audio();
-	void load_shaders();
-	void load_models();
+		void load_assets();
+		void load_audio();
+		void load_shaders();
+		void load_models();
 
 	// deiniting
 	void deinit_everything();

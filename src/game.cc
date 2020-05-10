@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include <cvar_system.h>
+
 #include <sound.h>
 #include <graphics.h>
 #include <asset.h>
@@ -23,10 +25,25 @@ void game::init()
     sound::init_sound();
     font::init_font();
     menu::init_menu();
+    game::init_cvars();
     // load
     game::load_assets();
     game::load_shaders();
     // main_loop
+}
+
+void game::init_cvars()
+{
+    using namespace cvar;
+    cvar::register_cvar_float("r_fov",   float{90.0f},  (Cvar_Flags::CVAR_RENDERER | Cvar_Flags::CVAR_SERIALIZE), "player field-of-view.", 45.0f, 90.0f, {});
+    cvar::register_cvar_float("r_znear", float{0.01f},  (Cvar_Flags::CVAR_RENDERER), "z-near value in clip space (projection matrix)", 0.01f, 0.01f, {});
+    cvar::register_cvar_float("r_zfar",  float{200.0f}, (Cvar_Flags::CVAR_RENDERER), "z-near value in clip space (projection matrix)", 200.0f, 1000.0f, {});
+
+    cvar::register_cvar_float("pm_forwardspeed",  float{1.0f}, (Cvar_Flags::CVAR_NOFLAGS), "forwards player movement speed.",  0.0f, 2.0f, {});
+    cvar::register_cvar_float("pm_strafespeed",   float{1.0f}, (Cvar_Flags::CVAR_NOFLAGS), "sideways player movement speed.",  0.0f, 2.0f, {});
+    cvar::register_cvar_float("pm_backwardspeed", float{1.0f}, (Cvar_Flags::CVAR_NOFLAGS), "backwards player movement speed.", 0.0f, 2.0f, {});
+    // cvar::register_cvar("pm_look_sensitivity_x", )
+    // cvar::register_cvar("pm_look_sensitivity_y")
 }
 
 void game::load_shaders()

@@ -18,9 +18,13 @@
 #include <imgui/imgui_impl_win32.h>
 #include <imgui/imgui_impl_opengl3.h>
 
+// common / shared / global
+#include <globals.h>
+#include <cvar_system.h>
+
+
 //--- file includes to sort out.
 #include <on_leaving_scope.h>
-#include <globals.h>
 #include <file.h>
 #include <scene.h>
 #include <game.h> // game time?
@@ -60,6 +64,7 @@ void graphics::init_graphics()
     graphics::init_imgui();
     graphics::clear_buffer_bits();
 
+    graphics::init_cvars();
 }
 
 // static
@@ -86,7 +91,7 @@ void graphics::init_imgui()
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -95,6 +100,7 @@ void graphics::init_imgui()
     ImGui_ImplWin32_Init(graphics::global_Win32_context().window_handle);
     std::string glsl_version = "#version 430";
     ImGui_ImplOpenGL3_Init(glsl_version.c_str());
+
 }
 
 void graphics::init_texture_settings(std::map<std::string, asset::Texture>& textures)
@@ -124,6 +130,8 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
     }
     //@TODO: generate mipmaps.
 }
+
+
 
 void graphics::update_active_camera(io::Mouse_State &mouse_state)
 {
@@ -166,7 +174,7 @@ void graphics::update_active_camera(io::Mouse_State &mouse_state)
             mgl::mat4 view_matrix = mgl::look_at(camera_position, target_position, up_vector);
 
             // @Note: near_z and far_z should be positive in this context (DISTANCE to camera).
-            const float fov_in_degrees     = 45.0f;
+            const float fov_in_degrees     = cvar::get_float("r_fov");
             const float perspective_near_z = 0.1f;
             const float perspective_far_z  = 200.0f;
             const float aspect_ratio = static_cast<float>(globals.window_width) / static_cast<float>(globals.window_height);
@@ -183,7 +191,19 @@ void graphics::update_active_camera(io::Mouse_State &mouse_state)
         }
         case Control_Mode::CAM_FPS:
         {
+            // yaw   += xoffset;
+            // pitch += yoffset;  
 
+            if(pitch >  89.0f) pitch =  89.0f;
+            if(pitch < -89.0f) pitch = -89.0f;
+
+            mgl::vec3 direction{};
+            direction.x = cos(mgl::radians(yaw)) * cos(mgl::radians(pitch));
+            direction.y = sin(mgl::radians(pitch));
+            direction.z = sin(mgl::radians(yaw)) * cos(mgl::radians(pitch));
+            mgl::vec3 camera_front = glm::normalize(direction);
+
+            
             
             break;
         }
@@ -215,7 +235,9 @@ void graphics::render_game_3d()
     uint32_t active_shader_id = graphics::active_shader_id();
     // auto defer_shader_state = On_Leaving_Scope([]{graphics::set_shader("gouraud");});
 
-    // render_3d_left_handed_perspective(active_shader_id); // perspective matrix.
+
+    //@IC: keep this disabled for now. camera is updated.
+    //render_3d_left_handed_perspective(active_shader_id); // perspective matrix.
 
     // if (active_shader_id == graphics::shaders()["gouraud"])
     // {
@@ -336,6 +358,11 @@ void graphics::render_ui()
         ImGui::Begin("Menu");                        
         ImGui::Text("Render Settings");
 
+        float fov_value = cvar::get_float("r_fov");
+        if (ImGui::SliderFloat("FOV", &fov_value, 45.0f, 90.0f, "%.3f", 1.0f))
+        {
+            cvar::set_float("r_fov", fov_value);
+        }
         // List box
         static int selected_shader = 1;
         ImGui::ListBox("Shader Mode", &selected_shader, shader_names.data(), shader_names.size(), 4);
@@ -722,7 +749,7 @@ uint32_t graphics::shader_type_from_extension(const std::string& filename)
 }
 
 //--- Pre:  active shader.
-void graphics::update_uniform(const std::string& uniform_name, uniform_t data)
+void graphics::update_uniform(const std::string& uniform_name, uniform_type data)
 {
     auto& uniforms = graphics::shader_info()[graphics::active_shader_name()].uniforms;
     if (uniforms.find(uniform_name) == uniforms.end())
@@ -819,9 +846,9 @@ void graphics::render_3d_left_handed_perspective(uint32_t active_shader_id)
     mgl::mat4 view_matrix = mgl::look_at(camera_position, target_position, up_vector);
    
     // @Note: near_z and far_z should be positive in this context (DISTANCE to camera).
-    const float fov_in_degrees     = 45.0f;
+    const float fov_in_degrees = cvar::get_float("r_fov");
     const float perspective_near_z = 0.1f;
-    const float perspective_far_z  = 100.0f;
+    const float perspective_far_z  = 1000.0f;
     const float aspect_ratio = static_cast<float>(globals.window_width) / static_cast<float>(globals.window_height);
     mgl::mat4 projection_matrix = mgl::perspective(fov_in_degrees, aspect_ratio, perspective_near_z, perspective_far_z);
 
@@ -834,7 +861,7 @@ void graphics::render_3d_left_handed_perspective(uint32_t active_shader_id)
     glm::vec3 actual_target_position(0.0f, 0.0f, 0.0f);
     glm::vec3 actual_up_vector(0.0f, 1.0f, 0.0);
 
-    glm::mat4 actual_view_matrix = glm::lookAt(actual_camera_position, actual_target_position, actual_up_vector);
+    // glm::mat4 actual_view_matrix = glm::lookAt(actual_camera_position, actual_target_position, actual_up_vector);
 
     // fmt::print("my view matrix: {}\n", view_matrix);
     // fmt::print("actual view matrix: {}\n", glm::to_string(actual_view_matrix));
