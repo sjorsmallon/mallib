@@ -2,11 +2,16 @@
 #define INCLUDED_SHADER_MANAGER_
 
 
-
-
-
-struct Shader_Manager
+namespace mgr
 {
+	class Shader_Manager
+	{
+
+		public:
+			Shader_Manager() = default;
+			
+
+	};
 	
 };
 

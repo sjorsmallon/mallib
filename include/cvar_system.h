@@ -31,12 +31,13 @@ namespace cvar
 	enum Cvar_Flags : int64_t
 	{
 		CVAR_NOFLAGS	 = 0,       // 0
-		CVAR_NOCHEAT     = 1 << 0,  // 1
-		CVAR_CHEAT       = 1 << 1,  // 2
-	    CVAR_SOUND       = 1 << 2,  // 4
-	    CVAR_RENDERER    = 1 << 3,  // 8
-		CVAR_SERIALIZE   = 1 << 4,  // 0
-
+		CVAR_SERIALIZE   = 1 << 0,  // 1
+		CVAR_NOCHEAT     = 1 << 1,  // 2
+		CVAR_CHEAT       = 1 << 2,  // 4
+	    CVAR_SOUND       = 1 << 3,  // 8
+	    CVAR_RENDERER    = 1 << 4,  // 16
+	    CVAR_SETTINGS    = 1 << 5,  // 32
+	    CVAR_SYSTEM      = 1 << 6   // 64
 	};
 
 	///--- The Cvar Itself.

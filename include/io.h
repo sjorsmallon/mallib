@@ -20,15 +20,15 @@ namespace io
 	enum class Button : uint16_t
 	{
 		KEY_W       = 0,
-		KEY_A       = 1,
-		KEY_S       = 2,
-		KEY_D       = 4,
-		KEY_UP      = 8,
-		KEY_DOWN    = 16,
-		KEY_LEFT    = 32,
-		KEY_RIGHT   = 64,
-		MOUSE_LEFT  = 128,
-		MOUSE_RIGHT = 256,
+		KEY_A       = 0 << 1,
+		KEY_S       = 0 << 2,
+		KEY_D       = 0 << 3,
+		KEY_UP      = 0 << 4,
+		KEY_DOWN    = 0 << 5,
+		KEY_LEFT    = 0 << 6,
+		KEY_RIGHT   = 0 << 7,
+		MOUSE_LEFT  = 0 << 8,
+		MOUSE_RIGHT = 0 << 9
 	};
 
 	struct Keyboard_State 

@@ -42,8 +42,13 @@ void game::init_cvars()
     cvar::register_cvar_float("pm_forwardspeed",  float{1.0f}, (Cvar_Flags::CVAR_NOFLAGS), "forwards player movement speed.",  0.0f, 2.0f, {});
     cvar::register_cvar_float("pm_strafespeed",   float{1.0f}, (Cvar_Flags::CVAR_NOFLAGS), "sideways player movement speed.",  0.0f, 2.0f, {});
     cvar::register_cvar_float("pm_backwardspeed", float{1.0f}, (Cvar_Flags::CVAR_NOFLAGS), "backwards player movement speed.", 0.0f, 2.0f, {});
-    // cvar::register_cvar("pm_look_sensitivity_x", )
-    // cvar::register_cvar("pm_look_sensitivity_y")
+
+    cvar::register_cvar_float("io_look_sensitivity_x", float{0.005f}, (Cvar_Flags::CVAR_SETTINGS), "horizontal look sensitivity.", float{0.001f}, float{0.01f}, {});
+    cvar::register_cvar_float("io_look_sensitivity_y", float{0.005f}, (Cvar_Flags::CVAR_SETTINGS), "horizontal look sensitivity.", float{0.001f}, float{0.01f}, {});
+
+
+    cvar::register_cvar_int("sys_engine_hz", int32_t{144}, (Cvar_Flags::CVAR_SYSTEM), "engine tick rate.", int32_t{30}, int32_t{200}, {});
+
 }
 
 void game::load_shaders()

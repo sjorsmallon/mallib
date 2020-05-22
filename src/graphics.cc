@@ -133,11 +133,14 @@ void graphics::init_texture_settings(std::map<std::string, asset::Texture>& text
 
 
 
-void graphics::update_active_camera(io::Mouse_State &mouse_state)
+void graphics::update_active_camera(const io::Mouse_State& mouse_state, const io::Keyboard_State& keyboard_state)
 {
     static float camera_z_accumulator = 5.0f;
     static float x_rotation_accumulator = 0.0f;
     static float y_rotation_accumulator = 0.0f;
+
+    static float yaw = 0.0f; // left - right
+    static float pitch = 0.0f; // up - down
 
     using namespace cam;
 
@@ -191,8 +194,11 @@ void graphics::update_active_camera(io::Mouse_State &mouse_state)
         }
         case Control_Mode::CAM_FPS:
         {
-            // yaw   += xoffset;
-            // pitch += yoffset;  
+
+
+
+            yaw   += mouse_state.pos_delta_x * 0.005f;
+            pitch += mouse_state.pos_delta_y * 0.005f;  
 
             if(pitch >  89.0f) pitch =  89.0f;
             if(pitch < -89.0f) pitch = -89.0f;
@@ -201,8 +207,16 @@ void graphics::update_active_camera(io::Mouse_State &mouse_state)
             direction.x = cos(mgl::radians(yaw)) * cos(mgl::radians(pitch));
             direction.y = sin(mgl::radians(pitch));
             direction.z = sin(mgl::radians(yaw)) * cos(mgl::radians(pitch));
-            mgl::vec3 camera_front = glm::normalize(direction);
+            mgl::vec3 camera_front = mgl::normalize(direction);
 
+            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+                cameraPos += cameraSpeed * cameraFront;
+            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+                cameraPos -= cameraSpeed * cameraFront;
+            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+                cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+                cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
             
             
             break;

@@ -81,7 +81,7 @@ namespace graphics
 
 	//--- update (can / ought to be called per-frame)
 	void update_uniform(const std::string& uniform_name, uniform_type data);
-	void update_active_camera(io::Mouse_State& mouse_state); // camera occupies view & perspective matrices.
+	void update_active_camera(const io::Mouse_State& mouse_state, const io::Keyboard_State& keyboard_state); // camera occupies view & perspective matrices.
 
 
 
