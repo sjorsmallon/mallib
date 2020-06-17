@@ -1,5 +1,19 @@
 // #include <platform.h>
 
+// int main()
+// {
+// 	// // uint32_t lower_bound = 2 << ;
+// 	// // uint32_t upper_bound = 
+// 	// // sys::set_physical_memory()
+
+// 	// pf::Window* window = pf::create_window();
+	
+
+// 	// common::load();
+
+// }
+
+
 // extern Globals globals;
 
 // int main(int* argc, char* argv[])
