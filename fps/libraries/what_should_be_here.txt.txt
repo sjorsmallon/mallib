@@ -1,0 +1,3 @@
+fmtd.lib
+glfw3.lib
+imgui.lib
