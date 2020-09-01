@@ -1,4 +1,4 @@
-#include "glfw_wrapper.h"
+#include "window_manager.h"
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
@@ -136,7 +136,7 @@ namespace
 // window_width,
 // vsync_enabled?
 // all of the callbacks!
-GLFWwindow* glfw_init_main_window(const int window_width, const int window_height)
+GLFWwindow* glfw_init_window(const char* title, const int window_width, const int window_height)
 {
     ///--- init glfw ----
     if (!glfwInit())
@@ -151,12 +151,12 @@ GLFWwindow* glfw_init_main_window(const int window_width, const int window_heigh
     // what version of openGL do we want?
     // const char* glsl_version = "#version 430";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
     glfwWindowHint(GLFW_FOCUSED, GLFW_TRUE);
     // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(window_width, window_height, "mvmt_fps", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(window_width, window_height, title, nullptr, nullptr);
     if (nullptr == window)
     {
         logr::report_error("window is nullptr");
@@ -182,8 +182,6 @@ GLFWwindow* glfw_init_main_window(const int window_width, const int window_heigh
     return window;
 }
 
-
-
 GLFWwindow* glfw_init_debug_window(const int debug_window_width, const int debug_window_height, GLFWwindow* parent_window)
 {   
     // focus cursor on original window
@@ -208,7 +206,7 @@ GLFWwindow* glfw_init_debug_window(const int debug_window_width, const int debug
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
 
-    const char* glsl_version = "#version 430";
+    const char* glsl_version = "#version 450";
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
     // Setup Platform/Renderer bindings

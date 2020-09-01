@@ -1,9 +1,10 @@
-#include "shader.h"
-#include <glad/glad.h>
-
+#include "shader_manager.h"
 #include <string>
 #include <vector>
+
+#include <glad/glad.h>
 #include <log/log.h>
+#include<glm/gtc/type_ptr.hpp>
 #include "file.h"
 
 namespace 
@@ -259,18 +260,15 @@ namespace
         for (auto &uniform_name: shader.uniform_names)
         {
             shader.uniforms[uniform_name].location = glGetUniformLocation(shader.program_id, uniform_name.c_str());
+            if (shader.uniforms[uniform_name].location == -1) logr::report_error("[Uniform] {} : UNKNOWN LOCATION!\n", uniform_name);
         }
 
         glUseProgram(0);
 
     }
-
-
 }
 
-
 //@IC(Sjors):the "none" shader is not any shader.
-//@Dependencies: Shader_Manager?
 void bind_shader(Shader_Manager& shader_manager, const char* shader_name)
 {
     uint32_t shader_id = 0; 
@@ -297,13 +295,13 @@ uint32_t load_shader(Shader_Manager& shader_manager, const std::string& shader_n
     glLinkProgram(shader_program);
 
     if (!get_shader_link_success(shader_program)) logr::report_error("[graphics] error: shader {} could not be linked\n", shader_folder_path);
-
+    
     // Detach shaders in any case. we do not need them after they have been attached.
     for (const auto& shader_id: shader_ids)
         glDetachShader(shader_program, shader_id);
-
+    
     // gather uniforms & attributes.
-    //@IC: implicit creation!
+    //@FIXME: implicit creation!
     Shader& shader = shader_manager.shaders[shader_name];
     shader.name = shader_name;
     shader.program_id =  shader_program;
@@ -313,4 +311,70 @@ uint32_t load_shader(Shader_Manager& shader_manager, const std::string& shader_n
     
     bind_shader(shader_manager, "none");
     return shader_program;
+}
+
+//--- this function assumes the target shader is bound before uniforms are updated, and will break 
+// and warn the user if that is not the case.
+void set_uniform(Shader_Manager& shader_manager, const std::string& uniform_name, uniform_t data)
+{
+    auto& active_shader = shader_manager.shaders[shader_manager.active_shader_name];
+    if (active_shader.uniforms.find(uniform_name) == active_shader.uniforms.end())
+    {
+        logr::report_warning("[OpenGL] uniform {} does not exist in shader {}. ignoring\n", uniform_name, shader_manager.active_shader_name);
+        return;
+    }
+
+    auto& uniform = active_shader.uniforms[uniform_name];
+
+    std::visit([&](auto&& uniform_data, auto&& new_data)
+    {
+        using T = std::decay_t<decltype(uniform_data)>;
+        using my_T = std::decay_t<decltype(new_data)>;
+        if constexpr(!(std::is_same_v<T, my_T>))
+        {
+            logr::report_error("[graphics] update_uniform: type mismatch. uniform name: {}\n", uniform_name);
+        }
+
+        if constexpr (std::is_same_v<T, glm::vec4>)
+        {
+            uniform.data = data;
+            glUniform4fv(uniform.location, 1, glm::value_ptr(std::get<glm::vec4>(data)));
+        }
+        else if constexpr (std::is_same_v<T, glm::mat4>)
+        {
+            uniform.data = data;
+            glUniformMatrix4fv(uniform.location, 1, GL_FALSE, glm::value_ptr(std::get<glm::mat4>(data)));
+        }
+        else if constexpr (std::is_same_v<T, glm::mat3x4>)
+        {
+            uniform.data = data;
+            glUniformMatrix3x4fv(uniform.location, 1, GL_FALSE, glm::value_ptr(std::get<glm::mat3x4>(data)));
+        }
+        else if constexpr (std::is_same_v<T, float>)
+        {
+            uniform.data = data;
+            glUniform1f(uniform.location, std::get<float>(data));
+        }
+        else if constexpr (std::is_same_v<T, glm::ivec2>)
+        {
+            uniform.data = data;
+            glUniform2iv(uniform.location, 1, glm::value_ptr(std::get<glm::ivec2>(data)));
+        }
+       else if constexpr (std::is_same_v<T, glm::ivec3>)
+        {
+            uniform.data = data;
+            glUniform3iv(uniform.location, 1, glm::value_ptr(std::get<glm::ivec3>(data)));
+        }
+        else if constexpr (std::is_same_v<T, int32_t>)
+        {
+            uniform.data = data;
+            glUniform1i(uniform.location, std::get<int32_t>(data));
+        }
+        else if constexpr(std::is_same_v<T, uint32_t>)
+        {
+            uniform.data = data;
+            glUniform1ui(uniform.location, std::get<uint32_t>(data));
+        }
+
+    }, uniform.data, data);
 }

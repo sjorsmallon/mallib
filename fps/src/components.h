@@ -2,6 +2,8 @@
 #define INCLUDED_COMPONENTS_
 
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+
 
 struct player_controlled{};
 
@@ -12,7 +14,6 @@ struct Xform_State
 	glm::vec4 q_rotation;
 	float scale;
 };
-
 
 struct box3D
 {
@@ -49,7 +50,6 @@ inline glm::vec3 operator*(const glm::vec3& lhs, const velocity& rhs)
 
 // components.
 using position = glm::vec3;
-using bla = glm::vec2;
 using OOBB = box3D;
 
 #endif;

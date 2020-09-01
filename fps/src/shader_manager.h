@@ -1,5 +1,5 @@
-#ifndef INCLUDED_SHADER_
-#define INCLUDED_SHADER_
+#ifndef INCLUDED_SHADER_MANAGER_
+#define INCLUDED_SHADER_MANAGER_
 #include <string>
 #include <variant>
 #include <glm/glm.hpp>
@@ -7,9 +7,8 @@
 #include <string>
 #include <vector>
 
-
 //--- types -----
-using uniform_t =  std::variant<float, int32_t, uint32_t, glm::vec4, glm::ivec2, glm::mat4, glm::mat3x4, glm::ivec3>;
+using uniform_t = std::variant<glm::mat4, float, int32_t, uint32_t, glm::vec4, glm::ivec2, glm::mat3x4, glm::ivec3, glm::vec3>;
 
 struct Uniform
 {
@@ -38,7 +37,8 @@ struct Shader_Manager
 
 
 uint32_t load_shader(Shader_Manager& manager, const std::string& shader_name);
-void bind_shader(Shader_Manager& manager,     const char* shader_name);
+void bind_shader(Shader_Manager& manager, const char* shader_name);
+void set_uniform(Shader_Manager& manager, const std::string& uniform_name, uniform_t data);
 
 
 

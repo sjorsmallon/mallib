@@ -1,5 +1,7 @@
 // Include glfw3.h after our OpenGL definitions
-#include "glfw_wrapper.h"
+#include "window_manager.h"
+
+
 #include <glm/mat4x4.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -8,7 +10,11 @@
 #include <log/log.h>
 #include <entt/entt.h>
 #include "camera.h"
-#include "components.h"
+#include "entity_system.h"
+#include "render_system.h"
+
+#include "shader_manager.h"
+#include "texture_manager.h"
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
 // To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
@@ -29,7 +35,6 @@ static bool holding_right_mouse_button = false;
 static double mouse_sensitivity = 0.0005;
 static float fov = 90.0f;
 
-
 // window - settings
 const int window_width = 1920;
 const int window_height = 1080;
@@ -40,14 +45,6 @@ bool vsync_enabled = true;
 // opengl
 Camera camera{};
 
-
-// @dependency:
-// camera
-static glm::mat4 create_view_matrix(const Camera& camera)
-{
-    return glm::lookAt(camera.position, camera.position + camera.front, camera.up);
-}
-
 void glfw_error_callback(int error, const char* description);
 void glfw_cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -55,9 +52,15 @@ void glfw_window_size_callback(GLFWwindow* window, int width, int height);
 void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void glfw_scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
+// void update(float frame_dt)?
+
+
 int main()
 {
-    GLFWwindow* main_window  = glfw_init_main_window(window_width, window_height);
+    GLFWwindow* main_window = glfw_init_window("mvmt_fps", window_width, window_height);
+    // GLFWwindow* debug_window = glfw_init_debug_window(debug_window_width, debug_window_height, main_window);
+
+    glfwMakeContextCurrent(main_window);
     // register callbacks
     glfwSetErrorCallback(glfw_error_callback);
     glfwSetKeyCallback(main_window, glfw_key_callback);
@@ -65,16 +68,22 @@ int main()
     glfwSetCursorPosCallback(main_window, glfw_cursor_position_callback);
     glfwSetScrollCallback(main_window, glfw_scroll_callback);
 
-    // GLFWwindow* debug_window = glfw_init_debug_window(debug_window_width, debug_window_height, main_window);
-    // init_opengl();
 
     // at this point, no user-defined things have been allocated or loaded. 
-    // load_shaders();
+    Shader_Manager shader_manager{};
+    load_shader(shader_manager, "deferred_geometry");
+    load_shader(shader_manager, "deferred_lighting");
+    load_shader(shader_manager, "lightbox");
+    load_shader(shader_manager, "simple_depth");
 
-    entt::registry registry{};
-    create_player(registry);
-    create_lights(registry);
+    Texture_Manager texture_manager{};
+    load_png_texture(texture_manager, "metal");
+    init_renderer(shader_manager, texture_manager, window_width, window_height);
 
+
+    Entity_Manager entity_manager{};
+    create_player(entity_manager);
+    // create_lights(entity_manager);
 
     float frame_dt = 0.0f;
     float last_frame_time = 0.0f;
@@ -82,8 +91,6 @@ int main()
     // Main loop
     while (!glfwWindowShouldClose(main_window))
     {
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
         // per-frame time logic
         // --------------------
         float current_frame_time = glfwGetTime();
@@ -96,11 +103,11 @@ int main()
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
-
+        render();
+        glfwSwapBuffers(main_window);
         // render();
 
-        glfwSwapBuffers(main_window);
-
+        // render_ui();
 
         // bool show_ui = true;
         // if (show_ui)
@@ -151,10 +158,10 @@ void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, in
 
     if (key == GLFW_KEY_W && action == GLFW_PRESS)
     {
-        // // move the player, reconstitute camera?
+        // move the player, reconstitute camera?
         // auto [position, velocity] = registry.get<position, velocity>(player);
         // position += camera.front * velocity; 
-        logr::report("Moving forwards.\n");
+        // logr::report("Moving forwards.\n");
     }
     if (key == GLFW_KEY_S && action == GLFW_PRESS)
     {
@@ -181,23 +188,24 @@ void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, in
 //@Dependencies: camera.
 void glfw_cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
-    // double delta_x = xpos - last_x;
-    // double delta_y = last_y - ypos;     
-    // // update
-    // last_x = xpos;
-    // last_y = ypos;
+    double delta_x = xpos - last_x;
+    double delta_y = last_y - ypos;     
+    // update
+    last_x = xpos;
+    last_y = ypos;
 
     // update_camera_with_mouse_input(camera, delta_x, delta_y);
-
 }
 
-// dependencies: gl call
+//@Dependencies: gl call
 void glfw_window_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
-//dependencies: holding_left_mouse_button, holding_right_mouse_button
+//@Dependencies:
+// holding_left_mouse_button,
+// holding_right_mouse_button
 void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT)
@@ -232,34 +240,4 @@ void glfw_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     // scroll_delta_y = yoffset;
 }
 
-// // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
-    // assumes world up direction is positive y.
-// // @dependencies: 
-// // mouse_sensitivity
-static void update_camera_with_mouse_input(Camera& camera, const float x_offset, const float y_offset, const bool should_constrain_pitch = true)
-{
-    glm::vec3 world_up(0.0f,1.0f, 0.0f);
 
-    float adjusted_x_offset = x_offset * mouse_sensitivity;
-    float adjusted_y_offset = y_offset * mouse_sensitivity;
-
-    camera.yaw   += adjusted_x_offset;
-    camera.pitch += adjusted_y_offset;
-
-    // make sure that when pitch is out of bounds, screen doesn't get flipped
-    if (should_constrain_pitch)
-    {
-        if (camera.pitch > 89.0f)  camera.pitch = 89.0f;
-        if (camera.pitch < -89.0f) camera.pitch = -89.0f;
-    }
-
-    // update front, right and up Vectors using the updated euler angles
-    glm::vec3 front;
-    front.x = cos(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
-    front.y = sin(glm::radians(camera.pitch));
-    front.z = sin(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
-    front = glm::normalize(front);
-    // also re-calculate the right and up vector
-    camera.right = glm::normalize(glm::cross(camera.front, world_up));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-    camera.up    = glm::normalize(glm::cross(camera.right, camera.front));
-}
