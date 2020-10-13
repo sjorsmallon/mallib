@@ -28,7 +28,6 @@ void load_png_texture(Texture_Manager& texture_manager, const std::string& textu
     //@FIXME(Sjors): implicit creation
     auto& texture = texture_manager.textures[texture_name];
 
-
     std::string file_path = g_texture_folder_prefix + texture_name + g_texture_extension_suffix;
     logr::report("[Texture_Manager] file path: {}\n", file_path);
     // stbi_set_flip_vertically_on_load(true);

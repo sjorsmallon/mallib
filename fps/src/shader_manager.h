@@ -36,9 +36,9 @@ struct Shader_Manager
 };
 
 
-uint32_t load_shader(Shader_Manager& manager, const std::string& shader_name);
-void bind_shader(Shader_Manager& manager, const char* shader_name);
-void set_uniform(Shader_Manager& manager, const std::string& uniform_name, uniform_t data);
+uint32_t  load_shader(Shader_Manager& manager, const std::string& shader_name);
+void      set_shader(Shader_Manager& manager, const char* shader_name);
+void      set_uniform(Shader_Manager& manager, const std::string& uniform_name, const uniform_t data);
 
 
 

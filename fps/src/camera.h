@@ -16,9 +16,9 @@ struct Camera
     float roll;
 };
 
-struct Video_Camera : public Camera
+struct Camera_Path
 {
-	glm::vec3 destination;
+    glm::vec3 destination;
 	std::vector<glm::vec3> path;
 };
 

@@ -13,14 +13,21 @@
 namespace
 {
     // actual globals
-    float g_mouse_sensitivity = 0.005f;
+    float g_mouse_sensitivity = 0.05f;
     Camera g_player_camera = create_default_camera();
     int g_window_width;
     int g_window_height;
-    float g_fov;
+    float g_fov = 90.0f;
     float g_aspect_ratio;
 
-    Shader_Manager* shader_manager;
+    glm::vec3 g_player_movement_vector{};
+    float g_player_movespeed = 0.2f;
+    float g_player_acceleration = 0.2f;
+    float g_player_max_movespeed = 1.0f;
+
+
+
+    Shader_Manager*   shader_manager;
     Texture_Manager* texture_manager;
 
 
@@ -63,11 +70,11 @@ namespace
 
         if (!warning_can_be_ignored) 
         {
-            if (type == GL_DEBUG_TYPE_ERROR) logr::report_error( "GL CALLBACK: type = 0x{:x}, severity = 0x{:x}, message = {}\n", type, severity, message);
-            else
-            {
-                logr::report("GL CALLBACK: type = 0x{:x}, severity = 0x{:x}, message = {}\n", type, severity, message);
-            }
+            // if (type == GL_DEBUG_TYPE_ERROR) logr::report_error( "GL CALLBACK: type = 0x{:x}, severity = 0x{:x}, message = {}\n", type, severity, message);
+            // else
+            // {
+            //     // logr::report("GL CALLBACK: type = 0x{:x}, severity = 0x{:x}, message = {}\n", type, severity, message);
+            // }
            // fprintf(
            //      stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
            //      ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
@@ -121,7 +128,7 @@ namespace
 
         int32_t max_fragment_uniform_blocks;
         glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_BLOCKS, &max_fragment_uniform_blocks);
-        logr::report("[OpenGL] max Fragment uniform blocks: {}\n", max_fragment_uniform_blocks);
+        logr::report("[OpenGL] max Fragment uniform blocks: {} \n", max_fragment_uniform_blocks);
 
 
         // enable debug output
@@ -195,24 +202,24 @@ namespace
         glBindBufferBase(GL_UNIFORM_BUFFER, LIGHT_BUFFER_UNIFORM_IDX, light_ubo); 
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-        // Shadows 
+        // Shadow Map
         //------------------------------------------------------
-        const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+        // const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 
-        g_depth_map_tfbo = register_framebuffer_texture(*texture_manager, "g_depth_map_tfbo");
-        glBindTexture(GL_TEXTURE_2D, g_depth_map_tfbo);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 
-                     SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);  
+        // g_depth_map_tfbo = register_framebuffer_texture(*texture_manager, "g_depth_map_tfbo");
+        // glBindTexture(GL_TEXTURE_2D, g_depth_map_tfbo);
+        // glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 
+        //              SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
+        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);  
 
-        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
-        glDrawBuffer(GL_NONE);
-        glReadBuffer(GL_NONE);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);  
+        // glBindFramebuffer(GL_FRAMEBUFFER, depth_);
+        // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+        // glDrawBuffer(GL_NONE);
+        // glReadBuffer(GL_NONE);
+        // glBindFramebuffer(GL_FRAMEBUFFER, 0);  
 
     }
 // 
@@ -326,13 +333,51 @@ namespace
     }
 }
 
+void update_player_position_with_key_input(Key key_pressed)
+{
+    // logr::report("[Renderer] updating player position.\n");
+    switch (key_pressed)
+    {
+        case KEY_W:
+        {
+            g_player_camera.position = g_player_camera.position + (g_player_camera.front * g_player_movespeed);
+            break;
+        }
+        case KEY_S:
+        {
+            g_player_camera.position = g_player_camera.position - (g_player_camera.front * g_player_movespeed);
+
+            break;
+        }
+        case KEY_A:
+        {
+            g_player_camera.position = g_player_camera.position - (g_player_camera.right * g_player_movespeed);
+
+            break;
+        }
+        case KEY_D:
+        {
+            g_player_camera.position = g_player_camera.position + (g_player_camera.right * g_player_movespeed);
+            break;
+        }
+        default:
+        {
+            logr::report_warning("[Renderer] WARNING: Key pressed that was not recognized. value: {}", key_pressed);
+            break;
+        }
+    }
+}
+
 // // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
 // assumes world up direction is positive y.
 // @dependencies: 
 // mouse_sensitivity
 // player_camera
-void update_player_camera_with_mouse_input(const float x_offset, const float y_offset, const bool should_constrain_pitch = true)
+void update_player_camera_with_mouse_input(const float x_offset, const float y_offset, const bool should_constrain_pitch)
 {
+
+    // logr::report("[Renderer] updating player camera.\n");
+    
     glm::vec3 world_up(0.0f,1.0f, 0.0f);
 
     float adjusted_x_offset = x_offset * g_mouse_sensitivity;
@@ -353,7 +398,7 @@ void update_player_camera_with_mouse_input(const float x_offset, const float y_o
     front.x = cos(glm::radians(g_player_camera.yaw)) * cos(glm::radians(g_player_camera.pitch));
     front.y = sin(glm::radians(g_player_camera.pitch));
     front.z = sin(glm::radians(g_player_camera.yaw)) * cos(glm::radians(g_player_camera.pitch));
-    front = glm::normalize(front);
+    g_player_camera.front = glm::normalize(front);
     // also re-calculate the right and up vector
     g_player_camera.right = glm::normalize(glm::cross(g_player_camera.front, world_up));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
     g_player_camera.up    = glm::normalize(glm::cross(g_player_camera.right, g_player_camera.front));
@@ -367,7 +412,7 @@ void init_renderer(Shader_Manager& shader_manager_in, Texture_Manager& texture_m
 
     g_window_width  = frame_buffer_width;
     g_window_height = frame_buffer_height;
-    g_fov = 90.0f;
+
     g_aspect_ratio = static_cast<float>(g_window_width) / static_cast<float>(g_window_height);
 
     init_opengl(frame_buffer_width, frame_buffer_height);
@@ -405,6 +450,7 @@ void render_floor()
 /// - the geometry that needs to be rendered (either via submission or other)
 /// - the texture data (or at least the bindings)
 
+
 void render()
 {
     // render
@@ -412,88 +458,103 @@ void render()
     glm::mat4 view       = create_view_matrix_from_camera(g_player_camera);
     glm::mat4 projection = glm::perspective(glm::radians(g_fov), g_aspect_ratio, 0.1f, 100.0f);  
 
-    // 0.5: first render to depth map
+    // 0.1: first render to depth map
     // ------------------------------------------
-    glViewport(0, 0, 1024, 1024);
-    glBindFramebuffer(GL_FRAMEBUFFER, g_depth_map_tfbo);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    float near_plane = 1.0f, far_plane = 7.5f;
-    // frustum?
-    glm::mat4 light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-    glm::mat4 light_view =       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), 
-                                             glm::vec3(0.0f, 3.0f,  0.0f), 
-                                             glm::vec3(0.0f, 1.0f,  0.0f));  
-    glm::mat4 light_space_matrix = light_projection * light_view;
-
-    set_uniform(*shader_manager, "light_space_matrix", light_space_matrix);
-    // for all cubes in the scene..)
     {
-        glm::mat4 model      = glm::mat4(1.0f);
-        set_uniform(*shader_manager, "model", model);
-        render_cube();
+        set_shader(*shader_manager, "simple_depth");
+
+        glViewport(0, 0, 1024, 1024);
+        glBindFramebuffer(GL_FRAMEBUFFER, g_depth_map_tfbo);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        float near_plane = 1.0f, far_plane = 7.5f;
+        // frustum?
+        glm::mat4 light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+        glm::mat4 light_view =       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), 
+                                                 glm::vec3(0.0f, 3.0f,  0.0f), 
+                                                 glm::vec3(0.0f, 1.0f,  0.0f));  
+        glm::mat4 light_space_matrix = light_projection * light_view;
+
+
+        set_uniform(*shader_manager, "light_space_matrix", light_space_matrix);
+        // for all cubes in the scene..)
+        {
+            glm::mat4 model      = glm::mat4(1.0f);
+            set_uniform(*shader_manager, "model", model);
+            render_cube();
+        }
+        // unbind framebuffer
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    // unbind framebuffer
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // 2. then render scene as normal with shadow mapping (using depth map)
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glBindTexture(GL_TEXTURE_2D, g_depth_map_tfbo);
-
-
-    // 1. geometry pass: render scene's geometry/color data into geometry_fbo
-    // -----------------------------------------------------------------
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // bind the frame buffer.
-    glBindFramebuffer(GL_FRAMEBUFFER, geometry_fbo);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // bind shader and update all uniforms.
-    bind_shader(*shader_manager, "deferred_geometry");
-
-    set_uniform(*shader_manager, "projection", projection);
-    set_uniform(*shader_manager, "view", view);
-    // set_uniform(*shader_manager,  "texture_diffuse1", texture_manager->textures["metal"].gl_texture_frame);
-    // set_uniform(*shader_manager,  "texture_specular1", );
-
-    // for all cubes in the scene..)
+    // // 0.2. then render scene as normal with shadow mapping (using depth map)
     {
-        auto& cube_texture = texture_manager->textures["metal"];
-        glActiveTexture(GL_TEXTURE0 + cube_texture.gl_texture_frame);
-        glBindTexture(GL_TEXTURE_2D, cube_texture.gl_texture_id);
-        set_uniform(*shader_manager,  "texture_diffuse1", cube_texture.gl_texture_frame);
 
-        glm::mat4 model      = glm::mat4(1.0f);
-        set_uniform(*shader_manager, "model", model);
-        render_cube();
+        glViewport(0, 0, g_window_width, g_window_height);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glBindTexture(GL_TEXTURE_2D, g_depth_map_tfbo);
+
     }
+
+    // // 1. geometry pass: render scene's geometry/color data into geometry_fbo
+    // // -----------------------------------------------------------------
+    {
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // bind the geometry buffer as the frame buffer.
+        glBindFramebuffer(GL_FRAMEBUFFER, geometry_fbo);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // bind shader and update all relevant uniforms.
+        set_shader(*shader_manager, "deferred_geometry");
+        set_uniform(*shader_manager, "projection", projection);
+        set_uniform(*shader_manager, "view", view);
+        // set_uniform(*shader_manager,  "texture_diffuse1", texture_manager->textures["metal"].gl_texture_frame);
+        // set_uniform(*shader_manager,  "texture_specular1", );
+
+
+        // 1.a:  render geometry in the scene.
+        // ---------------------------------------
+
+        // for all cubes in the scene..)
+        {
+            auto& cube_texture = texture_manager->textures["metal"];
+            glActiveTexture(GL_TEXTURE0 + cube_texture.gl_texture_frame);
+            glBindTexture(GL_TEXTURE_2D, cube_texture.gl_texture_id);
+            set_uniform(*shader_manager,  "texture_diffuse1", cube_texture.gl_texture_frame);
+
+            glm::mat4 model      = glm::mat4(1.0f);
+            set_uniform(*shader_manager, "model", model);
+            render_cube();
+        }
    
-    // render geometry in the scene.
-    // render floor
-    {
-        auto& metal_texture = texture_manager->textures["metal"];
-        glActiveTexture(GL_TEXTURE0 + metal_texture.gl_texture_frame);
-        glBindTexture(GL_TEXTURE_2D, metal_texture.gl_texture_id);
-        set_uniform(*shader_manager, "texture_diffuse1",  metal_texture.gl_texture_frame);
-        glm::mat4 model = glm::mat4(1.0f);
-        set_uniform(*shader_manager, "model", model);
-        render_floor();
+        // render floor
+        {
+            auto& metal_texture = texture_manager->textures["metal"];
+            glActiveTexture(GL_TEXTURE0 + metal_texture.gl_texture_frame);
+            glBindTexture(GL_TEXTURE_2D, metal_texture.gl_texture_id);
+            set_uniform(*shader_manager, "texture_diffuse1",  metal_texture.gl_texture_frame);
+            glm::mat4 model = glm::mat4(1.0f);
+            set_uniform(*shader_manager, "model", model);
+            render_floor();
+        }
+
+        // unbind geometry buffer, bind default framebuffer
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    // bind the default framebuffer
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    
+    // get handles for the frame buffers.
     auto& position_tfbo_texture = texture_manager->textures["position_tfbo"];
     auto& normal_tfbo_texture   = texture_manager->textures["normal_tfbo"];
     auto& albedo_specular_tfbo_texture = texture_manager->textures["albedo_specular_tfbo"];
 
+    // for now, lights are required in step 2 and later (for the light box shader.)
     std::vector<Light> lights(32);
-    //2 . lighting pass:
-    // -----------------------------------------------------------------
+
+    // //2 . lighting pass:
+    // // -----------------------------------------------------------------
     {
-        bind_shader(*shader_manager, "deferred_lighting");
+        set_shader(*shader_manager, "deferred_lighting");
 
         //@FIXME: I don't think this is necessary.
         glActiveTexture(GL_TEXTURE0 + position_tfbo_texture.gl_texture_frame);
@@ -523,6 +584,11 @@ void render()
         lights[0].position.z = 1.5f;
         lights[0].color = glm::vec4(1.0f,1.0f,1.0f,0.0f);
 
+        lights[2].position.x = x_position;
+        lights[2].position.y = y_position;
+        lights[2].position.z = -1.5f;
+        lights[2].color = glm::vec4(1.0f,0.0f,1.0f,0.0f);
+
 
         lights[1].position = glm::vec4(0.0f, 3.0f, 0.0f, 0.0f);
         lights[1].color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
@@ -550,38 +616,50 @@ void render()
 
     }
 
-    // 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
-    // ----------------------------------------------------------------------------------
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, geometry_fbo);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
-    // blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
-    // the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the      
-    // depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
-    glBlitFramebuffer(0, 0, g_window_width, g_window_height, 0, 0, g_window_width, g_window_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // 3. render lights on top of scene
-    // --------------------------------
-
-    // only render first light.normally, for light: lights)
+    // // 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
+    // // ----------------------------------------------------------------------------------
     {
-        bind_shader(*shader_manager, "lightbox");
-        set_uniform(*shader_manager, "projection", projection);
-        set_uniform(*shader_manager, "view", view);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, geometry_fbo);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
+        // blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
+        // the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the      
+        // depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
+        glBlitFramebuffer(0, 0, g_window_width, g_window_height, 0, 0, g_window_width, g_window_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
 
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(lights[0].position));
-        model = glm::scale(model, glm::vec3(0.125f));
-        set_uniform(*shader_manager, "model", model);
-        set_uniform(*shader_manager, "light_color", lights[0].color);
-        render_cube();
 
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(lights[1].position));
-        model = glm::scale(model, glm::vec3(0.125f));
-        set_uniform(*shader_manager, "model", model);
-        set_uniform(*shader_manager, "light_color", lights[1].color);
-        render_cube();
+    // // 3. render lights on top of scene
+    // // --------------------------------
+    {
+
+        // only render first n lights.normally, for light: lights)
+        {
+            set_shader( *shader_manager, "lightbox");
+            set_uniform(*shader_manager, "projection", projection);
+            set_uniform(*shader_manager, "view", view);
+
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(lights[0].position));
+            model = glm::scale(model, glm::vec3(0.125f));
+            set_uniform(*shader_manager, "model", model);
+            set_uniform(*shader_manager, "light_color", lights[0].color);
+            render_cube();
+
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(lights[2].position));
+            model = glm::scale(model, glm::vec3(0.125f));
+            set_uniform(*shader_manager, "model", model);
+            set_uniform(*shader_manager, "light_color", lights[2].color);
+            render_cube();
+
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(lights[1].position));
+            model = glm::scale(model, glm::vec3(0.125f));
+            set_uniform(*shader_manager, "model", model);
+            set_uniform(*shader_manager, "light_color", lights[1].color);
+            render_cube();
+        }
     }
 
 }
@@ -605,7 +683,7 @@ void render()
 //     glm::mat4 projection = glm::perspective(glm::radians(fov),aspect_ratio, 0.1f, 100.0f);  
 //     glm::mat4 model = glm::mat4(1.0f);
 
-//     // @TODO: bind_shader("deferred_geometry");
+//     // @TODO: set_shader("deferred_geometry");
 //     //        set_uniform_mat4("projection", projection);
 //     //        set_uniform_mat4("view", view);
 //     //        auto view = registry.view<renderable>();
@@ -621,7 +699,7 @@ void render()
 //     // 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the geometry_fbo's content.
 //     // -----------------------------------------------------------------------------------------------------------------------
 //     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//     // bind_shader("deferred_lighting");
+//     // set_shader("deferred_lighting");
 //     glActiveTexture(GL_TEXTURE0);
 //     glBindTexture(GL_TEXTURE_2D, position_tfbo);
 //     glActiveTexture(GL_TEXTURE0 + idx);

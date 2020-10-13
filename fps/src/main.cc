@@ -42,6 +42,14 @@ const int debug_window_width = 850;
 const int debug_window_height = 1000;
 bool vsync_enabled = true;
 
+
+
+// DUMB input handling.
+bool KEY_W_DOWN = false;
+bool KEY_S_DOWN = false;
+bool KEY_A_DOWN = false;
+bool KEY_D_DOWN = false;
+
 // opengl
 Camera camera{};
 
@@ -103,6 +111,11 @@ int main()
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
+        if (KEY_W_DOWN) update_player_position_with_key_input(KEY_W);
+        if (KEY_S_DOWN) update_player_position_with_key_input(KEY_S);
+        if (KEY_A_DOWN) update_player_position_with_key_input(KEY_A);
+        if (KEY_D_DOWN) update_player_position_with_key_input(KEY_D);
+
         render();
         glfwSwapBuffers(main_window);
         // render();
@@ -150,39 +163,71 @@ void glfw_error_callback(int error, const char* description)
     logr::report_error("[GLFW]: {}, {} \n", error, description);
 }
 
-   
+
+
+// KEY for now is defined in render system and will be removed. 
 void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    if (key == GLFW_KEY_ESCAPE && (action == GLFW_PRESS || action == GLFW_REPEAT))
         glfw_exit_and_cleanup(window);
 
-    if (key == GLFW_KEY_W && action == GLFW_PRESS)
+    if (key == GLFW_KEY_W )
     {
-        // move the player, reconstitute camera?
-        // auto [position, velocity] = registry.get<position, velocity>(player);
-        // position += camera.front * velocity; 
-        // logr::report("Moving forwards.\n");
+        if (action == GLFW_PRESS)
+        {
+            KEY_W_DOWN = true;
+            return;
+        }
+        if (action == GLFW_RELEASE)
+        {
+            KEY_W_DOWN = false;
+            return;
+        }
     }
-    if (key == GLFW_KEY_S && action == GLFW_PRESS)
+    if (key == GLFW_KEY_S)
     {
-        // // move the player, reconstitute camera?
-        // auto [pos, vel] = registry.get<position, velocity>(player);
-        // pos -= camera.front * vel; 
+        if (action == GLFW_PRESS)
+        {
+            KEY_S_DOWN = true;
+            return;
+        }
+        if (action == GLFW_RELEASE)
+        {
+            KEY_S_DOWN = false;
+            return;
+        }
     }
 
-    if (key == GLFW_KEY_A && action == GLFW_PRESS)
+    if (key == GLFW_KEY_A)
     {
-        // // move the player, reconstitute camera?
-        // auto [pos, vel] = registry.get<position, velocity>(player);
-        // pos -= camera.right * vel; 
+         if (action == GLFW_PRESS)
+        {
+            KEY_A_DOWN = true;
+            return;
+        }
+        if (action == GLFW_RELEASE)
+        {
+            KEY_A_DOWN = false;
+            return;
+        }
+
     }
-    if (key == GLFW_KEY_D && action == GLFW_PRESS)
+    if (key == GLFW_KEY_D)
     {
-        // // move the player, reconstitute camera?
-        // auto [pos, vel] = registry.get<position, velocity>(player);
-        // pos += camera.right * vel; 
+        if (action == GLFW_PRESS)
+        {
+            KEY_D_DOWN = true;
+            return;
+        }
+        if (action == GLFW_RELEASE)
+        {
+            KEY_D_DOWN = false;
+            return;
+        }
     }
 }
+
+
 
 //@IC(Sjors): parameters cannot be const since the callbacks needs to match.
 //@Dependencies: camera.
@@ -194,7 +239,7 @@ void glfw_cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
     last_x = xpos;
     last_y = ypos;
 
-    // update_camera_with_mouse_input(camera, delta_x, delta_y);
+    update_player_camera_with_mouse_input(delta_x, delta_y);
 }
 
 //@Dependencies: gl call

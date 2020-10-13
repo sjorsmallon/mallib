@@ -4,7 +4,7 @@
 
 #include <glad/glad.h>
 #include <log/log.h>
-#include<glm/gtc/type_ptr.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "file.h"
 
 namespace 
@@ -31,6 +31,8 @@ namespace
             return GL_TESS_CONTROL_SHADER;
         else if (view == "tes")
             return GL_TESS_EVALUATION_SHADER;
+        else if (view == "cs")
+            return GL_COMPUTE_SHADER;
         else
             return 0;
     }
@@ -86,7 +88,7 @@ namespace
     void get_shader_info(Shader_Manager& shader_manager, Shader& shader)
     {
         logr::report("shader info for program {} \n", shader.name);
-        bind_shader(shader_manager, shader.name.c_str());
+        set_shader(shader_manager, shader.name.c_str());
 
         std::vector<GLchar> name_data(256);
         std::vector<GLenum> properties = {};
@@ -269,7 +271,7 @@ namespace
 }
 
 //@IC(Sjors):the "none" shader is not any shader.
-void bind_shader(Shader_Manager& shader_manager, const char* shader_name)
+void set_shader(Shader_Manager& shader_manager, const char* shader_name)
 {
     uint32_t shader_id = 0; 
     if (!(shader_name == "none"))
@@ -306,21 +308,21 @@ uint32_t load_shader(Shader_Manager& shader_manager, const std::string& shader_n
     shader.name = shader_name;
     shader.program_id =  shader_program;
 
-    bind_shader(shader_manager, shader_name.c_str());
+    set_shader(shader_manager, shader_name.c_str());
     get_shader_info(shader_manager, shader);
     
-    bind_shader(shader_manager, "none");
+    set_shader(shader_manager, "none");
     return shader_program;
 }
 
 //--- this function assumes the target shader is bound before uniforms are updated, and will break 
 // and warn the user if that is not the case.
-void set_uniform(Shader_Manager& shader_manager, const std::string& uniform_name, uniform_t data)
+void set_uniform(Shader_Manager& shader_manager, const std::string& uniform_name, const uniform_t data)
 {
     auto& active_shader = shader_manager.shaders[shader_manager.active_shader_name];
     if (active_shader.uniforms.find(uniform_name) == active_shader.uniforms.end())
     {
-        logr::report_warning("[OpenGL] uniform {} does not exist in shader {}. ignoring\n", uniform_name, shader_manager.active_shader_name);
+        logr::report_warning("[OpenGL] uniform {} does not exist in shader {}. ignoring. \n", uniform_name, shader_manager.active_shader_name);
         return;
     }
 
