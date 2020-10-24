@@ -1,6 +1,5 @@
 #ifndef INCLUDED_RENDER_SYSTEM_
 #define INCLUDED_RENDER_SYSTEM_
-#include <entt/entt.h>
 #include "shader_manager.h"
 #include "texture_manager.h"
 

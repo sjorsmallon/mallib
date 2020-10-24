@@ -3,7 +3,7 @@
 #include <vector>
 
 #include <glad/glad.h>
-#include <log/log.h>
+#include "log.h"
 #include <glm/gtc/type_ptr.hpp>
 #include "file.h"
 
@@ -63,7 +63,11 @@ namespace
         GLint max_length = 0;
         glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &max_length);
         std::vector<GLchar> info_log(max_length);        
-        glGetShaderInfoLog(shader_id, max_length, &max_length, &info_log[0]);
+		if (info_log.size() > 0)
+		{
+			glGetShaderInfoLog(shader_id, max_length, &max_length, &info_log[0]);
+		}
+
         
         std::string string_log = std::string(info_log.begin(), info_log.end());
         logr::report("[graphics] shader info log:\n {} \n", string_log);
@@ -284,7 +288,7 @@ void set_shader(Shader_Manager& shader_manager, const char* shader_name)
 
 uint32_t load_shader(Shader_Manager& shader_manager, const std::string& shader_name)
 {
-    std::string shader_folder_prefix = "assets/shaders/";
+    std::string shader_folder_prefix = "../assets/shaders/";
     std::string shader_folder_path = shader_folder_prefix + shader_name;
     uint32_t shader_program = glCreateProgram();
     std::vector<uint32_t> shader_ids;

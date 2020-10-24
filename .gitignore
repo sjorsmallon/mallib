@@ -20,3 +20,5 @@
 
 *.exe
 *.pdb
+
+fps/builddir

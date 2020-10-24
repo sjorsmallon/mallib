@@ -1,0 +1,7 @@
+Builds a static .lib file. 
+
+# Load VS Command line tools
+
+# meson builddir
+# cd builddir
+#ninja

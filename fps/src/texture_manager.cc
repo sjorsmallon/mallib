@@ -1,5 +1,5 @@
 #include "texture_manager.h"
-#include <log/log.h>
+#include "log.h"
 #include <glad/glad.h>
 
 
@@ -8,7 +8,7 @@
 
 namespace
 {
-	std::string g_texture_folder_prefix = "assets/textures/";
+	std::string g_texture_folder_prefix = "../assets/textures/";
 	std::string g_texture_extension_suffix = ".png";
 }
 

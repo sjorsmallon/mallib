@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <log/log.h>
+#include "log.h"
 #include "light.h"
 #include "shader_manager.h"
 #include "texture_manager.h"
