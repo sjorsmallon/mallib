@@ -311,12 +311,12 @@ namespace
     void init_floor()
     {
         float floor_vertices[]  = {
-            -10.0f, -5.0f, 10.0f,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-             10.0f, -5.0f, 10.0f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            -10.0f, -5.0f, -10.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-            -10.0f, -5.0f, -10.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-             10.0f, -5.0f, 10.0f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-             10.0f, -5.0f, -10.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+            -500.0f, -5.0f, 500.0f,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+             500.0f, -5.0f, 500.0f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+            -500.0f, -5.0f, -500.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+            -500.0f, -5.0f, -500.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+             500.0f, -5.0f, 500.0f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+             500.0f, -5.0f, -500.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
         };
         glGenVertexArrays(1, &g_floor_vao);
         glBindVertexArray(g_floor_vao);
@@ -530,10 +530,10 @@ void render()
    
         // render floor
         {
-            auto& metal_texture = texture_manager->textures["metal"];
-            glActiveTexture(GL_TEXTURE0 + metal_texture.gl_texture_frame);
-            glBindTexture(GL_TEXTURE_2D, metal_texture.gl_texture_id);
-            set_uniform(*shader_manager, "texture_diffuse1",  metal_texture.gl_texture_frame);
+            auto& marble_texture = texture_manager->textures["marble"];
+            glActiveTexture(GL_TEXTURE0 + marble_texture.gl_texture_frame);
+            glBindTexture(GL_TEXTURE_2D, marble_texture.gl_texture_id);
+            set_uniform(*shader_manager, "texture_diffuse1",  marble_texture.gl_texture_frame);
             glm::mat4 model = glm::mat4(1.0f);
             set_uniform(*shader_manager, "model", model);
             render_floor();
