@@ -1,10 +1,11 @@
 // #ifndef INCLUDED_ENTITY_SYSTEM_
 // #define INCLUDED_ENTITY_SYSTEM_
-// #include <entt/entt.h>
+// // #include <entt/entt.h>
+
+// constexpr const int MAX_NUM_LIGHTS = 256;
 
 // struct Entity_Manager
 // {
-// 	entt::registry registry;
 // };
 
 // void create_player(Entity_Manager& manager);

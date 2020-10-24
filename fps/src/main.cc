@@ -1,14 +1,14 @@
 #include "window_manager.h"
-#include "log.h"
 #include "render_system.h"
 #include "shader_manager.h"
 #include "texture_manager.h"
+#include "log.h"
 
-
+// #define     GLFW_KEY_W   87
+constexpr const int KEY_W = 87;
 
 int main()
 {
-    // window - settings
     const int window_width = 1920;
     const int window_height = 1080;
     const int debug_window_width = 850;
@@ -18,25 +18,20 @@ int main()
     auto window_manager = Window_Manager();
     create_main_window(window_manager, "mvmt", window_width, window_height);
 
-    //@Note(Sjors:)
-    //  At this point, no resources have been allocated or loaded. But these 
-    //  all require GL to be loaded in. creating a window does this for us via
-    // gladLoadGL in the window_manager constructor. Which seems like a bad idea.
+    auto input_manager = Input_Manager();
+    register_command(input_manager,  KEY_W, std::move([](){
+        logr::report("test.\n");
+    }));
 
-
-
-    Shader_Manager shader_manager{};
+    auto shader_manager = Shader_Manager();
     load_shader(shader_manager, "deferred_geometry");
     load_shader(shader_manager, "deferred_lighting");
     load_shader(shader_manager, "lightbox");
     load_shader(shader_manager, "simple_depth");
 
-    Texture_Manager texture_manager{};
+    auto texture_manager = Texture_Manager();
     load_png_texture(texture_manager, "metal");
     load_png_texture(texture_manager, "marble");
-
-
-
 
     init_renderer(shader_manager, texture_manager, window_width, window_height);
 
@@ -66,6 +61,13 @@ int main()
 
     return 0;
 }
+
+
+//@Note(Sjors:)
+//  At this point, no resources have been allocated or loaded. But these 
+//  all require GL to be loaded in. creating a window does this for us via
+// gladLoadGL in the window_manager constructor. Which seems like a bad idea.
+// We need to make sure GL is ready before we can test these.
  
 
 
