@@ -36,6 +36,29 @@ int main()
     init_renderer(shader_manager, texture_manager, window_width, window_height);
 
 
+    auto particle_cache = Particle_Cache(texture_manager);
+
+
+    internal void
+    InitParticleCache(particle_cache *Cache, game_assets *Assets)
+    {
+        ZeroStruct(*Cache);
+        Cache->ParticleEntropy = RandomSeed(1234);
+        
+        asset_vector MatchVector = {};
+        MatchVector.E[Tag_Particle] = 1.0f;
+        MatchVector.E[Tag_Smoke] = 1.0f;
+        asset_vector WeightVector = {};
+        WeightVector.E[Tag_Particle] = 1.0f;
+        WeightVector.E[Tag_Smoke] = 1.0f;
+        
+        Cache->FireSystem.BitmapID = GetBestMatchBitmapFrom(Assets,
+                                                            Asset_Particle, &MatchVector,
+                                                            &WeightVector);
+    }
+
+
+    // auto assets = ...
 
 
     float frame_dt = 0.0f;
@@ -44,13 +67,13 @@ int main()
     // Main loop
     while (true)
     {
-        //     float current_frame_time = glfwGetTime();
-        //     frame_dt = current_frame_time - last_frame_time;
-        //     last_frame_time = current_frame_time;
+        float current_frame_time = glfwGetTime();
+        frame_dt = current_frame_time - last_frame_time;
+        last_frame_time = current_frame_time;
 
 
         poll_input(window_manager);
-        // simulate();
+        simulate(frame_dt, );
         render();
         swap_buffers(window_manager);
 
