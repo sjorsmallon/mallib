@@ -274,7 +274,9 @@ namespace
         // fill buffer
         glBindBuffer(GL_ARRAY_BUFFER, g_cube_vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        // link vertex attributes
+        
+
+        // link vertex attributes (position, normals, texture coordinates);
         glBindVertexArray(g_cube_vao);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
@@ -554,7 +556,7 @@ void render()
     // //2 . lighting pass:
     // // -----------------------------------------------------------------
     {
-        set_shader(*shader_manager, "deferred_lighting");
+        set_shader(*shader_manager, "deferred_edges");
 
         //@FIXME: I don't think this is necessary.
         glActiveTexture(GL_TEXTURE0 + position_tfbo_texture.gl_texture_frame);

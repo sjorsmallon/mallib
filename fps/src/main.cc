@@ -3,9 +3,10 @@
 #include "shader_manager.h"
 #include "texture_manager.h"
 #include "log.h"
+#include "particle.h"
 
 // #define     GLFW_KEY_W   87
-constexpr const int KEY_W = 87;
+// constexpr const int MY_KEY_W = 87;
 
 int main()
 {
@@ -18,14 +19,17 @@ int main()
     auto window_manager = Window_Manager();
     create_main_window(window_manager, "mvmt", window_width, window_height);
 
-    auto input_manager = Input_Manager();
-    register_command(input_manager,  KEY_W, std::move([](){
-        logr::report("test.\n");
-    }));
+    // auto input_manager = Input_Manager();
+    // register_command(input_manager,  KEY_W, std::move([](){
+    //     logr::report("test.\n");
+    // }));
 
     auto shader_manager = Shader_Manager();
     load_shader(shader_manager, "deferred_geometry");
     load_shader(shader_manager, "deferred_lighting");
+    load_shader(shader_manager, "deferred_obra_dinn");
+    load_shader(shader_manager, "deferred_edges");
+    load_shader(shader_manager, "deferred_normals");
     load_shader(shader_manager, "lightbox");
     load_shader(shader_manager, "simple_depth");
 
@@ -36,27 +40,7 @@ int main()
     init_renderer(shader_manager, texture_manager, window_width, window_height);
 
 
-    auto particle_cache = Particle_Cache(texture_manager);
-
-
-    internal void
-    InitParticleCache(particle_cache *Cache, game_assets *Assets)
-    {
-        ZeroStruct(*Cache);
-        Cache->ParticleEntropy = RandomSeed(1234);
-        
-        asset_vector MatchVector = {};
-        MatchVector.E[Tag_Particle] = 1.0f;
-        MatchVector.E[Tag_Smoke] = 1.0f;
-        asset_vector WeightVector = {};
-        WeightVector.E[Tag_Particle] = 1.0f;
-        WeightVector.E[Tag_Smoke] = 1.0f;
-        
-        Cache->FireSystem.BitmapID = GetBestMatchBitmapFrom(Assets,
-                                                            Asset_Particle, &MatchVector,
-                                                            &WeightVector);
-    }
-
+    // auto particle_cache = Particle_Cache(texture_manager);
 
     // auto assets = ...
 
@@ -67,13 +51,11 @@ int main()
     // Main loop
     while (true)
     {
-        float current_frame_time = glfwGetTime();
-        frame_dt = current_frame_time - last_frame_time;
-        last_frame_time = current_frame_time;
-
-
+        // float current_frame_time = glfwGetTime();
+        // frame_dt = current_frame_time - last_frame_time;
+        // last_frame_time = current_frame_time;
         poll_input(window_manager);
-        simulate(frame_dt, );
+        // simulate(frame_dt, );
         render();
         swap_buffers(window_manager);
 

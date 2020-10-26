@@ -43,7 +43,6 @@ namespace
 
         if (key == GLFW_KEY_W )
         {
-            logr::report("GLFW_KEY_W pressed\n");
             if (action == GLFW_PRESS)
             {
                 KEY_W_DOWN = true;
@@ -159,8 +158,6 @@ namespace
     }
 
 }
-
-
 
 
 Window_Manager::Window_Manager()

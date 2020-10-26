@@ -14,7 +14,7 @@ struct particle
 	glm::vec4 color;
 	glm::vec4 delta_color;
 	glm::vec4 size;
-}
+};
 
 struct Particle_System
 {
@@ -22,14 +22,14 @@ struct Particle_System
 	// u32 next_particle_4;
 	// bitmap_id BitmapID;
 
-}
+};
 
 struct Particle_Cache
 {
 	// random_series particle_entropy;
-	particle_system gun_system;
+	Particle_System gun_system;
 		// Particle_Cache(Texture_Manager &texture_manager) :  { gun_system.bitmap_id = ....}
-	/
+
 };
 
 
