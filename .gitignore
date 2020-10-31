@@ -8,10 +8,8 @@
 /*.exe
 /src/tests/*.exe
 
+build
 
-*.vs
-**/*.vs
-/src/.vs/*
 /src/win32/*.pdbsrc/.vs/ 
 
 *.ilk

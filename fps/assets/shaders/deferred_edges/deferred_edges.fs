@@ -106,7 +106,7 @@ bool sobel_normal(vec2 texture_coords)
     float sobelX = s00 + 2.0f * s10 + s20 - s02 - 2.0f * s12 - s22;
     float sobelY = s00 + 2.0f * s01 + s02 - s20 - 2.0f * s21 - s22;
 
-    float edgeSqr = (sobelX * sobelX + sobelY * sobelY);
+    float edgeSqr = (sobelX * sobelX + sobelY * sobelY)
 
     bool edge_over_treshold = edgeSqr > (0.07 * 0.07);
 
