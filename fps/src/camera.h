@@ -3,7 +3,7 @@
 #include <glm/vec3.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
+#include <vector>
 
 struct Camera
 {
@@ -28,7 +28,7 @@ inline glm::mat4 create_view_matrix_from_camera(const Camera& camera)
     return glm::lookAt(camera.position, camera.position + camera.front, camera.up);
 }
 
-inline Camera create_default_camera()
+inline Camera default_camera()
 {
     Camera camera{};
     camera.position = glm::vec3(0.0f,0.0f, 3.0f);

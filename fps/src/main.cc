@@ -1,9 +1,11 @@
+
 #include "window_manager.h"
 #include "render_system.h"
 #include "shader_manager.h"
 #include "texture_manager.h"
 #include "log.h"
 #include "particle.h"
+#include "game.h"
 
 // #define     GLFW_KEY_W   87
 // constexpr const int MY_KEY_W = 87;
@@ -18,11 +20,6 @@ int main()
     // GLFW abstraction
     auto window_manager = Window_Manager();
     create_main_window(window_manager, "mvmt", window_width, window_height);
-
-    // auto input_manager = Input_Manager();
-    // register_command(input_manager,  KEY_W, std::move([](){
-    //     logr::report("test.\n");
-    // }));
 
     auto shader_manager = Shader_Manager();
     load_shader(shader_manager, "deferred_geometry");
@@ -39,26 +36,20 @@ int main()
 
     init_renderer(shader_manager, texture_manager, window_width, window_height);
 
-
     // auto particle_cache = Particle_Cache(texture_manager);
-
     // auto assets = ...
-
-
-    float frame_dt = 0.0f;
-    float last_frame_time = 0.0f;
+    Game_State game_state{};
+    Particle_Cache particle_cache{}; // uh, allocating this on the stack is maybe a bad idea.
 
     // Main loop
+    float frame_dt = 0.0f;
     while (true)
     {
-        // float current_frame_time = glfwGetTime();
-        // frame_dt = current_frame_time - last_frame_time;
-        // last_frame_time = current_frame_time;
         poll_input(window_manager);
-        // simulate(frame_dt, );
+        simulate(frame_dt, game_state, window_manager.input, particle_cache);
+
         render();
         swap_buffers(window_manager);
-
     }
 
     //@todo: delete glfw.

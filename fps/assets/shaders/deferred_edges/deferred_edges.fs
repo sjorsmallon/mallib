@@ -1,20 +1,30 @@
 #version 430 core
-
-// defines
-#define LIGHT_BUFFER_BINDING_IDX 2
+// ---------------
+// Defines
+// ---------------
 const int NUM_LIGHTS = 32;
 const float ambient_component = 0.05f;
 
-out vec4 fragment_color;
+const float WINDOW_WIDTH = 1920.0f;
+const float WINDOW_HEIGHT = 1080.0f;
+
+const float offX = 1.0 / WINDOW_WIDTH;
+const float offY = 1.0 / WINDOW_HEIGHT;
+
+const float threadHold = 0.10;
 
 in vec2 texture_coords;
 
+out vec4 fragment_color;
+
+// framebuffers
 uniform sampler2D g_position;
 uniform sampler2D g_normal;
 uniform sampler2D g_albedo_spec;
 
-
 uniform vec3 view_position;
+
+#define LIGHT_BUFFER_BINDING_IDX 2
 
 struct Light {
     vec4 position;
@@ -26,29 +36,23 @@ layout (std140, binding = LIGHT_BUFFER_BINDING_IDX) uniform Lights
     Light lights[32];
 };
 
-const float WINDOW_WIDTH = 1920.0f;
-const float WINDOW_HEIGHT = 1080.0f;
 
-const float offX = 1.0 / WINDOW_WIDTH;
-const float offY = 1.0 / WINDOW_HEIGHT;
-
-const float threadHold = 0.10;
 
 
 bool sobel_albedo(vec2 texture_coords)
 {
-    vec3 c11 = texture(g_albedo_spec, texture_coords).xyz;
+    vec3 c11 = texture(g_albedo_spec, texture_coords).rgb;
    
-    float  s00 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2(-offX, -offY)).xyz) - threadHold);   
-    float  s01 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2(   0.0f, -offY)).xyz)  - threadHold);
-    float  s02 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2( offX, -offY)).xyz) - threadHold);
+    float  s00 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2(-offX, -offY)).rgb) - threadHold);   
+    float  s01 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2(   0.0f, -offY)).rgb)  - threadHold);
+    float  s02 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2( offX, -offY)).rgb) - threadHold);
 
-    float  s10 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2(-offX,   0.0f)).xyz) - threadHold);
-    float  s12 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2( offX,   0.0f)).xyz) - threadHold);
+    float  s10 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2(-offX,   0.0f)).rgb) - threadHold);
+    float  s12 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2( offX,   0.0f)).rgb) - threadHold);
    
-    float  s20 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2(-offX, offY)).xyz) - threadHold);
-    float  s21 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2(   0.0f,  offY)).xyz) - threadHold);
-    float  s22 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2( offX, offY)).xyz) - threadHold);
+    float  s20 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2(-offX, offY)).rgb) - threadHold);
+    float  s21 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2(   0.0f,  offY)).rgb) - threadHold);
+    float  s22 = max(0.0f, dot(c11, texture(g_albedo_spec, texture_coords + vec2( offX, offY)).rgb) - threadHold);
    
     float sobelX = s00 + 2.0f * s10 + s20 - s02 - 2.0f * s12 - s22;
     float sobelY = s00 + 2.0f * s01 + s02 - s20 - 2.0f * s21 - s22;
@@ -60,8 +64,6 @@ bool sobel_albedo(vec2 texture_coords)
     return edge_over_treshold;
 }
 
-
-// specular sobel
 bool sobel_specular(vec2 texture_coords)
 {
     float s00 = texture(g_albedo_spec, texture_coords + vec2(-offX, -offY)).a;
@@ -106,7 +108,7 @@ bool sobel_normal(vec2 texture_coords)
     float sobelX = s00 + 2.0f * s10 + s20 - s02 - 2.0f * s12 - s22;
     float sobelY = s00 + 2.0f * s01 + s02 - s20 - 2.0f * s21 - s22;
 
-    float edgeSqr = (sobelX * sobelX + sobelY * sobelY)
+    float edgeSqr = (sobelX * sobelX + sobelY * sobelY);
 
     bool edge_over_treshold = edgeSqr > (0.07 * 0.07);
 

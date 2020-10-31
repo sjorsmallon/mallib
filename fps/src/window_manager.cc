@@ -1,7 +1,6 @@
 #include "window_manager.h"
 
-//@FIXME: for updating the camera.
-#include "render_system.h" 
+#include "input.h"
 
 
 #include <glad/glad.h>
@@ -13,13 +12,13 @@
 
 namespace
 {
-    bool holding_left_mouse_button = false;
-    bool holding_right_mouse_button = false;
-    // DUMB input handling.
-    bool KEY_W_DOWN = false;
-    bool KEY_S_DOWN = false;
-    bool KEY_A_DOWN = false;
-    bool KEY_D_DOWN = false;
+    // bool holding_left_mouse_button = false;
+    // bool holding_right_mouse_button = false;
+    // // DUMB input handling.
+    // bool KEY_W_DOWN = false;
+    // bool KEY_S_DOWN = false;
+    // bool KEY_A_DOWN = false;
+    // bool KEY_D_DOWN = false;
 
 
    void glfw_close_callback(GLFWwindow* window)
@@ -34,83 +33,89 @@ namespace
         logr::report_error("[GLFW]: {}, {} \n", error, description);
     }
 
-    // KEY for now is defined in render system and will be removed. 
+    
+    // the action is either GLFW_PRESS, GLFW_REPEAT or GLFW_RELEASE.    
     void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
+        Window_Manager* window_manager = reinterpret_cast<Window_Manager*>(glfwGetWindowUserPointer(window));
+        auto& input = window_manager->input;
+
         // uh...
         if (key == GLFW_KEY_ESCAPE && (action == GLFW_PRESS || action == GLFW_REPEAT))
             glfwSetWindowShouldClose(window, GLFW_TRUE);
 
-        if (key == GLFW_KEY_W )
-        {
-            if (action == GLFW_PRESS)
-            {
-                KEY_W_DOWN = true;
-                return;
-            }
-            if (action == GLFW_RELEASE)
-            {
-                KEY_W_DOWN = false;
-                return;
-            }
-        }
-        if (key == GLFW_KEY_S)
-        {
-            if (action == GLFW_PRESS)
-            {
-                KEY_S_DOWN = true;
-                return;
-            }
-            if (action == GLFW_RELEASE)
-            {
-                KEY_S_DOWN = false;
-                return;
-            }
-        }
+        // otherwise
+        input.keyboard_state[key] = (action == GLFW_PRESS || action == GLFW_REPEAT) ? true : false; 
 
-        if (key == GLFW_KEY_A)
-        {
-             if (action == GLFW_PRESS)
-            {
-                KEY_A_DOWN = true;
-                return;
-            }
-            if (action == GLFW_RELEASE)
-            {
-                KEY_A_DOWN = false;
-                return;
-            }
+        // if (key == GLFW_KEY_W )
+        // {
+        //     if (action == GLFW_PRESS)
+        //     {
+        //         KEY_W_DOWN = true;
+        //         return;
+        //     }
+        //     if (action == GLFW_RELEASE)
+        //     {
+        //         KEY_W_DOWN = false;
+        //         return;
+        //     }
+        // }
+        // if (key == GLFW_KEY_S)
+        // {
+        //     if (action == GLFW_PRESS)
+        //     {
+        //         KEY_S_DOWN = true;
+        //         return;
+        //     }
+        //     if (action == GLFW_RELEASE)
+        //     {
+        //         KEY_S_DOWN = false;
+        //         return;
+        //     }
+        // }
 
-        }
-        if (key == GLFW_KEY_D)
-        {
-            if (action == GLFW_PRESS)
-            {
-                KEY_D_DOWN = true;
-                return;
-            }
-            if (action == GLFW_RELEASE)
-            {
-                KEY_D_DOWN = false;
-                return;
-            }
-        }
+        // if (key == GLFW_KEY_A)
+        // {
+        //      if (action == GLFW_PRESS)
+        //     {
+        //         KEY_A_DOWN = true;
+        //         return;
+        //     }
+        //     if (action == GLFW_RELEASE)
+        //     {
+        //         KEY_A_DOWN = false;
+        //         return;
+        //     }
+
+        // }
+        // if (key == GLFW_KEY_D)
+        // {
+        //     if (action == GLFW_PRESS)
+        //     {
+        //         KEY_D_DOWN = true;
+        //         return;
+        //     }
+        //     if (action == GLFW_RELEASE)
+        //     {
+        //         KEY_D_DOWN = false;
+        //         return;
+        //     }
+        // }
     }
 
     //@IC(Sjors): parameters cannot be const since the callbacks needs to match.
     void glfw_cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
     {
-        static double last_x = 0.0;
-        static double last_y = 0.0;
+        Window_Manager* window_manager = reinterpret_cast<Window_Manager*>(glfwGetWindowUserPointer(window));
+        auto& input = window_manager->input;
 
+        input.mouse_delta_x = xpos - input.mouse_x;
+        input.mouse_delta_y = input.mouse_y - ypos;     
 
-        double delta_x = xpos - last_x;
-        double delta_y = last_y - ypos;     
         // update
-        last_x = xpos;
-        last_y = ypos;
+        input.mouse_x = xpos;
+        input.mouse_y = ypos;
 
-        update_player_camera_with_mouse_input(delta_x, delta_y);
     }
 
     //@Dependencies:[GL]
@@ -124,27 +129,29 @@ namespace
     // holding_right_mouse_button
     void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     {
+        Window_Manager* window_manager = reinterpret_cast<Window_Manager*>(glfwGetWindowUserPointer(window));
+        auto& input = window_manager->input;
+
         if (button == GLFW_MOUSE_BUTTON_LEFT)
         {
             if (action == GLFW_PRESS)
             {
-                // logr::report("left mouse button clicked.\n");
-                // holding_left_mouse_button = true;
+                input.mouse_left = true;
             }
             else if (action == GLFW_RELEASE)
             {
-                // holding_left_mouse_button = false;
+                input.mouse_left = false;
             }
         }
         if (button == GLFW_MOUSE_BUTTON_RIGHT)
         {
             if (action == GLFW_PRESS)
             {
-                // holding_right_mouse_button = true;
+                input.mouse_right = true;
             }
             else if (action == GLFW_RELEASE)
             {
-                // holding_right_mouse_button = false;
+                input.mouse_right = false;
             }
         }
         }
@@ -153,6 +160,9 @@ namespace
     // scroll_delta_y
     void glfw_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     {
+        Window_Manager* window_manager = reinterpret_cast<Window_Manager*>(glfwGetWindowUserPointer(window));
+        auto& input = window_manager->input;
+
         // static double scroll_delta_y = yoffset;
         // scroll_delta_y = yoffset;
     }
@@ -165,15 +175,16 @@ Window_Manager::Window_Manager()
      ///--- init glfw ----
     if (!glfwInit())
     {
-        logr::report_error("glfw cannot init!");
+        logr::report_error("[Window_Manager] glfw cannot init!");
         exit(1);        
     }
     else 
     {
-        logr::report("glfw inited.\n");
+        logr::report("[Window_Manager] glfw inited.\n");
     }
 
     glfwSetErrorCallback(glfw_error_callback);
+
 }
 
 Window_Manager::~Window_Manager()
@@ -225,12 +236,17 @@ void create_main_window(Window_Manager& window_manager, const char* title, const
     glfwSetInputMode(main_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
 
     // register callbacks
-    glfwSetErrorCallback(glfw_error_callback);
+    // glfwSetErrorCallback(glfw_error_callback); (this is done in the constructor since it does not require a window.)
     glfwSetKeyCallback(main_window, glfw_key_callback);
     glfwSetMouseButtonCallback(main_window, glfw_mouse_button_callback);
     glfwSetCursorPosCallback(main_window, glfw_cursor_position_callback);
     glfwSetScrollCallback(main_window, glfw_scroll_callback);
     glfwSetWindowCloseCallback(main_window, glfw_close_callback);
+
+    
+    // set user pointer
+    glfwSetWindowUserPointer(main_window, reinterpret_cast<void*>(&window_manager));
+
 
     window_manager.main_window = main_window;
 

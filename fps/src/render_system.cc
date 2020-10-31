@@ -14,16 +14,13 @@ namespace
 {
     // actual globals
     float g_mouse_sensitivity = 0.05f;
-    Camera g_player_camera = create_default_camera();
+    Camera g_player_camera = default_camera();
     int g_window_width;
     int g_window_height;
     float g_fov = 90.0f;
     float g_aspect_ratio;
 
-    glm::vec3 g_player_movement_vector{};
-    float g_player_movespeed = 0.2f;
-    float g_player_acceleration = 0.2f;
-    float g_player_max_movespeed = 1.0f;
+
 
 
 
@@ -335,76 +332,6 @@ namespace
     }
 }
 
-void update_player_position_with_key_input(Key key_pressed)
-{
-    // logr::report("[Renderer] updating player position.\n");
-    switch (key_pressed)
-    {
-        case KEY_W:
-        {
-            g_player_camera.position = g_player_camera.position + (g_player_camera.front * g_player_movespeed);
-            break;
-        }
-        case KEY_S:
-        {
-            g_player_camera.position = g_player_camera.position - (g_player_camera.front * g_player_movespeed);
-
-            break;
-        }
-        case KEY_A:
-        {
-            g_player_camera.position = g_player_camera.position - (g_player_camera.right * g_player_movespeed);
-
-            break;
-        }
-        case KEY_D:
-        {
-            g_player_camera.position = g_player_camera.position + (g_player_camera.right * g_player_movespeed);
-            break;
-        }
-        default:
-        {
-            logr::report_warning("[Renderer] WARNING: Key pressed that was not recognized. value: {}", key_pressed);
-            break;
-        }
-    }
-}
-
-// // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
-// assumes world up direction is positive y.
-// @dependencies: 
-// mouse_sensitivity
-// player_camera
-void update_player_camera_with_mouse_input(const float x_offset, const float y_offset, const bool should_constrain_pitch)
-{
-
-    // logr::report("[Renderer] updating player camera.\n");
-    
-    glm::vec3 world_up(0.0f,1.0f, 0.0f);
-
-    float adjusted_x_offset = x_offset * g_mouse_sensitivity;
-    float adjusted_y_offset = y_offset * g_mouse_sensitivity;
-
-    g_player_camera.yaw   += adjusted_x_offset;
-    g_player_camera.pitch += adjusted_y_offset;
-
-    // make sure that when pitch is out of bounds, screen doesn't get flipped
-    if (should_constrain_pitch)
-    {
-        if (g_player_camera.pitch > 89.0f)  g_player_camera.pitch = 89.0f;
-        if (g_player_camera.pitch < -89.0f) g_player_camera.pitch = -89.0f;
-    }
-
-    // update front, right and up Vectors using the updated euler angles
-    glm::vec3 front;
-    front.x = cos(glm::radians(g_player_camera.yaw)) * cos(glm::radians(g_player_camera.pitch));
-    front.y = sin(glm::radians(g_player_camera.pitch));
-    front.z = sin(glm::radians(g_player_camera.yaw)) * cos(glm::radians(g_player_camera.pitch));
-    g_player_camera.front = glm::normalize(front);
-    // also re-calculate the right and up vector
-    g_player_camera.right = glm::normalize(glm::cross(g_player_camera.front, world_up));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-    g_player_camera.up    = glm::normalize(glm::cross(g_player_camera.right, g_player_camera.front));
-}
 
 void init_renderer(Shader_Manager& shader_manager_in, Texture_Manager& texture_manager_in, const int frame_buffer_width, const int frame_buffer_height)
 {
@@ -556,7 +483,7 @@ void render()
     // //2 . lighting pass:
     // // -----------------------------------------------------------------
     {
-        set_shader(*shader_manager, "deferred_edges");
+        set_shader(*shader_manager, "deferred_lighting");
 
         //@FIXME: I don't think this is necessary.
         glActiveTexture(GL_TEXTURE0 + position_tfbo_texture.gl_texture_frame);

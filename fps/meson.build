@@ -15,12 +15,16 @@ inc_dir = include_directories('include')
 source_files = [
 	'src/main.cc',
 	'src/entity_system.cc',
-	'src/input_manager.cc',
+	'src/input.cc',
 	'src/player.cc', 
 	'src/render_system.cc',
 	'src/shader_manager.cc',
 	'src/texture_manager.cc',
-	'src/window_manager.cc'
+	'src/window_manager.cc',
+	'src/simulate.cc',
+	'src/game.cc',
+
+
 ]
 
 executable('testt',
