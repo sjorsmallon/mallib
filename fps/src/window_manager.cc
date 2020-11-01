@@ -21,7 +21,7 @@ namespace
     // bool KEY_D_DOWN = false;
 
 
-   void glfw_close_callback(GLFWwindow* window)
+   void glfw_close(GLFWwindow* window)
     {
         logr::report("[GLFW] closing down the window (calling exit).\n");
         exit(1);
@@ -41,66 +41,11 @@ namespace
         auto& input = window_manager->input;
 
         // uh...
-        if (key == GLFW_KEY_ESCAPE && (action == GLFW_PRESS || action == GLFW_REPEAT))
-            glfwSetWindowShouldClose(window, GLFW_TRUE);
+        if (key == GLFW_KEY_ESCAPE) glfw_close(window);
 
         // otherwise
         input.keyboard_state[key] = (action == GLFW_PRESS || action == GLFW_REPEAT) ? true : false; 
 
-        // if (key == GLFW_KEY_W )
-        // {
-        //     if (action == GLFW_PRESS)
-        //     {
-        //         KEY_W_DOWN = true;
-        //         return;
-        //     }
-        //     if (action == GLFW_RELEASE)
-        //     {
-        //         KEY_W_DOWN = false;
-        //         return;
-        //     }
-        // }
-        // if (key == GLFW_KEY_S)
-        // {
-        //     if (action == GLFW_PRESS)
-        //     {
-        //         KEY_S_DOWN = true;
-        //         return;
-        //     }
-        //     if (action == GLFW_RELEASE)
-        //     {
-        //         KEY_S_DOWN = false;
-        //         return;
-        //     }
-        // }
-
-        // if (key == GLFW_KEY_A)
-        // {
-        //      if (action == GLFW_PRESS)
-        //     {
-        //         KEY_A_DOWN = true;
-        //         return;
-        //     }
-        //     if (action == GLFW_RELEASE)
-        //     {
-        //         KEY_A_DOWN = false;
-        //         return;
-        //     }
-
-        // }
-        // if (key == GLFW_KEY_D)
-        // {
-        //     if (action == GLFW_PRESS)
-        //     {
-        //         KEY_D_DOWN = true;
-        //         return;
-        //     }
-        //     if (action == GLFW_RELEASE)
-        //     {
-        //         KEY_D_DOWN = false;
-        //         return;
-        //     }
-        // }
     }
 
     //@IC(Sjors): parameters cannot be const since the callbacks needs to match.
@@ -241,7 +186,6 @@ void create_main_window(Window_Manager& window_manager, const char* title, const
     glfwSetMouseButtonCallback(main_window, glfw_mouse_button_callback);
     glfwSetCursorPosCallback(main_window, glfw_cursor_position_callback);
     glfwSetScrollCallback(main_window, glfw_scroll_callback);
-    glfwSetWindowCloseCallback(main_window, glfw_close_callback);
 
     
     // set user pointer
@@ -297,10 +241,12 @@ void create_debug_window(Window_Manager& window_manager, const char* title, cons
 }
 
 
-
-
-void poll_input(const Window_Manager& window_manager)
+// swap, clear & poll
+void poll_input(Window_Manager& window_manager)
 {
+    window_manager.input.mouse_delta_x =  0.0f;
+    window_manager.input.mouse_delta_y =  0.0f;
+
     glfwPollEvents();
 }
 

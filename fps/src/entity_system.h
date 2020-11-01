@@ -1,15 +1,33 @@
-// #ifndef INCLUDED_ENTITY_SYSTEM_
-// #define INCLUDED_ENTITY_SYSTEM_
-// // #include <entt/entt.h>
+#ifndef INCLUDED_ENTITY_SYSTEM_
+#define INCLUDED_ENTITY_SYSTEM_
+#include <cstdint>
+#include <glm/vec3.hpp>
+#include <atomic>
 
-// constexpr const int MAX_NUM_LIGHTS = 256;
+using entity_id = uint32_t; 
 
-// struct Entity_Manager
-// {
-// };
+enum Entity_Type : uint8_t
+{
+	TYPE_PLAYER = 0,
+	TYPE_CUBE = 1,
+	TYPE_COUNT = 2
+};
 
-// void create_player(Entity_Manager& manager);
+struct Entity
+{
+    entity_id ID;
+    Entity_Type type;
+    glm::vec3 position;
+};
+
+
+struct Entity_Manager
+{
+	static std::atomic<uint32_t> next_entity_id; 
+};
+
+// void register_entity(Entity_Manager& manager, const Entity_Type type);
 // void create_lights(Entity_Manager& manager);
 
 
-// #endif
+#endif

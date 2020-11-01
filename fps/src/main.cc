@@ -7,9 +7,6 @@
 #include "particle.h"
 #include "game.h"
 
-// #define     GLFW_KEY_W   87
-// constexpr const int MY_KEY_W = 87;
-
 int main()
 {
     const int window_width = 1920;
@@ -17,7 +14,7 @@ int main()
     const int debug_window_width = 850;
     const int debug_window_height = 1000;
 
-    // GLFW abstraction
+    // GLFW /input abstraction
     auto window_manager = Window_Manager();
     create_main_window(window_manager, "mvmt", window_width, window_height);
 
@@ -34,10 +31,9 @@ int main()
     load_png_texture(texture_manager, "metal");
     load_png_texture(texture_manager, "marble");
 
+    //@Fixme(Sjors): create a render manager?
     init_renderer(shader_manager, texture_manager, window_width, window_height);
 
-    // auto particle_cache = Particle_Cache(texture_manager);
-    // auto assets = ...
     Game_State game_state{};
     Particle_Cache particle_cache{}; // uh, allocating this on the stack is maybe a bad idea.
 
@@ -46,13 +42,12 @@ int main()
     while (true)
     {
         poll_input(window_manager);
-        simulate(frame_dt, game_state, window_manager.input, particle_cache);
-
-        render();
+        game_simulate(frame_dt, game_state, window_manager.input, particle_cache);
+        game_render(game_state, particle_cache);
         swap_buffers(window_manager);
     }
 
-    //@todo: delete glfw.
+    //@todo: delete glfw?
     logr::report("exiting...");
 
     return 0;
@@ -65,10 +60,6 @@ int main()
 // gladLoadGL in the window_manager constructor. Which seems like a bad idea.
 // We need to make sure GL is ready before we can test these.
  
-
-
-
-
    //     // render_ui();
 
     //     // bool show_ui = true;

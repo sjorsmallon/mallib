@@ -1,6 +1,7 @@
 #ifndef INCLUDED_GAME_
 #define INCLUDED_GAME_
 #include <cstdint>
+#include "camera.h"
 
 // forward declaration
 struct Input;
@@ -13,20 +14,25 @@ enum Dev_Mode: uint8_t
 	DM_CAMERA,
 };
 
+enum Game_Mode: uint8_t
+{
+	GM_TITLESCREEN,
+	GM_GAME,
+};
+
 
 struct Game_State
 {
 	Dev_Mode dev_mode = DM_NONE;
+	Game_Mode game_mode = GM_GAME;
+
+	Camera camera = default_camera();
 	bool paused = false;
-	// std::unique_ptr<std::vector<Asset>> assets;
-
-	// Audio_State audio_state;
-	// playing_sound* music;
-
 };
 
 
-void simulate(const float dt, Game_State& game_state,const Input& input, Particle_Cache& particle_cache);
+void game_simulate(const float dt, Game_State& game_state,const Input& input, Particle_Cache& particle_cache);
+void game_render(Game_State& game_state, Particle_Cache& particle_cache);
 
 
 #endif

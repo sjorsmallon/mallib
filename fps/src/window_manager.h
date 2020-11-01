@@ -30,7 +30,7 @@ void create_debug_window(Window_Manager& window_manager, const char* title, cons
 
 // bool should_close_window(const Window_Manager& window_manager);
 
-void poll_input(const Window_Manager& window_manager);
+void poll_input(Window_Manager& window_manager);
 void swap_buffers(const Window_Manager& window_manager);
 
 

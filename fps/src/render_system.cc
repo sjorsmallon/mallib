@@ -10,18 +10,14 @@
 #include "texture_manager.h"
 
 
+
 namespace
 {
-    // actual globals
-    float g_mouse_sensitivity = 0.05f;
-    Camera g_player_camera = default_camera();
+    // cvars
     int g_window_width;
     int g_window_height;
-    float g_fov = 90.0f;
     float g_aspect_ratio;
-
-
-
+    float g_fov = 90.0f;
 
 
     Shader_Manager*   shader_manager;
@@ -67,15 +63,12 @@ namespace
 
         if (!warning_can_be_ignored) 
         {
-            // if (type == GL_DEBUG_TYPE_ERROR) logr::report_error( "GL CALLBACK: type = 0x{:x}, severity = 0x{:x}, message = {}\n", type, severity, message);
-            // else
-            // {
-            //     // logr::report("GL CALLBACK: type = 0x{:x}, severity = 0x{:x}, message = {}\n", type, severity, message);
-            // }
-           // fprintf(
-           //      stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-           //      ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
-           //      type, severity, message );  
+            if (type == GL_DEBUG_TYPE_ERROR) logr::report_error( "GL CALLBACK: type = 0x{:x}, severity = 0x{:x}, message = {}\n", type, severity, message);
+            else
+            {
+                logr::report("GL CALLBACK: type = 0x{:x}, severity = 0x{:x}, message = {}\n", type, severity, message);
+            }
+          
         }
     }
 
@@ -378,13 +371,14 @@ void render_floor()
 /// - all lights
 /// - the geometry that needs to be rendered (either via submission or other)
 /// - the texture data (or at least the bindings)
-
-
-void render()
+/// - particles
+/// This should be encapsulated in the game state.
+void render(const Camera camera, Particle_Cache& particle_cache)
 {
     // render
     // ------
-    glm::mat4 view       = create_view_matrix_from_camera(g_player_camera);
+    Camera player_camera = camera;
+    glm::mat4 view       = create_view_matrix_from_camera(player_camera);
     glm::mat4 projection = glm::perspective(glm::radians(g_fov), g_aspect_ratio, 0.1f, 100.0f);  
 
     // 0.1: first render to depth map

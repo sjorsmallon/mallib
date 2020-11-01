@@ -3,6 +3,10 @@
 #include "shader_manager.h"
 #include "texture_manager.h"
 
+// forward declarations
+struct Camera;
+struct Particle_Cache;
+
 // struct Draw_Data
 // {
 // 	gluint VAO;
@@ -28,7 +32,7 @@ void init_renderer(Shader_Manager& shader_manager,
 
 
 // per frame
-void render();
+void render(const Camera camera, Particle_Cache& particle_cache);
 
 
 
