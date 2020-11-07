@@ -13,7 +13,6 @@
 #include <chrono>
 #include <thread>
 
-
 const int window_width = 1920;
 const int window_height = 1080;
 const int debug_window_width = 850;
@@ -23,9 +22,9 @@ int main()
 {
     //@TODO(Sjors): why does using two task systems slow down the application to a crawl?
     //@TODO(Sjors): how to deal with openGL context w. multiple threads?
-    auto high_priority_queue = Task_System(3); 
-    // auto low_priority_queue =  Task_System(1);
-
+    
+    constexpr const int worker_count{3};
+    auto high_priority_queue = Task_System(worker_count); 
 
     auto window_manager = Window_Manager();
     create_main_window(window_manager, "mvmt", window_width, window_height);
@@ -38,12 +37,6 @@ int main()
     load_shader(shader_manager, "deferred_normals");
     load_shader(shader_manager, "lightbox");
     load_shader(shader_manager, "simple_depth");
-
-
-
-
-    using namespace std::chrono_literals;
-    std::this_thread::sleep_for(8s);
 
     auto texture_manager = Texture_Manager();
     load_png_texture(texture_manager, "metal");
