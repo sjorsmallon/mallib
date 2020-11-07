@@ -24,7 +24,7 @@ source_files = [
 	'src/game_simulate.cc',
 	'src/game_render.cc',
 	'src/game.cc',
-
+	'src/task_system.cc',
 
 ]
 

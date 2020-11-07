@@ -1,0 +1,19 @@
+
+
+tm_draw2d_api->stroke_polyline(uib.vbuffer, uib.ibuffers[TM_UI_BUFFER_MAIN], style, (tm_vec2_t[2]){ tm_vec2_add(gizmo_screen_pos, tm_vec2_mul(gizmo_screen_dir, -1000.0f)), tm_vec2_add(gizmo_screen_pos, tm_vec2_mul(gizmo_screen_dir, 1000.0f)) }, 2, false);
+
+
+style:
+color?
+line width
+
+
+
+
+-- parameters
+vertex_buffer,
+index_buffer,
+style,
+list of points in screen space?
+
+void stroke_polyline()

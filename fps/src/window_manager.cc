@@ -168,6 +168,7 @@ void create_main_window(Window_Manager& window_manager, const char* title, const
     //@IMPORTANT!
     glfwMakeContextCurrent(main_window);
     // glfwSwapInterval(1); // Enable vsync
+    glfwSwapInterval( 0 ); // explicitly disable vsync?
 
     //@Note(Sjors): gladLoadGL only after makeContextCurrent.    
     bool error = (gladLoadGL() == 0);
@@ -177,8 +178,8 @@ void create_main_window(Window_Manager& window_manager, const char* title, const
         exit(1);
     }
 
+    //@FIXME: disable cursor when we are trying to access the debug menu?
     // capture cursor & disable it.
-    glfwSetInputMode(main_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
 
     // register callbacks
     // glfwSetErrorCallback(glfw_error_callback); (this is done in the constructor since it does not require a window.)
@@ -186,13 +187,34 @@ void create_main_window(Window_Manager& window_manager, const char* title, const
     glfwSetMouseButtonCallback(main_window, glfw_mouse_button_callback);
     glfwSetCursorPosCallback(main_window, glfw_cursor_position_callback);
     glfwSetScrollCallback(main_window, glfw_scroll_callback);
-
     
     // set user pointer
     glfwSetWindowUserPointer(main_window, reinterpret_cast<void*>(&window_manager));
 
 
+    ///--- init IMGUI ----
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+
+    const char* glsl_version = "#version 450";
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    // Setup Platform/Renderer bindings
+    ImGui_ImplGlfw_InitForOpenGL(main_window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
     window_manager.main_window = main_window;
+
+    //hide the cursor, unhide if in debug mode
+    glfwSetInputMode(main_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+
+
 
 }
 
@@ -263,6 +285,35 @@ void swap_buffers(const Window_Manager& window_manager)
         glfwMakeContextCurrent(window_manager.main_window);
     }
 }
+
+
+//@dependencies: main_window pointer
+void render_debug_ui(const Window_Manager& window_manager)
+{
+    // unhide the cursor.
+    glfwSetInputMode(window_manager.main_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); 
+
+    {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        // Debug Menu
+        {
+            ImGui::Begin("Debug Menu");                      
+            ImGui::End();
+        }
+
+        ImGui::EndFrame();
+        ImGui::Render();
+        int display_w, display_h;
+        glfwGetFramebufferSize(window_manager.main_window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+}
+
 
 
 //@Note(Sjors): Keep these snippets around for a quick start to init glfw and create a window.

@@ -3,6 +3,7 @@
 #include "log.h"
 #include "input.h"
 
+
 //@FIXME(Sjors): I hate that input is part of the window manager now. where do we want to keep it around?
 // Since glfw works with callbacks, we need some way to access the scope 
 
@@ -32,6 +33,6 @@ void create_debug_window(Window_Manager& window_manager, const char* title, cons
 
 void poll_input(Window_Manager& window_manager);
 void swap_buffers(const Window_Manager& window_manager);
-
+void render_debug_ui(const Window_Manager& window_manager);
 
 #endif

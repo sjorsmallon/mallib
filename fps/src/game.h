@@ -18,6 +18,7 @@ enum Game_Mode: uint8_t
 {
 	GM_TITLESCREEN,
 	GM_GAME,
+	GM_EDITOR,
 };
 
 
@@ -31,7 +32,7 @@ struct Game_State
 };
 
 
-void game_simulate(const float dt, Game_State& game_state,const Input& input, Particle_Cache& particle_cache);
+void game_simulate(const double dt, Game_State& game_state,const Input& input, Particle_Cache& particle_cache);
 void game_render(Game_State& game_state, Particle_Cache& particle_cache);
 
 

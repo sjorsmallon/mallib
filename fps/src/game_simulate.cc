@@ -9,6 +9,7 @@ constexpr const int KEY_W = 87;
 constexpr const int KEY_A = 65;
 constexpr const int KEY_S = 83;
 constexpr const int KEY_D = 68;
+constexpr const float FRAMETIME_120_HZ = 0.00833333333f;
 
 namespace
 {
@@ -29,43 +30,44 @@ namespace
     // input
     float g_mouse_sensitivity = 0.05f;
    
-    // player movement
+    // player movement (120 hz baseline tickrate).
     float g_player_movespeed = 0.2f;
     float g_player_acceleration = 0.2f;
     float g_player_max_movespeed = 1.0f;
 
-    //@FIXME: this depends on several factors.
-    // Eventually, I want to re_split this again (camera vs player)
-	glm::vec3 update_position_with_input(const Input& input, const glm::vec3 old_position, const glm::vec3 front, const glm::vec3 right)
+    //@Dependencies:
+    // g_player_movespeed
+	glm::vec3 update_position_with_input(const Input& input, const glm::vec3 old_position, const glm::vec3 front, const glm::vec3 right, const float dt)
 	{
+		float dt_percentage = dt / FRAMETIME_120_HZ;
 		glm::vec3 position = old_position;
 
 		if (input.keyboard_state[KEY_W])
 		{
 	    	logr::report("[Simulate] pressed W.\n");
 
-	    	position = position + (front * g_player_movespeed);
+	    	position = position + (front * g_player_movespeed * dt_percentage);
 
 		}
 		if (input.keyboard_state[KEY_S])
 		{
 	    	logr::report("[Simulate] pressed S.\n");
 
-            position = position - (front * g_player_movespeed);
+            position = position - (front * g_player_movespeed * dt_percentage);
 
 		}
 		if (input.keyboard_state[KEY_A])
 		{
 	    	logr::report("[Simulate] pressed A.\n");
 
-	   		position = position - (right * g_player_movespeed);
+	   		position = position - (right * g_player_movespeed * dt_percentage);
 
 		}
 		if (input.keyboard_state[KEY_D])
 		{
 	    	logr::report("[Simulate] pressed D.\n");
 
-            position = position + (right * g_player_movespeed);
+            position = position + (right * g_player_movespeed * dt_percentage);
 		}
 
 		return position;
@@ -74,9 +76,10 @@ namespace
 
 	// processes input received from a mouse input system.
 	// assumes world up direction is positive y.
+	// @Note(Sjors): this does not use dt!
 	// @dependencies: 
-	// mouse_sensitivity
-	Camera update_camera_view_with_input(const Input& input, const Camera camera, const bool should_constrain_pitch = true)
+	// g_mouse_sensitivity
+	Camera update_camera_view_with_input(const Input& input, const Camera camera, const float dt, const bool should_constrain_pitch = true)
 	{
 		Camera new_camera = camera;
 	    // logr::report("[Renderer] updating player camera.\n");
@@ -114,12 +117,12 @@ namespace
 
 	}
 
-	Camera update_camera_entity(const Input& input, const Camera old_camera)
+	Camera update_camera_entity(const Input& input, const Camera old_camera, const float dt)
 	{
 		Camera camera = old_camera;
-		camera.position = update_position_with_input(input, old_camera.position, old_camera.front, old_camera.right);
+		camera.position = update_position_with_input(input, old_camera.position, old_camera.front, old_camera.right, dt);
 		if (input.mouse_delta_x || input.mouse_delta_x)
-			return update_camera_view_with_input(input, camera);
+			return update_camera_view_with_input(input, camera, dt);
 
 		return camera;
 	}
@@ -128,11 +131,32 @@ namespace
 
 
 // update and render world
-void game_simulate(const float dt, Game_State& game_state,const Input& input, Particle_Cache& particle_cache)
+void game_simulate(const double dt, Game_State& game_state,const Input& input, Particle_Cache& particle_cache)
 {
 	//@TODO(Sjors): set bounds for min / max frame time.
-	// if (dt < 0.0001)
-	// if (dt > 0.1)
+	float clamped_dt = dt;
+	if (clamped_dt < 0.001f)
+		{
+			// logr::report("clamped dt.\n");
+			clamped_dt = 0.001f;
+		}
+	if (clamped_dt > 0.1f) clamped_dt = 0.1f;
+
+
+
+	if (game_state.game_mode == GM_EDITOR)
+	{
+		if (input.mouse_right)
+		{
+			game_state.camera = update_camera_entity(input, game_state.camera, clamped_dt);
+		}
+		else
+		{
+
+		}
+
+	}
+
 
 	// are we paused?
 	if (game_state.paused)
@@ -147,7 +171,7 @@ void game_simulate(const float dt, Game_State& game_state,const Input& input, Pa
 		// if game_mode = player_cam:
 		{
 			update_player_entity(input);
-			game_state.camera = update_camera_entity(input, game_state.camera);
+			game_state.camera = update_camera_entity(input, game_state.camera, clamped_dt);
 			g_player.position = game_state.camera.position;
 		}
 	}

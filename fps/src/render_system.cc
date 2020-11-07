@@ -1,9 +1,12 @@
 #include "render_system.h"
-#include "camera.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <set>
+
+
+#include "camera.h"
 #include "log.h"
 #include "light.h"
 #include "shader_manager.h"
@@ -57,9 +60,9 @@ namespace
         /// these warning IDs are ignored.
         /// 0x8251: bound to video memory (intended.)
         /// 0x8250: buffer performance warning: copying atomic buffer (which we want to do, since we need the values.)
-        // std::set<GLenum> warning_types_to_ignore{0x8251, 0x8250};
+        std::set<GLenum> warning_types_to_ignore{0x8251, 0x8250};
 
-        const bool warning_can_be_ignored = false;
+        const bool warning_can_be_ignored = (warning_types_to_ignore.find(type) != warning_types_to_ignore.end());
 
         if (!warning_can_be_ignored) 
         {
