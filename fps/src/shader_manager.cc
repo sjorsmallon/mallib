@@ -79,6 +79,7 @@ namespace
         {
             logr::report_warning("[graphics] shader_from_file: unable to compile shader {} \n", filename);
             glDeleteShader(shader_id); // Don't leak the shader.
+            exit(1);
         }
         else
         {

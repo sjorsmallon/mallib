@@ -44,28 +44,28 @@ namespace
 
 		if (input.keyboard_state[KEY_W])
 		{
-	    	logr::report("[Simulate] pressed W.\n");
+	    	// logr::report("[Simulate] pressed W.\n");
 
 	    	position = position + (front * g_player_movespeed * dt_percentage);
 
 		}
 		if (input.keyboard_state[KEY_S])
 		{
-	    	logr::report("[Simulate] pressed S.\n");
+	    	// logr::report("[Simulate] pressed S.\n");
 
             position = position - (front * g_player_movespeed * dt_percentage);
 
 		}
 		if (input.keyboard_state[KEY_A])
 		{
-	    	logr::report("[Simulate] pressed A.\n");
+	    	// logr::report("[Simulate] pressed A.\n");
 
 	   		position = position - (right * g_player_movespeed * dt_percentage);
 
 		}
 		if (input.keyboard_state[KEY_D])
 		{
-	    	logr::report("[Simulate] pressed D.\n");
+	    	// logr::report("[Simulate] pressed D.\n");
 
             position = position + (right * g_player_movespeed * dt_percentage);
 		}

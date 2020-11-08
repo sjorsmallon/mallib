@@ -5,14 +5,11 @@
 
 #include <set>
 
-
 #include "camera.h"
 #include "log.h"
 #include "light.h"
 #include "shader_manager.h"
 #include "texture_manager.h"
-
-
 
 namespace
 {
@@ -22,18 +19,18 @@ namespace
     float g_aspect_ratio;
     float g_fov = 90.0f;
 
-
     Shader_Manager*   shader_manager;
     Texture_Manager* texture_manager;
-
 
     // openGL record keeping
 	unsigned int position_tfbo;
     unsigned int normal_tfbo;
     unsigned int albedo_specular_tfbo;
+
+    unsigned int g_depth_map_tfbo;
+
     unsigned int geometry_fbo; 
     unsigned int depth_rbo;
-    unsigned int light_ubo;
 
     unsigned int g_cube_vao;
     unsigned int g_cube_vbo;
@@ -44,8 +41,8 @@ namespace
     unsigned int g_floor_vao;
     unsigned int g_floor_vbo;
 
-    unsigned int g_depth_map_tfbo;
-
+    // uniform buffers
+    unsigned int light_ubo;
 
     // openGL error callback
     void GLAPIENTRY opengl_message_callback(
@@ -131,6 +128,7 @@ namespace
         // DISABLE transparency
         glDisable(GL_BLEND);
         
+
         // Deferred renderer
         // -----------------------------------------------------------
 
@@ -138,7 +136,9 @@ namespace
         glGenFramebuffers(1, &geometry_fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, geometry_fbo);
         
-        // - position color buffer
+        // register all three framebuffers as color attachment (GL_COLOR_ATTACHMENTN), N -> {0 : position, 1: normals , 2: albedo & specular}
+        
+        // - position frame buffer
         // glGenTextures(1, &position_tfbo);
         uint32_t position_tfbo = register_framebuffer_texture(*texture_manager, "position_tfbo");
         glBindTexture(GL_TEXTURE_2D, position_tfbo);
@@ -147,7 +147,7 @@ namespace
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, position_tfbo, 0);
           
-        // - normal color buffer
+        // - normals frame buffer
         // glGenTextures(1, &normal_tfbo);
         uint32_t normal_tfbo = register_framebuffer_texture(*texture_manager, "normal_tfbo");
 
@@ -157,7 +157,7 @@ namespace
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, normal_tfbo, 0);
           
-        // - color + specular color buffer
+        // - color + specular frame buffer
         // glGenTextures(1, &albedo_specular_tfbo);
         uint32_t albedo_specular_tfbo = register_framebuffer_texture(*texture_manager, "albedo_specular_tfbo");
         glBindTexture(GL_TEXTURE_2D, albedo_specular_tfbo);
@@ -354,9 +354,9 @@ void render_cube()
     glBindVertexArray(0);
 }
 
-// render_quad() renders a 1x1 XY quad in NDC
+// render_NDC_quad() renders a 1x1 XY quad in NDC
 // -----------------------------------------
-void render_quad()
+void render_NDC_quad()
 {  
     glBindVertexArray(g_quad_vao);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -370,19 +370,21 @@ void render_floor()
     glBindVertexArray(0);
 }
 
-// Things we at need least access to:
+
+
+// @dependencies:
 /// - all lights
 /// - the geometry that needs to be rendered (either via submission or other)
+/// - all draw commands that are issued from all parts.
 /// - the texture data (or at least the bindings)
 /// - particles
-/// This should be encapsulated in the game state.
 void render(const Camera camera, Particle_Cache& particle_cache)
 {
     // render
     // ------
     Camera player_camera = camera;
     glm::mat4 view       = create_view_matrix_from_camera(player_camera);
-    glm::mat4 projection = glm::perspective(glm::radians(g_fov), g_aspect_ratio, 0.1f, 100.0f);  
+    glm::mat4 projection = glm::perspective(glm::radians(g_fov), g_aspect_ratio, 0.1f, 200.0f);  
 
     // 0.1: first render to depth map
     // ------------------------------------------
@@ -412,9 +414,8 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    // // 0.2. then render scene as normal with shadow mapping (using depth map)
+    // 0.2. then render scene as normal with shadow mapping (using depth map)
     {
-
         glViewport(0, 0, g_window_width, g_window_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glBindTexture(GL_TEXTURE_2D, g_depth_map_tfbo);
@@ -435,111 +436,116 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         set_shader(*shader_manager, "deferred_geometry");
         set_uniform(*shader_manager, "projection", projection);
         set_uniform(*shader_manager, "view", view);
-        // set_uniform(*shader_manager,  "texture_diffuse1", texture_manager->textures["metal"].gl_texture_frame);
-        // set_uniform(*shader_manager,  "texture_specular1", );
 
+        //@FIXME(Sjors):why do we not bind texture specular1? I don't understand..
+        // set_uniform(*shader_manager,  "texture_specular1", );
 
         // 1.a:  render geometry in the scene.
         // ---------------------------------------
-
-        // for all cubes in the scene..)
         {
-            auto& cube_texture = texture_manager->textures["metal"];
-            glActiveTexture(GL_TEXTURE0 + cube_texture.gl_texture_frame);
-            glBindTexture(GL_TEXTURE_2D, cube_texture.gl_texture_id);
-            set_uniform(*shader_manager,  "texture_diffuse1", cube_texture.gl_texture_frame);
+            // for all cubes in the scene..)
+            {
+                auto& cube_texture = texture_manager->textures["metal"];
+                glActiveTexture(GL_TEXTURE0 + cube_texture.gl_texture_frame);
+                glBindTexture(GL_TEXTURE_2D, cube_texture.gl_texture_id);
+                set_uniform(*shader_manager,  "texture_diffuse1", cube_texture.gl_texture_frame);
 
-            glm::mat4 model      = glm::mat4(1.0f);
-            set_uniform(*shader_manager, "model", model);
-            render_cube();
-        }
-   
-        // render floor
-        {
-            auto& marble_texture = texture_manager->textures["marble"];
-            glActiveTexture(GL_TEXTURE0 + marble_texture.gl_texture_frame);
-            glBindTexture(GL_TEXTURE_2D, marble_texture.gl_texture_id);
-            set_uniform(*shader_manager, "texture_diffuse1",  marble_texture.gl_texture_frame);
-            glm::mat4 model = glm::mat4(1.0f);
-            set_uniform(*shader_manager, "model", model);
-            render_floor();
-        }
+                glm::mat4 model = glm::mat4(1.0f);
+                set_uniform(*shader_manager, "model", model);
+                render_cube();
+            }
+       
+            // render floor
+            {
+                auto& marble_texture = texture_manager->textures["marble"];
+                glActiveTexture(GL_TEXTURE0 + marble_texture.gl_texture_frame);
+                glBindTexture(GL_TEXTURE_2D, marble_texture.gl_texture_id);
+                set_uniform(*shader_manager, "texture_diffuse1",  marble_texture.gl_texture_frame);
+                glm::mat4 model = glm::mat4(1.0f);
+                set_uniform(*shader_manager, "model", model);
+                render_floor();
+            }
 
+        }
+       
         // unbind geometry buffer, bind default framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    // get handles for the frame buffers.
+    // get texture handles for the frame buffers.
     auto& position_tfbo_texture = texture_manager->textures["position_tfbo"];
     auto& normal_tfbo_texture   = texture_manager->textures["normal_tfbo"];
     auto& albedo_specular_tfbo_texture = texture_manager->textures["albedo_specular_tfbo"];
 
-    // for now, lights are required in step 2 and later (for the light box shader.)
+    // @VOLATILE: if this changes, the deferred_lighting shader step should change as well.
     std::vector<Light> lights(32);
 
-    // //2 . lighting pass:
-    // // -----------------------------------------------------------------
+    // 2. lighting pass:
+    // -----------------------------------------------------------------
     {
         set_shader(*shader_manager, "deferred_lighting");
 
-        //@FIXME: I don't think this is necessary.
+        //@TODO(Sjors): do we need to rebind the framebuffer textures here?
         glActiveTexture(GL_TEXTURE0 + position_tfbo_texture.gl_texture_frame);
-        glBindTexture(GL_TEXTURE_2D, position_tfbo_texture.gl_texture_id);
-        glActiveTexture(GL_TEXTURE0 + normal_tfbo_texture.gl_texture_frame);
-        glBindTexture(GL_TEXTURE_2D, normal_tfbo_texture.gl_texture_id);
-        glActiveTexture(GL_TEXTURE0 + albedo_specular_tfbo_texture.gl_texture_frame);
-        glBindTexture(GL_TEXTURE_2D, albedo_specular_tfbo_texture.gl_texture_id);
+        glBindTexture(  GL_TEXTURE_2D,  position_tfbo_texture.gl_texture_id);
 
-        set_uniform(*shader_manager, "g_position",    position_tfbo_texture.gl_texture_frame);
-        set_uniform(*shader_manager, "g_normal",      normal_tfbo_texture.gl_texture_frame);    
-        set_uniform(*shader_manager, "g_albedo_spec", albedo_specular_tfbo_texture.gl_texture_frame);    
-        // set_uniform(*shader_manager, "view_position", g_player_camera.position);
+        glActiveTexture(GL_TEXTURE0 + normal_tfbo_texture.gl_texture_frame);
+        glBindTexture(  GL_TEXTURE_2D,  normal_tfbo_texture.gl_texture_id);
+
+        glActiveTexture(GL_TEXTURE0 + albedo_specular_tfbo_texture.gl_texture_frame);
+        glBindTexture(  GL_TEXTURE_2D,  albedo_specular_tfbo_texture.gl_texture_id);
+
+        set_uniform(*shader_manager, "fb_position",    position_tfbo_texture.gl_texture_frame);
+        set_uniform(*shader_manager, "fb_normal",      normal_tfbo_texture.gl_texture_frame);    
+        set_uniform(*shader_manager, "fb_albedo_spec", albedo_specular_tfbo_texture.gl_texture_frame);    
 
         // for (auto& light: lights)
-        // {
-        // }
-        static float time = 0.0f;
-        static float y_position = 0.0f;
-        static float x_position = 0.0f;
-        time += 8.0f;
-        time = fmod(time, 6280.0f);
-        y_position = sin(time/ 1000.0f);
-        x_position = cos(time/ 1000.0f);
-        lights[0].position.x = x_position;
-        lights[0].position.y = y_position;
-        lights[0].position.z = 1.5f;
-        lights[0].color = glm::vec4(1.0f,1.0f,1.0f,0.0f);
+        {
+            static float time = 0.0f;
+            static float y_position = 0.0f;
+            static float x_position = 0.0f;
+            time += 2.0f;
+            time = fmod(time, 6280.0f);
+            y_position = sin(time/ 1000.0f);
+            x_position = cos(time/ 1000.0f);
 
-        lights[2].position.x = x_position;
-        lights[2].position.y = y_position;
-        lights[2].position.z = -1.5f;
-        lights[2].color = glm::vec4(1.0f,0.0f,1.0f,0.0f);
+            // player light.
+            lights[0].position.x = player_camera.position.x;
+            lights[0].position.y = player_camera.position.y;
+            lights[0].position.z = player_camera.position.z;
+            lights[0].color = glm::vec4(1.0f,1.0f,1.0f,0.0f);
+            lights[0].on = false;
+            lights[0].linear = 0.001;
+            lights[0].quadratic = 0.001;
 
+            lights[1].position = glm::vec4(0.0f, 3.0f, 0.0f, 0.0f);
+            lights[1].color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+            lights[1].on = true;
+            lights[1].linear = 0.1;
+            lights[1].quadratic = 0.2;
 
-        lights[1].position = glm::vec4(0.0f, 3.0f, 0.0f, 0.0f);
-        lights[1].color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+            lights[2].position.x = x_position;
+            lights[2].position.y = y_position;
+            lights[2].position.z = -1.5f;
+            lights[2].color = glm::vec4(1.0f,0.0f,1.0f,0.0f);
+            lights[2].on = true;
+            lights[2].linear = 0.1;
+            lights[2].quadratic = 0.2;
+
+            lights[3].position.x = x_position;      
+            lights[3].position.y = y_position;
+            lights[3].position.z = 1.5f;
+            lights[3].color = glm::vec4(1.0f,1.0f,1.0f,0.0f);
+            lights[3].on = true;
+            lights[3].linear = 0.1;
+            lights[3].quadratic = 0.2;
+
+        }
         
         glBindBuffer(GL_UNIFORM_BUFFER, light_ubo);
         glNamedBufferData(light_ubo, lights.size() * sizeof(Light),  lights.data(), GL_DYNAMIC_DRAW);
 
-       //      //@IC(Sjors): glm::vec4 for alignment reasons. ignore fourth component.
-       //  //     for (size_t idx = 0; idx != 32; ++idx)
-       //  //     {
-       //  //         set_uniform(*shader_manager, "lights[" + std::to_string(idx) + "].position", glm::vec4(0.0f,2.0f, 0.0f,0.0f));
-       //  //         set_uniform(*shader_manager, "lights[" + std::to_string(idx) + "].color", glm::vec4(1.0f,1.0f, 1.0f,0.0f));
-       //  // //     //     // update attenuation parameters and calculate radius
-       //  //         // const float constant = 1.0f; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
-       //  //         // const float linear = 0.7f;
-       //  //         // const float quadratic = 1.8f;
-       //  // //     //     shaderLightingPass.setFloat("lights[" + std::to_string(i) + "].Linear", linear);
-       //  // //     //     shaderLightingPass.setFloat("lights[" + std::to_string(i) + "].Quadratic", quadratic);
-       //  // //     //     // then calculate radius of light volume/sphere
-       //  // //     //     const float maxBrightness = std::fmaxf(std::fmaxf(lightColors[i].r, lightColors[i].g), lightColors[i].b);
-       //  // //     //     float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
-       //  // //     //     shaderLightingPass.setFloat("lights[" + std::to_string(i) + "].Radius", radius);
-       //  //     }
-        render_quad();
-
+        render_NDC_quad();
     }
 
     // // 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
@@ -556,20 +562,22 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
 
     // // 3. render lights on top of scene
-    // // --------------------------------
+    // --------------------------------
     {
 
-        // only render first n lights.normally, for light: lights)
+        // only render the active lights.normally, for light: active_lights)
         {
             set_shader( *shader_manager, "lightbox");
             set_uniform(*shader_manager, "projection", projection);
             set_uniform(*shader_manager, "view", view);
 
+          
+
             glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(lights[0].position));
+            model = glm::translate(model, glm::vec3(lights[1].position));
             model = glm::scale(model, glm::vec3(0.125f));
             set_uniform(*shader_manager, "model", model);
-            set_uniform(*shader_manager, "light_color", lights[0].color);
+            set_uniform(*shader_manager, "light_color", lights[1].color);
             render_cube();
 
             model = glm::mat4(1.0f);
@@ -580,109 +588,36 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             render_cube();
 
             model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(lights[1].position));
+            model = glm::translate(model, glm::vec3(lights[3].position));
             model = glm::scale(model, glm::vec3(0.125f));
             set_uniform(*shader_manager, "model", model);
-            set_uniform(*shader_manager, "light_color", lights[1].color);
+            set_uniform(*shader_manager, "light_color", lights[3].color);
             render_cube();
+
+            // model = glm::mat4(1.0f);
+            // model = glm::translate(model, glm::vec3(lights[3].position));
+            // model = glm::scale(model, glm::vec3(0.125f));
+            // set_uniform(*shader_manager, "model", model);
+            // set_uniform(*shader_manager, "light_color", lights[3].color);
+            // render_cube();
         }
     }
 
 }
 
+// 1.0/(1.0 + c1*d + c2*d^2)
 
 
-// void render()
-// {
-//     // render
-//     // ------
-//     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-//     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//@Note(Sjors)light falloff calculation.
 
-//     // 1. geometry pass: render scene's geometry/color data into geometry_fbo
-//     // -----------------------------------------------------------------
-//     glBindFramebuffer(GL_FRAMEBUFFER, geometry_fbo);
-//     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-//     glm::mat4 view  = create_view_matrix(camera);
-//     float aspect_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
-//     glm::mat4 projection = glm::perspective(glm::radians(fov),aspect_ratio, 0.1f, 100.0f);  
-//     glm::mat4 model = glm::mat4(1.0f);
-
-//     // @TODO: set_shader("deferred_geometry");
-//     //        set_uniform_mat4("projection", projection);
-//     //        set_uniform_mat4("view", view);
-//     //        auto view = registry.view<renderable>();
-//     // for (auto entity: view)
-//     // {
-//     //      set_uniform_mat4("model". model);
-//     //      auto& render_data = view.get<renderable>(entity);
-//     //      draw(render_data.mesh);
-//     // }
-//     //      
-//     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-//     // 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the geometry_fbo's content.
-//     // -----------------------------------------------------------------------------------------------------------------------
-//     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//     // set_shader("deferred_lighting");
-//     glActiveTexture(GL_TEXTURE0);
-//     glBindTexture(GL_TEXTURE_2D, position_tfbo);
-//     glActiveTexture(GL_TEXTURE0 + idx);
-//     glBindTexture(GL_TEXTURE_2D, normal_tfbo);
-//     glActiveTexture(GL_TEXTURE2);
-//     glBindTexture(GL_TEXTURE_2D, albedo_specular_tfbo);
-
-
-//     // send light relevant uniforms
-//     // for (unsigned int i = 0; i < lightPositions.size(); i++)
-//     // {
-
-//     //     // update_uniform("lights" std::to_string(i) + ".position", light[i].position);
-//     //     shaderLightingPass.setVec3("lights[" + std::to_string(i) + "].Position", lightPositions[i]);
-//     //     shaderLightingPass.setVec3("lights[" + std::to_string(i) + "].Color", lightColors[i]);
-//     //     // update attenuation parameters and calculate radius
-//     //     const float constant = 1.0; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
-//     //     const float linear = 0.7;
-//     //     const float quadratic = 1.8;
-//     //     shaderLightingPass.setFloat("lights[" + std::to_string(i) + "].Linear", linear);
-//     //     shaderLightingPass.setFloat("lights[" + std::to_string(i) + "].Quadratic", quadratic);
-//     //     // then calculate radius of light volume/sphere
-//     //     const float maxBrightness = std::fmaxf(std::fmaxf(lightColors[i].r, lightColors[i].g), lightColors[i].b);
-//     //     float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
-//     //     shaderLightingPass.setFloat("lights[" + std::to_string(i) + "].Radius", radius);
-//     // }
-//     // shaderLightingPass.setVec3("viewPos", camera.Position);
-//     // // finally render quad
-//     // renderQuad();
-
-//     // 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
-//     // ----------------------------------------------------------------------------------
-//     glBindFramebuffer(GL_READ_FRAMEBUFFER, geometry_fbo);
-//     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
-//     // blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
-//     // the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the      
-//     // depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
-//     glBlitFramebuffer(0, 0, window_width, window_height, 0, 0, window_width, window_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-//     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-//     // 3. render lights on top of scene
-//     // --------------------------------
-//     // shaderLightBox.use();
-//     // shaderLightBox.setMat4("projection", projection);
-//     // shaderLightBox.setMat4("view", view);
-//     // for (unsigned int i = 0; i < lightPositions.size(); i++)
-//     // {
-//     //     model = glm::mat4(1.0f);
-//     //     model = glm::translate(model, lightPositions[i]);
-//     //     model = glm::scale(model, glm::vec3(0.125f));
-//     //     shaderLightBox.setMat4("model", model);
-//     //     shaderLightBox.setVec3("lightColor", lightColors[i]);
-//     //     renderCube();
-//     // }
-
-//     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-//     // -------------------------------------------------------------------------------
-//     glfwSwapBuffers(window);
-
-// }
+//  // //     //     // update attenuation parameters and calculate radius
+//  //         // const float constant = 1.0f;
+//  //         // const float linear = 0.7f;
+//  //         // const float quadratic = 1.8f;
+//  // //     //     shaderLightingPass.setFloat("lights[" + std::to_string(i) + "].Linear", linear);
+//  // //     //     shaderLightingPass.setFloat("lights[" + std::to_string(i) + "].Quadratic", quadratic);
+//  // //     //     // then calculate radius of light volume/sphere
+//  // //     //     const float maxBrightness = std::fmaxf(std::fmaxf(lightColors[i].r, lightColors[i].g), lightColors[i].b);
+//  // //     //     float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+//  // //     //     shaderLightingPass.setFloat("lights[" + std::to_string(i) + "].Radius", radius);
+//  //     }

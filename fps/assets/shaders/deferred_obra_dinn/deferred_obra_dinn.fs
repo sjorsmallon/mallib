@@ -9,9 +9,9 @@ out vec4 fragment_color;
 
 in vec2 texture_coords;
 
-uniform sampler2D g_position;
-uniform sampler2D g_normal;
-uniform sampler2D g_albedo_spec;
+uniform sampler2D fb_position;
+uniform sampler2D fb_normal;
+uniform sampler2D fb_albedo_spec;
 
 struct Light {
     vec4 position;
@@ -28,11 +28,11 @@ uniform vec3 view_position;
 void main()
 {             
     // retrieve data from G-buffer
-    vec3 fragment_position = texture(g_position, texture_coords).rgb;
+    vec3 fragment_position = texture(fb_position, texture_coords).rgb;
 
-    vec3 normal = texture(g_normal, texture_coords).rgb;
-    vec3 albedo = texture(g_albedo_spec, texture_coords).rgb;
-    float specular = texture(g_albedo_spec, texture_coords).a;
+    vec3 normal = texture(fb_normal, texture_coords).rgb;
+    vec3 albedo = texture(fb_albedo_spec, texture_coords).rgb;
+    float specular = texture(fb_albedo_spec, texture_coords).a;
     
     // then calculate lighting as usual
     vec3 lighting = albedo * ambient_component;
