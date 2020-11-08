@@ -300,7 +300,8 @@ void render_debug_ui(const Window_Manager& window_manager)
 
         // Debug Menu
         {
-            ImGui::Begin("Debug Menu");                      
+            
+            ImGui::Begin("Debug Menu"); 
             ImGui::End();
         }
 

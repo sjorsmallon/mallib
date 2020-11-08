@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include <set>
 
@@ -11,6 +12,8 @@
 #include "shader_manager.h"
 #include "texture_manager.h"
 
+constexpr const int NUM_LIGHTS = 32;
+
 namespace
 {
     // cvars
@@ -18,6 +21,9 @@ namespace
     int g_window_height;
     float g_aspect_ratio;
     float g_fov = 90.0f;
+
+    constexpr const float g_projection_z_near_plane = 0.1f;
+    constexpr const float g_projection_z_far_plane = 200.0f;
 
     Shader_Manager*   shader_manager;
     Texture_Manager* texture_manager;
@@ -186,7 +192,7 @@ namespace
         // init uniform buffers
         //@Volatile: this should match both the size and the binding index of the buffer.
         const int LIGHT_BUFFER_UNIFORM_IDX = 2;
-        const int light_buffer_size = 32 * sizeof(Light);
+        const int light_buffer_size = NUM_LIGHTS * sizeof(Light);
 
         // glGenBuffers(1, &light_ubo);
         glCreateBuffers(1, &light_ubo);
@@ -269,6 +275,7 @@ namespace
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
         
 
+
         // link vertex attributes (position, normals, texture coordinates);
         glBindVertexArray(g_cube_vao);
         glEnableVertexAttribArray(0);
@@ -296,6 +303,8 @@ namespace
         glBindBuffer(GL_ARRAY_BUFFER, g_quad_vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), &quad_vertices, GL_STATIC_DRAW);
         glBindVertexArray(g_quad_vao);
+
+
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(1);
@@ -318,6 +327,8 @@ namespace
         glGenBuffers(1, &g_floor_vbo);
         glBindBuffer(GL_ARRAY_BUFFER, g_floor_vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(floor_vertices), &floor_vertices, GL_STATIC_DRAW);
+
+        // link vertex attributes (position, normals, texture coordinates);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(1);
@@ -373,6 +384,7 @@ void render_floor()
 
 
 // @dependencies:
+// cvars: g_fov, g_aspect_ratio, g_projection_z_near_plane, g_projection_z_far_plane
 /// - all lights
 /// - the geometry that needs to be rendered (either via submission or other)
 /// - all draw commands that are issued from all parts.
@@ -384,48 +396,57 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     // ------
     Camera player_camera = camera;
     glm::mat4 view       = create_view_matrix_from_camera(player_camera);
-    glm::mat4 projection = glm::perspective(glm::radians(g_fov), g_aspect_ratio, 0.1f, 200.0f);  
+    glm::mat4 projection = glm::perspective(glm::radians(g_fov), g_aspect_ratio, g_projection_z_near_plane, g_projection_z_far_plane);  
 
-    // 0.1: first render to depth map
-    // ------------------------------------------
+    // logr::report("camera.position: {}\n, camera.front:{}\n", glm::to_string(camera.position), glm::to_string(camera.front));
+
+    // STEP 0: SHADOW MAPPING
     {
-        set_shader(*shader_manager, "simple_depth");
+        // 0.1: first render to depth map
+        // ------------------------------------------
+        // {
+        //     set_shader(*shader_manager, "simple_depth");
 
-        glViewport(0, 0, 1024, 1024);
-        glBindFramebuffer(GL_FRAMEBUFFER, g_depth_map_tfbo);
-        glClear(GL_DEPTH_BUFFER_BIT);
-        float near_plane = 1.0f, far_plane = 7.5f;
-        // frustum?
-        glm::mat4 light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-        glm::mat4 light_view =       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), 
-                                                 glm::vec3(0.0f, 3.0f,  0.0f), 
-                                                 glm::vec3(0.0f, 1.0f,  0.0f));  
-        glm::mat4 light_space_matrix = light_projection * light_view;
+        //     glViewport(0, 0, 1024, 1024);
+        //     glBindFramebuffer(GL_FRAMEBUFFER, g_depth_map_tfbo);
+        //     glClear(GL_DEPTH_BUFFER_BIT);
+        //     float near_plane = 1.0f, far_plane = 7.5f;
+        //     // frustum?
+        //     glm::mat4 light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+        //     glm::mat4 light_view =       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), 
+        //                                              glm::vec3(0.0f, 3.0f,  0.0f), 
+        //                                              glm::vec3(0.0f, 1.0f,  0.0f));  
+        //     glm::mat4 light_space_matrix = light_projection * light_view;
 
 
-        set_uniform(*shader_manager, "light_space_matrix", light_space_matrix);
-        // for all cubes in the scene..)
-        {
-            glm::mat4 model      = glm::mat4(1.0f);
-            set_uniform(*shader_manager, "model", model);
-            render_cube();
-        }
-        // unbind framebuffer
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //     set_uniform(*shader_manager, "light_space_matrix", light_space_matrix);
+        //     // for all cubes in the scene..)
+        //     {
+        //         glm::mat4 model      = glm::mat4(1.0f);
+        //         set_uniform(*shader_manager, "model", model);
+        //         render_cube();
+        //     }
+        //     // unbind framebuffer
+        //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // }
+
+        // // 0.2. then render scene as normal with shadow mapping (using depth map)
+        // {
+        //     glViewport(0, 0, g_window_width, g_window_height);
+        //     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //     glBindTexture(GL_TEXTURE_2D, g_depth_map_tfbo);
+
+        // }
     }
-
-    // 0.2. then render scene as normal with shadow mapping (using depth map)
-    {
-        glViewport(0, 0, g_window_width, g_window_height);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glBindTexture(GL_TEXTURE_2D, g_depth_map_tfbo);
-
-    }
+   
 
     // // 1. geometry pass: render scene's geometry/color data into geometry_fbo
     // // -----------------------------------------------------------------
     {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+     
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // bind the geometry buffer as the frame buffer.
@@ -478,7 +499,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     auto& albedo_specular_tfbo_texture = texture_manager->textures["albedo_specular_tfbo"];
 
     // @VOLATILE: if this changes, the deferred_lighting shader step should change as well.
-    std::vector<Light> lights(32);
+    std::vector<Light> lights(NUM_LIGHTS);
 
     // 2. lighting pass:
     // -----------------------------------------------------------------
@@ -498,6 +519,15 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         set_uniform(*shader_manager, "fb_position",    position_tfbo_texture.gl_texture_frame);
         set_uniform(*shader_manager, "fb_normal",      normal_tfbo_texture.gl_texture_frame);    
         set_uniform(*shader_manager, "fb_albedo_spec", albedo_specular_tfbo_texture.gl_texture_frame);    
+
+
+        glm::mat4 camera_model = glm::mat4(1.0f);
+        camera_model = glm::translate(camera_model, glm::vec3(camera.position));
+
+        glm::vec4 camera_position = view * camera_model * glm::vec4(camera.position, 1.0f); 
+        logr::report("view position: {}\n", glm::to_string(camera_position));
+        
+        set_uniform(*shader_manager, "view_position", glm::vec4(camera_position));
 
         // for (auto& light: lights)
         {
@@ -621,3 +651,11 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 //  // //     //     float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
 //  // //     //     shaderLightingPass.setFloat("lights[" + std::to_string(i) + "].Radius", radius);
 //  //     }
+
+
+// read framebuffer
+
+// GLint drawFboId = 0, readFboId = 0;
+// glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFboId);
+// glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readFboId);
+// logr::report("current draw framebuffer bound: {}.\n current  read framebuffer bound: {}\n", drawFboId, readFboId);
