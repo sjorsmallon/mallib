@@ -2,7 +2,6 @@
 # TO DO
 ## timed
 - make `timed_function(function_name)` (2) (10-11-2020)
-- make `Task_Queue` use futures that return bool (2) (10-11-2020)
 - make light vector part of game_state  (1) (10-11-2020)
 - make update_uniform crash & refactor internal variable names (1) (10-11-2020)
 - pass dt factor instead of actual dt to update functions. (1) (10-11-2020)
@@ -14,6 +13,7 @@
 - toon shader (2) (10-11-2020)
 
 ## untimed
+- make `Task_Queue` use futures? (10-11-2020)
 - particle compute shader 
 - near / far z-plane values?
 - try freetype openGL 
