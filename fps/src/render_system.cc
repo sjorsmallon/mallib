@@ -525,7 +525,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         camera_model = glm::translate(camera_model, glm::vec3(camera.position));
 
         glm::vec4 camera_position = view * camera_model * glm::vec4(camera.position, 1.0f); 
-        logr::report("view position: {}\n", glm::to_string(camera_position));
+        // logr::report("view position: {}\n", glm::to_string(camera_position));
         
         set_uniform(*shader_manager, "view_position", glm::vec4(camera_position));
 
