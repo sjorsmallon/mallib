@@ -11,6 +11,7 @@
 #include "light.h"
 #include "shader_manager.h"
 #include "texture_manager.h"
+#include "timed_function.h"
 
 constexpr const int NUM_LIGHTS = 32;
 
@@ -392,6 +393,8 @@ void render_floor()
 /// - particles
 void render(const Camera camera, Particle_Cache& particle_cache)
 {
+    timed_function("render");
+    
     // render
     // ------
     Camera player_camera = camera;

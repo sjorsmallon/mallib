@@ -10,6 +10,8 @@
 #include "particle.h"
 #include "game.h"
 
+#include "timed_function.h"
+
 #include <chrono>
 #include <thread>
 
@@ -83,6 +85,7 @@ int main()
             std::cout << "average frame time past 120 frames: " << accumulator << '\n';
         }
 
+        logr::report("render time: {}", Timed_Function::timed_functions["render"].duration);
     }
 
     //@todo: delete glfw?

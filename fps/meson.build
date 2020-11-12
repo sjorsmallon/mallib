@@ -26,6 +26,7 @@ source_files = [
 	'src/game_render.cc',
 	'src/game.cc',
 	'src/task_system.cc',
+	'src/timed_function.cc',
 
 ]
 
