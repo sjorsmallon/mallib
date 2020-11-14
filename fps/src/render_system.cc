@@ -93,7 +93,7 @@ namespace
          // Enable use of the z-buffer
         glEnable(GL_DEPTH_TEST);    
         // Default is GL_LESS
-        glDepthFunc(GL_LEQUAL);
+        // glDepthFunc(GL_LEQUAL);
 
         // Line width 2.0 pixels
         glLineWidth(1.0);
@@ -183,6 +183,24 @@ namespace
         glBindRenderbuffer(GL_RENDERBUFFER, depth_rbo);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, frame_buffer_width, frame_buffer_height);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_rbo);
+
+
+        // //@TODO(Sjors): do we need to rebind the framebuffer textures here?
+        // get texture handles for the frame buffers.
+        auto& position_tfbo_texture = texture_manager->textures["position_tfbo"];
+        auto& normal_tfbo_texture   = texture_manager->textures["normal_tfbo"];
+        auto& albedo_specular_tfbo_texture = texture_manager->textures["albedo_specular_tfbo"];
+        glActiveTexture(GL_TEXTURE0 + position_tfbo_texture.gl_texture_frame);
+        glBindTexture(  GL_TEXTURE_2D,  position_tfbo_texture.gl_texture_id);
+
+        glActiveTexture(GL_TEXTURE0 + normal_tfbo_texture.gl_texture_frame);
+        glBindTexture(  GL_TEXTURE_2D,  normal_tfbo_texture.gl_texture_id);
+
+        glActiveTexture(GL_TEXTURE0 + albedo_specular_tfbo_texture.gl_texture_frame);
+        glBindTexture(  GL_TEXTURE_2D,  albedo_specular_tfbo_texture.gl_texture_id);
+
+
+
 
         // finally check if framebuffer is complete
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) logr::report_error("[OpenGL] Framebuffer is incomplete.\n");
@@ -358,6 +376,23 @@ void init_renderer(Shader_Manager& shader_manager_in, Texture_Manager& texture_m
     init_floor();
 }
 
+void render_back_of_cube()
+{
+    // render back Cube
+    glBindVertexArray(g_cube_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+}
+
+void render_front_of_cube()
+{
+    // render back Cube
+    glBindVertexArray(g_cube_vao);
+    glDrawArrays(GL_TRIANGLES, 6, 6);
+    glBindVertexArray(0);
+}
+
+
 void render_cube()
 {
     // render Cube
@@ -401,7 +436,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     glm::mat4 view       = create_view_matrix_from_camera(player_camera);
     glm::mat4 projection = glm::perspective(glm::radians(g_fov), g_aspect_ratio, g_projection_z_near_plane, g_projection_z_far_plane);  
 
-    // logr::report("camera.position: {}\n, camera.front:{}\n", glm::to_string(camera.position), glm::to_string(camera.front));
 
     // STEP 0: SHADOW MAPPING
     {
@@ -448,13 +482,13 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-     
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // bind the geometry buffer as the frame buffer.
         glBindFramebuffer(GL_FRAMEBUFFER, geometry_fbo);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+   
 
         // bind shader and update all relevant uniforms.
         set_shader(*shader_manager, "deferred_geometry");
@@ -476,7 +510,12 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
                 glm::mat4 model = glm::mat4(1.0f);
                 set_uniform(*shader_manager, "model", model);
-                render_cube();
+                
+                // render_cube();
+
+                render_back_of_cube();
+                render_front_of_cube();
+
             }
        
             // render floor
@@ -509,25 +548,24 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     {
         set_shader(*shader_manager, "deferred_lighting");
 
-        //@TODO(Sjors): do we need to rebind the framebuffer textures here?
-        glActiveTexture(GL_TEXTURE0 + position_tfbo_texture.gl_texture_frame);
-        glBindTexture(  GL_TEXTURE_2D,  position_tfbo_texture.gl_texture_id);
+        //@TODO(Sjors): find out why this is not necessary.
 
-        glActiveTexture(GL_TEXTURE0 + normal_tfbo_texture.gl_texture_frame);
-        glBindTexture(  GL_TEXTURE_2D,  normal_tfbo_texture.gl_texture_id);
+        // glActiveTexture(GL_TEXTURE0 + position_tfbo_texture.gl_texture_frame);
+        // glBindTexture(  GL_TEXTURE_2D,  position_tfbo_texture.gl_texture_id);
 
-        glActiveTexture(GL_TEXTURE0 + albedo_specular_tfbo_texture.gl_texture_frame);
-        glBindTexture(  GL_TEXTURE_2D,  albedo_specular_tfbo_texture.gl_texture_id);
+        // glActiveTexture(GL_TEXTURE0 + normal_tfbo_texture.gl_texture_frame);
+        // glBindTexture(  GL_TEXTURE_2D,  normal_tfbo_texture.gl_texture_id);
+
+        // glActiveTexture(GL_TEXTURE0 + albedo_specular_tfbo_texture.gl_texture_frame);
+        // glBindTexture(  GL_TEXTURE_2D,  albedo_specular_tfbo_texture.gl_texture_id);
+
 
         set_uniform(*shader_manager, "fb_position",    position_tfbo_texture.gl_texture_frame);
         set_uniform(*shader_manager, "fb_normal",      normal_tfbo_texture.gl_texture_frame);    
         set_uniform(*shader_manager, "fb_albedo_spec", albedo_specular_tfbo_texture.gl_texture_frame);    
 
 
-        glm::mat4 camera_model = glm::mat4(1.0f);
-        camera_model = glm::translate(camera_model, glm::vec3(camera.position));
-
-        glm::vec4 camera_position = view * camera_model * glm::vec4(camera.position, 1.0f); 
+        glm::vec4 camera_position = glm::vec4(camera.position, 1.0f); 
         // logr::report("view position: {}\n", glm::to_string(camera_position));
         
         set_uniform(*shader_manager, "view_position", glm::vec4(camera_position));
@@ -575,6 +613,8 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
         }
         
+        //@Note(Sjors): while not necessary when using glnamedbufferdata, it IS important to still bind it before rendering the
+        // NDC quad.
         glBindBuffer(GL_UNIFORM_BUFFER, light_ubo);
         glNamedBufferData(light_ubo, lights.size() * sizeof(Light),  lights.data(), GL_DYNAMIC_DRAW);
 
@@ -604,7 +644,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             set_uniform(*shader_manager, "projection", projection);
             set_uniform(*shader_manager, "view", view);
 
-          
 
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(lights[1].position));

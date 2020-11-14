@@ -32,11 +32,13 @@ struct Texture_Manager
 };
 
 
+
+void load_tga_texture(Texture_Manager& texture_manager, const std::string& texture_name, bool flip_vertically = true);
 void load_png_texture(Texture_Manager& texture_manager, const std::string& texture_name, bool flip_vertically = true);
 
+//@FIXME(Sjors): I don't like this (return and do something else.)
 // returns the texture ID
 uint32_t register_framebuffer_texture(Texture_Manager& texture_manager, const std::string& framebuffer_name);
-
 
 int32_t get_next_free_texture_frame(Texture_Manager& manager);
 

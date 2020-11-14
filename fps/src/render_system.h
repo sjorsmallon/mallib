@@ -23,8 +23,7 @@ enum Key
 };
 
 
-// Dependency inversion
-// once 
+
 void init_renderer(Shader_Manager& shader_manager, 
 				   Texture_Manager& texture_manager,
 				   const int frame_buffer_width,

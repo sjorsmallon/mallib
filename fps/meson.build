@@ -22,6 +22,7 @@ source_files = [
 	'src/shader_manager.cc',
 	'src/texture_manager.cc',
 	'src/window_manager.cc',
+	'src/asset_manager.cc',
 	'src/game_simulate.cc',
 	'src/game_render.cc',
 	'src/game.cc',

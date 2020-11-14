@@ -2,6 +2,7 @@
 #include "window_manager.h"
 #include "shader_manager.h"
 #include "texture_manager.h"
+#include "asset_manager.h"
 
 #include "render_system.h"
 #include "task_system.h"
@@ -40,9 +41,14 @@ int main()
     load_shader(shader_manager, "lightbox");
     load_shader(shader_manager, "simple_depth");
 
+    auto asset_manager = Asset_Manager();
+    load_obj(asset_manager, "target");
+
     auto texture_manager = Texture_Manager();
+
     load_png_texture(texture_manager, "metal");
     load_png_texture(texture_manager, "marble");
+    load_tga_texture(texture_manager, "target_wood_diffuse");
 
     //@Fixme(Sjors): create a render manager?
     init_renderer(shader_manager, texture_manager, window_width, window_height);
@@ -85,7 +91,6 @@ int main()
             std::cout << "average frame time past 120 frames: " << accumulator << '\n';
         }
 
-        logr::report("render time: {}", Timed_Function::timed_functions["render"].duration);
     }
 
     //@todo: delete glfw?

@@ -160,7 +160,7 @@ namespace
                     uniform.data = glm::vec4();
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_FLOAT_VEC4\n", uniform.name);
+                    // logr::report("{} : GL_FLOAT_VEC4\n", uniform.name);
                     break;
                 }
                 case GL_FLOAT:
@@ -170,7 +170,7 @@ namespace
                     uniform.data = float{0.0f};
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_FLOAT\n", uniform.name);
+                    // logr::report("{} : GL_FLOAT\n", uniform.name);
                     break;
                 }
                 case GL_FLOAT_MAT4:
@@ -180,7 +180,7 @@ namespace
                     uniform.data = glm::mat4(1.0f);
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_FLOAT_MAT4\n", uniform.name);
+                    // logr::report("{} : GL_FLOAT_MAT4\n", uniform.name);
                     break;
                 }
                 case GL_FLOAT_MAT3x4:
@@ -190,7 +190,7 @@ namespace
                     uniform.data = glm::mat3x4(1.0f);
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_FLOAT_MAT3x4\n", uniform.name);
+                    // logr::report("{} : GL_FLOAT_MAT3x4\n", uniform.name);
                     break;
                 }
 
@@ -201,7 +201,7 @@ namespace
                     uniform.data = int32_t{0};
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_INT\n", uniform.name);
+                    // logr::report("{} : GL_INT\n", uniform.name);
                     break;
                 }
                 case GL_INT_VEC2:
@@ -211,7 +211,7 @@ namespace
                     uniform.data = glm::ivec2(0);
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_INT_VEC2\n", uniform.name);
+                    // logr::report("{} : GL_INT_VEC2\n", uniform.name);
                     break;
                 }
                 case GL_INT_VEC3:
@@ -221,7 +221,7 @@ namespace
                     uniform.data = glm::ivec3(0);
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_INT_VEC3\n", uniform.name);
+                    // logr::report("{} : GL_INT_VEC3\n", uniform.name);
 
                     break;
                 }
@@ -232,7 +232,7 @@ namespace
                     uniform.data = int32_t{0};
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_SAMPLER_2D\n", uniform.name);
+                    // logr::report("{} : GL_SAMPLER_2D\n", uniform.name);
                     break;
                 }
                 case GL_UNSIGNED_INT:
@@ -242,7 +242,7 @@ namespace
                     uniform.data = uint32_t{0};
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_UNSIGNED_INT\n", uniform.name);
+                    // logr::report("{} : GL_UNSIGNED_INT\n", uniform.name);
                     break;
                 }
                 case GL_UNSIGNED_INT_ATOMIC_COUNTER:
@@ -264,8 +264,16 @@ namespace
             }
         }
 
+        
+        logr::report_warning("[get_shader_info] skipping glGetUniformLocation for uniform arrays.\n");
+
         for (auto &uniform_name: shader.uniform_names)
         {
+            //@FIXME(Sjors): dirty fix to not check for location of array uniforms, since they will be set using 
+            // named buffer data.
+            if (uniform_name.find("[") != std::string::npos) continue;
+
+
             shader.uniforms[uniform_name].location = glGetUniformLocation(shader.program_id, uniform_name.c_str());
             if (shader.uniforms[uniform_name].location == -1) logr::report_error("[Uniform] {} : UNKNOWN LOCATION!\n", uniform_name);
         }
@@ -279,7 +287,7 @@ namespace
 void set_shader(Shader_Manager& shader_manager, const char* shader_name)
 {
     uint32_t shader_id = 0; 
-    if (!(shader_name == "none"))
+    // if (shader_name != "none")
     {
         shader_id = shader_manager.shaders[shader_name].program_id;
     }
@@ -289,9 +297,11 @@ void set_shader(Shader_Manager& shader_manager, const char* shader_name)
 
 uint32_t load_shader(Shader_Manager& shader_manager, const std::string& shader_name)
 {
-    std::string shader_folder_prefix = "../assets/shaders/";
-    std::string shader_folder_path = shader_folder_prefix + shader_name;
-    uint32_t shader_program = glCreateProgram();
+    const std::string shader_folder_prefix = "../assets/shaders/";
+
+    const std::string shader_folder_path = shader_folder_prefix + shader_name;
+    const uint32_t shader_program = glCreateProgram();
+
     std::vector<uint32_t> shader_ids;
 
     if (!std::filesystem::exists(shader_folder_path)) logr::report_error("[graphics] shader folder {} does not exist\n",shader_folder_path);
