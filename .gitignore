@@ -20,5 +20,6 @@ build
 *.pdb
 
 fps/builddir
+fps/release
 
 .vs

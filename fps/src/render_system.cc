@@ -21,24 +21,30 @@ namespace
     int g_window_width;
     int g_window_height;
     float g_aspect_ratio;
-    float g_fov = 90.0f;
 
+    constexpr const float g_fov = 90.0f;
     constexpr const float g_projection_z_near_plane = 0.1f;
     constexpr const float g_projection_z_far_plane = 200.0f;
+
 
     Shader_Manager*   shader_manager;
     Texture_Manager* texture_manager;
 
     // openGL record keeping
+
+    // frame buffers
+    unsigned int geometry_fbo; 
+    unsigned int depth_rbo;
+
 	unsigned int position_tfbo;
     unsigned int normal_tfbo;
     unsigned int albedo_specular_tfbo;
 
+    
+    // Shadow buffer
     unsigned int g_depth_map_tfbo;
 
-    unsigned int geometry_fbo; 
-    unsigned int depth_rbo;
-
+    // vao / vbos.
     unsigned int g_cube_vao;
     unsigned int g_cube_vbo;
 
@@ -47,6 +53,14 @@ namespace
 
     unsigned int g_floor_vao;
     unsigned int g_floor_vbo;
+
+    unsigned int g_wall_vao;
+    unsigned int g_wall_vbo;
+    unsigned int g_wall_model_vbo;
+    unsigned int g_wall_mvp_vbo;
+    std::vector<glm::mat4> g_wall_model_matrices(262144);
+    std::vector<glm::mat4> g_wall_mvp_matrices(262144);
+
 
     // uniform buffers
     unsigned int light_ubo;
@@ -88,137 +102,142 @@ namespace
     void init_opengl(const int frame_buffer_width, const int frame_buffer_height)
     {
         //----init opengl
-         // set clear color
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-         // Enable use of the z-buffer
-        glEnable(GL_DEPTH_TEST);    
-        // Default is GL_LESS
-        // glDepthFunc(GL_LEQUAL);
+        {
+            // set clear color
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            // Enable use of the z-buffer
+            glEnable(GL_DEPTH_TEST); // default is GL_LESS
 
-        // Line width 2.0 pixels
-        glLineWidth(1.0);
-        glEnable(GL_LINE_SMOOTH);
+            // Line width
+            glLineWidth(1.0);
+            glEnable(GL_LINE_SMOOTH);
 
-        int32_t max_feedback_buffers;
-        glGetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_BUFFERS, &max_feedback_buffers);
-        logr::report("[OpenGL] max feedback buffers: {}\n", max_feedback_buffers);
+            // enable debug output
+            glEnable(GL_DEBUG_OUTPUT);
+            glDebugMessageCallback(opengl_message_callback, 0);
 
-        int32_t max_shader_storage_block_size;
-        glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &max_shader_storage_block_size);
-        logr::report("[OpenGL] max shader storage block size: {}\n", max_shader_storage_block_size);
+            // DISABLE transparency
+            glDisable(GL_BLEND);
+        }
+    
+        // query openGL status
+        {
+            int32_t max_feedback_buffers;
+            glGetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_BUFFERS, &max_feedback_buffers);
+            logr::report("[OpenGL] max feedback buffers: {}\n", max_feedback_buffers);
 
-        int32_t max_fragment_texture_image_units;
-        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_fragment_texture_image_units);
-        logr::report("[OpenGL] max fragment shader texture units: {}\n", max_fragment_texture_image_units);
+            int32_t max_shader_storage_block_size;
+            glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &max_shader_storage_block_size);
+            logr::report("[OpenGL] max shader storage block size: {}\n", max_shader_storage_block_size);
 
-        int32_t max_uniform_block_size;
-        glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_block_size);
-        logr::report("[OpenGL] max uniform block size: {}\n", max_uniform_block_size);
+            int32_t max_fragment_texture_image_units;
+            glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_fragment_texture_image_units);
+            logr::report("[OpenGL] max fragment shader texture units: {}\n", max_fragment_texture_image_units);
 
-        int32_t max_vertex_uniform_blocks;
-        glGetIntegerv(GL_MAX_VERTEX_UNIFORM_BLOCKS, &max_vertex_uniform_blocks);
-        logr::report("[OpenGL] max Vertex uniform blocks: {}\n", max_vertex_uniform_blocks);
+            int32_t max_uniform_block_size;
+            glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_block_size);
+            logr::report("[OpenGL] max uniform block size: {}\n", max_uniform_block_size);
 
-        int32_t max_geometry_uniform_blocks;
-        glGetIntegerv(GL_MAX_GEOMETRY_UNIFORM_BLOCKS, &max_geometry_uniform_blocks);
-        logr::report("[OpenGL] max Geometry uniform blocks: {}\n", max_geometry_uniform_blocks);
+            int32_t max_vertex_uniform_blocks;
+            glGetIntegerv(GL_MAX_VERTEX_UNIFORM_BLOCKS, &max_vertex_uniform_blocks);
+            logr::report("[OpenGL] max Vertex uniform blocks: {}\n", max_vertex_uniform_blocks);
 
-        int32_t max_fragment_uniform_blocks;
-        glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_BLOCKS, &max_fragment_uniform_blocks);
-        logr::report("[OpenGL] max Fragment uniform blocks: {} \n", max_fragment_uniform_blocks);
+            int32_t max_geometry_uniform_blocks;
+            glGetIntegerv(GL_MAX_GEOMETRY_UNIFORM_BLOCKS, &max_geometry_uniform_blocks);
+            logr::report("[OpenGL] max Geometry uniform blocks: {}\n", max_geometry_uniform_blocks);
 
+            int32_t max_fragment_uniform_blocks;
+            glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_BLOCKS, &max_fragment_uniform_blocks);
+            logr::report("[OpenGL] max Fragment uniform blocks: {} \n", max_fragment_uniform_blocks);
+        }      
 
-        // enable debug output
-        glEnable(GL_DEBUG_OUTPUT);
-        glDebugMessageCallback(opengl_message_callback, 0);
-
-        // DISABLE transparency
-        glDisable(GL_BLEND);
-        
-
-        // Deferred renderer
+        // init Deferred renderer
         // -----------------------------------------------------------
+        {
+            // init geometry_fbo
+            glGenFramebuffers(1, &geometry_fbo);
+            glBindFramebuffer(GL_FRAMEBUFFER, geometry_fbo);
+            
+            // register all three framebuffers as color attachment (GL_COLOR_ATTACHMENTN), N -> {0 : position, 1: normals , 2: albedo & specular}
+            
+            // - position frame buffer
+            // glGenTextures(1, &position_tfbo);
+            uint32_t position_tfbo = register_framebuffer_texture(*texture_manager, "position_tfbo");
+            glBindTexture(GL_TEXTURE_2D, position_tfbo);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, position_tfbo, 0);
+              
+            // - normals frame buffer
+            // glGenTextures(1, &normal_tfbo);
+            uint32_t normal_tfbo = register_framebuffer_texture(*texture_manager, "normal_tfbo");
 
-        // init geometry_fbo
-        glGenFramebuffers(1, &geometry_fbo);
-        glBindFramebuffer(GL_FRAMEBUFFER, geometry_fbo);
-        
-        // register all three framebuffers as color attachment (GL_COLOR_ATTACHMENTN), N -> {0 : position, 1: normals , 2: albedo & specular}
-        
-        // - position frame buffer
-        // glGenTextures(1, &position_tfbo);
-        uint32_t position_tfbo = register_framebuffer_texture(*texture_manager, "position_tfbo");
-        glBindTexture(GL_TEXTURE_2D, position_tfbo);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, position_tfbo, 0);
-          
-        // - normals frame buffer
-        // glGenTextures(1, &normal_tfbo);
-        uint32_t normal_tfbo = register_framebuffer_texture(*texture_manager, "normal_tfbo");
-
-        glBindTexture(GL_TEXTURE_2D, normal_tfbo);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, normal_tfbo, 0);
-          
-        // - color + specular frame buffer
-        // glGenTextures(1, &albedo_specular_tfbo);
-        uint32_t albedo_specular_tfbo = register_framebuffer_texture(*texture_manager, "albedo_specular_tfbo");
-        glBindTexture(GL_TEXTURE_2D, albedo_specular_tfbo);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, albedo_specular_tfbo, 0);
-          
-        // - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-        unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
-        glDrawBuffers(3, attachments);
-          
-        // then also add render buffer object as depth buffer and check for completeness.
-        unsigned int depth_rbo;
-        glGenRenderbuffers(1, &depth_rbo);
-        glBindRenderbuffer(GL_RENDERBUFFER, depth_rbo);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, frame_buffer_width, frame_buffer_height);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_rbo);
-
-
-        // //@TODO(Sjors): do we need to rebind the framebuffer textures here?
-        // get texture handles for the frame buffers.
-        auto& position_tfbo_texture = texture_manager->textures["position_tfbo"];
-        auto& normal_tfbo_texture   = texture_manager->textures["normal_tfbo"];
-        auto& albedo_specular_tfbo_texture = texture_manager->textures["albedo_specular_tfbo"];
-        glActiveTexture(GL_TEXTURE0 + position_tfbo_texture.gl_texture_frame);
-        glBindTexture(  GL_TEXTURE_2D,  position_tfbo_texture.gl_texture_id);
-
-        glActiveTexture(GL_TEXTURE0 + normal_tfbo_texture.gl_texture_frame);
-        glBindTexture(  GL_TEXTURE_2D,  normal_tfbo_texture.gl_texture_id);
-
-        glActiveTexture(GL_TEXTURE0 + albedo_specular_tfbo_texture.gl_texture_frame);
-        glBindTexture(  GL_TEXTURE_2D,  albedo_specular_tfbo_texture.gl_texture_id);
+            glBindTexture(GL_TEXTURE_2D, normal_tfbo);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, normal_tfbo, 0);
+              
+            // - color + specular frame buffer
+            // glGenTextures(1, &albedo_specular_tfbo);
+            uint32_t albedo_specular_tfbo = register_framebuffer_texture(*texture_manager, "albedo_specular_tfbo");
+            glBindTexture(GL_TEXTURE_2D, albedo_specular_tfbo);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, albedo_specular_tfbo, 0);
+              
+            // - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+            unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
+            glDrawBuffers(3, attachments);
+              
+            // then also add render buffer object as depth buffer and check for completeness.
+            unsigned int depth_rbo;
+            glGenRenderbuffers(1, &depth_rbo);
+            glBindRenderbuffer(GL_RENDERBUFFER, depth_rbo);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, frame_buffer_width, frame_buffer_height);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_rbo);
 
 
+            // //@TODO(Sjors): do we need to rebind the framebuffer textures here?
+            // get texture handles for the frame buffers.
+            auto& position_tfbo_texture = texture_manager->textures["position_tfbo"];
+            auto& normal_tfbo_texture   = texture_manager->textures["normal_tfbo"];
+            auto& albedo_specular_tfbo_texture = texture_manager->textures["albedo_specular_tfbo"];
 
+            glActiveTexture(GL_TEXTURE0 + position_tfbo_texture.gl_texture_frame);
+            glBindTexture(  GL_TEXTURE_2D,  position_tfbo_texture.gl_texture_id);
 
-        // finally check if framebuffer is complete
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) logr::report_error("[OpenGL] Framebuffer is incomplete.\n");
-        // bind default framebuffer
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glActiveTexture(GL_TEXTURE0 + normal_tfbo_texture.gl_texture_frame);
+            glBindTexture(  GL_TEXTURE_2D,  normal_tfbo_texture.gl_texture_id);
+
+            glActiveTexture(GL_TEXTURE0 + albedo_specular_tfbo_texture.gl_texture_frame);
+            glBindTexture(  GL_TEXTURE_2D,  albedo_specular_tfbo_texture.gl_texture_id);
+
+            // finally check if framebuffer is complete
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) logr::report_error("[OpenGL] Framebuffer is incomplete.\n");
+
+            // unbind geometry framebuffer default framebuffer
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
 
 
         // init uniform buffers
-        //@Volatile: this should match both the size and the binding index of the buffer.
-        const int LIGHT_BUFFER_UNIFORM_IDX = 2;
-        const int light_buffer_size = NUM_LIGHTS * sizeof(Light);
+        {
+            // light buffer
 
-        // glGenBuffers(1, &light_ubo);
-        glCreateBuffers(1, &light_ubo);
-        glBindBuffer(GL_UNIFORM_BUFFER, light_ubo);
-        // glBufferData(GL_UNIFORM_BUFFER, light_buffer_size, NULL, GL_STATIC_DRAW); // allocate 152 bytes of memory
-        glBindBufferBase(GL_UNIFORM_BUFFER, LIGHT_BUFFER_UNIFORM_IDX, light_ubo); 
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            //@Volatile(Sjors): this should match both the size and the binding index of the buffer in ALL shaders.
+            const int LIGHT_BUFFER_UNIFORM_IDX = 2;
+            const int light_buffer_size = NUM_LIGHTS * sizeof(Light);
+            // glGenBuffers(1, &light_ubo);
+            glCreateBuffers(1, &light_ubo);
+            glBindBuffer(GL_UNIFORM_BUFFER, light_ubo);
+            // glBufferData(GL_UNIFORM_BUFFER, light_buffer_size, NULL, GL_STATIC_DRAW); // allocate 152 bytes of memory
+            glBindBufferBase(GL_UNIFORM_BUFFER, LIGHT_BUFFER_UNIFORM_IDX, light_ubo); 
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        }
 
         // Shadow Map
         //------------------------------------------------------
@@ -240,7 +259,94 @@ namespace
         // glBindFramebuffer(GL_FRAMEBUFFER, 0);  
 
     }
-// 
+
+    void init_instanced_wall()
+    {
+        // front face
+        float vertices[] = {
+        -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+         1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+         1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+         1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+        -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+        -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+        };
+
+        glGenVertexArrays(1, &g_wall_vao);
+        glGenBuffers(1, &g_wall_vbo);
+
+        // fill buffer
+        glBindBuffer(GL_ARRAY_BUFFER, g_wall_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        
+        glBindVertexArray(g_wall_vao);
+
+        // link vertex attributes (position, normals, texture coordinates);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+
+        // initialize two buffers for model matrices and mvp matrices for instanced objects.
+        glGenBuffers(1, &g_wall_model_vbo);
+        glGenBuffers(1, &g_wall_mvp_vbo);
+
+        // fill buffer with random data.
+        {
+
+            for (size_t idx = 0; idx != g_wall_model_matrices.size(); ++idx)
+            {
+                auto& model_matrix = g_wall_model_matrices[idx]; 
+                // auto& mvp_matrix = g_wall_mvp_matrices[idx];
+
+                float x = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/150.0f));
+                float y = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/150.0f));
+                // x -= 5.0f;
+                // y -= 5.0f;
+                // logr::report("{} {}\n", x, y);
+                model_matrix = glm::mat4(1.0f);
+                model_matrix = glm::translate(model_matrix, glm::vec3(x,y, 0.0f));
+                // model_matrix = glm::scale(model_matrix, glm::vec3(0.5f));
+
+                // mvp_matrix = projection * view * model_matrix;
+            }
+      
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, g_wall_model_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * g_wall_model_matrices.size(), g_wall_model_matrices.data(), GL_DYNAMIC_DRAW);
+        
+        glBindBuffer(GL_ARRAY_BUFFER, g_wall_mvp_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * g_wall_mvp_matrices.size(), g_wall_mvp_matrices.data(), GL_DYNAMIC_DRAW);
+
+        const uint32_t mat4_row_count = 4;
+
+        const uint32_t model_location = 3;
+        for (unsigned int location_offset = 0; location_offset != mat4_row_count; ++location_offset)
+        {
+            glEnableVertexAttribArray(model_location + location_offset);
+            glVertexAttribPointer(model_location + location_offset, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * location_offset * 4));
+            glVertexAttribDivisor(model_location + location_offset, 1);
+        }
+
+        const uint32_t mvp_location = 7;
+        for (unsigned int location_offset = 0; location_offset != mat4_row_count; ++location_offset)
+        {
+
+            glEnableVertexAttribArray(mvp_location + location_offset);
+            glVertexAttribPointer(mvp_location + location_offset, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * location_offset * 4));
+            glVertexAttribDivisor(mvp_location + location_offset, 1);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+
     void init_unit_cube()
     {
         float vertices[] = {
@@ -293,8 +399,6 @@ namespace
         glBindBuffer(GL_ARRAY_BUFFER, g_cube_vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
         
-
-
         // link vertex attributes (position, normals, texture coordinates);
         glBindVertexArray(g_cube_vao);
         glEnableVertexAttribArray(0);
@@ -374,12 +478,14 @@ void init_renderer(Shader_Manager& shader_manager_in, Texture_Manager& texture_m
     init_unit_cube();
     init_NDC_quad();
     init_floor();
+    init_instanced_wall();
 }
 
 void render_back_of_cube()
 {
     // render back Cube
     glBindVertexArray(g_cube_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, g_cube_vbo);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 }
@@ -388,6 +494,7 @@ void render_front_of_cube()
 {
     // render back Cube
     glBindVertexArray(g_cube_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, g_cube_vbo);
     glDrawArrays(GL_TRIANGLES, 6, 6);
     glBindVertexArray(0);
 }
@@ -397,6 +504,7 @@ void render_cube()
 {
     // render Cube
     glBindVertexArray(g_cube_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, g_cube_vbo);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
 }
@@ -406,6 +514,7 @@ void render_cube()
 void render_NDC_quad()
 {  
     glBindVertexArray(g_quad_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, g_quad_vbo);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
 }
@@ -413,6 +522,7 @@ void render_NDC_quad()
 void render_floor()
 {
     glBindVertexArray(g_floor_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, g_floor_vbo);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 }
@@ -529,6 +639,54 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 render_floor();
             }
 
+            // render walls
+            {
+                timed_function("render_walls");
+
+                set_shader(*shader_manager, "deferred_instanced");
+
+                // auto& model_matrix_0 = g_wall_model_matrices[0];
+                // model_matrix_0 = glm::mat4(1.0f);
+                // model_matrix_0 = glm::translate(model_matrix_0, glm::vec3(2.0f, 0.0f, 0.0f));
+
+                // auto& model_matrix_1 = g_wall_model_matrices[1];
+                // model_matrix_1 = glm::mat4(1.0f);
+                // model_matrix_1 = glm::translate(model_matrix_1, glm::vec3(0.0f, 1.0f, 0.0f));
+
+                // auto& mvp_matrix_0 = g_wall_mvp_matrices[0];
+                // mvp_matrix_0 = projection * view * model_matrix_0;  
+
+                // auto& mvp_matrix_1 = g_wall_mvp_matrices[1];  
+                // mvp_matrix_1 = projection * view * model_matrix_1;
+                for (size_t idx = 0; idx != g_wall_model_matrices.size(); ++idx)
+                {
+                    auto& model_matrix = g_wall_model_matrices[idx]; 
+                    auto& mvp_matrix = g_wall_mvp_matrices[idx];
+
+
+                    mvp_matrix = projection * view * model_matrix;
+                }
+
+                glNamedBufferData(g_wall_mvp_vbo, sizeof(glm::mat4) * g_wall_mvp_matrices.size(), g_wall_mvp_matrices.data(), GL_DYNAMIC_DRAW);
+
+                auto& wall_texture = texture_manager->textures["wall_64"];
+                glActiveTexture(GL_TEXTURE0 + wall_texture.gl_texture_frame);
+                glBindTexture(GL_TEXTURE_2D, wall_texture.gl_texture_id);
+                set_uniform(*shader_manager, "view", view);
+                set_uniform(*shader_manager, "texture_diffuse1", wall_texture.gl_texture_frame);
+
+                glBindVertexArray(g_wall_vao);
+
+                glBindBuffer(GL_ARRAY_BUFFER, g_wall_vbo);
+
+                glDrawArraysInstanced(
+                    GL_TRIANGLES,
+                    0,
+                    6,
+                    g_wall_model_matrices.size());
+
+                glBindVertexArray(0);
+            }
         }
        
         // unbind geometry buffer, bind default framebuffer
@@ -643,7 +801,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             set_shader( *shader_manager, "lightbox");
             set_uniform(*shader_manager, "projection", projection);
             set_uniform(*shader_manager, "view", view);
-
 
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(lights[1].position));

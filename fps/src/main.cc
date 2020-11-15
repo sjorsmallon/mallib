@@ -40,6 +40,7 @@ int main()
     load_shader(shader_manager, "deferred_normals");
     load_shader(shader_manager, "lightbox");
     load_shader(shader_manager, "simple_depth");
+    load_shader(shader_manager, "deferred_instanced");
 
     auto asset_manager = Asset_Manager();
     load_obj(asset_manager, "target");
@@ -49,6 +50,9 @@ int main()
     load_png_texture(texture_manager, "metal");
     load_png_texture(texture_manager, "marble");
     load_tga_texture(texture_manager, "target_wood_diffuse");
+    load_png_texture(texture_manager, "wall_64");
+    load_png_texture(texture_manager, "star_64");
+
 
     //@Fixme(Sjors): create a render manager?
     init_renderer(shader_manager, texture_manager, window_width, window_height);
@@ -63,6 +67,8 @@ int main()
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::time_point<std::chrono::system_clock> end;
     double average_frame_time[120] = {0};
+    double average_render_time[120] = {0};
+
     uint32_t current_idx = 0;
 
     while (true)
@@ -80,6 +86,11 @@ int main()
         end = std::chrono::system_clock::now();
         double delta = static_cast<std::chrono::duration<double>>(end - start).count();
         average_frame_time[current_idx % 120] = delta;
+
+
+        average_render_time[current_idx % 120] = Timed_Function::timed_functions["render"].duration;
+
+
         current_idx += 1;
         
         if (current_idx % 120 == 0) 
@@ -88,8 +99,17 @@ int main()
             for (auto& value: average_frame_time)
                 accumulator += value;
             accumulator /= 120.0;
-            std::cout << "average frame time past 120 frames: " << accumulator << '\n';
+
+            double render_accumulator = 0.0;
+            for (auto& value: average_render_time)
+                render_accumulator += value;
+            render_accumulator /=120.0;
+
+            logr::report("average frame time past 120 frames: {}\n", accumulator);
+            logr::report("average render time past 120 frame: {}\n", render_accumulator);
         }
+
+
 
     }
 

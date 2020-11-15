@@ -292,6 +292,12 @@ void set_shader(Shader_Manager& shader_manager, const char* shader_name)
         shader_id = shader_manager.shaders[shader_name].program_id;
     }
     shader_manager.active_shader_name = shader_name;
+    if (shader_id == 0 && shader_name != "none")
+    {
+        logr::report_error("[set_shader]: UNKNOWN SHADER NAME: {}", shader_name);
+        exit(1);
+    }
+
     glUseProgram(shader_id);
 }
 
