@@ -41,6 +41,7 @@ int main()
     load_shader(shader_manager, "lightbox");
     load_shader(shader_manager, "simple_depth");
     load_shader(shader_manager, "deferred_instanced");
+    load_shader(shader_manager, "deferred_debug_geometry");
 
     auto asset_manager = Asset_Manager();
     load_obj(asset_manager, "target");

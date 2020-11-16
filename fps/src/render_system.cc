@@ -26,9 +26,10 @@ namespace
     constexpr const float g_projection_z_near_plane = 0.1f;
     constexpr const float g_projection_z_far_plane = 200.0f;
 
-
+    // "members"
     Shader_Manager*   shader_manager;
     Texture_Manager* texture_manager;
+
 
     // openGL record keeping
 
@@ -40,9 +41,12 @@ namespace
     unsigned int normal_tfbo;
     unsigned int albedo_specular_tfbo;
 
-    
     // Shadow buffer
     unsigned int g_depth_map_tfbo;
+
+    // uniform buffers
+    unsigned int light_ubo;
+
 
     // vao / vbos.
     unsigned int g_cube_vao;
@@ -58,12 +62,104 @@ namespace
     unsigned int g_wall_vbo;
     unsigned int g_wall_model_vbo;
     unsigned int g_wall_mvp_vbo;
-    std::vector<glm::mat4> g_wall_model_matrices(262144);
-    std::vector<glm::mat4> g_wall_mvp_matrices(262144);
+    std::vector<glm::mat4> g_wall_model_matrices(256);
+    std::vector<glm::mat4> g_wall_mvp_matrices(256);
+
+    unsigned int g_debug_geometry_vao;
+    unsigned int g_debug_geometry_vbo;
+    std::vector<float> g_debug_draw_data;
+
+    // @temporary:
+    void draw_arrow(const glm::vec3 start_in, const glm::vec3 end_in, const glm::vec3 color_in,const  float thickness_in = 1.0f)
+    {
+        // https://math.stackexchange.com/questions/2563909/find-points-on-a-plane
+
+        glm::vec3 normal = glm::normalize(end_in - start_in);
+        float distance  = glm::distance(end_in, start_in);
+
+        // plane equation:
+        // (Ax + By + Cz + D = 0)
+        // new point: (x + 1, y, z + u)
+        // new point: (x, y + 1, z + v)
+        // μ=−A/C
+        // Similarly, ν=−B/C.
+    
+        //@FIXME(Sjors): if one of the deltas per axis is ~0, we need to pick another.
+
+        float u = -start_in.x / start_in.z;
+        float v = -start_in.y / start_in.z;
+
+        glm::vec3 first_point{start_in.x + thickness_in, start_in.y, start_in.z + u};
+        glm::vec3 second_point{start_in.x, start_in.y + thickness_in, start_in.z + v};
+
+        glm::vec3 second_axis = glm::normalize(first_point - start_in);
+
+        glm::vec3 third_axis = glm::cross(normal, second_axis);
+
+        glm::vec3 first_plane_point = start_in + third_axis;
+        glm::vec3 second_plane_point = start_in + second_axis;
+
+        glm::vec3 back_top_left  = start_in + (-0.5f * second_axis) + (0.5f * third_axis);
+        glm::vec3 back_top_right = start_in + (0.5f * second_axis) +  (0.5f * third_axis);
+        glm::vec3 back_bot_left  = start_in + (-0.5f * second_axis) + (-0.5f * third_axis);
+        glm::vec3 back_bot_right = start_in + (0.5f * second_axis) +  (-0.5f * third_axis);
+
+        glm::vec3 front_top_left = end_in +  (-0.5f * second_axis) + (0.5f * third_axis);
+        glm::vec3 front_top_right = end_in + (0.5f * second_axis) + (0.5f * third_axis);
+        glm::vec3 front_bot_left =  end_in + (-0.5f * second_axis) + (-0.5f * third_axis);
+        glm::vec3 front_bot_right = end_in + (0.5f * second_axis) + (-0.5f * third_axis);
+
+        std::vector<float> buffer
+        {
+            // back face
+            back_bot_left.x, back_bot_left.y, back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            back_top_right.x, back_top_right.y, back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            back_bot_right.x, back_bot_right.y, back_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            back_top_right.x, back_top_right.y, back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            back_bot_left.x, back_bot_left.y, back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            back_top_left.x, back_top_left.y, back_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            // front face
+            front_bot_left.x, front_bot_left.y, front_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            front_bot_right.x, front_bot_right.y, front_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            front_top_right.x, front_top_right.y, front_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            front_top_right.x, front_top_right.y, front_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            front_top_left.x, front_top_left.y, front_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            front_bot_left.x, front_bot_left.y, front_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            // left
+            front_top_left.x, front_top_left.y, front_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            back_top_left.x, back_top_left.y, back_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,              //
+            back_bot_left.x, back_bot_left.y, back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            back_bot_left.x, back_bot_left.y, back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            front_bot_left.x, front_bot_left.y, front_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            front_top_left.x, front_top_left.y, front_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            // right
+            front_top_right.x, front_top_right.y, front_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            front_bot_right.x, front_bot_right.y, front_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,              //
+            back_bot_right.x, back_bot_right.y, back_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            back_bot_right.x, back_bot_right.y, back_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            back_top_right.x, back_top_right.y, back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            front_top_right.x, front_top_right.y, front_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+             // bottom
+            front_bot_right.x, front_bot_right.y, front_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            back_bot_right.x, back_bot_right.y, back_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,              //
+            back_bot_left.x, back_bot_left.y, back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            back_bot_left.x, back_bot_left.y, back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            front_bot_left.x, front_bot_left.y, front_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            front_bot_right.x, front_bot_right.y, front_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            // top
+            front_top_right.x, front_top_right.y, front_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            back_top_right.x, back_top_right.y, back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,              //
+            back_top_left.x, back_top_left.y, back_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            back_top_left.x, back_top_left.y, back_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            front_top_left.x, front_top_left.y, front_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            front_top_right.x, front_top_right.y, front_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z            //
+        };
+      
+        g_debug_draw_data.insert(std::end(g_debug_draw_data), std::begin(buffer), std::end(buffer));
+    };
 
 
-    // uniform buffers
-    unsigned int light_ubo;
+
 
     // openGL error callback
     void GLAPIENTRY opengl_message_callback(
@@ -103,6 +199,9 @@ namespace
     {
         //----init opengl
         {
+            // glEnable(GL_CULL_FACE);
+            // glCullFace(GL_BACK);
+
             // set clear color
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             // Enable use of the z-buffer
@@ -264,12 +363,12 @@ namespace
     {
         // front face
         float vertices[] = {
-        -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-         1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
-         1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-         1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-        -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
-        -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+        -1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+         1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+         1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+         1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+        -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+        -1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
         };
 
         glGenVertexArrays(1, &g_wall_vao);
@@ -295,28 +394,6 @@ namespace
         // initialize two buffers for model matrices and mvp matrices for instanced objects.
         glGenBuffers(1, &g_wall_model_vbo);
         glGenBuffers(1, &g_wall_mvp_vbo);
-
-        // fill buffer with random data.
-        {
-
-            for (size_t idx = 0; idx != g_wall_model_matrices.size(); ++idx)
-            {
-                auto& model_matrix = g_wall_model_matrices[idx]; 
-                // auto& mvp_matrix = g_wall_mvp_matrices[idx];
-
-                float x = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/150.0f));
-                float y = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/150.0f));
-                // x -= 5.0f;
-                // y -= 5.0f;
-                // logr::report("{} {}\n", x, y);
-                model_matrix = glm::mat4(1.0f);
-                model_matrix = glm::translate(model_matrix, glm::vec3(x,y, 0.0f));
-                // model_matrix = glm::scale(model_matrix, glm::vec3(0.5f));
-
-                // mvp_matrix = projection * view * model_matrix;
-            }
-      
-        }
 
         glBindBuffer(GL_ARRAY_BUFFER, g_wall_model_vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * g_wall_model_matrices.size(), g_wall_model_matrices.data(), GL_DYNAMIC_DRAW);
@@ -460,6 +537,33 @@ namespace
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
         glBindVertexArray(0);
     }
+
+    void init_debug_geometry()
+    {
+        glGenVertexArrays(1, &g_debug_geometry_vao);
+        glBindVertexArray(g_debug_geometry_vao);
+
+        glGenBuffers(1, &g_debug_geometry_vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, g_debug_geometry_vbo);
+
+         // link vertex attributes (position, normals, color);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+
+        // add some data to the buffer.
+        draw_arrow(glm::vec3(1.0f, 0.5f, -2.0f), glm::vec3(1.0f, 5.0f, -2.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+        draw_arrow(glm::vec3(1.0f, 0.5f, -2.0f), glm::vec3(6.0f, 0.5f, -2.0f), glm::vec3(1.0f, 0.0f, 1.0f));
+
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) *g_debug_draw_data.size(), g_debug_draw_data.data(), GL_STATIC_DRAW);
+
+        glBindVertexArray(0);
+    }
+
 }
 
 
@@ -479,6 +583,7 @@ void init_renderer(Shader_Manager& shader_manager_in, Texture_Manager& texture_m
     init_NDC_quad();
     init_floor();
     init_instanced_wall();
+    init_debug_geometry();
 }
 
 void render_back_of_cube()
@@ -598,8 +703,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         glBindFramebuffer(GL_FRAMEBUFFER, geometry_fbo);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-   
-
         // bind shader and update all relevant uniforms.
         set_shader(*shader_manager, "deferred_geometry");
         set_uniform(*shader_manager, "projection", projection);
@@ -617,12 +720,12 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 glActiveTexture(GL_TEXTURE0 + cube_texture.gl_texture_frame);
                 glBindTexture(GL_TEXTURE_2D, cube_texture.gl_texture_id);
                 set_uniform(*shader_manager,  "texture_diffuse1", cube_texture.gl_texture_frame);
+                // set_uniform(*shader_manager,  "texture_specular1", cube_texture.gl_texture_frame);
 
                 glm::mat4 model = glm::mat4(1.0f);
                 set_uniform(*shader_manager, "model", model);
                 
                 // render_cube();
-
                 render_back_of_cube();
                 render_front_of_cube();
 
@@ -634,6 +737,8 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 glActiveTexture(GL_TEXTURE0 + marble_texture.gl_texture_frame);
                 glBindTexture(GL_TEXTURE_2D, marble_texture.gl_texture_id);
                 set_uniform(*shader_manager, "texture_diffuse1",  marble_texture.gl_texture_frame);
+                // set_uniform(*shader_manager,  "texture_specular1", marble_texture.gl_texture_frame);
+
                 glm::mat4 model = glm::mat4(1.0f);
                 set_uniform(*shader_manager, "model", model);
                 render_floor();
@@ -645,38 +750,26 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
                 set_shader(*shader_manager, "deferred_instanced");
 
-                // auto& model_matrix_0 = g_wall_model_matrices[0];
-                // model_matrix_0 = glm::mat4(1.0f);
-                // model_matrix_0 = glm::translate(model_matrix_0, glm::vec3(2.0f, 0.0f, 0.0f));
+                auto& model_matrix_0 = g_wall_model_matrices[0];
+                model_matrix_0 = glm::mat4(1.0f);
+                model_matrix_0 = glm::translate(model_matrix_0, glm::vec3(2.0f, 0.0f, 0.0f));
+                model_matrix_0= glm::scale(model_matrix_0, glm::vec3(100.0f));
 
-                // auto& model_matrix_1 = g_wall_model_matrices[1];
-                // model_matrix_1 = glm::mat4(1.0f);
-                // model_matrix_1 = glm::translate(model_matrix_1, glm::vec3(0.0f, 1.0f, 0.0f));
+                auto& mvp_matrix_0 = g_wall_mvp_matrices[0];
+                mvp_matrix_0 = projection * view * model_matrix_0;  
 
-                // auto& mvp_matrix_0 = g_wall_mvp_matrices[0];
-                // mvp_matrix_0 = projection * view * model_matrix_0;  
-
-                // auto& mvp_matrix_1 = g_wall_mvp_matrices[1];  
-                // mvp_matrix_1 = projection * view * model_matrix_1;
-                for (size_t idx = 0; idx != g_wall_model_matrices.size(); ++idx)
-                {
-                    auto& model_matrix = g_wall_model_matrices[idx]; 
-                    auto& mvp_matrix = g_wall_mvp_matrices[idx];
-
-
-                    mvp_matrix = projection * view * model_matrix;
-                }
-
-                glNamedBufferData(g_wall_mvp_vbo, sizeof(glm::mat4) * g_wall_mvp_matrices.size(), g_wall_mvp_matrices.data(), GL_DYNAMIC_DRAW);
+                glNamedBufferData(g_wall_model_vbo, sizeof(glm::mat4) * g_wall_model_matrices.size(), g_wall_model_matrices.data(), GL_DYNAMIC_DRAW);
+                glNamedBufferData(g_wall_mvp_vbo,   sizeof(glm::mat4) * g_wall_mvp_matrices.size(),   g_wall_mvp_matrices.data(), GL_DYNAMIC_DRAW);
 
                 auto& wall_texture = texture_manager->textures["wall_64"];
                 glActiveTexture(GL_TEXTURE0 + wall_texture.gl_texture_frame);
                 glBindTexture(GL_TEXTURE_2D, wall_texture.gl_texture_id);
                 set_uniform(*shader_manager, "view", view);
                 set_uniform(*shader_manager, "texture_diffuse1", wall_texture.gl_texture_frame);
+                // set_uniform(*shader_manager, "texture_specular1", wall_texture.gl_texture_frame);
+
 
                 glBindVertexArray(g_wall_vao);
-
                 glBindBuffer(GL_ARRAY_BUFFER, g_wall_vbo);
 
                 glDrawArraysInstanced(
@@ -687,6 +780,8 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
                 glBindVertexArray(0);
             }
+
+
         }
        
         // unbind geometry buffer, bind default framebuffer
@@ -695,7 +790,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
     // get texture handles for the frame buffers.
     auto& position_tfbo_texture = texture_manager->textures["position_tfbo"];
-    auto& normal_tfbo_texture   = texture_manager->textures["normal_tfbo"];
+    auto& normal_tfbo_texture = texture_manager->textures["normal_tfbo"];
     auto& albedo_specular_tfbo_texture = texture_manager->textures["albedo_specular_tfbo"];
 
     // @VOLATILE: if this changes, the deferred_lighting shader step should change as well.
@@ -717,16 +812,13 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         // glActiveTexture(GL_TEXTURE0 + albedo_specular_tfbo_texture.gl_texture_frame);
         // glBindTexture(  GL_TEXTURE_2D,  albedo_specular_tfbo_texture.gl_texture_id);
 
-
         set_uniform(*shader_manager, "fb_position",    position_tfbo_texture.gl_texture_frame);
         set_uniform(*shader_manager, "fb_normal",      normal_tfbo_texture.gl_texture_frame);    
         set_uniform(*shader_manager, "fb_albedo_spec", albedo_specular_tfbo_texture.gl_texture_frame);    
 
-
         glm::vec4 camera_position = glm::vec4(camera.position, 1.0f); 
-        // logr::report("view position: {}\n", glm::to_string(camera_position));
-        
         set_uniform(*shader_manager, "view_position", glm::vec4(camera_position));
+
 
         // for (auto& light: lights)
         {
@@ -739,35 +831,35 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             x_position = cos(time/ 1000.0f);
 
             // player light.
-            lights[0].position.x = player_camera.position.x;
-            lights[0].position.y = player_camera.position.y;
-            lights[0].position.z = player_camera.position.z;
+            lights[0].position.x = camera.position.x;
+            lights[0].position.y = camera.position.y;
+            lights[0].position.z = camera.position.z;
             lights[0].color = glm::vec4(1.0f,1.0f,1.0f,0.0f);
-            lights[0].on = false;
-            lights[0].linear = 0.001;
-            lights[0].quadratic = 0.001;
+            lights[0].on = true;
+            lights[0].linear = 0.01;
+            lights[0].quadratic = 0.02;
 
-            lights[1].position = glm::vec4(0.0f, 3.0f, 0.0f, 0.0f);
-            lights[1].color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-            lights[1].on = true;
-            lights[1].linear = 0.1;
-            lights[1].quadratic = 0.2;
+            // lights[1].position = glm::vec4(0.0f, 3.0f, 0.0f, 0.0f);
+            // lights[1].color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+            // lights[1].on = true;
+            // lights[1].linear = 0.1;
+            // lights[1].quadratic = 0.2;
 
-            lights[2].position.x = x_position;
-            lights[2].position.y = y_position;
-            lights[2].position.z = -1.5f;
-            lights[2].color = glm::vec4(1.0f,0.0f,1.0f,0.0f);
-            lights[2].on = true;
-            lights[2].linear = 0.1;
-            lights[2].quadratic = 0.2;
+            // lights[2].position.x = x_position;
+            // lights[2].position.y = y_position;
+            // lights[2].position.z = -1.5f;
+            // lights[2].color = glm::vec4(1.0f,0.0f,1.0f,0.0f);
+            // lights[2].on = true;
+            // lights[2].linear = 0.1;
+            // lights[2].quadratic = 0.2;
 
             lights[3].position.x = x_position;      
             lights[3].position.y = y_position;
             lights[3].position.z = 1.5f;
             lights[3].color = glm::vec4(1.0f,1.0f,1.0f,0.0f);
             lights[3].on = true;
-            lights[3].linear = 0.1;
-            lights[3].quadratic = 0.2;
+            lights[3].linear = 0.01;
+            lights[3].quadratic = 0.02;
 
         }
         
@@ -802,12 +894,21 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             set_uniform(*shader_manager, "projection", projection);
             set_uniform(*shader_manager, "view", view);
 
+
+
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(lights[1].position));
             model = glm::scale(model, glm::vec3(0.125f));
             set_uniform(*shader_manager, "model", model);
             set_uniform(*shader_manager, "light_color", lights[1].color);
             render_cube();
+
+            model = glm::translate(model, glm::vec3(lights[0].position));
+            model = glm::scale(model, glm::vec3(0.01f));
+            set_uniform(*shader_manager, "model", model);
+            set_uniform(*shader_manager, "light_color", lights[0].color);
+            render_cube();
+
 
             model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(lights[2].position));
@@ -830,6 +931,21 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             // set_uniform(*shader_manager, "light_color", lights[3].color);
             // render_cube();
         }
+
+        // render debug data
+        {
+            set_shader(*shader_manager, "deferred_debug_geometry");
+
+            set_uniform(*shader_manager, "view", view);
+            set_uniform(*shader_manager, "projection", projection);
+            set_uniform(*shader_manager, "model", glm::mat4(1.0f));
+
+            glBindVertexArray(g_debug_geometry_vao);
+            glBindBuffer(GL_ARRAY_BUFFER, g_debug_geometry_vbo);
+
+            glDrawArrays(GL_TRIANGLES, 0, g_debug_draw_data.size() / 9);
+        }
+
     }
 
 }

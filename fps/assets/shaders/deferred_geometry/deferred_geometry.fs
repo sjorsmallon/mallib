@@ -7,7 +7,6 @@ layout (location = 2) out vec4 fb_albedo_spec;
 layout (location = 0) in vec3 fragment_position;
 layout (location = 1) in vec3 normal;
 layout (location = 2) in vec2 texture_coords;
-flat in int InstanceID;
 
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;

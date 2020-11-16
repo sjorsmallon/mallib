@@ -1,0 +1,33 @@
+{
+	"folders":
+	[
+		{
+			"path": "src"
+		},
+		{
+			"path": "assets\\shaders"
+		},
+		{
+			"path": "tests"
+		}
+	],
+
+	 "build_systems":
+    [
+    	{
+	       "name": "Ninja",
+           "shell_cmd": "ninja",
+           "working_dir": "builddir",
+           "file_regex": "^(..[^:]*):([0-9]+):?([0-9]+)?:? (.*)$"
+		}
+    ],
+
+    "ninja":
+	{
+
+	    "file_regex": "^(..[^:]*):([0-9]+):?([0-9]+)?:? (.*)$",
+
+	    "working_dir": "C:\\mallib\\mallib\\fps\\builddir"
+	}
+
+}

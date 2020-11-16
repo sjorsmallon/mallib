@@ -10,6 +10,7 @@ layout (location = 7) in mat4 mvp_VS_in; // occupies 4 location slots.
 layout (location = 0) out vec3 fragment_position;
 layout (location = 1) out vec3 normal;
 layout (location = 2) out vec2 texture_coords;
+flat out int instance_ID;
 
 uniform mat4 view;
 
@@ -23,4 +24,6 @@ void main()
     normal = normal_matrix * normal_VS_in;
 
     gl_Position = mvp_VS_in * vec4(position_VS_in, 1.0);
+
+    instance_ID = gl_InstanceID;
 }

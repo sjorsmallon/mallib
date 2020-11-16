@@ -7,7 +7,6 @@ layout (location = 2) in vec2 texture_coords_VS_in;
 layout (location = 0) out vec3 fragment_position;
 layout (location = 1) out vec3 normal;
 layout (location = 2) out vec2 texture_coords;
-flat out int InstanceID;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -23,6 +22,4 @@ void main()
     normal = normal_matrix * normal_VS_in;
 
     gl_Position = projection * view * world_position;
-
-    InstanceID = gl_InstanceID;
 }
