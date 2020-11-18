@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"g_debug",
+				"g_debug_draw_data"
+			],
+			[
+				"g_deb",
+				"g_debug_draw_data"
+			],
+			[
 				"avera",
 				"average_render_time"
 			],
@@ -443,13 +451,21 @@
 			"file": "src/render_system.cc",
 			"settings":
 			{
-				"buffer_size": 35726,
+				"buffer_size": 45134,
 				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/main.cc",
+			"settings":
+			{
+				"buffer_size": 3744,
 				"line_ending": "Windows"
 			}
 		}
 	],
-	"build_system": "",
+	"build_system": "Packages/NinjaBuild/ninja.sublime-build",
 	"build_system_choices":
 	[
 		[
@@ -465,6 +481,26 @@
 			],
 			[
 				"Packages/C++/C++ Single File.sublime-build",
+				""
+			]
+		],
+		[
+			[
+				[
+					"Packages/C++/C++ Single File.sublime-build",
+					""
+				],
+				[
+					"Packages/C++/C++ Single File.sublime-build",
+					"Run"
+				],
+				[
+					"Packages/NinjaBuild/ninja.sublime-build",
+					""
+				]
+			],
+			[
+				"Packages/NinjaBuild/ninja.sublime-build",
 				""
 			]
 		],
@@ -587,25 +623,23 @@
 	[
 		"/C/mallib/mallib/fps/src",
 		"/C/mallib/mallib/fps/assets/shaders",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_debug_geometry",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_edges",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_geometry",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_instanced",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_lighting",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_normals",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_obra_dinn",
-		"/C/mallib/mallib/fps/assets/shaders/lightbox",
-		"/C/mallib/mallib/fps/assets/shaders/particles",
-		"/C/mallib/mallib/fps/assets/shaders/simple_depth",
-		"/C/mallib/mallib/fps/tests"
+		"/C/mallib/mallib/fps/assets/shaders/lightbox"
 	],
 	"file_history":
 	[
-		"/C/mallib/mallib/fps/assets/shaders/deferred_instanced/deferred_instanced.fs",
+		"/C/mallib/mallib/fps/src/draw3d_api.h",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_debug_geometry/deferred_debug_geometry.fs",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_debug_geometry/deferred_debug_geometry.vs",
 		"/C/mallib/mallib/fps/src/main.cc",
+		"/C/mallib/mallib/fps/fps.sublime-project",
+		"/C/mallib/mallib/fps/src/render_system.cc",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_instanced/deferred_instanced.fs",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_instanced/deferred_instanced.vs",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_geometry/deferred_geometry.vs",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_geometry/deferred_geometry.fs",
-		"/C/mallib/mallib/fps/src/draw3d_api.h",
 		"/C/mallib/mallib/fps/src/render_system.h",
 		"/C/mallib/mallib/fps/src/shader_manager.cc",
 		"/C/mallib/mallib/fps/src/texture_manager.cc",
@@ -623,7 +657,6 @@
 		"/C/mallib/mallib/fps/assets/shaders/deferred_obra_dinn/deferred_obra_dinn.fs",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_normals/deferred_normals.fs",
 		"/C/mallib/mallib/fps/src/debug_output.plan",
-		"/C/mallib/mallib/fps/src/render_system.cc",
 		"/C/mallib/mallib/fps/src/math.h",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_edges/deferred_edges.fs",
 		"/C/mallib/mallib/fps/src/game.h",
@@ -724,10 +757,7 @@
 		"/C/mutil/fps/src/glad_includer.h",
 		"/C/mutil/fps/src/glfw_callbacks.h",
 		"/C/mutil/fps/src/CmakeLists.txt",
-		"/C/mutil/fps/src/mesh.h",
-		"/C/thesis/code/src/graphics.cc",
-		"/C/fps/include/log/log.h",
-		"/C/fps/include/glad/glad.h"
+		"/C/mutil/fps/src/mesh.h"
 	],
 	"find":
 	{
@@ -746,6 +776,49 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"bot",
+			"front_top_right",
+			"back_bot_left",
+			"back_top_right",
+			"right",
+			"front",
+			"left",
+			"front_top_right",
+			"front_bot_left",
+			"left",
+			"front_bot_left",
+			"back_top_left",
+			"front_top_left",
+			"front_top_right",
+			"back_bot_left",
+			"front_bot_right",
+			"front_bot_left",
+			"back_bot_left",
+			"front_bot_right",
+			"back_bot_left",
+			"first_plane_point",
+			"start_in",
+			"back",
+			"start_in",
+			"color_in",
+			"first",
+			"new_point",
+			"debug",
+			"arrow",
+			"normal_tfbo_texture",
+			"translate_matrix",
+			"model_matrix_0",
+			"wall",
+			"glBindBuffer(GL_ARRAY_BUFFER, g_wall_model_Vbo);",
+			"glBindBuffer(GL_ARRAY_BUFFER, g_wall_model_Vbo)",
+			"glBindBuffer",
+			"g_wall_model_vbo",
+			"g_wall_mvp_vbo",
+			"g_wall_mvp_vbop",
+			"g_wall_model_vbo",
+			"G_wall_vbo",
+			"glenable",
+			"player_camera",
 			"g_wall_mvp",
 			"g_cube_vbo",
 			"1024",
@@ -830,25 +903,7 @@
 			"simualte",
 			"init_opengl",
 			"g_normal",
-			"g_color",
-			"g_normal",
-			" vec23",
-			"2 * ",
-			"2 *",
-			"0,",
-			"0",
-			"static",
-			"uv",
-			"float2",
-			"uv",
-			"smp",
-			"nrm.Sample",
-			"smp",
-			"clr.Sample",
-			"render_cube",
-			"deferred_",
-			"normal",
-			"input_manager"
+			"g_color"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -878,15 +933,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 35726,
+						"buffer_size": 45134,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								26407,
-								26407
+								2156,
+								2156
 							]
 						],
 						"settings":
@@ -896,10 +951,40 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 14003.0,
+						"translation.y": 1561.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "src/main.cc",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 3744,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2784,
+								2784
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 783.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
 					"type": "text"
 				}
 			]
@@ -942,7 +1027,7 @@
 	},
 	"output.exec":
 	{
-		"height": 169.0
+		"height": 327.0
 	},
 	"output.find_results":
 	{
@@ -956,7 +1041,7 @@
 	{
 		"height": 0.0
 	},
-	"pinned_build_system": "",
+	"pinned_build_system": "Packages/NinjaBuild/ninja.sublime-build",
 	"project": "fps.sublime-project",
 	"replace":
 	{
@@ -970,12 +1055,12 @@
 		"selected_items":
 		[
 			[
-				"shader",
-				"src\\shader_manager.cc"
-			],
-			[
 				"render",
 				"src\\render_system.cc"
+			],
+			[
+				"shader",
+				"src\\shader_manager.cc"
 			],
 			[
 				"textu",
@@ -1206,7 +1291,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 212.0,
+	"side_bar_width": 354.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

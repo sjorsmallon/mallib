@@ -70,44 +70,64 @@ namespace
     std::vector<float> g_debug_draw_data;
 
     // @temporary:
-    void draw_arrow(const glm::vec3 start_in, const glm::vec3 end_in, const glm::vec3 color_in,const  float thickness_in = 1.0f)
+    void put_arrow(const glm::vec3 start_in, const glm::vec3 end_in, const glm::vec3 color_in,const  float thickness_in = 1.0f)
     {
         // https://math.stackexchange.com/questions/2563909/find-points-on-a-plane
 
-        glm::vec3 normal = glm::normalize(end_in - start_in);
-        float distance  = glm::distance(end_in, start_in);
+        const glm::vec3 normal = glm::normalize(end_in - start_in);
+        const float distance  = glm::distance(end_in, start_in);
+
+        const glm::vec3 distance_per_axis = end_in - start_in;
+
+        const float epsilon = 0.0001f;
+
+
 
         // plane equation:
         // (Ax + By + Cz + D = 0)
         // new point: (x + 1, y, z + u)
         // new point: (x, y + 1, z + v)
-        // μ=−A/C
-        // Similarly, ν=−B/C.
-    
-        //@FIXME(Sjors): if one of the deltas per axis is ~0, we need to pick another.
+        // assuming C is not 0:
+        // μ= −A/C 
+        // ν=−B/C
 
-        float u = -start_in.x / start_in.z;
-        float v = -start_in.y / start_in.z;
+        const float u = -start_in.x / start_in.z;
+        const float v = -start_in.y / start_in.z;
 
-        glm::vec3 first_point{start_in.x + thickness_in, start_in.y, start_in.z + u};
-        glm::vec3 second_point{start_in.x, start_in.y + thickness_in, start_in.z + v};
+        const glm::vec3 first_point{start_in.x + thickness_in, start_in.y, start_in.z + u};
+        const glm::vec3 second_point{start_in.x, start_in.y + thickness_in, start_in.z + v};
 
         glm::vec3 second_axis = glm::normalize(first_point - start_in);
+        // if z is 0: second_axis just becomes z.
+
+        if (distance_per_axis.z  < epsilon) second_axis = glm::vec3(0.0f, 0.0f, 1.0f);
 
         glm::vec3 third_axis = glm::cross(normal, second_axis);
 
         glm::vec3 first_plane_point = start_in + third_axis;
         glm::vec3 second_plane_point = start_in + second_axis;
 
+        // slab
+        // stop at 80% of head
+        const glm::vec3 slab_end = start_in + (0.8f * distance) * normal; 
         glm::vec3 back_top_left  = start_in + (-0.5f * second_axis) + (0.5f * third_axis);
         glm::vec3 back_top_right = start_in + (0.5f * second_axis) +  (0.5f * third_axis);
         glm::vec3 back_bot_left  = start_in + (-0.5f * second_axis) + (-0.5f * third_axis);
         glm::vec3 back_bot_right = start_in + (0.5f * second_axis) +  (-0.5f * third_axis);
 
-        glm::vec3 front_top_left = end_in +  (-0.5f * second_axis) + (0.5f * third_axis);
-        glm::vec3 front_top_right = end_in + (0.5f * second_axis) + (0.5f * third_axis);
-        glm::vec3 front_bot_left =  end_in + (-0.5f * second_axis) + (-0.5f * third_axis);
-        glm::vec3 front_bot_right = end_in + (0.5f * second_axis) + (-0.5f * third_axis);
+
+        glm::vec3 front_top_left  =  slab_end +  (-0.5f * second_axis) + (0.5f * third_axis);
+        glm::vec3 front_top_right =  slab_end + (0.5f * second_axis) + (0.5f * third_axis);
+        glm::vec3 front_bot_left  =  slab_end + (-0.5f * second_axis) + (-0.5f * third_axis);
+        glm::vec3 front_bot_right =  slab_end + (0.5f * second_axis) + (-0.5f * third_axis);
+
+        // pyramid on top:
+        glm::vec3 head_back_top_left  = slab_end + (-0.8f * second_axis) + (0.8f * third_axis);
+        glm::vec3 head_back_top_right = slab_end + (0.8f * second_axis) + (0.8f * third_axis);
+        glm::vec3 head_back_bot_left  = slab_end + (-0.8f * second_axis) + (-0.8f * third_axis);
+        glm::vec3 head_back_bot_right = slab_end + (0.8f * second_axis) + (-0.8f * third_axis);
+        glm::vec3 head_top = end_in;
+
 
         std::vector<float> buffer
         {
@@ -154,8 +174,35 @@ namespace
             front_top_left.x, front_top_left.y, front_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
             front_top_right.x, front_top_right.y, front_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z            //
         };
+
+        std::vector<float> head_buffer{
+            // back face
+            head_back_bot_left.x, head_back_bot_left.y, head_back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            head_back_top_right.x, head_back_top_right.y, head_back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            head_back_bot_right.x, head_back_bot_right.y, head_back_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            head_back_top_right.x, head_back_top_right.y, head_back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            head_back_bot_left.x, head_back_bot_left.y, head_back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            head_back_top_left.x, head_back_top_left.y, head_back_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            // sides of the pyramid: left:
+            head_top.x, head_top.y, head_top.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            head_back_top_left.x, head_back_top_left.y, head_back_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,              //
+            head_back_bot_left.x, head_back_bot_left.y, head_back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            // rihgt:
+            head_top.x, head_top.y, head_top.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            head_back_top_right.x, head_back_top_right.y, head_back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,              //
+            head_back_bot_right.x, head_back_bot_right.y, head_back_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            // bot:
+            head_top.x, head_top.y, head_top.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            head_back_bot_left.x, head_back_bot_left.y, head_back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,              //
+            head_back_bot_right.x, head_back_bot_right.y, head_back_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            // top:
+            head_top.x, head_top.y, head_top.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
+            head_back_top_left.x, head_back_top_left.y, head_back_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,              //
+            head_back_top_right.x, head_back_top_right.y, head_back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z            //
+        };
       
         g_debug_draw_data.insert(std::end(g_debug_draw_data), std::begin(buffer), std::end(buffer));
+        g_debug_draw_data.insert(std::end(g_debug_draw_data), std::begin(head_buffer), std::end(head_buffer));
     };
 
 
@@ -555,8 +602,8 @@ namespace
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
 
         // add some data to the buffer.
-        draw_arrow(glm::vec3(1.0f, 0.5f, -2.0f), glm::vec3(1.0f, 5.0f, -2.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-        draw_arrow(glm::vec3(1.0f, 0.5f, -2.0f), glm::vec3(6.0f, 0.5f, -2.0f), glm::vec3(1.0f, 0.0f, 1.0f));
+        put_arrow(glm::vec3(1.0f, 0.5f, -2.0f), glm::vec3(1.0f, 5.0f, -2.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+        put_arrow(glm::vec3(1.0f, 0.5f, -2.0f), glm::vec3(6.0f, 0.5f, -2.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 
 
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) *g_debug_draw_data.size(), g_debug_draw_data.data(), GL_STATIC_DRAW);
