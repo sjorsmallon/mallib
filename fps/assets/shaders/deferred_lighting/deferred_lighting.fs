@@ -16,8 +16,9 @@ in vec2 texture_coords;
 uniform sampler2D fb_position;
 uniform sampler2D fb_normal;
 uniform sampler2D fb_albedo_spec;
-
 uniform vec4 view_position;
+
+
 
 struct Light {
     vec4 position;
@@ -45,17 +46,21 @@ void main()
     
     // then calculate lighting as usual
     vec3 lighting = albedo * ambient_component;
-    vec4 test = view_position;
-    vec3 view_direction = normalize(view_position.xyz - fragment_position);
+    vec4 lightergjerg = view_position;
+    vec4 view_vec4 = vec4(fragment_position, 1.0f) - view_position;
+    // vec3 view_direction = normalize(fragment_position - view_position.xyz);
+    vec3 view_direction  = vec3(view_vec4.xyz);
+
 
     for (int light_idx = 0; light_idx < NUM_LIGHTS; ++light_idx)
     {
-
-        if (lights[light_idx].on > 0)
+        // if (lights[light_idx].on > 0)
+        if (true)
         {
             float distance = distance(lights[light_idx].position.xyz, fragment_position);
             // if (distance < lights[light_idx].radius)
             // {
+                //world position
                 // diffuse 
                 vec3 light_direction = normalize(lights[light_idx].position.xyz - fragment_position);
                 vec3 diffuse = max(dot(normal, light_direction), 0.0) * albedo * lights[light_idx].color.xyz;
@@ -64,18 +69,17 @@ void main()
                 vec3 half_way_direction = normalize(light_direction + view_direction);
                 float specular_local = pow(max(dot(normal, half_way_direction), 0.0), 32.0);
                 vec3 specular_contribution = lights[light_idx].color.xyz * specular_local * specular;
-                
+
+                // float attenuation = 1.0f;
                 
                 float attenuation = 1.0 / (1.0 + lights[light_idx].linear * distance + lights[light_idx].quadratic * distance * distance);
 
                 diffuse  *= attenuation;
                 specular_contribution *= attenuation;
-
-                lighting +=  diffuse + specular_contribution;    
+                lighting +=  diffuse; //+ specular_contribution; 
             // }
         }
     }
-
 
     fragment_color = vec4(lighting, 1.0);
 }  

@@ -18,7 +18,7 @@ void main()
     fragment_position = world_position.xyz; 
     texture_coords = texture_coords_VS_in;
     
-    mat3 normal_matrix = transpose(inverse(mat3(view * model)));
+    mat3 normal_matrix = transpose(inverse(mat3(model)));
     normal = normal_matrix * normal_VS_in;
 
     gl_Position = projection * view * world_position;

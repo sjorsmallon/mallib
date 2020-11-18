@@ -21,7 +21,7 @@ uint32_t register_framebuffer_texture(Texture_Manager& texture_manager, const st
     auto& texture = texture_manager.textures[framebuffer_name];
     glGenTextures(1, &texture.gl_texture_id);
     texture.gl_texture_frame = get_next_free_texture_frame(texture_manager);
-
+    
     return texture.gl_texture_id;
 }
 
@@ -52,11 +52,10 @@ void load_tga_texture(Texture_Manager& texture_manager, const std::string& textu
         logr::report("[Texture_Manager] loaded texture {}.\n", file_path);
     }
 
-
-    glGenTextures(1, &texture.gl_texture_id);
     texture.gl_texture_frame = get_next_free_texture_frame(texture_manager);
-
     glActiveTexture(GL_TEXTURE0 + texture.gl_texture_frame);
+    glGenTextures(1, &texture.gl_texture_id);
+
     glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -72,6 +71,7 @@ void load_tga_texture(Texture_Manager& texture_manager, const std::string& textu
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
 }
 
 

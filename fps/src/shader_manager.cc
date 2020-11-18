@@ -154,13 +154,17 @@ namespace
             {
                 case GL_FLOAT_VEC4:
                 {
-                    
                     Uniform uniform;
                     uniform.type = GL_FLOAT_VEC4;
-                    uniform.data = glm::vec4();
+                    uniform.data = glm::vec4(0.0f);
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    // logr::report("{} : GL_FLOAT_VEC4\n", uniform.name);
+                    logr::report("{} : GL_FLOAT_VEC4\n", uniform.name);
+                    break;
+                }
+                case GL_FLOAT_VEC3:
+                {
+                    logr::report("{} : GL_FLOAT_VEC3\n", shader.uniform_names[idx]);
                     break;
                 }
                 case GL_FLOAT:
@@ -170,7 +174,7 @@ namespace
                     uniform.data = float{0.0f};
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    // logr::report("{} : GL_FLOAT\n", uniform.name);
+                    logr::report("{} : GL_FLOAT\n", uniform.name);
                     break;
                 }
                 case GL_FLOAT_MAT4:
@@ -180,7 +184,7 @@ namespace
                     uniform.data = glm::mat4(1.0f);
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    // logr::report("{} : GL_FLOAT_MAT4\n", uniform.name);
+                    logr::report("{} : GL_FLOAT_MAT4\n", uniform.name);
                     break;
                 }
                 case GL_FLOAT_MAT3x4:
@@ -190,7 +194,7 @@ namespace
                     uniform.data = glm::mat3x4(1.0f);
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    // logr::report("{} : GL_FLOAT_MAT3x4\n", uniform.name);
+                    logr::report("{} : GL_FLOAT_MAT3x4\n", uniform.name);
                     break;
                 }
 
@@ -201,7 +205,7 @@ namespace
                     uniform.data = int32_t{0};
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    // logr::report("{} : GL_INT\n", uniform.name);
+                    logr::report("{} : GL_INT\n", uniform.name);
                     break;
                 }
                 case GL_INT_VEC2:
@@ -211,7 +215,7 @@ namespace
                     uniform.data = glm::ivec2(0);
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    // logr::report("{} : GL_INT_VEC2\n", uniform.name);
+                    logr::report("{} : GL_INT_VEC2\n", uniform.name);
                     break;
                 }
                 case GL_INT_VEC3:
@@ -221,7 +225,7 @@ namespace
                     uniform.data = glm::ivec3(0);
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    // logr::report("{} : GL_INT_VEC3\n", uniform.name);
+                    logr::report("{} : GL_INT_VEC3\n", uniform.name);
 
                     break;
                 }
@@ -232,7 +236,7 @@ namespace
                     uniform.data = int32_t{0};
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    // logr::report("{} : GL_SAMPLER_2D\n", uniform.name);
+                    logr::report("{} : GL_SAMPLER_2D\n", uniform.name);
                     break;
                 }
                 case GL_UNSIGNED_INT:
@@ -242,7 +246,7 @@ namespace
                     uniform.data = uint32_t{0};
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    // logr::report("{} : GL_UNSIGNED_INT\n", uniform.name);
+                    logr::report("{} : GL_UNSIGNED_INT\n", uniform.name);
                     break;
                 }
                 case GL_UNSIGNED_INT_ATOMIC_COUNTER:
@@ -255,7 +259,6 @@ namespace
                     logr::report("{} : GL_UNSIGNED_INT_ATOMIC_COUNTER\n", shader.uniform_names[idx]);
                     break;
                 }
-
                 default:
                 {
                     logr::report_error("[Uniform] {}  : UNKNOWN TYPE", shader.uniform_names[idx]);

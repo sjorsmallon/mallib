@@ -8,8 +8,8 @@ layout (location = 0) in vec3 fragment_position;
 layout (location = 1) in vec3 normal;
 layout (location = 2) in vec2 texture_coords;
 
-uniform sampler2D texture_diffuse1;
-uniform sampler2D texture_specular1;
+uniform sampler2D texture_diffuse;
+uniform sampler2D texture_specular;
 
 void main()
 {    
@@ -20,8 +20,8 @@ void main()
     fb_normal = normalize(normal);
 
     // and the diffuse per-fragment color
-    fb_albedo_spec.rgb = texture(texture_diffuse1, texture_coords).rgb;
+    fb_albedo_spec.rgb = texture(texture_diffuse, texture_coords).rgb;
     
     // store specular intensity in fb_albedo_spec's alpha component
-    fb_albedo_spec.a = texture(texture_specular1, texture_coords).r;
+    fb_albedo_spec.a = texture(texture_specular, texture_coords).r;
 }  

@@ -53,6 +53,12 @@ int main()
     load_tga_texture(texture_manager, "target_wood_diffuse");
     load_png_texture(texture_manager, "wall_64");
     load_png_texture(texture_manager, "star_64");
+    load_png_texture(texture_manager, "wall_stone_specular");
+    load_png_texture(texture_manager, "wall_stone_diffuse");
+    load_png_texture(texture_manager, "wall_stone_normal");
+
+
+
 
 
     //@Fixme(Sjors): create a render manager?
