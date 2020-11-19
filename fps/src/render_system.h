@@ -17,6 +17,9 @@ void init_renderer(Shader_Manager& shader_manager,
 void render(const Camera camera, Particle_Cache& particle_cache);
 
 
+void render_shadows(const Camera camera, Particle_Cache& particle_cache)
+
+
 
 
 

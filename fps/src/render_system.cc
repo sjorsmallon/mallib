@@ -14,6 +14,8 @@
 #include "timed_function.h"
 
 constexpr const int NUM_LIGHTS = 32;
+constexpr const unsigned int SHADOW_FB_WIDTH = 1024;
+constexpr const unsigned int SHADOW_FB_HEIGHT = 1024;
 
 namespace
 {
@@ -33,18 +35,21 @@ namespace
 
     // openGL record keeping
 
-    // frame buffers
+    //--- frame buffers
     unsigned int geometry_fbo; 
     unsigned int depth_rbo;
+    //  // shadow
+    unsigned int depth_map_fbo;
 
-	unsigned int position_tfbo;
-    unsigned int normal_tfbo;
-    unsigned int albedo_specular_tfbo;
-
-    // Shadow buffer
+    //--- textures for framebuffers
+    // @IC(Sjors): these are not necessary. They are bound once to the geometry framebuffer.    
+    // unsigned int position_tfbo;
+    // unsigned int normal_tfbo;
+    // unsigned int albedo_specular_tfbo;
+    // shadow texture buffer
     unsigned int g_depth_map_tfbo;
 
-    // uniform buffers
+    //--- uniform buffers
     unsigned int light_ubo;
 
     // vao / vbos.
@@ -67,6 +72,7 @@ namespace
     unsigned int g_debug_geometry_vao;
     unsigned int g_debug_geometry_vbo;
     std::vector<float> g_debug_draw_data;
+
 
      // @dependencies:
     // g_debug_draw_buffer
@@ -245,7 +251,7 @@ namespace
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
 
-            // set clear color
+            // set clear color to WHITE.
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             // Enable use of the z-buffer
             glEnable(GL_DEPTH_TEST); // default is GL_LESS
@@ -362,10 +368,8 @@ namespace
             //@Volatile(Sjors): this should match both the size and the binding index of the buffer in ALL shaders.
             const int LIGHT_BUFFER_UNIFORM_IDX = 2;
             const int light_buffer_size = NUM_LIGHTS * sizeof(Light);
-            // glGenBuffers(1, &light_ubo);
             glCreateBuffers(1, &light_ubo);
             glBindBuffer(GL_UNIFORM_BUFFER, light_ubo);
-            // glBufferData(GL_UNIFORM_BUFFER, light_buffer_size, NULL, GL_STATIC_DRAW); // allocate 152 bytes of memory
             glBindBufferBase(GL_UNIFORM_BUFFER, LIGHT_BUFFER_UNIFORM_IDX, light_ubo); 
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
@@ -373,23 +377,32 @@ namespace
 
         // Shadow Map
         //------------------------------------------------------
-        // const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+        glGenFramebuffers(1, &depth_map_fbo);
+        g_depth_map_tfbo = register_framebuffer_texture(*texture_manager, "depth_map_tfbo");
+        auto& depth_map_texture = texture_manager->textures["depth_map_tfbo"];
+        glActiveTexture(GL_TEXTURE0 + depth_map_texture.gl_texture_frame);
+        glBindTexture(GL_TEXTURE_2D, g_depth_map_tfbo);
+        glTexImage2D(
+            GL_TEXTURE_2D, 
+            0, 
+            GL_DEPTH_COMPONENT, 
+            SHADOW_FB_WIDTH, 
+            SHADOW_FB_HEIGHT, 
+            0, 
+            GL_DEPTH_COMPONENT, 
+            GL_FLOAT, 
+            NULL);
 
-        // g_depth_map_tfbo = register_framebuffer_texture(*texture_manager, "g_depth_map_tfbo");
-        // glBindTexture(GL_TEXTURE_2D, g_depth_map_tfbo);
-        // glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 
-        //              SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);  
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);  
 
-        // glBindFramebuffer(GL_FRAMEBUFFER, depth_);
-        // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
-        // glDrawBuffer(GL_NONE);
-        // glReadBuffer(GL_NONE);
-        // glBindFramebuffer(GL_FRAMEBUFFER, 0);  
-
+        glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, g_depth_map_tfbo, 0);
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);  
     }
 
     void init_instanced_wall()
@@ -408,11 +421,12 @@ namespace
         glGenBuffers(1, &g_wall_vbo);
 
         glBindVertexArray(g_wall_vao);
-         // fill buffer
+        
+        // fill buffer with vertices.
         glBindBuffer(GL_ARRAY_BUFFER, g_wall_vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
         
-        // enable vertex attributes (position, normals, texture coordinates);
+        // enable vertex attributes (0: position (xyz), 1: normals (xyz), 2: texture coordinates (uv));
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 
@@ -509,14 +523,18 @@ namespace
         glBindBuffer(GL_ARRAY_BUFFER, g_cube_vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
         
-        // link vertex attributes (position, normals, texture coordinates);
         glBindVertexArray(g_cube_vao);
+
+        // init vertex attributes (0: position, 1: normals, 2: texture coordinates);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
@@ -537,7 +555,7 @@ namespace
         glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), &quad_vertices, GL_STATIC_DRAW);
         glBindVertexArray(g_quad_vao);
 
-
+        // init vertex attributes. {0: position (xyz), 1: texture coords (uv)}
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(1);
@@ -564,8 +582,10 @@ namespace
         // link vertex attributes (position, normals, texture coordinates);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
         glBindVertexArray(0);
@@ -598,7 +618,6 @@ namespace
 
 }
 
-
 void init_renderer(Shader_Manager& shader_manager_in, Texture_Manager& texture_manager_in, const int frame_buffer_width, const int frame_buffer_height)
 {
     // initialize globals.
@@ -618,6 +637,7 @@ void init_renderer(Shader_Manager& shader_manager_in, Texture_Manager& texture_m
     init_debug_geometry();
 }
 
+//@Temporary
 void render_back_of_cube()
 {
     // render back Cube
@@ -627,6 +647,7 @@ void render_back_of_cube()
     glBindVertexArray(0);
 }
 
+//@Temporary
 void render_front_of_cube()
 {
     // render back Cube
@@ -635,7 +656,6 @@ void render_front_of_cube()
     glDrawArrays(GL_TRIANGLES, 6, 6);
     glBindVertexArray(0);
 }
-
 
 void render_cube()
 {
@@ -665,15 +685,14 @@ void render_floor()
 }
 
 
-
 // @dependencies:
 // shader_manager, texture_manager
-// cvars: g_fov, g_aspect_ratio, g_projection_z_near_plane, g_projection_z_far_plane
-/// - all lights
-/// - the geometry that needs to be rendered (either via submission or other)
-/// - all draw commands that are issued from all parts.
-/// - the texture data (or at least the bindings)
+// camera
 /// - particles
+// cvars: g_fov, g_aspect_ratio, g_projection_z_near_plane, g_projection_z_far_plane
+/// - lights
+/// - the geometry that needs to be rendered (either via submission or other)
+
 void render(const Camera camera, Particle_Cache& particle_cache)
 {
     timed_function("render");
@@ -684,48 +703,8 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     glm::mat4 view       = create_view_matrix_from_camera(player_camera);
     glm::mat4 projection = glm::perspective(glm::radians(g_fov), g_aspect_ratio, g_projection_z_near_plane, g_projection_z_far_plane);  
 
-    // STEP 0: SHADOW MAPPING
-    {
-        // 0.1: first render to depth map
-        // ------------------------------------------
-        // {
-        //     set_shader(*shader_manager, "simple_depth");
-
-        //     glViewport(0, 0, 1024, 1024);
-        //     glBindFramebuffer(GL_FRAMEBUFFER, g_depth_map_tfbo);
-        //     glClear(GL_DEPTH_BUFFER_BIT);
-        //     float near_plane = 1.0f, far_plane = 7.5f;
-        //     // frustum?
-        //     glm::mat4 light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-        //     glm::mat4 light_view =       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), 
-        //                                              glm::vec3(0.0f, 3.0f,  0.0f), 
-        //                                              glm::vec3(0.0f, 1.0f,  0.0f));  
-        //     glm::mat4 light_space_matrix = light_projection * light_view;
-
-
-        //     set_uniform(*shader_manager, "light_space_matrix", light_space_matrix);
-        //     // for all cubes in the scene..)
-        //     {
-        //         glm::mat4 model      = glm::mat4(1.0f);
-        //         set_uniform(*shader_manager, "model", model);
-        //         render_cube();
-        //     }
-        //     // unbind framebuffer
-        //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        // }
-
-        // // 0.2. then render scene as normal with shadow mapping (using depth map)
-        // {
-        //     glViewport(0, 0, g_window_width, g_window_height);
-        //     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        //     glBindTexture(GL_TEXTURE_2D, g_depth_map_tfbo);
-
-        // }
-    }
-   
-
-    // // 1. geometry pass: render scene's geometry/color data into geometry_fbo
-    // // -----------------------------------------------------------------
+    // 1. geometry pass: render scene's geometry/color data into geometry_fbo
+    // -----------------------------------------------------------------
     {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -750,9 +729,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
                 glm::mat4 model = glm::mat4(1.0f);
                 set_uniform(*shader_manager, "model", model);
-                // render_cube();
-                render_back_of_cube();
-                render_front_of_cube();
+                render_cube();
 
             }
        
@@ -773,30 +750,22 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 set_shader(*shader_manager, "deferred_instanced");
                 set_uniform(*shader_manager, "view", view);
 
-                // auto& wall_texture = texture_manager->textures["wall_64"];
-                // set_uniform(*shader_manager, "texture_diffuse", wall_texture.gl_texture_frame);
-
-                auto& model_matrix_0 = g_wall_model_matrices[0];
-                auto& mvp_matrix_0 = g_wall_mvp_matrices[0];
-                
-                model_matrix_0 = glm::mat4(1.0f);
-                model_matrix_0 = glm::translate(model_matrix_0, glm::vec3(2.0f, 0.0f, 0.0f));
-                model_matrix_0 = glm::scale(model_matrix_0, glm::vec3(100.0f));
-
-                mvp_matrix_0 = projection * view * model_matrix_0;  
+                // update matrix of the wall.
+                {
+                    auto& model_matrix_0 = g_wall_model_matrices[0];
+                    auto& mvp_matrix_0 = g_wall_mvp_matrices[0];
+                    model_matrix_0 = glm::mat4(1.0f);
+                    model_matrix_0 = glm::translate(model_matrix_0, glm::vec3(2.0f, 0.0f, 0.0f));
+                    model_matrix_0 = glm::scale(model_matrix_0, glm::vec3(100.0f));
+                    mvp_matrix_0 = projection * view * model_matrix_0;  
+                }
 
                 glNamedBufferData(g_wall_model_vbo, sizeof(glm::mat4) * g_wall_model_matrices.size(), g_wall_model_matrices.data(), GL_DYNAMIC_DRAW);
                 glNamedBufferData(g_wall_mvp_vbo,   sizeof(glm::mat4) * g_wall_mvp_matrices.size(),   g_wall_mvp_matrices.data(), GL_DYNAMIC_DRAW);
 
                 auto& wall_stone_diffuse_texture  = texture_manager->textures["wall_stone_diffuse"];
                 auto& wall_stone_specular_texture = texture_manager->textures["wall_stone_specular"];
-                auto& wall_stone_normal_texture = texture_manager->textures["wall_stone_normal"];
-
-                {
-                    auto& position_tfbo_texture = texture_manager->textures["position_tfbo"];
-                    auto& normal_tfbo_texture = texture_manager->textures["normal_tfbo"];
-                    auto& albedo_specular_tfbo_texture = texture_manager->textures["albedo_specular_tfbo"];
-                }
+                auto& wall_stone_normal_texture   = texture_manager->textures["wall_stone_normal"];
 
                 // set_uniform(*shader_manager, "texture_diffuse", wall_stone_diffuse_texture.gl_texture_frame);
                 set_uniform(*shader_manager, "texture_diffuse",  wall_stone_diffuse_texture.gl_texture_frame);
@@ -810,7 +779,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                     6,
                     g_wall_model_matrices.size());
                 glBindVertexArray(0);
-
             }
 
 
@@ -825,7 +793,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     auto& normal_tfbo_texture = texture_manager->textures["normal_tfbo"];
     auto& albedo_specular_tfbo_texture = texture_manager->textures["albedo_specular_tfbo"];
 
-    // @VOLATILE: if this changes, the deferred_lighting shader step should change as well.
+    // @Volatile(Sjors): if this changes, the deferred_lighting shader step should change as well.
     std::vector<Light> lights(NUM_LIGHTS);
 
     // 2. lighting pass:
@@ -839,7 +807,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
         glm::vec4 camera_position = glm::vec4(camera.position, 1.0f); 
         set_uniform(*shader_manager, "view_position", glm::vec4(camera_position));
-
 
         // for (auto& light: lights)
         {
@@ -860,32 +827,17 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             lights[0].linear = 0.1;
             lights[0].quadratic = 0.02;
 
-            // lights[1].position = glm::vec4(0.0f, 3.0f, 0.0f, 0.0f);
-            // lights[1].color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-            // lights[1].on = true;
-            // lights[1].linear = 0.1;
-            // lights[1].quadratic = 0.2;
-
-            // lights[2].position.x = x_position;
-            // lights[2].position.y = y_position;
-            // lights[2].position.z = -1.5f;
-            // lights[2].color = glm::vec4(1.0f,0.0f,1.0f,0.0f);
-            // lights[2].on = true;
-            // lights[2].linear = 0.1;
-            // lights[2].quadratic = 0.2;
-
-            // lights[3].position.x = x_position;      
-            // lights[3].position.y = y_position;
-            // lights[3].position.z = 1.5f;
-            // lights[3].color = glm::vec4(1.0f,1.0f,1.0f,0.0f);
-            // lights[3].on = true;
-            // lights[3].linear = 0.01;
-            // lights[3].quadratic = 0.02;
+            lights[1].position = glm::vec4(0.0f, 3.0f, 0.0f, 0.0f);
+            lights[1].color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+            lights[1].on = true;
+            lights[1].linear = 0.1;
+            lights[1].quadratic = 0.2;
 
         }
         
-        //@Note(Sjors): while not necessary when using glnamedbufferdata, it IS important to still bind it before rendering the
-        // NDC quad.
+        //@Note(Sjors): while not necessary to bind the buffer
+        // when using glnamedbufferdata to update the buffer. it IS important to still bind it before rendering the
+        // NDC quad, since any glDraw* call will take the currently bound array / index buffer.
         glBindBuffer(GL_UNIFORM_BUFFER, light_ubo);
         glNamedBufferData(light_ubo, lights.size() * sizeof(Light),  lights.data(), GL_DYNAMIC_DRAW);
 
@@ -900,12 +852,13 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         // blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
         // the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the      
         // depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
+
         glBlitFramebuffer(0, 0, g_window_width, g_window_height, 0, 0, g_window_width, g_window_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
 
-    // // 3. render geometry on top of scene that is not affected by lights.
+    // // 3. render geometry on top of scene that does not need to be affected by lighting.
     // --------------------------------
     {
 
@@ -915,33 +868,26 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             set_uniform(*shader_manager, "projection", projection);
             set_uniform(*shader_manager, "view", view);
 
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(lights[1].position));
-            model = glm::scale(model, glm::vec3(0.125f));
-            set_uniform(*shader_manager, "model", model);
-            set_uniform(*shader_manager, "light_color", lights[1].color);
-            render_cube();
-
+            glm::mat4 model = mat4(1.0f);
             model = glm::translate(model, glm::vec3(lights[0].position));
             model = glm::scale(model, glm::vec3(0.01f));
             set_uniform(*shader_manager, "model", model);
             set_uniform(*shader_manager, "light_color", lights[0].color);
             render_cube();
 
-
             model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(lights[2].position));
+            model = glm::translate(model, glm::vec3(lights[1].position));
             model = glm::scale(model, glm::vec3(0.125f));
             set_uniform(*shader_manager, "model", model);
-            set_uniform(*shader_manager, "light_color", lights[2].color);
+            set_uniform(*shader_manager, "light_color", lights[1].color);
             render_cube();
 
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(lights[3].position));
-            model = glm::scale(model, glm::vec3(0.125f));
-            set_uniform(*shader_manager, "model", model);
-            set_uniform(*shader_manager, "light_color", lights[3].color);
-            render_cube();
+            // model = glm::mat4(1.0f);
+            // model = glm::translate(model, glm::vec3(lights[2].position));
+            // model = glm::scale(model, glm::vec3(0.125f));
+            // set_uniform(*shader_manager, "model", model);
+            // set_uniform(*shader_manager, "light_color", lights[2].color);
+            // render_cube();
 
             // model = glm::mat4(1.0f);
             // model = glm::translate(model, glm::vec3(lights[3].position));
@@ -949,6 +895,8 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             // set_uniform(*shader_manager, "model", model);
             // set_uniform(*shader_manager, "light_color", lights[3].color);
             // render_cube();
+
+  
         }
 
         // render debug data
@@ -968,12 +916,109 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
     }
 
+    set_shader(*shader_manager, "none");
+    glBindVertexArray(0);
 }
 
-// 1.0/(1.0 + c1*d + c2*d^2)
+
+void render_shadows(const Camera camera, Particle_Cache& particle_cache)
+{  
+
+    // render
+    // ------
+    Camera player_camera = camera;
+    glm::mat4 view       = create_view_matrix_from_camera(player_camera);
+    glm::mat4 projection = glm::perspective(glm::radians(g_fov), g_aspect_ratio, g_projection_z_near_plane, g_projection_z_far_plane); 
+
+        // STEP 0: SHADOW MAPPING
+    {
+        // 0.1: first render to depth map
+        // ------------------------------------------
+        {
+            set_shader(*shader_manager, "simple_depth");
+            glViewport(0, 0, SHADOW_FB_WIDTH, SHADOW_FB_HEIGHT);
+            glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo);
+            glClear(GL_DEPTH_BUFFER_BIT);
+
+            const float near_plane = g_projection_z_near_plane;
+            const float far_plane = g_projection_z_far_plane;
+
+            static float time = 0.0f;
+            static float z_position = 0.0f;
+            static float x_position = 0.0f;
+            time += 2.0f;
+            time = fmod(time, 6280.0f);
+            z_position = sin(time/ 1000.0f);
+            x_position = cos(time/ 1000.0f);
+
+            // frustum?
+            glm::mat4 light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+            glm::mat4 light_view =       glm::lookAt(glm::vec3(x_position, 3.0f, z_position), // eye
+                                                     glm::vec3(0.0f, 0.0f,  0.0f),  // target
+                                                     glm::vec3(0.0f, 1.0f,  0.0f));  // up
+
+            glm::mat4 light_space_matrix = light_projection * light_view;
+
+            set_uniform(*shader_manager, "light_space_matrix", light_space_matrix);
+            // for all cubes in the scene..
+            {
+                glm::mat4 model  = glm::mat4(1.0f);
+                set_uniform(*shader_manager, "model", model);
+                render_cube();
+
+                // render_floor();
+            }
+            // unbind framebuffer
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+            // 0.2. then render scene as normal with shadow mapping (using depth map)
+            glViewport(0, 0, g_window_width, g_window_height);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            set_shader(*shader_manager, "simple_depth_shadow_mapping");
+
+            set_uniform(*shader_manager, "projection", projection);
+            set_uniform(*shader_manager, "view", view);
+            // set light uniforms
+            set_uniform(*shader_manager, "light_pos", glm::vec3(x_position, 3.0f, z_position));
+            set_uniform(*shader_manager, "view_pos", glm::vec3(camera.position.x, camera.position.y, camera.position.z));
+            set_uniform(*shader_manager, "light_space_matrix", light_space_matrix);
+
+            auto& diffuse_texture = texture_manager->textures["metal"];
+            auto& shadow_map = texture_manager->textures["depth_map_tfbo"];
+            set_uniform(*shader_manager, "diffuse_texture", diffuse_texture.gl_texture_frame);
+            set_uniform(*shader_manager, "shadow_map", shadow_map.gl_texture_frame);
+            
+            // for all cubes in the scene..
+            {
+                glm::mat4 model  = glm::mat4(1.0f);
+                set_uniform(*shader_manager, "model", model);
+                render_cube();
+                render_floor();
+            }
+            set_shader(*shader_manager, "lightbox");
+            set_uniform(*shader_manager, "view", view);
+            set_uniform(*shader_manager, "projection", projection);
+            // for all cubes in the scene..
+            {
+                glm::mat4 model  = glm::mat4(1.0f);
+                model = glm::translate(model, glm::vec3(x_position, 3.0f, z_position));
+                model = glm::scale(model, glm::vec3(0.125f));
+                set_uniform(*shader_manager, "model", model);
+                set_uniform(*shader_manager, "light_color", glm::vec4(1.0f,1.0f,1.0f,0.0f));
+
+                render_cube();
+            }
+
+        }
+    }
+   
+}
 
 
 //@Note(Sjors)light falloff calculation.
+
+// 1.0/(1.0 + c1*d + c2*d^2)
 
 //  // //     //     // update attenuation parameters and calculate radius
 //  //         // const float constant = 1.0f;
@@ -989,7 +1034,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
 
 // read framebuffer
-
 // GLint drawFboId = 0, readFboId = 0;
 // glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFboId);
 // glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readFboId);

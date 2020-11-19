@@ -164,7 +164,12 @@ namespace
                 }
                 case GL_FLOAT_VEC3:
                 {
-                    logr::report("{} : GL_FLOAT_VEC3\n", shader.uniform_names[idx]);
+                    Uniform uniform;
+                    uniform.type = GL_FLOAT_VEC3;
+                    uniform.data = glm::vec3(0.0f);
+                    uniform.name = shader.uniform_names[idx];
+                    shader.uniforms[uniform.name] = uniform;
+                    logr::report("{} : GL_FLOAT_VEC3\n", uniform.name);
                     break;
                 }
                 case GL_FLOAT:
@@ -358,7 +363,13 @@ void set_uniform(Shader_Manager& shader_manager, const std::string& uniform_name
         using my_T = std::decay_t<decltype(new_data)>;
         if constexpr(!(std::is_same_v<T, my_T>))
         {
-            logr::report_error("[graphics] update_uniform: type mismatch. uniform name: {}\n", uniform_name);
+            logr::report_error("[Shader_Manager] set_uniform: NAME: {} type mismatch. \n", uniform_name);
+        }
+
+        if constexpr (std::is_same_v<T, glm::vec3>)
+        {
+            uniform.data = data;
+            glUniform3fv(uniform.location, 1, glm::value_ptr(std::get<glm::vec3>(data)));
         }
 
         if constexpr (std::is_same_v<T, glm::vec4>)

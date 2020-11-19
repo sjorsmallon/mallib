@@ -35,13 +35,15 @@ int main()
     auto shader_manager = Shader_Manager();
     load_shader(shader_manager, "deferred_geometry");
     load_shader(shader_manager, "deferred_lighting");
-    load_shader(shader_manager, "deferred_obra_dinn");
-    load_shader(shader_manager, "deferred_edges");
-    load_shader(shader_manager, "deferred_normals");
+    // load_shader(shader_manager, "deferred_obra_dinn");
+    // load_shader(shader_manager, "deferred_edges");
+    // load_shader(shader_manager, "deferred_normals");
     load_shader(shader_manager, "lightbox");
     load_shader(shader_manager, "simple_depth");
     load_shader(shader_manager, "deferred_instanced");
     load_shader(shader_manager, "deferred_debug_geometry");
+    load_shader(shader_manager, "simple_depth_shadow_mapping");
+
 
     auto asset_manager = Asset_Manager();
     load_obj(asset_manager, "target");

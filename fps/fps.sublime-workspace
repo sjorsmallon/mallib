@@ -4,6 +4,30 @@
 		"selected_items":
 		[
 			[
+				"wall_stone_normal",
+				"wall_stone_normal_texture"
+			],
+			[
+				"albed",
+				"albedo_specular_tfbo"
+			],
+			[
+				"wall_stone_speu",
+				"wall_stone_specular_texture"
+			],
+			[
+				"alb",
+				"albedo_specular_tfbo_texture"
+			],
+			[
+				"normal_tfbo",
+				"normal_tfbo_texture"
+			],
+			[
+				"wall_stone_",
+				"wall_stone_specular_texture"
+			],
+			[
 				"g_debug",
 				"g_debug_draw_data"
 			],
@@ -451,8 +475,61 @@
 			"file": "src/render_system.cc",
 			"settings":
 			{
-				"buffer_size": 45134,
+				"buffer_size": 48083,
 				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/shader_manager.cc",
+			"settings":
+			{
+				"buffer_size": 15813,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "assets/shaders/deferred_instanced/deferred_instanced.vs",
+			"settings":
+			{
+				"buffer_size": 892,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "assets/shaders/deferred_lighting/deferred_lighting.fs",
+			"settings":
+			{
+				"buffer_size": 2628,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "Searching 62 files for \"glbindtexture\"\n\nC:\\mallib\\mallib\\fps\\src\\render_system.cc:\n  312              auto& position_texture = texture_manager->textures[\"position_tfbo\"];\n  313              // glActiveTexture(GL_TEXTURE0 + position_texture.gl_texture_frame);\n  314:             glBindTexture(GL_TEXTURE_2D, position_tfbo);\n  315              glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, NULL);\n  316              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);\n  ...\n  323              auto& normal_texture = texture_manager->textures[\"normal_tfbo\"];\n  324              // glActiveTexture(GL_TEXTURE0 + normal_texture.gl_texture_frame);\n  325:             glBindTexture(GL_TEXTURE_2D, normal_tfbo);\n  326              glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, NULL);\n  327              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);\n  ...\n  334              auto& albedo_specular_texture = texture_manager->textures[\"albedo_specular_tfbo\"];\n  335              // glActiveTexture(GL_TEXTURE0 + albedo_specular_texture.gl_texture_frame);\n  336:             glBindTexture(GL_TEXTURE_2D, albedo_specular_tfbo);\n  337              glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);\n  338              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);\n  ...\n  359  \n  360              glActiveTexture(GL_TEXTURE0 + position_tfbo_texture.gl_texture_frame);\n  361:             glBindTexture(GL_TEXTURE_2D,  position_tfbo_texture.gl_texture_id);\n  362  \n  363              glActiveTexture(GL_TEXTURE0 + normal_tfbo_texture.gl_texture_frame);\n  364:             glBindTexture(GL_TEXTURE_2D,  normal_tfbo_texture.gl_texture_id);\n  365  \n  366              glActiveTexture(GL_TEXTURE0 + albedo_specular_tfbo_texture.gl_texture_frame);\n  367:             glBindTexture(GL_TEXTURE_2D,  albedo_specular_tfbo_texture.gl_texture_id);\n  368  \n  369              // finally check if framebuffer is complete\n  ...\n  396  \n  397          // g_depth_map_tfbo = register_framebuffer_texture(*texture_manager, \"g_depth_map_tfbo\");\n  398:         // glBindTexture(GL_TEXTURE_2D, g_depth_map_tfbo);\n  399          // glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, \n  400          //              SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);\n  ...\n  737          //     glViewport(0, 0, g_window_width, g_window_height);\n  738          //     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);\n  739:         //     glBindTexture(GL_TEXTURE_2D, g_depth_map_tfbo);\n  740  \n  741          // }\n  ...\n  816  \n  817                  glActiveTexture(GL_TEXTURE0 + wall_stone_diffuse_texture.gl_texture_frame);\n  818:                 glBindTexture(GL_TEXTURE_2D, wall_stone_diffuse_texture.gl_texture_id);\n  819  \n  820                  glActiveTexture(GL_TEXTURE0 + wall_stone_specular_texture.gl_texture_frame);\n  821:                 glBindTexture(GL_TEXTURE_2D, wall_stone_specular_texture.gl_texture_id);\n  822  \n  823                  set_uniform(*shader_manager, \"texture_diffuse\", wall_stone_diffuse_texture.gl_texture_frame);\n  ...\n  859  \n  860          // glActiveTexture(GL_TEXTURE0 + position_tfbo_texture.gl_texture_frame);\n  861:         // glBindTexture(  GL_TEXTURE_2D,  position_tfbo_texture.gl_texture_id);\n  862  \n  863          // glActiveTexture(GL_TEXTURE0 + normal_tfbo_texture.gl_texture_frame);\n  864:         // glBindTexture(  GL_TEXTURE_2D,  normal_tfbo_texture.gl_texture_id);\n  865  \n  866          // glActiveTexture(GL_TEXTURE0 + albedo_specular_tfbo_texture.gl_texture_frame);\n  867:         // glBindTexture(  GL_TEXTURE_2D,  albedo_specular_tfbo_texture.gl_texture_id);\n  868  \n  869          set_uniform(*shader_manager, \"fb_position\",    position_tfbo_texture.gl_texture_frame);\n\nC:\\mallib\\mallib\\fps\\src\\texture_manager.cc:\n   57  \n   58      glActiveTexture(GL_TEXTURE0 + texture.gl_texture_frame);\n   59:     glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);\n   60      glTexImage2D(\n   61          GL_TEXTURE_2D,\n   ..\n  108  \n  109          glActiveTexture(GL_TEXTURE0 + texture.gl_texture_frame);\n  110:         glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);\n  111          glTexImage2D(\n  112              GL_TEXTURE_2D,\n\n15 matches across 2 files\n",
+			"settings":
+			{
+				"buffer_size": 4446,
+				"line_ending": "Windows",
+				"name": "Find Results",
+				"scratch": true
+			}
+		},
+		{
+			"file": "src/texture_manager.cc",
+			"settings":
+			{
+				"buffer_size": 4525,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/texture_manager.h",
+			"settings":
+			{
+				"buffer_size": 1400,
 				"line_ending": "Windows"
 			}
 		},
@@ -460,7 +537,8 @@
 			"file": "src/main.cc",
 			"settings":
 			{
-				"buffer_size": 3744,
+				"buffer_size": 3930,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		}
@@ -622,28 +700,36 @@
 	"expanded_folders":
 	[
 		"/C/mallib/mallib/fps/src",
+		"/C/mallib/mallib/fps/src/.vs",
 		"/C/mallib/mallib/fps/assets/shaders",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_debug_geometry",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_edges",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_geometry",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_instanced",
-		"/C/mallib/mallib/fps/assets/shaders/lightbox"
+		"/C/mallib/mallib/fps/assets/shaders/deferred_lighting",
+		"/C/mallib/mallib/fps/assets/shaders/lightbox",
+		"/C/mallib/mallib/fps/assets/shaders/particles",
+		"/C/mallib/mallib/fps/assets/shaders/simple_depth"
 	],
 	"file_history":
 	[
-		"/C/mallib/mallib/fps/src/draw3d_api.h",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_debug_geometry/deferred_debug_geometry.fs",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_debug_geometry/deferred_debug_geometry.vs",
-		"/C/mallib/mallib/fps/src/main.cc",
-		"/C/mallib/mallib/fps/fps.sublime-project",
-		"/C/mallib/mallib/fps/src/render_system.cc",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_instanced/deferred_instanced.fs",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_instanced/deferred_instanced.vs",
+		"/C/mallib/mallib/fps/src/vertex.h",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_geometry/deferred_geometry.vs",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_geometry/deferred_geometry.fs",
-		"/C/mallib/mallib/fps/src/render_system.h",
-		"/C/mallib/mallib/fps/src/shader_manager.cc",
+		"/C/mallib/mallib/fps/src/main.cc",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_instanced/deferred_instanced.fs",
 		"/C/mallib/mallib/fps/src/texture_manager.cc",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_instanced/deferred_instanced.vs",
+		"/C/mallib/mallib/fps/readme.md",
+		"/C/mallib/mallib/fps/src/draw3d_api.h",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_lighting/deferred_lighting.fs",
+		"/C/mallib/mallib/fps/src/shader_manager.cc",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_edges/deferred_edges.fs",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_debug_geometry/deferred_debug_geometry.fs",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_debug_geometry/deferred_debug_geometry.vs",
+		"/C/mallib/mallib/fps/fps.sublime-project",
+		"/C/mallib/mallib/fps/src/render_system.cc",
+		"/C/mallib/mallib/fps/src/render_system.h",
 		"/C/mallib/mallib/fps/src/asset_manager.cc",
 		"/C/mallib/mallib/fps/meson.build",
 		"/C/mallib/mallib/fps/src/asset_manager.h",
@@ -658,7 +744,6 @@
 		"/C/mallib/mallib/fps/assets/shaders/deferred_normals/deferred_normals.fs",
 		"/C/mallib/mallib/fps/src/debug_output.plan",
 		"/C/mallib/mallib/fps/src/math.h",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_edges/deferred_edges.fs",
 		"/C/mallib/mallib/fps/src/game.h",
 		"/C/mallib/mallib/fps/src/draw2d_api.plan",
 		"/C/mallib/mallib/fps/src/task_system.cc",
@@ -755,13 +840,11 @@
 		"/C/mutil/fps/src/shader.cc",
 		"/C/mutil/fps/src/shader.h",
 		"/C/mutil/fps/src/glad_includer.h",
-		"/C/mutil/fps/src/glfw_callbacks.h",
-		"/C/mutil/fps/src/CmakeLists.txt",
-		"/C/mutil/fps/src/mesh.h"
+		"/C/mutil/fps/src/glfw_callbacks.h"
 	],
 	"find":
 	{
-		"height": 41.0
+		"height": 43.0
 	},
 	"find_in_files":
 	{
@@ -776,6 +859,43 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"texture_diffuse",
+			"\", ",
+			"glActiveTexture",
+			"glbindtexture",
+			"get_next_free",
+			"glactiveTextdure",
+			"wall_stone_diffuse",
+			"g_wall_Vbo",
+			"g_wall_vbo",
+			"set_uniform",
+			"geometry_fbo",
+			"fbo",
+			"g_depth",
+			"draw_",
+			"put_arrow",
+			"new_camera.front",
+			"camera.front",
+			"put_arrow",
+			"specular_local",
+			"normal",
+			"half_way_direction",
+			"view_direction",
+			"view_position",
+			"1.f",
+			"back_bot_right",
+			"back_top_right",
+			"back_bot_left",
+			"back_top_left",
+			"end_in",
+			"back_bot_right",
+			"back_bot_left",
+			"right1",
+			"back_top_right1",
+			", ",
+			"back_top_right1",
+			"right1",
+			"left",
 			"bot",
 			"front_top_right",
 			"back_bot_left",
@@ -866,44 +986,7 @@
 			"h",
 			"call",
 			"cursor",
-			"workgroupMinDepth",
-			"finalMin",
-			"gatheredTexelMins",
-			"gatheredTexelValues",
-			"gatheredTexelValues1",
-			"baseTexelCoords",
-			"gatherCoords",
-			"s_workgroupMinDepthEncodedAsUint",
-			"u_texelDimensions",
-			"u_outputDownsampledMinDepthBufferImage",
-			"u_inputDepthBuffer",
-			"0.5",
-			"unscaledWindowCoords",
-			"clipSpacePosition",
-			"ndcPosition",
-			"glfw_close_callback",
-			"glfw_close_",
-			"update_position",
-			"new_position",
-			"player.position",
-			"g_player_camera",
-			"g_window_width",
-			"g_mouse_sen",
-			"g_player_camera",
-			"create_view_matrix_from_camera",
-			"GameMode",
-			"& ",
-			"deferred_",
-			"create_default_camera",
-			"x_offset",
-			"update_player_position",
-			"g_mouse_sensitivity",
-			"handler",
-			"xyz",
-			"simualte",
-			"init_opengl",
-			"g_normal",
-			"g_color"
+			"workgroupMinDepth"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -933,15 +1016,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 45134,
+						"buffer_size": 48083,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2156,
-								2156
+								2222,
+								2222
 							]
 						],
 						"settings":
@@ -951,7 +1034,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1561.0,
+						"translation.y": 626.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -959,19 +1042,19 @@
 				},
 				{
 					"buffer": 1,
-					"file": "src/main.cc",
-					"semi_transient": true,
+					"file": "src/shader_manager.cc",
+					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3744,
+						"buffer_size": 15813,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2784,
-								2784
+								13365,
+								13365
 							]
 						],
 						"settings":
@@ -981,10 +1064,260 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 783.0,
+						"translation.y": 9230.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "assets/shaders/deferred_instanced/deferred_instanced.vs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 892,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								160,
+								160
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "assets/shaders/deferred_lighting/deferred_lighting.fs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2628,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2205,
+								2205
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4446,
+						"regions":
+						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										278,
+										291
+									],
+									[
+										736,
+										749
+									],
+									[
+										1219,
+										1232
+									],
+									[
+										1617,
+										1630
+									],
+									[
+										1800,
+										1813
+									],
+									[
+										1990,
+										2003
+									],
+									[
+										2273,
+										2286
+									],
+									[
+										2666,
+										2679
+									],
+									[
+										2878,
+										2891
+									],
+									[
+										3081,
+										3094
+									],
+									[
+										3400,
+										3413
+									],
+									[
+										3583,
+										3596
+									],
+									[
+										3773,
+										3786
+									],
+									[
+										4094,
+										4107
+									],
+									[
+										4303,
+										4316
+									]
+								],
+								"scope": ""
+							}
+						},
+						"selection":
+						[
+							[
+								4114,
+								4114
+							]
+						],
+						"settings":
+						{
+							"detect_indentation": false,
+							"line_numbers": false,
+							"output_tag": 1,
+							"result_base_dir": "",
+							"result_file_regex": "^([^ \t].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1125.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "src/texture_manager.cc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4525,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2507,
+								2507
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1125.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "src/texture_manager.h",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 1400,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "src/main.cc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3930,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2325,
+								2325
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1275.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
 					"type": "text"
 				}
 			]
@@ -992,7 +1325,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 32.0
+		"height": 34.0
 	},
 	"input":
 	{
@@ -1045,7 +1378,7 @@
 	"project": "fps.sublime-project",
 	"replace":
 	{
-		"height": 60.0
+		"height": 64.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1055,12 +1388,12 @@
 		"selected_items":
 		[
 			[
-				"render",
-				"src\\render_system.cc"
-			],
-			[
 				"shader",
 				"src\\shader_manager.cc"
+			],
+			[
+				"render",
+				"src\\render_system.cc"
 			],
 			[
 				"textu",
