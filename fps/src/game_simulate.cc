@@ -4,6 +4,7 @@
 #include "log.h"
 #include "entity_system.h"
 #include <glm/gtx/string_cast.hpp>
+#include <algorithm> // for clamp
 
 
 // these are the GLFW key presses.
@@ -41,13 +42,13 @@ namespace
     float g_mouse_sensitivity = 0.05f;
 
     // player movement (120 hz baseline tickrate).
-    float g_player_acceleration = 0.1f;
-    float g_player_max_velocity = 1.0f;
-    float g_camera_movespeed = 0.2f;
+    float g_player_acceleration = 0.05f;
+    float g_player_max_velocity = 0.5f;
+    float g_camera_velocity = 0.2f;
     const glm::vec3 g_world_gravity = glm::vec3(0.f, 0.5f,0.0f);
 
     // @dependencies:
-    // g_camera_movespeed
+    // g_camera_velocity
 	glm::vec3 update_flying_camera_with_input(
 		const Input& input,
 		const glm::vec3 old_position,
@@ -61,23 +62,23 @@ namespace
 
 		if (input.keyboard_state[KEY_W])
 		{
-	    	position = position + (front * g_camera_movespeed * dt_factor);
+	    	position = position + (front * g_camera_velocity * dt_factor);
 		}
 		if (input.keyboard_state[KEY_S])
 		{
-            position = position - (front * g_camera_movespeed * dt_factor);
+            position = position - (front * g_camera_velocity * dt_factor);
 		}
 		if (input.keyboard_state[KEY_A])
 		{
-	   		position = position - (right * g_camera_movespeed * dt_factor);
+	   		position = position - (right * g_camera_velocity * dt_factor);
 		}
 		if (input.keyboard_state[KEY_D])
 		{
-            position = position + (right * g_camera_movespeed * dt_factor);
+            position = position + (right * g_camera_velocity * dt_factor);
 		}
 		if (input.keyboard_state[KEY_SPACE])
 		{
-			position = position + (up * g_camera_movespeed * dt_factor);
+			position = position + (up * g_camera_velocity * dt_factor);
 		}
 
 		return position;
@@ -121,26 +122,68 @@ namespace
 		}
 		if (input.keyboard_state[KEY_SPACE])
 		{
-			float up_velocity = 2.0f;
-			input_movement_vector += world_up * up_velocity; 
-			if (old_velocity > 0.02f) input_movement_vector += 0.2f* old_movement_vector;
+			//@FIXME(Sjors): this is not a very robust system.
+			// if we are on the ground, we can jump.
+			// how do we verify we are on the ground? we can jump off platforms at arbitrary height,
+			// so checking y value against 0 does not work. 
+			// checking the movement vector also does not work: if v_y reaches 0 at the 
+			// apex of the jump, it would be possible to jump again mid air.
+			// both of these imply some sort of state to decide whether we are grounded or not.
+			// for now, we are "grounded" if y is equal to 0.0f. 
+			bool grounded = (fabs(old_position.y) < 0.01f);
+			if (grounded)
+			{
+				float up_velocity = 10.0f;
+				input_movement_vector += world_up * up_velocity; 
+				//@TODO(Sjors): imbue jump with a bit of forward momentum.
+				// if (old_velocity > 0.02f) input_movement_vector += 0.02f* old_movement_vector;	
+			}
 		}
 
 		// if affected by gravity: (only if the vector has positive or negative y):
-		if (old_position.y  > 0.0f) input_movement_vector -= g_world_gravity;
+		bool grounded = (fabs(old_position.y) < 0.1f);
+		if (!grounded) input_movement_vector -= g_world_gravity * dt_factor;
 
 		float input_vector_velocity = g_player_acceleration * dt_factor;
     	input_movement_vector = input_movement_vector * input_vector_velocity;
+
     	glm::vec3 movement_vector = old_movement_vector + input_movement_vector;
-    	float velocity = glm::length(movement_vector);
-    	// clip velocity if necessary
-    	velocity = (velocity > g_player_max_velocity) ? g_player_max_velocity : velocity;
 
+    	//3D:
+    	// float velocity = glm::length(movement_vector);
+  		// clamp velocity if necessary 
+  		// velocity = std::clamp(velocity, 0.0f, g_player_max_velocity);
     	// since velocity can be clipped, recalculate the movement vector.
-    	if (velocity > 0.01f) movement_vector = glm::normalize(movement_vector) * velocity;
-    	glm::vec3 position = old_position + velocity * movement_vector;
+    	// if (velocity > 0.01f) movement_vector = glm::normalize(movement_vector) * velocity;
+    	// glm::vec3 position = old_position + velocity * movement_vector;
 
-    	if (position.y < 0.0f) position.y = 0.0f;
+
+
+    	//2D:
+    	float movement_vector_y = movement_vector.y; 
+    	glm::vec2 xz(movement_vector.x, movement_vector.z);
+    	float xz_velocity = glm::length(xz);
+    	xz_velocity = std::clamp(xz_velocity, 0.0f, g_player_max_velocity);
+
+    	// think about grounded ness.
+    	// if (grounded) xz_velocity = std::clamp(xz_velocity, 0.0f, g_player_max_velocity);
+
+    	if (xz_velocity > 0.01f) xz = glm::normalize(xz) * xz_velocity;
+    	movement_vector.x = xz.x;
+    	movement_vector.z = xz.y; 
+    	movement_vector.y = movement_vector_y;
+
+
+    	glm::vec3 position = old_position + glm::vec3(xz.x * xz_velocity, movement_vector_y, xz.y * xz_velocity);
+
+
+
+    	// are we beneath the ground? move to ground & flatten gravity impact.
+    	if (position.y < 0.0f)
+		{
+			position.y = 0.0f;
+    		movement_vector.y = 0.0f;	
+		}
 
     	auto result = std::make_tuple(position, movement_vector);
 		return result;
@@ -154,7 +197,6 @@ namespace
 	Camera update_camera_view_with_input(const Input& input, const Camera camera, const float dt, const bool should_constrain_pitch = true)
 	{
 		Camera new_camera = camera;
-	    // logr::report("[Renderer] updating player camera.\n");
 	    glm::vec3 world_up(0.0f,1.0f, 0.0f);
 
 	    float adjusted_x_offset = input.mouse_delta_x * g_mouse_sensitivity;
@@ -177,7 +219,8 @@ namespace
 	    front.z = sin(glm::radians(new_camera.yaw)) * cos(glm::radians(new_camera.pitch));
 	    new_camera.front = glm::normalize(front);
 	    // also re-calculate the right and up vector
-	    new_camera.right = glm::normalize(glm::cross(new_camera.front, world_up));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+	    // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+	    new_camera.right = glm::normalize(glm::cross(new_camera.front, world_up)); 
 	    new_camera.up    = glm::normalize(glm::cross(new_camera.right, new_camera.front));
 
 	    return new_camera;
@@ -186,7 +229,6 @@ namespace
 	void update_player_entity(const Input& input)
 	{
 		auto& player = g_player;
-
 	}
 
 	Camera update_camera_entity(const Input& input, const Camera old_camera, const float dt)
@@ -242,10 +284,6 @@ void game_simulate(const double dt, Game_State& game_state,const Input& input, P
 	}
 
 	// BEGIN_SIMULATION
-
-
-
-
 	// execute brains (update and render entities());
 
 
