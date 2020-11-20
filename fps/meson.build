@@ -3,7 +3,6 @@ project('testt', 'cpp',default_options : ['cpp_std=c++17'])
 libfmt_project = subproject('fmt')
 libfmt_dep = libfmt_project.get_variable('fmt_dep')
 
-add_project_arguments('/d1reportSingleClassLayoutMEOW', language:'cpp')
 
 libimgui_project = subproject('imgui')
 libimgui_dep = libimgui_project.get_variable('imgui_dep')

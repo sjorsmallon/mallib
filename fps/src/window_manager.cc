@@ -12,28 +12,17 @@
 
 namespace
 {
-    // bool holding_left_mouse_button = false;
-    // bool holding_right_mouse_button = false;
-    // // DUMB input handling.
-    // bool KEY_W_DOWN = false;
-    // bool KEY_S_DOWN = false;
-    // bool KEY_A_DOWN = false;
-    // bool KEY_D_DOWN = false;
-
-
    void glfw_close(GLFWwindow* window)
     {
         logr::report("[GLFW] closing down the window (calling exit).\n");
         exit(1);
     }
 
-    //@IC(Sjors): parameters cannot be const since the callbacks needs to match.
     void glfw_error_callback(int error, const char* description)
     {
         logr::report_error("[GLFW]: {}, {} \n", error, description);
     }
 
-    
     // the action is either GLFW_PRESS, GLFW_REPEAT or GLFW_RELEASE.    
     void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
@@ -70,8 +59,7 @@ namespace
     }
 
     //@Dependencies:
-    // holding_left_mouse_button,
-    // holding_right_mouse_button
+    // input
     void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     {
         Window_Manager* window_manager = reinterpret_cast<Window_Manager*>(glfwGetWindowUserPointer(window));
@@ -102,7 +90,7 @@ namespace
         }
 
     //@dependencies:
-    // scroll_delta_y
+    // input->scroll_delta_y 
     void glfw_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     {
         Window_Manager* window_manager = reinterpret_cast<Window_Manager*>(glfwGetWindowUserPointer(window));
@@ -117,7 +105,6 @@ namespace
 
 Window_Manager::Window_Manager()
 {
-     ///--- init glfw ----
     if (!glfwInit())
     {
         logr::report_error("[Window_Manager] glfw cannot init!");
@@ -178,9 +165,6 @@ void create_main_window(Window_Manager& window_manager, const char* title, const
         exit(1);
     }
 
-    //@FIXME: disable cursor when we are trying to access the debug menu?
-    // capture cursor & disable it.
-
     // register callbacks
     // glfwSetErrorCallback(glfw_error_callback); (this is done in the constructor since it does not require a window.)
     glfwSetKeyCallback(main_window, glfw_key_callback);
@@ -188,9 +172,8 @@ void create_main_window(Window_Manager& window_manager, const char* title, const
     glfwSetCursorPosCallback(main_window, glfw_cursor_position_callback);
     glfwSetScrollCallback(main_window, glfw_scroll_callback);
     
-    // set user pointer
+    // set user pointer to this window so we can access input in the glfw callbacks.
     glfwSetWindowUserPointer(main_window, reinterpret_cast<void*>(&window_manager));
-
 
     ///--- init IMGUI ----
     // Setup Dear ImGui context
@@ -213,57 +196,9 @@ void create_main_window(Window_Manager& window_manager, const char* title, const
 
     //hide the cursor, unhide if in debug mode
     glfwSetInputMode(main_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
-
-
-
 }
 
-void create_debug_window(Window_Manager& window_manager, const char* title, const int window_width, const int window_height)
-{
-    // the debug window has a parent window. That is the main window. 
-    // This is implictly reached by the window manager.
-    GLFWwindow* parent_window = window_manager.main_window;
-
-
-     // focus cursor on original window
-    glfwWindowHint(GLFW_FOCUSED, GLFW_FALSE);
-    GLFWwindow* debug_window = glfwCreateWindow(850, 1000, "Debug", NULL, parent_window);
-    if (nullptr == debug_window)
-    {
-        logr::report_error("debug_window is nullptr");
-        exit(1);
-    }
-    glfwMakeContextCurrent(debug_window);
-    glfwSetWindowPos(debug_window, 1120, 100);
-    // glfwSwapInterval(1); // Enable vsync
-
-    ///--- init IMGUI ----
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
-
-    const char* glsl_version = "#version 450";
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    // Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(debug_window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
-    
-    window_manager.debug_window = debug_window;
-
-
-    glfwMakeContextCurrent(parent_window);
-
-//     return debug_window;
-}
-
-
-// swap, clear & poll
+//@TODO(Sjors): swap, clear, poll.
 void poll_input(Window_Manager& window_manager)
 {
     window_manager.input.mouse_delta_x =  0.0f;
@@ -286,7 +221,6 @@ void swap_buffers(const Window_Manager& window_manager)
     }
 }
 
-
 //@dependencies:
 // -  main_window pointer
 // - logr::console_log
@@ -294,7 +228,6 @@ void render_debug_ui(const Window_Manager& window_manager)
 {
     // unhide the cursor.
     glfwSetInputMode(window_manager.main_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); 
-
     {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -318,7 +251,6 @@ void render_debug_ui(const Window_Manager& window_manager)
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
     // glfwSetInputMode(window_manager.main_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
-
 }
 
 

@@ -21,25 +21,22 @@ constexpr const float FRAMETIME_120_HZ_IN_S = 0.00833333333f;
 
 namespace
 {
-	using movement = std::tuple<glm::vec3, glm::vec3>; // position, movement_vector
 
 	//@FIXME(Sjors): to be replaced by a type_player entity.
-	// uh, is player a camera?
 	struct Player
 	{
 		uint32_t ID;
 		glm::vec3 position;
 		glm::vec3 movement_vector;
-		glm::vec3 velocity;
 	};
 
 	// player entity fields.
-   	Player g_player{0, glm::vec3{0.0f,0.0f,3.0f}};
+   	Player g_player{0, glm::vec3{0.0f,0.0f,3.0f}, glm::vec3{0.0f,0.0f,0.0f}};
 
     // ---------------
 	// cvars
 	// ---------------
-    float g_mouse_sensitivity = 0.05f;
+    float g_mouse_sensitivity = 0.5f;
 
     // player movement (120 hz baseline tickrate).
     float g_player_acceleration = 0.05f;
@@ -55,9 +52,8 @@ namespace
 		const glm::vec3 front,
 		const glm::vec3 right,
 		const glm::vec3 up,
-		const float dt)
+		const float dt_factor)
 	{
-		float dt_factor = dt / FRAMETIME_120_HZ_IN_S;
 		glm::vec3 position = old_position;
 
 		if (input.keyboard_state[KEY_W])
@@ -95,10 +91,9 @@ namespace
 		const glm::vec3 old_movement_vector,
 		const glm::vec3 front,
 		const glm::vec3 right,
-		const float dt)
+		const float dt_factor)
 	{
 		// use the FACTOR here.
-		const float dt_factor = dt / FRAMETIME_120_HZ_IN_S;
 		const glm::vec3 front_without_height = glm::vec3(front.x, 0.f, front.z);
 		const glm::vec3 world_up = glm::vec3(0.0f, 1.0f, 0.0f);
 		const float old_velocity = glm::length(old_movement_vector);
@@ -106,11 +101,11 @@ namespace
 		glm::vec3 input_movement_vector = glm::vec3(0.0f);
 		if (input.keyboard_state[KEY_W])
 		{
-	    	input_movement_vector += front_without_height;
+			input_movement_vector += front_without_height;
 		}
 		if (input.keyboard_state[KEY_S])
 		{
-	    	input_movement_vector -= front_without_height;
+			input_movement_vector -= front_without_height;
 		}
 		if (input.keyboard_state[KEY_A])
 		{
@@ -157,9 +152,6 @@ namespace
     	// if (velocity > 0.01f) movement_vector = glm::normalize(movement_vector) * velocity;
     	// glm::vec3 position = old_position + velocity * movement_vector;
 
-
-
-    	//2D:
     	float movement_vector_y = movement_vector.y; 
     	glm::vec2 xz(movement_vector.x, movement_vector.z);
     	float xz_velocity = glm::length(xz);
@@ -194,13 +186,13 @@ namespace
 	// @Note(Sjors): this does not use dt!
 	// @dependencies: 
 	// g_mouse_sensitivity
-	Camera update_camera_view_with_input(const Input& input, const Camera camera, const float dt, const bool should_constrain_pitch = true)
+	Camera update_camera_view_with_input(const Input& input, const Camera camera, const float dt_factor, const bool should_constrain_pitch = true)
 	{
 		Camera new_camera = camera;
 	    glm::vec3 world_up(0.0f,1.0f, 0.0f);
 
-	    float adjusted_x_offset = input.mouse_delta_x * g_mouse_sensitivity;
-	    float adjusted_y_offset = input.mouse_delta_y * g_mouse_sensitivity;
+	    float adjusted_x_offset = input.mouse_delta_x * g_mouse_sensitivity * dt_factor;
+	    float adjusted_y_offset = input.mouse_delta_y * g_mouse_sensitivity * dt_factor;
 
 	    new_camera.yaw   += adjusted_x_offset;
 	    new_camera.pitch += adjusted_y_offset;
@@ -244,7 +236,6 @@ namespace
 
 		return camera;
 	}
-
 }
 
 
@@ -254,15 +245,19 @@ void game_simulate(const double dt, Game_State& game_state,const Input& input, P
 	//@TODO(Sjors): set bounds for min / max frame time.
 	float clamped_dt = dt;
 	if (clamped_dt < 0.001f)
-		{
+	{
 			// logr::report("clamped dt.\n");
 			clamped_dt = 0.001f;
-		}
+	}	
 	if (clamped_dt > 0.1f) clamped_dt = 0.1f;
 
 
 	if (input.keyboard_state[KEY_P]) game_state.game_mode = GM_GAME;
 	if (input.keyboard_state[KEY_O]) game_state.game_mode = GM_EDITOR;
+
+
+	float dt_factor = clamped_dt / FRAMETIME_120_HZ_IN_S;
+
 
 
 	// are we paused?
@@ -278,7 +273,7 @@ void game_simulate(const double dt, Game_State& game_state,const Input& input, P
 		// if game_mode = player_cam:
 		{
 			update_player_entity(input);
-			game_state.camera = update_camera_entity(input, game_state.camera, clamped_dt);
+			game_state.camera = update_camera_entity(input, game_state.camera, dt_factor);
 			g_player.position = game_state.camera.position;
 		}
 	}
