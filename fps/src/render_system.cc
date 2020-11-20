@@ -26,7 +26,7 @@ namespace
 
     constexpr const float g_fov = 90.0f;
     constexpr const float g_projection_z_near_plane = 0.1f;
-    constexpr const float g_projection_z_far_plane = 200.0f;
+    constexpr const float g_projection_z_far_plane = 1000.0f;
 
     // "members"
     Shader_Manager*   shader_manager;
@@ -692,7 +692,6 @@ void render_floor()
 // cvars: g_fov, g_aspect_ratio, g_projection_z_near_plane, g_projection_z_far_plane
 /// - lights
 /// - the geometry that needs to be rendered (either via submission or other)
-
 void render(const Camera camera, Particle_Cache& particle_cache)
 {
     timed_function("render");
@@ -824,8 +823,8 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             lights[0].position.z = camera.position.z;
             lights[0].color = glm::vec4(1.0f,1.0f,1.0f,0.0f);
             lights[0].on = true;
-            lights[0].linear = 0.1;
-            lights[0].quadratic = 0.02;
+            lights[0].linear = 0.1f;
+            lights[0].quadratic = 0.02f;
 
             lights[1].position = glm::vec4(0.0f, 3.0f, 0.0f, 0.0f);
             lights[1].color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
@@ -868,7 +867,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             set_uniform(*shader_manager, "projection", projection);
             set_uniform(*shader_manager, "view", view);
 
-            glm::mat4 model = mat4(1.0f);
+            glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(lights[0].position));
             model = glm::scale(model, glm::vec3(0.01f));
             set_uniform(*shader_manager, "model", model);

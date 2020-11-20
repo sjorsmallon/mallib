@@ -16,6 +16,7 @@ in vec2 texture_coords;
 uniform sampler2D fb_position;
 uniform sampler2D fb_normal;
 uniform sampler2D fb_albedo_spec;
+
 uniform vec4 view_position;
 
 
@@ -46,17 +47,13 @@ void main()
     
     // then calculate lighting as usual
     vec3 lighting = albedo * ambient_component;
-    vec4 lightergjerg = view_position;
-    vec4 view_vec4 = vec4(fragment_position, 1.0f) - view_position;
-    // vec3 view_direction = normalize(fragment_position - view_position.xyz);
-    vec3 view_direction  = vec3(view_vec4.xyz);
-
+    vec3 view_direction = normalize(fragment_position - view_position.xyz);
 
     for (int light_idx = 0; light_idx < NUM_LIGHTS; ++light_idx)
     {
         // if (lights[light_idx].on > 0)
-        if (true)
-        {
+        // if (true)
+        // {
             float distance = distance(lights[light_idx].position.xyz, fragment_position);
             // if (distance < lights[light_idx].radius)
             // {
@@ -76,9 +73,9 @@ void main()
 
                 diffuse  *= attenuation;
                 specular_contribution *= attenuation;
-                lighting +=  diffuse; //+ specular_contribution; 
+                lighting +=  diffuse + specular_contribution; 
             // }
-        }
+        // }
     }
 
     fragment_color = vec4(lighting, 1.0);

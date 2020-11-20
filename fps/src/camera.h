@@ -14,6 +14,8 @@ struct Camera
     float pitch;
     float yaw;
     float roll;
+    // TEMPORARY:
+    glm::vec3 movement_vector;
 };
 
 struct Camera_Path
@@ -38,6 +40,7 @@ inline Camera default_camera()
     camera.pitch = 0.0f;
     camera.yaw = 0.0f;
     camera.roll = 0.0f;
+    camera.movement_vector = glm::vec3(0.0f);
 
     return camera;
 }

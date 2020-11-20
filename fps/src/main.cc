@@ -25,31 +25,25 @@ int main()
 {
     //@TODO(Sjors): why does using two task systems slow down the application to a crawl?
     //@TODO(Sjors): how to deal with openGL context w. multiple threads?
-    
     constexpr const int worker_count{3};
     auto high_priority_queue = Task_System(worker_count); 
 
     auto window_manager = Window_Manager();
-    create_main_window(window_manager, "mvmt", window_width, window_height);
+    create_main_window(window_manager, "fps", window_width, window_height);
 
     auto shader_manager = Shader_Manager();
     load_shader(shader_manager, "deferred_geometry");
-    load_shader(shader_manager, "deferred_lighting");
-    // load_shader(shader_manager, "deferred_obra_dinn");
-    // load_shader(shader_manager, "deferred_edges");
-    // load_shader(shader_manager, "deferred_normals");
-    load_shader(shader_manager, "lightbox");
-    load_shader(shader_manager, "simple_depth");
     load_shader(shader_manager, "deferred_instanced");
+    load_shader(shader_manager, "deferred_lighting");
+    load_shader(shader_manager, "lightbox");
     load_shader(shader_manager, "deferred_debug_geometry");
+    load_shader(shader_manager, "simple_depth");
     load_shader(shader_manager, "simple_depth_shadow_mapping");
-
 
     auto asset_manager = Asset_Manager();
     load_obj(asset_manager, "target");
 
     auto texture_manager = Texture_Manager();
-
     load_png_texture(texture_manager, "metal");
     load_png_texture(texture_manager, "marble");
     load_tga_texture(texture_manager, "target_wood_diffuse");
@@ -59,15 +53,11 @@ int main()
     load_png_texture(texture_manager, "wall_stone_diffuse");
     load_png_texture(texture_manager, "wall_stone_normal");
 
-
-
-
-
     //@Fixme(Sjors): create a render manager?
     init_renderer(shader_manager, texture_manager, window_width, window_height);
 
     Game_State game_state{};
-    Particle_Cache particle_cache{}; // uh, allocating this on the stack is maybe a bad idea.]
+    Particle_Cache particle_cache{}; // uh, allocating this on the stack is maybe a bad idea.
 
     game_state.game_mode = GM_GAME;
 
@@ -114,11 +104,9 @@ int main()
                 render_accumulator += value;
             render_accumulator /=120.0;
 
-            logr::report("average frame time past 120 frames: {}\n", accumulator);
+            logr::report("average frame time past 120 frames: {} ({} fps).\n", accumulator, 1.0 / accumulator);
             logr::report("average render time past 120 frame: {}\n", render_accumulator);
         }
-
-
 
     }
 

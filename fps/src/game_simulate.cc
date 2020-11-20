@@ -3,13 +3,17 @@
 #include "input.h"
 #include "log.h"
 #include "entity_system.h"
+#include <glm/gtx/string_cast.hpp>
+
 
 // these are the GLFW key presses.
+constexpr const int KEY_SPACE = 32;
 constexpr const int KEY_W = 87;
 constexpr const int KEY_A = 65;
 constexpr const int KEY_S = 83;
 constexpr const int KEY_D = 68;
-constexpr const float FRAMETIME_120_HZ = 0.00833333333f;
+
+constexpr const float FRAMETIME_120_HZ_IN_S = 0.00833333333f;
 
 namespace
 {
@@ -19,6 +23,8 @@ namespace
 	{
 		uint32_t ID;
 		glm::vec3 position;
+		glm::vec3 movement_vector;
+		glm::vec3 velocity;
 	};
 
 	// player entity fields.
@@ -27,51 +33,104 @@ namespace
     // ---------------
 	// cvars
 	// ---------------
-    // input
     float g_mouse_sensitivity = 0.05f;
-   
+
     // player movement (120 hz baseline tickrate).
     float g_player_movespeed = 0.2f;
-    float g_player_acceleration = 0.2f;
-    float g_player_max_movespeed = 1.0f;
+    float g_player_acceleration = 2.0f;
+    float g_player_max_velocity = 10.0f;
+    float g_camera_movespeed = 0.2f;
 
-    //@Dependencies:
-    // g_player_movespeed
-	glm::vec3 update_position_with_input(const Input& input, const glm::vec3 old_position, const glm::vec3 front, const glm::vec3 right, const float dt)
+    // @dependencies:
+    // g_camera_movespeed
+	glm::vec3 update_flying_camera_with_input(
+		const Input& input,
+		const glm::vec3 old_position,
+		const glm::vec3 front,
+		const glm::vec3 right,
+		const glm::vec3 up,
+		const float dt)
 	{
-		float dt_percentage = dt / FRAMETIME_120_HZ;
+		float dt_factor = dt / FRAMETIME_120_HZ_IN_S;
 		glm::vec3 position = old_position;
 
 		if (input.keyboard_state[KEY_W])
 		{
-	    	// logr::report("[Simulate] pressed W.\n");
-
-	    	position = position + (front * g_player_movespeed * dt_percentage);
-
+	    	position = position + (front * g_camera_movespeed * dt_factor);
 		}
 		if (input.keyboard_state[KEY_S])
 		{
-	    	// logr::report("[Simulate] pressed S.\n");
-
-            position = position - (front * g_player_movespeed * dt_percentage);
-
+            position = position - (front * g_camera_movespeed * dt_factor);
 		}
 		if (input.keyboard_state[KEY_A])
 		{
-	    	// logr::report("[Simulate] pressed A.\n");
-
-	   		position = position - (right * g_player_movespeed * dt_percentage);
-
+	   		position = position - (right * g_camera_movespeed * dt_factor);
 		}
 		if (input.keyboard_state[KEY_D])
 		{
-	    	// logr::report("[Simulate] pressed D.\n");
-
-            position = position + (right * g_player_movespeed * dt_percentage);
+            position = position + (right * g_camera_movespeed * dt_factor);
+		}
+		if (input.keyboard_state[KEY_SPACE])
+		{
+			position = position + (up * g_camera_movespeed * dt_factor);
 		}
 
 		return position;
+	}
 
+    //@Dependencies:
+    // g_player_movespeed
+    // g_player_acceleration
+    // world_up
+    // FRAMETIME_120_HZ
+	glm::vec3 update_position_with_input(
+		const Input& input,
+		const glm::vec3 old_position,
+		const glm::vec3 old_movement_vector,
+		const glm::vec3 front,
+		const glm::vec3 right,
+		const float dt)
+	{
+		// use the FACTOR here.
+		const float dt_factor = dt / FRAMETIME_120_HZ_IN_S;
+		const glm::vec3 front_without_height = glm::vec3(front.x, 0.f, front.z);
+		const glm::vec3 world_up = glm::vec3(0.0f, 1.0f, 0.0f);
+		const float old_velocity = glm::length(old_movement_vector);
+
+
+		glm::vec3 input_movement_vector = glm::vec3(0.0f);
+		if (input.keyboard_state[KEY_W])
+		{
+	    	input_movement_vector += front;
+		}
+		if (input.keyboard_state[KEY_S])
+		{
+	    	input_movement_vector -= front;
+		}
+		if (input.keyboard_state[KEY_A])
+		{
+			input_movement_vector -= right;
+		}
+		if (input.keyboard_state[KEY_D])
+		{
+			input_movement_vector += right;
+		}
+		if (input.keyboard_state[KEY_SPACE])
+		{
+			input_movement_vector += world_up; 
+			if (old_velocity > 0.02f) input_movement_vector += 0.2f* old_movement_vector;
+		}
+
+		float input_vector_velocity = g_player_acceleration * dt_factor;
+    	input_movement_vector = input_movement_vector * input_vector_velocity;
+
+    	glm::vec3 movement_vector = old_movement_vector + input_movement_vector;
+    	float velocity = glm::length(movement_vector);
+    	// clip velocity if necessary
+    	velocity = (velocity > g_player_max_velocity) ? g_player_max_velocity : velocity;
+    	glm::vec3 position = old_position + velocity * movement_vector;
+
+		return position;
 	}
 
 	// processes input received from a mouse input system.
@@ -120,7 +179,7 @@ namespace
 	Camera update_camera_entity(const Input& input, const Camera old_camera, const float dt)
 	{
 		Camera camera = old_camera;
-		camera.position = update_position_with_input(input, old_camera.position, old_camera.front, old_camera.right, dt);
+		camera.position = update_position_with_input(input, old_camera.position, old_camera.movement_vector, old_camera.front, old_camera.right, dt);
 		if (input.mouse_delta_x || input.mouse_delta_x)
 			return update_camera_view_with_input(input, camera, dt);
 
