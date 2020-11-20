@@ -28,6 +28,7 @@ source_files = [
 	'src/game.cc',
 	'src/task_system.cc',
 	'src/timed_function.cc',
+	'src/logr.cc'
 
 ]
 

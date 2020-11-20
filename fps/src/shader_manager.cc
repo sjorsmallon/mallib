@@ -21,17 +21,17 @@ namespace
         std::string_view view(filename);
         view = view.substr(view.find_last_of(".") + 1);
 
-        if (view == "vs")
+        if (view == "vert")
             return GL_VERTEX_SHADER;
-        else if (view == "fs")
+        else if (view == "frag")
             return GL_FRAGMENT_SHADER;
-        else if (view == "gs")
+        else if (view == "geo")
             return GL_GEOMETRY_SHADER;
-        else if (view == "tcs")
+        else if (view == "tesc")
             return GL_TESS_CONTROL_SHADER;
-        else if (view == "tes")
+        else if (view == "tese")
             return GL_TESS_EVALUATION_SHADER;
-        else if (view == "cs")
+        else if (view == "comp")
             return GL_COMPUTE_SHADER;
         else
             return 0;
@@ -118,15 +118,15 @@ namespace
         }
 
         //--- Uniforms
-        GLint numActiveUniforms = 0;
-        glGetProgramInterfaceiv(shader.program_id, GL_UNIFORM, GL_ACTIVE_RESOURCES, &numActiveUniforms);
-        for(size_t unif = 0; unif < numActiveUniforms; ++unif)
+        GLint active_uniform_count = 0;
+        glGetProgramInterfaceiv(shader.program_id, GL_UNIFORM, GL_ACTIVE_RESOURCES, &active_uniform_count);
+        for(size_t uniform_idx = 0; uniform_idx != active_uniform_count; ++uniform_idx)
         {
-            glGetProgramResourceiv(shader.program_id, GL_UNIFORM, unif, properties.size(),
+            glGetProgramResourceiv(shader.program_id, GL_UNIFORM, uniform_idx, properties.size(),
             &properties[0], values.size(), nullptr, &values[0]);
             name_data.resize(values[0]);
 
-            glGetProgramResourceName(shader.program_id, GL_UNIFORM, unif, name_data.size(), NULL, &name_data[0]);
+            glGetProgramResourceName(shader.program_id, GL_UNIFORM, uniform_idx, name_data.size(), NULL, &name_data[0]);
             //IC: -1 here is to skip the null character.
             std::string uniform_name(name_data.begin(), name_data.end() - 1);//
             shader.uniform_names.push_back(uniform_name);
@@ -142,8 +142,8 @@ namespace
         }
         assert(shader.uniform_names.size() == string_pointers.size());
         assert(uniform_indices.size() == shader.uniform_names.size());
-
-
+        
+        // get indices and their names.
         glGetUniformIndices(shader.program_id, shader.uniform_names.size(), string_pointers.data(), uniform_indices.data());
         glGetActiveUniformsiv(shader.program_id, shader.uniform_names.size(), uniform_indices.data(),  GL_UNIFORM_TYPE, uniform_types.data());
 
@@ -275,6 +275,7 @@ namespace
         
         logr::report_warning("[get_shader_info] skipping glGetUniformLocation for uniform arrays.\n");
 
+        constexpr const int INVALID_UNIFORM_LOCATION = -1;
         for (auto &uniform_name: shader.uniform_names)
         {
             //@FIXME(Sjors): dirty fix to not check for location of array uniforms, since they will be set using 
@@ -283,7 +284,7 @@ namespace
 
 
             shader.uniforms[uniform_name].location = glGetUniformLocation(shader.program_id, uniform_name.c_str());
-            if (shader.uniforms[uniform_name].location == -1) logr::report_error("[Uniform] {} : UNKNOWN LOCATION!\n", uniform_name);
+            if (shader.uniforms[uniform_name].location == INVALID_UNIFORM_LOCATION) logr::report_error("[Uniform] {} : UNKNOWN LOCATION!\n", uniform_name);
         }
 
         glUseProgram(0);
@@ -302,7 +303,7 @@ void set_shader(Shader_Manager& shader_manager, const char* shader_name)
     shader_manager.active_shader_name = shader_name;
     if (shader_id == 0 && shader_name != "none")
     {
-        logr::report_error("[set_shader]: UNKNOWN SHADER NAME: {}", shader_name);
+        logr::report_error("[set_shader]: UNKNOWN SHADER NAME: {}. exiting.", shader_name);
         exit(1);
     }
 
@@ -312,27 +313,26 @@ void set_shader(Shader_Manager& shader_manager, const char* shader_name)
 uint32_t load_shader(Shader_Manager& shader_manager, const std::string& shader_name)
 {
     const std::string shader_folder_prefix = "../assets/shaders/";
-
     const std::string shader_folder_path = shader_folder_prefix + shader_name;
+
     const uint32_t shader_program = glCreateProgram();
 
     std::vector<uint32_t> shader_ids;
-
-    if (!std::filesystem::exists(shader_folder_path)) logr::report_error("[graphics] shader folder {} does not exist\n",shader_folder_path);
+    if (!std::filesystem::exists(shader_folder_path)) logr::report_error("[graphics] shader folder {} does not exist!\n",shader_folder_path);
 
     for (const auto& file: std::filesystem::directory_iterator(shader_folder_path))
         shader_ids.push_back(load_compile_attach_shader(shader_program, file.path().string()));
 
     glLinkProgram(shader_program);
 
-    if (!get_shader_link_success(shader_program)) logr::report_error("[graphics] error: shader {} could not be linked\n", shader_folder_path);
+    if (!get_shader_link_success(shader_program)) logr::report_error("[graphics] error: shader {} could not be linked!\n", shader_folder_path);
     
     // Detach shaders in any case. we do not need them after they have been attached.
     for (const auto& shader_id: shader_ids)
         glDetachShader(shader_program, shader_id);
     
     // gather uniforms & attributes.
-    //@FIXME: implicit creation!
+    // @FIXME(Sjors): implicit creation!
     Shader& shader = shader_manager.shaders[shader_name];
     shader.name = shader_name;
     shader.program_id =  shader_program;
@@ -351,7 +351,7 @@ void set_uniform(Shader_Manager& shader_manager, const std::string& uniform_name
     auto& active_shader = shader_manager.shaders[shader_manager.active_shader_name];
     if (active_shader.uniforms.find(uniform_name) == active_shader.uniforms.end())
     {
-        logr::report_warning("[OpenGL] uniform {} does not exist in shader {}. ignoring. \n", uniform_name, shader_manager.active_shader_name);
+        logr::report_warning("[OpenGL] uniform {} does not exist in shader {}. ignoring.\n", uniform_name, shader_manager.active_shader_name);
         return;
     }
 

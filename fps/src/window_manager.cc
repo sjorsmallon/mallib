@@ -287,7 +287,9 @@ void swap_buffers(const Window_Manager& window_manager)
 }
 
 
-//@dependencies: main_window pointer
+//@dependencies:
+// -  main_window pointer
+// - logr::console_log
 void render_debug_ui(const Window_Manager& window_manager)
 {
     // unhide the cursor.
@@ -302,6 +304,8 @@ void render_debug_ui(const Window_Manager& window_manager)
         {
             
             ImGui::Begin("Debug Menu"); 
+            for (auto& text: logr::console_log())
+                ImGui::Text(text.c_str());
             ImGui::End();
         }
 
@@ -313,93 +317,8 @@ void render_debug_ui(const Window_Manager& window_manager)
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
+    // glfwSetInputMode(window_manager.main_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+
 }
 
-
-
-//@Note(Sjors): Keep these snippets around for a quick start to init glfw and create a window.
-
-// GLFWwindow* glfw_init_window(const char* title, const int window_width, const int window_height)
-// {
-//     ///--- init glfw ----
-//     if (!glfwInit())
-//     {
-//         logr::report_error("glfw cannot init!");
-//         exit(1);        
-//     }
-//     else 
-//     {
-//         logr::report("glfw inited.\n");
-//     }
-
-//     // what version of openGL do we want?
-//     // const char* glsl_version = "#version 430";
-//     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-//     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-//     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-//     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
-//     glfwWindowHint(GLFW_FOCUSED, GLFW_TRUE);
-//     // Create window with graphics context
-
-//     GLFWwindow* window = glfwCreateWindow(window_width, window_height, title, nullptr, nullptr);
-//     if (nullptr == window)
-//     {
-//         logr::report_error("window is nullptr");
-//         exit(1);
-//     }
-
-//     glfwSetWindowPos(window, 20, 20);
-//     //@IMPORTANT!
-//     glfwMakeContextCurrent(window);
-//     // glfwSwapInterval(1); // Enable vsync
-
-//     //@Note(Sjors): gladLoadGL only after makeContextCurrent.    
-//     bool error = (gladLoadGL() == 0);
-//     if (error)
-//     {
-//         logr::report_error("Failed to initialize OpenGL loader!\n");
-//         exit(1);
-//     }
-
-//     // capture cursor & disable it.
-//     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
-
-
-//     return window;
-// }
-
-// GLFWwindow* glfw_init_debug_window(const int debug_window_width, const int debug_window_height, GLFWwindow* parent_window)
-// {   
-//     // focus cursor on original window
-//     glfwWindowHint(GLFW_FOCUSED, GLFW_FALSE);
-//     GLFWwindow* debug_window = glfwCreateWindow(850, 1000, "Debug", NULL, parent_window);
-//     if (nullptr == debug_window)
-//     {
-//         logr::report_error("debug_window is nullptr");
-//         exit(1);
-//     }
-//     glfwMakeContextCurrent(debug_window);
-//     glfwSetWindowPos(debug_window, 1120, 100);
-//     glfwSwapInterval(1); // Enable vsync
-
-//     ///--- init IMGUI ----
-//     // Setup Dear ImGui context
-//     IMGUI_CHECKVERSION();
-//     ImGui::CreateContext();
-
-//     ImGuiIO& io = ImGui::GetIO(); (void)io;
-//     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-//     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
-
-//     const char* glsl_version = "#version 450";
-//     // Setup Dear ImGui style
-//     ImGui::StyleColorsDark();
-//     // Setup Platform/Renderer bindings
-//     ImGui_ImplGlfw_InitForOpenGL(debug_window, true);
-//     ImGui_ImplOpenGL3_Init(glsl_version);
-    
-
-//     return debug_window;
-// }
 

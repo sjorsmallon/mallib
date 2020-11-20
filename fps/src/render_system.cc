@@ -26,7 +26,7 @@ namespace
 
     constexpr const float g_fov = 90.0f;
     constexpr const float g_projection_z_near_plane = 0.1f;
-    constexpr const float g_projection_z_far_plane = 1000.0f;
+    constexpr const float g_projection_z_far_plane = 2000.0f;
 
     // "members"
     Shader_Manager*   shader_manager;
@@ -566,12 +566,12 @@ namespace
     void init_floor()
     {
         float floor_vertices[]  = {
-            -500.0f, -5.0f, 500.0f,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-             500.0f, -5.0f, 500.0f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            -500.0f, -5.0f, -500.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-            -500.0f, -5.0f, -500.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-             500.0f, -5.0f, 500.0f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-             500.0f, -5.0f, -500.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+            -1000.f, -5.0f, 1000.f,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+             1000.f, -5.0f, 1000.f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+            -1000.f, -5.0f, -1000.f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+            -1000.f, -5.0f, -1000.f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+             1000.f, -5.0f, 1000.f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+             1000.f, -5.0f, -1000.f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
         };
         glGenVertexArrays(1, &g_floor_vao);
         glBindVertexArray(g_floor_vao);
@@ -734,8 +734,8 @@ void render(const Camera camera, Particle_Cache& particle_cache)
        
             // render floor
             {
-                auto& marble_texture = texture_manager->textures["marble"];
-                set_uniform(*shader_manager, "texture_diffuse",  marble_texture.gl_texture_frame);
+                auto& ice_diffuse_texture = texture_manager->textures["ice_diffuse"];
+                set_uniform(*shader_manager, "texture_diffuse",  ice_diffuse_texture.gl_texture_frame);
 
                 glm::mat4 model = glm::mat4(1.0f);
                 set_uniform(*shader_manager, "model", model);
@@ -1013,6 +1013,7 @@ void render_shadows(const Camera camera, Particle_Cache& particle_cache)
     }
    
 }
+
 
 
 //@Note(Sjors)light falloff calculation.

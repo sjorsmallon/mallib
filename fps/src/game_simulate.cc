@@ -12,11 +12,16 @@ constexpr const int KEY_W = 87;
 constexpr const int KEY_A = 65;
 constexpr const int KEY_S = 83;
 constexpr const int KEY_D = 68;
+constexpr const int KEY_P = 80;
+constexpr const int KEY_O = 79;
+
 
 constexpr const float FRAMETIME_120_HZ_IN_S = 0.00833333333f;
 
 namespace
 {
+	using movement = std::tuple<glm::vec3, glm::vec3>; // position, movement_vector
+
 	//@FIXME(Sjors): to be replaced by a type_player entity.
 	// uh, is player a camera?
 	struct Player
@@ -36,10 +41,10 @@ namespace
     float g_mouse_sensitivity = 0.05f;
 
     // player movement (120 hz baseline tickrate).
-    float g_player_movespeed = 0.2f;
-    float g_player_acceleration = 2.0f;
-    float g_player_max_velocity = 10.0f;
+    float g_player_acceleration = 0.1f;
+    float g_player_max_velocity = 1.0f;
     float g_camera_movespeed = 0.2f;
+    const glm::vec3 g_world_gravity = glm::vec3(0.f, 0.5f,0.0f);
 
     // @dependencies:
     // g_camera_movespeed
@@ -83,7 +88,7 @@ namespace
     // g_player_acceleration
     // world_up
     // FRAMETIME_120_HZ
-	glm::vec3 update_position_with_input(
+	std::tuple<glm::vec3, glm::vec3> update_position_with_input(
 		const Input& input,
 		const glm::vec3 old_position,
 		const glm::vec3 old_movement_vector,
@@ -97,15 +102,14 @@ namespace
 		const glm::vec3 world_up = glm::vec3(0.0f, 1.0f, 0.0f);
 		const float old_velocity = glm::length(old_movement_vector);
 
-
 		glm::vec3 input_movement_vector = glm::vec3(0.0f);
 		if (input.keyboard_state[KEY_W])
 		{
-	    	input_movement_vector += front;
+	    	input_movement_vector += front_without_height;
 		}
 		if (input.keyboard_state[KEY_S])
 		{
-	    	input_movement_vector -= front;
+	    	input_movement_vector -= front_without_height;
 		}
 		if (input.keyboard_state[KEY_A])
 		{
@@ -117,20 +121,29 @@ namespace
 		}
 		if (input.keyboard_state[KEY_SPACE])
 		{
-			input_movement_vector += world_up; 
+			float up_velocity = 2.0f;
+			input_movement_vector += world_up * up_velocity; 
 			if (old_velocity > 0.02f) input_movement_vector += 0.2f* old_movement_vector;
 		}
 
+		// if affected by gravity: (only if the vector has positive or negative y):
+		if (old_position.y  > 0.0f) input_movement_vector -= g_world_gravity;
+
 		float input_vector_velocity = g_player_acceleration * dt_factor;
     	input_movement_vector = input_movement_vector * input_vector_velocity;
-
     	glm::vec3 movement_vector = old_movement_vector + input_movement_vector;
     	float velocity = glm::length(movement_vector);
     	// clip velocity if necessary
     	velocity = (velocity > g_player_max_velocity) ? g_player_max_velocity : velocity;
+
+    	// since velocity can be clipped, recalculate the movement vector.
+    	if (velocity > 0.01f) movement_vector = glm::normalize(movement_vector) * velocity;
     	glm::vec3 position = old_position + velocity * movement_vector;
 
-		return position;
+    	if (position.y < 0.0f) position.y = 0.0f;
+
+    	auto result = std::make_tuple(position, movement_vector);
+		return result;
 	}
 
 	// processes input received from a mouse input system.
@@ -179,7 +192,11 @@ namespace
 	Camera update_camera_entity(const Input& input, const Camera old_camera, const float dt)
 	{
 		Camera camera = old_camera;
-		camera.position = update_position_with_input(input, old_camera.position, old_camera.movement_vector, old_camera.front, old_camera.right, dt);
+		auto [position, movement_vector] = update_position_with_input(input, old_camera.position, old_camera.movement_vector, old_camera.front, old_camera.right, dt); 
+		camera.position = position;
+		camera.movement_vector = movement_vector;
+
+
 		if (input.mouse_delta_x || input.mouse_delta_x)
 			return update_camera_view_with_input(input, camera, dt);
 
@@ -202,19 +219,8 @@ void game_simulate(const double dt, Game_State& game_state,const Input& input, P
 	if (clamped_dt > 0.1f) clamped_dt = 0.1f;
 
 
-
-	if (game_state.game_mode == GM_EDITOR)
-	{
-		if (input.mouse_right)
-		{
-			game_state.camera = update_camera_entity(input, game_state.camera, clamped_dt);
-		}
-		else
-		{
-
-		}
-
-	}
+	if (input.keyboard_state[KEY_P]) game_state.game_mode = GM_GAME;
+	if (input.keyboard_state[KEY_O]) game_state.game_mode = GM_EDITOR;
 
 
 	// are we paused?

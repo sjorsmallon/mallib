@@ -52,6 +52,8 @@ int main()
     load_png_texture(texture_manager, "wall_stone_specular");
     load_png_texture(texture_manager, "wall_stone_diffuse");
     load_png_texture(texture_manager, "wall_stone_normal");
+    load_png_texture(texture_manager, "ice_diffuse");
+
 
     //@Fixme(Sjors): create a render manager?
     init_renderer(shader_manager, texture_manager, window_width, window_height);
@@ -77,19 +79,16 @@ int main()
         game_simulate(frame_dt, game_state, window_manager.input, particle_cache);
         game_render(game_state, particle_cache);
 
-        // if (game_state.game_mode == GM_EDITOR) render_debug_ui(window_manager);
+        if (game_state.game_mode == GM_EDITOR) render_debug_ui(window_manager);
 
-        // swap buffers is done before delta time, is that even correct?
+        //@TODO(Sjors): swap buffers is done before delta time, is that even correct?
         swap_buffers(window_manager);
 
+        // some time calculation.
         end = std::chrono::system_clock::now();
         double delta = static_cast<std::chrono::duration<double>>(end - start).count();
         average_frame_time[current_idx % 120] = delta;
-
-
         average_render_time[current_idx % 120] = Timed_Function::timed_functions["render"].duration;
-
-
         current_idx += 1;
         
         if (current_idx % 120 == 0) 
@@ -104,9 +103,11 @@ int main()
                 render_accumulator += value;
             render_accumulator /=120.0;
 
-            logr::report("average frame time past 120 frames: {} ({} fps).\n", accumulator, 1.0 / accumulator);
-            logr::report("average render time past 120 frame: {}\n", render_accumulator);
+            logr::console("average frame time past 120 frames: {} ({} fps).\n", accumulator, 1.0 / accumulator);
+            logr::console("average render time past 120 frame: {}\n", render_accumulator);
         }
+
+
 
     }
 
