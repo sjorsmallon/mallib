@@ -2,15 +2,17 @@
 #include "log.h"
 #include <glad/glad.h>
 
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
+//@Temporary:
+#include "timed_function.h"
+
 namespace
 {
-	std::string g_texture_folder_prefix = "../assets/textures/";
-	std::string g_texture_png_extension_suffix = ".png";
-    std::string g_texture_tga_extension_suffix = ".tga";
+	const std::string g_texture_folder_prefix = "../assets/textures/";
+	const std::string g_texture_png_extension_suffix = ".png";
+    const std::string g_texture_tga_extension_suffix = ".tga";
 
 }
 
@@ -33,6 +35,7 @@ void load_tga_texture(Texture_Manager& texture_manager, const std::string& textu
 
     std::string file_path = g_texture_folder_prefix + texture_name + g_texture_tga_extension_suffix;
     logr::report("[Texture_Manager] file path: {}\n", file_path);
+    
     // stbi_set_flip_vertically_on_load(true);
 
     texture.data = stbi_load(file_path.c_str(),
@@ -126,9 +129,6 @@ void load_png_texture(Texture_Manager& texture_manager, const std::string& textu
     }
 
 }
-
-
-
 
 int32_t get_next_free_texture_frame(Texture_Manager& manager)
 {

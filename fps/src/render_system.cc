@@ -74,7 +74,7 @@ namespace
     std::vector<float> g_debug_draw_data;
 
 
-     // @dependencies:
+    // @dependencies:
     // g_debug_draw_buffer
     // world_up
     void put_arrow(const glm::vec3 start_in, const glm::vec3 end_in, const glm::vec3 color_in, const float thickness_in = 1.0f)

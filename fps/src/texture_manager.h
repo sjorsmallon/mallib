@@ -2,17 +2,19 @@
 #define INCLUDED_TEXTURE_MANAGER_
 #include <vector>
 #include <map>
+#include <string>
 
 //@TODO(Sjors): generalize this to image
 struct Texture
 {
-    unsigned char* data = nullptr; // hmm. this is malloc'd by stb_img. we call free in the destructor.
-    size_t data_size;
-    int  dimensions[2]; // x, y
-    int    channels; // number of color channels (3 for RGB, 4 for RGBA)
     uint32_t gl_texture_id; // the actual glgentextures handle returned by openGL.
     int32_t gl_texture_frame; // the GL_TEXTUREN value.
 
+    unsigned char* data = nullptr; // hmm. this is malloc'd by stb_img. we call free in the destructor.
+    size_t data_size;
+    int  dimensions[2]; // x, y
+    int       channels; // number of color channels (3 for RGB, 4 for RGBA)
+    
     ~Texture()
     {
     	if (data != nullptr)

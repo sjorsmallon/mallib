@@ -9,6 +9,7 @@
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
 #include "log.h"
+#include "timed_function.h"
 
 namespace
 {
@@ -227,7 +228,8 @@ void swap_buffers(const Window_Manager& window_manager)
 void render_debug_ui(const Window_Manager& window_manager)
 {
     // unhide the cursor.
-    glfwSetInputMode(window_manager.main_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); 
+    // glfwSetInputMode(window_manager.main_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); 
+    
     {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -235,11 +237,21 @@ void render_debug_ui(const Window_Manager& window_manager)
 
         // Debug Menu
         {
+            {
+                ImGui::Begin("Timed Functions");
+                for (auto& [key, value]: Timed_Function::timed_functions)
+                ImGui::Text("%s : %f", key.c_str(), value.duration);
+                ImGui::End();
+            }
+
+            {
+                ImGui::Begin("Debug Menu"); 
+                for (auto& text: logr::console_log())
+                    ImGui::Text(text.c_str());
+                ImGui::End();
+            }
             
-            ImGui::Begin("Debug Menu"); 
-            for (auto& text: logr::console_log())
-                ImGui::Text(text.c_str());
-            ImGui::End();
+
         }
 
         ImGui::EndFrame();

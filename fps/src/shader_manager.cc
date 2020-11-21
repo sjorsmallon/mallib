@@ -40,12 +40,12 @@ namespace
     uint32_t load_compile_attach_shader(uint32_t program_id,const std::string &file_name)
     {
         constexpr const int GL_FAILURE = 0;
-        std::string filename = file_name;
-        GLenum shader_type = shader_type_from_extension(filename);
+        const std::string filename = file_name;
+        const GLenum shader_type = shader_type_from_extension(filename);
 
         if (shader_type == GL_FAILURE) logr::report_error("[graphics] incorrect shader type. filename: {}\n", filename);
 
-        uint32_t shader_id = glCreateShader(shader_type);
+        const uint32_t shader_id = glCreateShader(shader_type);
 
         if (shader_id == GL_FAILURE) logr::report_error("[graphics] glCreateShader failed.\n");
         else 
@@ -66,18 +66,17 @@ namespace
 		if (info_log.size() > 0)
 		{
 			glGetShaderInfoLog(shader_id, max_length, &max_length, &info_log[0]);
+            std::string string_log = std::string(info_log.begin(), info_log.end());
+            logr::report("[graphics] shader info log:\n {} \n", string_log);
 		}
 
-        
-        std::string string_log = std::string(info_log.begin(), info_log.end());
-        logr::report("[graphics] shader info log:\n {} \n", string_log);
 
         GLint shader_compiled = GL_FALSE; 
         glGetShaderiv(shader_id, GL_COMPILE_STATUS, &shader_compiled);
 
         if (shader_compiled != GL_TRUE)
         {
-            logr::report_warning("[graphics] shader_from_file: unable to compile shader {} \n", filename);
+            logr::report_error("[graphics] shader_from_file: unable to compile shader {} \n", filename);
             glDeleteShader(shader_id); // Don't leak the shader.
             exit(1);
         }

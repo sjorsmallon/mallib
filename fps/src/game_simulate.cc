@@ -16,8 +16,8 @@ constexpr const int KEY_D = 68;
 constexpr const int KEY_P = 80;
 constexpr const int KEY_O = 79;
 
-
 constexpr const float FRAMETIME_120_HZ_IN_S = 0.00833333333f;
+constexpr const float FRAMETIME_IN_S = FRAMETIME_120_HZ_IN_S;
 
 namespace
 {
@@ -38,11 +38,25 @@ namespace
 	// ---------------
     float g_mouse_sensitivity = 0.5f;
 
-    // player movement (120 hz baseline tickrate).
-    float g_player_acceleration = 0.05f;
-    float g_player_max_velocity = 0.5f;
     float g_camera_velocity = 0.2f;
-    const glm::vec3 g_world_gravity = glm::vec3(0.f, 0.5f,0.0f);
+
+  
+  	float g_player_gravity = 0.667f;
+    float g_player_friction = 0.2f;
+
+    // player movement (120 hz baseline tickrate).
+    float g_player_max_velocity = 15.0f;
+
+    float g_player_ground_movespeed = 0.23f;
+    float g_player_ground_acceleration = 0.46f;
+    float g_player_ground_deceleration= 0.33f;
+
+    float g_player_air_acceleration = 0.066f;
+    float g_player_air_deceleration = 0.066f;
+    float g_player_air_control = 0.01f;
+    float g_player_jump_velocity = 0.266f;
+    float g_player_side_strafe_acceleration = 1.6667f;
+    float g_player_side_strafe_speed = 0.0033f;
 
     // @dependencies:
     // g_camera_velocity
@@ -84,7 +98,6 @@ namespace
     // g_player_movespeed
     // g_player_acceleration
     // world_up
-    // FRAMETIME_120_HZ
 	std::tuple<glm::vec3, glm::vec3> update_position_with_input(
 		const Input& input,
 		const glm::vec3 old_position,
@@ -93,97 +106,77 @@ namespace
 		const glm::vec3 right,
 		const float dt_factor)
 	{
-		// use the FACTOR here.
-		const glm::vec3 front_without_height = glm::vec3(front.x, 0.f, front.z);
-		const glm::vec3 world_up = glm::vec3(0.0f, 1.0f, 0.0f);
-		const float old_velocity = glm::length(old_movement_vector);
+		bool grounded = (fabs(old_position.y) < 0.0001f);
 
-		glm::vec3 input_movement_vector = glm::vec3(0.0f);
+		glm::vec3 input_ground_movement_vector = glm::vec3(0.0f);
+		glm::vec3 front_without_height = glm::vec3(front.x, 0.0f, front.z);
+
 		if (input.keyboard_state[KEY_W])
 		{
-			input_movement_vector += front_without_height;
+			input_ground_movement_vector += front_without_height;
 		}
 		if (input.keyboard_state[KEY_S])
 		{
-			input_movement_vector -= front_without_height;
+			input_ground_movement_vector -= front_without_height;
 		}
 		if (input.keyboard_state[KEY_A])
 		{
-			input_movement_vector -= right;
+			input_ground_movement_vector -= right;
 		}
 		if (input.keyboard_state[KEY_D])
 		{
-			input_movement_vector += right;
+			input_ground_movement_vector += right;
 		}
-		if (input.keyboard_state[KEY_SPACE])
+		// if (input.keyboard_state[KEY_SPACE])
+		// {
+		// 	if (grounded)
+		// 	{
+		// 		input_movement_vector += world_up * g_player_jump_velocity; 
+		// 	}
+		// }
+
+		glm::vec3 old_xz_movement_vector = glm::vec3(old_movement_vector.x, 0.0f, old_movement_vector.z);
+		
+		// ground control (to major tom)
+    	float input_ground_vector_velocity = g_player_ground_movespeed * dt_factor;
+    	input_ground_movement_vector = input_ground_movement_vector * input_ground_vector_velocity;
+    	glm::vec3 movement_vector = old_xz_movement_vector + input_ground_movement_vector;
+
+
+		float player_friction = 0.0f;
+		// Do not apply friction if the player is queueing up the next jump
+		if(!input.keyboard_state[KEY_SPACE])
 		{
-			//@FIXME(Sjors): this is not a very robust system.
-			// if we are on the ground, we can jump.
-			// how do we verify we are on the ground? we can jump off platforms at arbitrary height,
-			// so checking y value against 0 does not work. 
-			// checking the movement vector also does not work: if v_y reaches 0 at the 
-			// apex of the jump, it would be possible to jump again mid air.
-			// both of these imply some sort of state to decide whether we are grounded or not.
-			// for now, we are "grounded" if y is equal to 0.0f. 
-			bool grounded = (fabs(old_position.y) < 0.01f);
+			float velocity = glm::length(movement_vector);
+			float drop = 0.0f;
+
+			/* Only if the player is on the ground then apply friction */
 			if (grounded)
 			{
-				float up_velocity = 10.0f;
-				input_movement_vector += world_up * up_velocity; 
-				//@TODO(Sjors): imbue jump with a bit of forward momentum.
-				// if (old_velocity > 0.02f) input_movement_vector += 0.02f* old_movement_vector;	
+				float control = velocity < g_player_ground_acceleration ? g_player_ground_deceleration : velocity;
+				drop = control * g_player_friction * dt_factor;
 			}
+
+				float drop_adjusted_velocity = velocity - drop;
+				
+				player_friction = drop_adjusted_velocity;
+
+				if(drop_adjusted_velocity < 0.0f) drop_adjusted_velocity = 0.0f;
+				
+				//@IC(Sjors): normally we would just call normalize here.
+				if(velocity > 0.0f) drop_adjusted_velocity /= velocity;
+
+				movement_vector = movement_vector * drop_adjusted_velocity;
 		}
 
-		// if affected by gravity: (only if the vector has positive or negative y):
-		bool grounded = (fabs(old_position.y) < 0.1f);
-		if (!grounded) input_movement_vector -= g_world_gravity * dt_factor;
+		glm::vec3 position = old_position + movement_vector;
 
-		float input_vector_velocity = g_player_acceleration * dt_factor;
-    	input_movement_vector = input_movement_vector * input_vector_velocity;
+		return std::make_tuple(position, movement_vector);
 
-    	glm::vec3 movement_vector = old_movement_vector + input_movement_vector;
-
-    	//3D:
-    	// float velocity = glm::length(movement_vector);
-  		// clamp velocity if necessary 
-  		// velocity = std::clamp(velocity, 0.0f, g_player_max_velocity);
-    	// since velocity can be clipped, recalculate the movement vector.
-    	// if (velocity > 0.01f) movement_vector = glm::normalize(movement_vector) * velocity;
-    	// glm::vec3 position = old_position + velocity * movement_vector;
-
-    	float movement_vector_y = movement_vector.y; 
-    	glm::vec2 xz(movement_vector.x, movement_vector.z);
-    	float xz_velocity = glm::length(xz);
-    	xz_velocity = std::clamp(xz_velocity, 0.0f, g_player_max_velocity);
-
-    	// think about grounded ness.
-    	// if (grounded) xz_velocity = std::clamp(xz_velocity, 0.0f, g_player_max_velocity);
-
-    	if (xz_velocity > 0.01f) xz = glm::normalize(xz) * xz_velocity;
-    	movement_vector.x = xz.x;
-    	movement_vector.z = xz.y; 
-    	movement_vector.y = movement_vector_y;
-
-
-    	glm::vec3 position = old_position + glm::vec3(xz.x * xz_velocity, movement_vector_y, xz.y * xz_velocity);
-
-
-
-    	// are we beneath the ground? move to ground & flatten gravity impact.
-    	if (position.y < 0.0f)
-		{
-			position.y = 0.0f;
-    		movement_vector.y = 0.0f;	
-		}
-
-    	auto result = std::make_tuple(position, movement_vector);
-		return result;
 	}
 
 	// processes input received from a mouse input system.
 	// assumes world up direction is positive y.
-	// @Note(Sjors): this does not use dt!
 	// @dependencies: 
 	// g_mouse_sensitivity
 	Camera update_camera_view_with_input(const Input& input, const Camera camera, const float dt_factor, const bool should_constrain_pitch = true)
@@ -256,7 +249,7 @@ void game_simulate(const double dt, Game_State& game_state,const Input& input, P
 	if (input.keyboard_state[KEY_O]) game_state.game_mode = GM_EDITOR;
 
 
-	float dt_factor = clamped_dt / FRAMETIME_120_HZ_IN_S;
+	float dt_factor = clamped_dt / FRAMETIME_IN_S;
 
 
 
