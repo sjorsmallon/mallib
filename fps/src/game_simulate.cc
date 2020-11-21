@@ -41,7 +41,7 @@ namespace
     float g_camera_velocity = 0.2f;
 
   
-  	float g_player_gravity = 0.667f;
+  	float g_player_gravity = 0.6667f;
     float g_player_friction = 0.2f;
 
     // player movement (120 hz baseline tickrate).
@@ -106,70 +106,128 @@ namespace
 		const glm::vec3 right,
 		const float dt_factor)
 	{
-		bool grounded = (fabs(old_position.y) < 0.0001f);
+		static bool grounded = true;
 
-		glm::vec3 input_ground_movement_vector = glm::vec3(0.0f);
+		glm::vec3 world_up(0.0f, 1.0f, 0.0f);
+		glm::vec3 input_movement_vector = glm::vec3(0.0f);
 		glm::vec3 front_without_height = glm::vec3(front.x, 0.0f, front.z);
 
 		if (input.keyboard_state[KEY_W])
 		{
-			input_ground_movement_vector += front_without_height;
+			input_movement_vector += front_without_height;
 		}
 		if (input.keyboard_state[KEY_S])
 		{
-			input_ground_movement_vector -= front_without_height;
+			input_movement_vector -= front_without_height;
 		}
 		if (input.keyboard_state[KEY_A])
 		{
-			input_ground_movement_vector -= right;
+			input_movement_vector -= right;
 		}
 		if (input.keyboard_state[KEY_D])
 		{
-			input_ground_movement_vector += right;
+			input_movement_vector += right;
 		}
-		// if (input.keyboard_state[KEY_SPACE])
-		// {
-		// 	if (grounded)
-		// 	{
-		// 		input_movement_vector += world_up * g_player_jump_velocity; 
-		// 	}
-		// }
+		if (input.keyboard_state[KEY_SPACE])
+		{
+			if (grounded)
+			{
+				logr::report("jump\n");
+				input_movement_vector += g_player_jump_velocity; 
+				grounded = false;
+			}
+		}
+		glm::vec3 input_ground_movement_vector = glm::vec3(input_movement_vector.x, 0.0f, input_movement_vector.z);
+    	float     input_ground_target_velocity = g_player_ground_movespeed * dt_factor;
 
-		glm::vec3 old_xz_movement_vector = glm::vec3(old_movement_vector.x, 0.0f, old_movement_vector.z);
-		
+		glm::vec3 old_ground_movement_vector =   glm::vec3(old_movement_vector.x, 0.0f, old_movement_vector.z);
+		float     old_ground_movement_vector_velocity = glm::length(old_ground_movement_vector);
+
 		// ground control (to major tom)
-    	float input_ground_vector_velocity = g_player_ground_movespeed * dt_factor;
-    	input_ground_movement_vector = input_ground_movement_vector * input_ground_vector_velocity;
-    	glm::vec3 movement_vector = old_xz_movement_vector + input_ground_movement_vector;
+    	input_ground_movement_vector = input_ground_movement_vector * input_ground_target_velocity;
+    	glm::vec3 ground_movement_vector = old_ground_movement_vector + input_ground_movement_vector;
 
-
-		float player_friction = 0.0f;
+		float ground_velocity = glm::length(ground_movement_vector);
+    	glm::vec3 movement_vector(0.0f);
 		// Do not apply friction if the player is queueing up the next jump
 		if(!input.keyboard_state[KEY_SPACE])
 		{
-			float velocity = glm::length(movement_vector);
 			float drop = 0.0f;
 
-			/* Only if the player is on the ground then apply friction */
+			// Only if the player is on the ground then apply friction
 			if (grounded)
 			{
-				float control = velocity < g_player_ground_acceleration ? g_player_ground_deceleration : velocity;
+				float control = (ground_velocity < g_player_ground_acceleration) ? g_player_ground_deceleration : ground_velocity;
 				drop = control * g_player_friction * dt_factor;
 			}
 
-				float drop_adjusted_velocity = velocity - drop;
-				
-				player_friction = drop_adjusted_velocity;
-
+				float drop_adjusted_velocity = ground_velocity - drop;
 				if(drop_adjusted_velocity < 0.0f) drop_adjusted_velocity = 0.0f;
 				
-				//@IC(Sjors): normally we would just call normalize here.
-				if(velocity > 0.0f) drop_adjusted_velocity /= velocity;
 
-				movement_vector = movement_vector * drop_adjusted_velocity;
+				if(ground_velocity > 0.0f) drop_adjusted_velocity /= ground_velocity;
+				movement_vector = ground_movement_vector * drop_adjusted_velocity;
+		}
+	
+
+
+		if (!grounded)
+		{
+			float acceleration = 0.0f;
+
+			if(input_ground_target_velocity < 0.0f)
+				acceleration = g_player_air_deceleration;
+			else
+				acceleration = g_player_air_acceleration;
+			// If the player is ONLY strafing left or right
+			if(!input.keyboard_state[KEY_W] &&  !input.keyboard_state[KEY_S])
+			{
+				if(input_ground_target_velocity > g_player_side_strafe_speed)
+					input_ground_target_velocity = g_player_side_strafe_speed;
+
+				acceleration = g_player_side_strafe_acceleration;
+			}
+			//@FIXME(Sjors):
+			// we are missing acceleration here?
+
+ 			input_ground_target_velocity = input_ground_target_velocity + (acceleration * dt_factor);
+	
+			// AIR MOVEMENT
+			// Can't control movement if not moving forward or backward
+			// if(!input.keyboard_state[KEY_W] || !input.keyboard_state[KEY_S])
+			// 	//return
+
+			float dot = glm::dot(old_ground_movement_vector, input_ground_movement_vector);
+			glm::vec3 normalized_old_movement_vector = glm::normalize(old_movement_vector);
+			logr::report("dot: {}\n", dot);
+			float k = 1.0667f; //???????
+			k *= g_player_air_control * dot * dot * dt_factor;
+
+			// Change direction while slowing down
+			if(dot > 0.0f)
+			{
+				movement_vector.x = normalized_old_movement_vector.x * old_ground_movement_vector_velocity + input_movement_vector.x * k;
+				movement_vector.y = normalized_old_movement_vector.y * old_ground_movement_vector_velocity + input_movement_vector.y * k;
+				movement_vector.z = normalized_old_movement_vector.z * old_ground_movement_vector_velocity + input_movement_vector.z * k;
+
+				movement_vector = glm::normalize(movement_vector);
+			}
+
+			movement_vector.y  = input_movement_vector.y; // Note this line
+			logr::report("movement vector: {}\n", glm::to_string(movement_vector));
+
+			// Apply gravity
+			movement_vector.y -= g_player_gravity * dt_factor;
 		}
 
 		glm::vec3 position = old_position + movement_vector;
+
+		if (position.y < 0.0f)
+		{
+			logr::report("grounded.\n");
+			grounded = true;
+			position.y = 0.0f;
+		}
 
 		return std::make_tuple(position, movement_vector);
 
