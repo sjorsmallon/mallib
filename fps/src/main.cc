@@ -42,6 +42,8 @@ int main()
 
     auto asset_manager = Asset_Manager();
     load_obj(asset_manager, "spear");
+    load_obj(asset_manager, "bar");
+
 
     auto texture_manager = Texture_Manager();
     load_png_texture(texture_manager, "metal");

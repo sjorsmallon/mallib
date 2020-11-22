@@ -65,7 +65,11 @@ namespace
     unsigned int g_floor_vbo;
 
     unsigned int g_viewmodel_vao;
-    unsigned int g_viewmodel_vbo;
+    // unsigned int g_viewmodel_vertices_vbo;
+    // unsigned int g_viewmodel_normals_vbo;
+    // unsigned int g_viewmodel_texcoords_vbo;
+
+
 
     unsigned int g_wall_vao;
     unsigned int g_wall_vbo;
@@ -476,30 +480,26 @@ namespace
     }
 
 
-    // void init_viewmodel()
-    // {
-    //     glGenVertexArrays(1, &g_viewmodel_vao);
-    //     glGenBuffers(1, &g_viewmodel_vbo);
+    void init_viewmodel()
+    {
+        glGenVertexArrays(1, &g_viewmodel_vao);
 
-    //     // fill buffer
-    //     glBindBuffer(GL_ARRAY_BUFFER, g_viewmodel_vbo);
-    //     // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        
-    //     // glBindVertexArray(g_cube_vao);
+        uint32_t g_viewmodel_vertices_vbo;
+        uint32_t g_viewmodel_normals_vbo;
+        uint32_t g_viewmodel_texcoords_vbo;
+        glGenBuffers(1, &g_viewmodel_vertices_vbo);
+        glGenBuffers(1, &g_viewmodel_normals_vbo);
+        glGenBuffers(1, &g_viewmodel_texcoords_vbo);
 
-    //     // // init vertex attributes (0: position, 1: normals, 2: texture coordinates);
-    //     // glEnableVertexAttribArray(0);
-    //     // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 
-    //     // glEnableVertexAttribArray(1);
-    //     // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+        auto &viewmodel = asset_manager->meshes["bar"];
 
-    //     // glEnableVertexAttribArray(2);
-    //     // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+        glBindVertexArray(g_viewmodel_vao);
 
-    //     // glBindBuffer(GL_ARRAY_BUFFER, 0);
-    //     // glBindVertexArray(0);
-    // }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
 
     void init_unit_cube()
     {
@@ -657,6 +657,7 @@ void init_renderer(
     // initialize globals.
     shader_manager = &shader_manager_in;
     texture_manager = &texture_manager_in;
+    asset_manager = &asset_manager_in;
 
     g_window_width  = frame_buffer_width;
     g_window_height = frame_buffer_height;
@@ -669,6 +670,7 @@ void init_renderer(
     init_floor();
     init_instanced_wall();
     init_debug_geometry();
+    init_viewmodel();
 }
 
 //@Temporary
@@ -676,7 +678,7 @@ void render_back_of_cube()
 {
     // render back Cube
     glBindVertexArray(g_cube_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, g_cube_vbo);
+    // glBindBuffer(GL_ARRAY_BUFFER, g_cube_vbo);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 }
@@ -686,7 +688,7 @@ void render_front_of_cube()
 {
     // render back Cube
     glBindVertexArray(g_cube_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, g_cube_vbo);
+    // glBindBuffer(GL_ARRAY_BUFFER, g_cube_vbo);
     glDrawArrays(GL_TRIANGLES, 6, 6);
     glBindVertexArray(0);
 }
@@ -695,7 +697,6 @@ void render_cube()
 {
     // render Cube
     glBindVertexArray(g_cube_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, g_cube_vbo);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
 }
@@ -705,7 +706,6 @@ void render_cube()
 void render_NDC_quad()
 {  
     glBindVertexArray(g_quad_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, g_quad_vbo);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
 }
@@ -713,7 +713,6 @@ void render_NDC_quad()
 void render_floor()
 {
     glBindVertexArray(g_floor_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, g_floor_vbo);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 }
