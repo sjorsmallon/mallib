@@ -41,7 +41,7 @@ int main()
     load_shader(shader_manager, "simple_depth_shadow_mapping");
 
     auto asset_manager = Asset_Manager();
-    load_obj(asset_manager, "target");
+    load_obj(asset_manager, "spear");
 
     auto texture_manager = Texture_Manager();
     load_png_texture(texture_manager, "metal");
@@ -56,7 +56,7 @@ int main()
 
 
     //@Fixme(Sjors): create a render manager?
-    init_renderer(shader_manager, texture_manager, window_width, window_height);
+    init_renderer(shader_manager, texture_manager, asset_manager, window_width, window_height);
 
     Game_State game_state{};
     Particle_Cache particle_cache{}; // uh, allocating this on the stack is maybe a bad idea.

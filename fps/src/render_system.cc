@@ -11,6 +11,7 @@
 #include "light.h"
 #include "shader_manager.h"
 #include "texture_manager.h"
+#include "asset_manager.h"
 #include "timed_function.h"
 
 constexpr const int NUM_LIGHTS = 32;
@@ -31,6 +32,7 @@ namespace
     // "members"
     Shader_Manager*   shader_manager;
     Texture_Manager* texture_manager;
+    Asset_Manager*  asset_manager;
 
 
     // openGL record keeping
@@ -61,6 +63,9 @@ namespace
 
     unsigned int g_floor_vao;
     unsigned int g_floor_vbo;
+
+    unsigned int g_viewmodel_vao;
+    unsigned int g_viewmodel_vbo;
 
     unsigned int g_wall_vao;
     unsigned int g_wall_vbo;
@@ -471,6 +476,31 @@ namespace
     }
 
 
+    // void init_viewmodel()
+    // {
+    //     glGenVertexArrays(1, &g_viewmodel_vao);
+    //     glGenBuffers(1, &g_viewmodel_vbo);
+
+    //     // fill buffer
+    //     glBindBuffer(GL_ARRAY_BUFFER, g_viewmodel_vbo);
+    //     // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        
+    //     // glBindVertexArray(g_cube_vao);
+
+    //     // // init vertex attributes (0: position, 1: normals, 2: texture coordinates);
+    //     // glEnableVertexAttribArray(0);
+    //     // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+
+    //     // glEnableVertexAttribArray(1);
+    //     // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
+    //     // glEnableVertexAttribArray(2);
+    //     // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+    //     // glBindBuffer(GL_ARRAY_BUFFER, 0);
+    //     // glBindVertexArray(0);
+    // }
+
     void init_unit_cube()
     {
         float vertices[] = {
@@ -618,7 +648,11 @@ namespace
 
 }
 
-void init_renderer(Shader_Manager& shader_manager_in, Texture_Manager& texture_manager_in, const int frame_buffer_width, const int frame_buffer_height)
+void init_renderer(
+    Shader_Manager& shader_manager_in, 
+    Texture_Manager& texture_manager_in, 
+    Asset_Manager& asset_manager_in,
+    const int frame_buffer_width, const int frame_buffer_height)
 {
     // initialize globals.
     shader_manager = &shader_manager_in;
@@ -684,6 +718,14 @@ void render_floor()
     glBindVertexArray(0);
 }
 
+// void render_viewmodel()
+// {
+//     glBindVertexArray(g_viewmodel_vao);
+//     glBindBuffer(GL_ARRAY_BUFFER, g_viewmodel_vbo);
+//     glDrawArrays(GL_TRIANGLES, 0, 36);
+//     glBindVertexArray(0);
+// }
+
 
 // @dependencies:
 // shader_manager, texture_manager
@@ -718,13 +760,24 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         set_uniform(*shader_manager, "projection", projection);
         set_uniform(*shader_manager, "view", view);
 
-        // 1.a:  render geometry in the scene.
+        // 1.a:  render static geometry in the scene.
         // ---------------------------------------
         {
+            // render weapon (viewmodel)
+            // {
+            //     auto& metal_texture = texture_manager->textures["metal"];
+            //     set_uniform(*shader_manager,  "texture_diffuse", metal_texture.gl_texture_frame);
+
+            //     glm::mat4 model = glm::mat4(1.0f);
+            //     model = glm::translate(model, camera.position + camera.front + camera.right);
+            //     set_uniform(*shader_manager, "model", model);
+            //     render_viewmodel();
+            // }
+
             // for all cubes in the scene..)
             {
-                auto& cube_texture = texture_manager->textures["metal"];
-                set_uniform(*shader_manager,  "texture_diffuse", cube_texture.gl_texture_frame);
+                auto& metal_texture = texture_manager->textures["metal"];
+                set_uniform(*shader_manager,  "texture_diffuse", metal_texture.gl_texture_frame);
 
                 glm::mat4 model = glm::mat4(1.0f);
                 set_uniform(*shader_manager, "model", model);
