@@ -41,7 +41,7 @@ int main()
     load_shader(shader_manager, "simple_depth_shadow_mapping");
 
     auto asset_manager = Asset_Manager();
-    load_obj(asset_manager, "spear");
+    load_obj(asset_manager, "new_spear");
     load_obj(asset_manager, "bar");
 
 
@@ -55,6 +55,7 @@ int main()
     load_png_texture(texture_manager, "wall_stone_diffuse");
     load_png_texture(texture_manager, "wall_stone_normal");
     load_png_texture(texture_manager, "ice_diffuse");
+    load_png_texture(texture_manager, "new_spear_diffuse");
 
 
     //@Fixme(Sjors): create a render manager?

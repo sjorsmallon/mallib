@@ -11,7 +11,7 @@ struct obj_t
 	std::vector<tinyobj::material_t> materials;
 	std::string warn;
 	std::string err;
-	std::vector<float> Vertex_XNU;
+	std::vector<float> interleaved_XNU;
 };
 
 struct Asset_Manager

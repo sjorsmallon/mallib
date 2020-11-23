@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include <set>
 
@@ -65,11 +66,8 @@ namespace
     unsigned int g_floor_vbo;
 
     unsigned int g_viewmodel_vao;
-    // unsigned int g_viewmodel_vertices_vbo;
-    // unsigned int g_viewmodel_normals_vbo;
-    // unsigned int g_viewmodel_texcoords_vbo;
-
-
+    unsigned int g_viewmodel_vbo;
+    size_t g_viewmodel_vertex_count;
 
     unsigned int g_wall_vao;
     unsigned int g_wall_vbo;
@@ -81,7 +79,6 @@ namespace
     unsigned int g_debug_geometry_vao;
     unsigned int g_debug_geometry_vbo;
     std::vector<float> g_debug_draw_data;
-
 
     // @dependencies:
     // g_debug_draw_buffer
@@ -312,7 +309,7 @@ namespace
             logr::report("[OpenGL] max Fragment uniform blocks: {} \n", max_fragment_uniform_blocks);
         }      
 
-        // init Deferred renderer
+        // init Deferred renderer (position, normal, diffuse + specular)
         // -----------------------------------------------------------
         {
             // init geometry_fbo
@@ -363,7 +360,7 @@ namespace
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_rbo);
 
             // finally check if framebuffer is complete
-            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) logr::report_error("[OpenGL] Framebuffer is incomplete.\n");
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) logr::report_error("[OpenGL] deferred Framebuffer is incomplete.\n");
 
             // unbind geometry framebuffer default framebuffer
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -411,6 +408,8 @@ namespace
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, g_depth_map_tfbo, 0);
         glDrawBuffer(GL_NONE);
         glReadBuffer(GL_NONE);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) logr::report_error("[OpenGL] Shadow framebuffer is incomplete.\n");
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);  
     }
 
@@ -483,18 +482,25 @@ namespace
     void init_viewmodel()
     {
         glGenVertexArrays(1, &g_viewmodel_vao);
-
-        uint32_t g_viewmodel_vertices_vbo;
-        uint32_t g_viewmodel_normals_vbo;
-        uint32_t g_viewmodel_texcoords_vbo;
-        glGenBuffers(1, &g_viewmodel_vertices_vbo);
-        glGenBuffers(1, &g_viewmodel_normals_vbo);
-        glGenBuffers(1, &g_viewmodel_texcoords_vbo);
-
-
-        auto &viewmodel = asset_manager->meshes["bar"];
-
+        glGenBuffers(1, &g_viewmodel_vbo);
         glBindVertexArray(g_viewmodel_vao);
+
+        auto &viewmodel = asset_manager->meshes["new_spear"];
+        g_viewmodel_vertex_count = viewmodel.interleaved_XNU.size() / 8;
+
+         // fill buffer with vertices.
+        glBindBuffer(GL_ARRAY_BUFFER, g_viewmodel_vbo);
+        glBufferData(GL_ARRAY_BUFFER, viewmodel.interleaved_XNU.size() * sizeof(float), viewmodel.interleaved_XNU.data(), GL_STATIC_DRAW);
+        
+        // enable vertex attributes (0: position (xyz), 1: normals (xyz), 2: texture coordinates (uv));
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -637,7 +643,7 @@ namespace
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
 
-        // add some data to the buffer.
+        // add some arbitrary data to the buffer.
         put_arrow(glm::vec3(1.0f, 0.5f, -2.0f), glm::vec3(1.0f, 5.0f, -2.0f), glm::vec3(1.0f, 1.0f, 1.0f));
         put_arrow(glm::vec3(1.0f, 0.5f, -2.0f), glm::vec3(6.0f, 0.5f, -2.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 
@@ -678,7 +684,6 @@ void render_back_of_cube()
 {
     // render back Cube
     glBindVertexArray(g_cube_vao);
-    // glBindBuffer(GL_ARRAY_BUFFER, g_cube_vbo);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 }
@@ -688,7 +693,6 @@ void render_front_of_cube()
 {
     // render back Cube
     glBindVertexArray(g_cube_vao);
-    // glBindBuffer(GL_ARRAY_BUFFER, g_cube_vbo);
     glDrawArrays(GL_TRIANGLES, 6, 6);
     glBindVertexArray(0);
 }
@@ -717,13 +721,12 @@ void render_floor()
     glBindVertexArray(0);
 }
 
-// void render_viewmodel()
-// {
-//     glBindVertexArray(g_viewmodel_vao);
-//     glBindBuffer(GL_ARRAY_BUFFER, g_viewmodel_vbo);
-//     glDrawArrays(GL_TRIANGLES, 0, 36);
-//     glBindVertexArray(0);
-// }
+void render_viewmodel()
+{
+    glBindVertexArray(g_viewmodel_vao);
+    glDrawArrays(GL_TRIANGLES, 0, g_viewmodel_vertex_count);
+    glBindVertexArray(0);
+}
 
 
 // @dependencies:
@@ -736,7 +739,6 @@ void render_floor()
 void render(const Camera camera, Particle_Cache& particle_cache)
 {
     timed_function("render");
-    
     // render
     // ------
     Camera player_camera = camera;
@@ -757,22 +759,29 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         // bind shader and update all relevant uniforms.
         set_shader(*shader_manager, "deferred_geometry");
         set_uniform(*shader_manager, "projection", projection);
-        set_uniform(*shader_manager, "view", view);
-
+      
+        #define M_PI 3.1415926535897f
         // 1.a:  render static geometry in the scene.
         // ---------------------------------------
         {
-            // render weapon (viewmodel)
-            // {
-            //     auto& metal_texture = texture_manager->textures["metal"];
-            //     set_uniform(*shader_manager,  "texture_diffuse", metal_texture.gl_texture_frame);
+            // render weapon(viewmodel). These values are arbitrary as of now.
+            {
+                auto& spear_texture = texture_manager->textures["metal"];
+                set_uniform(*shader_manager,  "texture_diffuse", spear_texture.gl_texture_frame);
+                set_uniform(*shader_manager, "view", glm::mat4(1.0f));
 
-            //     glm::mat4 model = glm::mat4(1.0f);
-            //     model = glm::translate(model, camera.position + camera.front + camera.right);
-            //     set_uniform(*shader_manager, "model", model);
-            //     render_viewmodel();
-            // }
+                glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.07f));
+                glm::quat quaternion = glm::quat(0.70f, -0.70f, 0.0f, 0.0f);
+                glm::mat4 rotate = glm::toMat4(quaternion);
+                glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f,-0.5f, -0.7f));
+                glm::mat4 model = translate * rotate * scale;
 
+
+                set_uniform(*shader_manager, "model", model);
+                render_viewmodel();
+            }
+
+            set_uniform(*shader_manager, "view", view);
             // for all cubes in the scene..)
             {
                 auto& metal_texture = texture_manager->textures["metal"];
@@ -783,7 +792,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 render_cube();
 
             }
-       
             // render floor
             {
                 auto& ice_diffuse_texture = texture_manager->textures["ice_diffuse"];
@@ -795,42 +803,42 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             }
 
             // render walls
-            {
-                timed_function("render_walls");
+            // {
+            //     timed_function("render_walls");
 
-                set_shader(*shader_manager, "deferred_instanced");
-                set_uniform(*shader_manager, "view", view);
+            //     set_shader(*shader_manager, "deferred_instanced");
+            //     set_uniform(*shader_manager, "view", view);
 
-                // update matrix of the wall.
-                {
-                    auto& model_matrix_0 = g_wall_model_matrices[0];
-                    auto& mvp_matrix_0 = g_wall_mvp_matrices[0];
-                    model_matrix_0 = glm::mat4(1.0f);
-                    model_matrix_0 = glm::translate(model_matrix_0, glm::vec3(2.0f, 0.0f, 0.0f));
-                    model_matrix_0 = glm::scale(model_matrix_0, glm::vec3(100.0f));
-                    mvp_matrix_0 = projection * view * model_matrix_0;  
-                }
+            //     // update matrix of the wall.
+            //     {
+            //         auto& model_matrix_0 = g_wall_model_matrices[0];
+            //         auto& mvp_matrix_0 = g_wall_mvp_matrices[0];
+            //         model_matrix_0 = glm::mat4(1.0f);
+            //         model_matrix_0 = glm::translate(model_matrix_0, glm::vec3(2.0f, 0.0f, 0.0f));
+            //         model_matrix_0 = glm::scale(model_matrix_0, glm::vec3(100.0f));
+            //         mvp_matrix_0 = projection * view * model_matrix_0;  
+            //     }
 
-                glNamedBufferData(g_wall_model_vbo, sizeof(glm::mat4) * g_wall_model_matrices.size(), g_wall_model_matrices.data(), GL_DYNAMIC_DRAW);
-                glNamedBufferData(g_wall_mvp_vbo,   sizeof(glm::mat4) * g_wall_mvp_matrices.size(),   g_wall_mvp_matrices.data(), GL_DYNAMIC_DRAW);
+            //     glNamedBufferData(g_wall_model_vbo, sizeof(glm::mat4) * g_wall_model_matrices.size(), g_wall_model_matrices.data(), GL_DYNAMIC_DRAW);
+            //     glNamedBufferData(g_wall_mvp_vbo,   sizeof(glm::mat4) * g_wall_mvp_matrices.size(),   g_wall_mvp_matrices.data(), GL_DYNAMIC_DRAW);
 
-                auto& wall_stone_diffuse_texture  = texture_manager->textures["wall_stone_diffuse"];
-                auto& wall_stone_specular_texture = texture_manager->textures["wall_stone_specular"];
-                auto& wall_stone_normal_texture   = texture_manager->textures["wall_stone_normal"];
+            //     auto& wall_stone_diffuse_texture  = texture_manager->textures["wall_stone_diffuse"];
+            //     auto& wall_stone_specular_texture = texture_manager->textures["wall_stone_specular"];
+            //     auto& wall_stone_normal_texture   = texture_manager->textures["wall_stone_normal"];
 
-                // set_uniform(*shader_manager, "texture_diffuse", wall_stone_diffuse_texture.gl_texture_frame);
-                set_uniform(*shader_manager, "texture_diffuse",  wall_stone_diffuse_texture.gl_texture_frame);
-                set_uniform(*shader_manager, "texture_specular", wall_stone_specular_texture.gl_texture_frame);
+            //     // set_uniform(*shader_manager, "texture_diffuse", wall_stone_diffuse_texture.gl_texture_frame);
+            //     set_uniform(*shader_manager, "texture_diffuse",  wall_stone_diffuse_texture.gl_texture_frame);
+            //     set_uniform(*shader_manager, "texture_specular", wall_stone_specular_texture.gl_texture_frame);
 
 
-                glBindVertexArray(g_wall_vao);
-                glDrawArraysInstanced(
-                    GL_TRIANGLES,
-                    0,
-                    6,
-                    g_wall_model_matrices.size());
-                glBindVertexArray(0);
-            }
+            //     glBindVertexArray(g_wall_vao);
+            //     glDrawArraysInstanced(
+            //         GL_TRIANGLES,
+            //         0,
+            //         6,
+            //         g_wall_model_matrices.size());
+            //     glBindVertexArray(0);
+            // }
 
 
         }
@@ -962,6 +970,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             glBindBuffer(GL_ARRAY_BUFFER, g_debug_geometry_vbo);
             glBufferData(GL_ARRAY_BUFFER, sizeof(float) *g_debug_draw_data.size(), g_debug_draw_data.data(), GL_STATIC_DRAW);
 
+            // debug draw data = position(3) + normal 3+ color(3)
             glDrawArrays(GL_TRIANGLES, 0, g_debug_draw_data.size() / 9);
         }
 
