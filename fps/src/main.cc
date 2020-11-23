@@ -5,6 +5,7 @@
 #include "asset_manager.h"
 
 #include "render_system.h"
+#include "sound_system.h"
 #include "task_system.h"
 
 #include "log.h"
@@ -44,7 +45,6 @@ int main()
     load_obj(asset_manager, "new_spear");
     load_obj(asset_manager, "bar");
 
-
     auto texture_manager = Texture_Manager();
     load_png_texture(texture_manager, "metal");
     load_png_texture(texture_manager, "marble");
@@ -57,6 +57,8 @@ int main()
     load_png_texture(texture_manager, "ice_diffuse");
     load_png_texture(texture_manager, "new_spear_diffuse");
 
+    init_sound_system();
+    load_sound("chicken.wav");
 
     //@Fixme(Sjors): create a render manager?
     init_renderer(shader_manager, texture_manager, asset_manager, window_width, window_height);

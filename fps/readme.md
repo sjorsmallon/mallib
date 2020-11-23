@@ -4,6 +4,7 @@
 ## timed
 - apply friction only on ground (1)
 - decipher quake air movement (2)
+- optional unitization of meshes (1, default false)
 - check for gl context in all gl-related managers (2)
 - make functions instead of direct map access to counteract implicit creation (sigh..) (2) (18-11-2020)
 - pass asset path to file-based managers (1) (10-11-2020)

@@ -1,10 +1,14 @@
 #include "game.h"
+
+#include <glm/gtx/string_cast.hpp>
+#include <algorithm> // for clamp, kind of wasteful!
+
 #include "camera.h"
 #include "input.h"
 #include "log.h"
 #include "entity_system.h"
-#include <glm/gtx/string_cast.hpp>
-#include <algorithm> // for clamp
+
+#include "sound_system.h"
 
 
 // these are the GLFW key presses.
@@ -259,7 +263,7 @@ namespace
 
 
 // update and render world
-void game_simulate(const double dt, Game_State& game_state,const Input& input, Particle_Cache& particle_cache)
+void game_simulate(const double dt, Game_State& game_state, const Input& input, Particle_Cache& particle_cache)
 {
 	//@TODO(Sjors): set bounds for min / max frame time.
 	float clamped_dt = dt;
@@ -286,14 +290,18 @@ void game_simulate(const double dt, Game_State& game_state,const Input& input, P
 	}
 	else
 	{
+		// resolve click: what did we hit?
+		if (input.mouse_left) play_sound("chicken");
+
 		// update entities
 		// for (entity_type : entity_types)
-		// update camera position.
+
 		// if game_mode = player_cam:
 		{
 			update_player_entity(input);
 			game_state.camera = update_camera_entity(input, game_state.camera, dt_factor);
 			g_player.position = game_state.camera.position;
+
 		}
 	}
 

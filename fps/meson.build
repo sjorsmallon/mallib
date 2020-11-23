@@ -6,13 +6,28 @@ libfmt_dep = libfmt_project.get_variable('fmt_dep')
 # only for clang
 #add_project_arguments('-ftime-trace', language:'cpp')
 
+inc_dir = include_directories('include')
+
+
 libimgui_project = subproject('imgui')
 libimgui_dep = libimgui_project.get_variable('imgui_dep')
 
 libglfw_project = subproject('glfw-3.3.2')
 libglfw_dep = libglfw_project.get_variable('glfw_dep')
 
-inc_dir = include_directories('include')
+project_dir  = meson.current_source_dir() # MESON_SOURCE_ROOT
+build_dir    = meson.current_build_dir() # MESON_BUILD_ROOT
+
+soloud_path = join_paths(project_dir, 'static_libraries/soloud')
+soloud_include_path = join_paths(project_dir, 'static_libraries/soloud/include')
+
+compiler = meson.get_compiler('cpp')
+
+libsoloud_dep = compiler.find_library('soloud', dirs: soloud_path)
+soloud_inc_dir = include_directories(soloud_include_path)
+
+inc_dir = [inc_dir, soloud_inc_dir]
+
 
 source_files = [
 	'src/main.cc',
@@ -29,12 +44,13 @@ source_files = [
 	'src/game.cc',
 	'src/task_system.cc',
 	'src/timed_function.cc',
-	'src/logr.cc'
+	'src/logr.cc',
+	'src/sound_system.cc'
 
 ]
 
 executable('testt',
   source_files,
   include_directories: inc_dir,
-  dependencies : [libimgui_dep, libglfw_dep, libfmt_dep]
+  dependencies : [libimgui_dep, libglfw_dep, libfmt_dep,libsoloud_dep]
   )

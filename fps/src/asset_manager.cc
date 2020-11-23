@@ -15,7 +15,6 @@ namespace
 void load_obj(Asset_Manager& asset_manager, const std::string& obj_name)
 {
 
-
 	const std::string obj_folder_prefix = "../assets/obj/";
 	const std::string model_path = obj_folder_prefix + obj_name + g_obj_extension_suffix;
 	//@FIXME(Sjors): implicit creation.
@@ -69,12 +68,5 @@ void load_obj(Asset_Manager& asset_manager, const std::string& obj_name)
                 // object.shapes[shape_idx].mesh.material_ids[face_idx];
             }
         }
-    }
-
-    for (size_t idx = 0; idx != object.interleaved_XNU.size(); idx += 8)
-    {
-        logr::report("vertex: {} {} {}\n",object.interleaved_XNU[idx], object.interleaved_XNU[idx + 1], object.interleaved_XNU[idx + 2]);
-        logr::report("normal: {} {} {}\n",object.interleaved_XNU[idx + 3], object.interleaved_XNU[idx + 4], object.interleaved_XNU[idx + 5]);
-        logr::report("texture: {} {}\n", object.interleaved_XNU[idx + 6], object.interleaved_XNU[idx + 7]);
     }
 }
