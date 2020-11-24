@@ -286,8 +286,6 @@ void game_simulate(const double dt, Game_State& game_state, const Input& input, 
 	}
 	else
 	{
-		// resolve click: what did we hit?
-		if (input.mouse_left) play_sound("chicken");
 
 		// update entities
 		// for (entity_type : entity_types)
@@ -297,6 +295,23 @@ void game_simulate(const double dt, Game_State& game_state, const Input& input, 
 			update_player_entity(input);
 			game_state.camera = update_camera_entity(input, game_state.camera, dt_factor);
 			g_player.position = game_state.camera.position;
+
+			update_listener(g_player.position.x,
+				g_player.position.y,
+				g_player.position.z,
+				game_state.camera.front.x,
+				game_state.camera.front.y,
+				game_state.camera.front.z,
+				game_state.camera.up.x,
+				game_state.camera.up.y,
+				game_state.camera.up.z,
+				game_state.camera.movement_vector.x,
+				game_state.camera.movement_vector.y,
+				game_state.camera.movement_vector.z
+				);
+			
+			if (input.mouse_left) play_sound_3d("chicken");
+
 
 		}
 	}
