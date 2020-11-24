@@ -13,6 +13,9 @@ struct Input
 	bool mouse_left;
 	bool mouse_right;
 
+	bool prev_mouse_left;
+	bool prev_mouse_right;
+
 	double mouse_x;
 	double mouse_y;
 

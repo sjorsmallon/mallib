@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cstdint>
 #include <map>
+#include <cassert>
 
 
 //TODO(Sjors): parent id / scope depth.
@@ -26,6 +27,13 @@ struct Timed_Function
 	// static uint32_t scope_depth;
 	static std::map<std::string, Timed_Function_Data> timed_functions;
 	Timed_Function_Data& data;
+
+	static double get_duration(const std::string& function_name)
+	{
+		assert(Timed_Function::timed_functions.find(function_name) != Timed_Function::timed_functions.end());
+
+		return Timed_Function::timed_functions[function_name].duration;
+	}
 
 	//@Note(Sjors): data is implicitly created through this constructor.
 	Timed_Function(const std::string& name_in)
@@ -51,8 +59,7 @@ struct Timed_Function
 	// delete the rest of the operators.
 };
 
-// inline uint32_t Timed_Function::next_id = 0; 
-// inline uint32_t Timed_Function::scope_depth = 0; 
+//@Macro(Sjors):
 #define timed_function(function_name) auto timed_function = Timed_Function(function_name) 
 
 

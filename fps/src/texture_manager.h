@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <cassert>
 
 //@TODO(Sjors): generalize this to image
 struct Texture
@@ -43,6 +44,12 @@ void load_png_texture(Texture_Manager& texture_manager, const std::string& textu
 uint32_t register_framebuffer_texture(Texture_Manager& texture_manager, const std::string& framebuffer_name);
 
 int32_t get_next_free_texture_frame(Texture_Manager& manager);
+
+inline const Texture& get_texture(Texture_Manager& texture_manager, const std::string& texture_name)
+{
+    assert(texture_manager.textures.find(texture_name) != texture_manager.textures.end());
+    return texture_manager.textures[texture_name];
+}
 
 
 

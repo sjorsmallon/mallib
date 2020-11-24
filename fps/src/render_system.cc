@@ -319,8 +319,9 @@ namespace
             // register all three framebuffers as color attachment (GL_COLOR_ATTACHMENTN), N -> {0 : position, 1: normals , 2: albedo & specular}
             
             // - position frame buffer
-            uint32_t position_tfbo = register_framebuffer_texture(*texture_manager, "position_tfbo");
-            auto& position_texture = texture_manager->textures["position_tfbo"];
+            const uint32_t position_tfbo = register_framebuffer_texture(*texture_manager, "position_tfbo");
+            const auto& position_texture = get_texture(*texture_manager, "position_tfbo");
+
             glActiveTexture(GL_TEXTURE0 + position_texture.gl_texture_frame);
             glBindTexture(GL_TEXTURE_2D, position_tfbo);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, NULL);
@@ -329,8 +330,8 @@ namespace
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, position_tfbo, 0);
               
             // - normals frame buffer
-            uint32_t normal_tfbo = register_framebuffer_texture(*texture_manager, "normal_tfbo");
-            auto& normal_texture = texture_manager->textures["normal_tfbo"];
+            const uint32_t normal_tfbo = register_framebuffer_texture(*texture_manager, "normal_tfbo");
+            const auto& normal_texture = get_texture(*texture_manager, "normal_tfbo");
             glActiveTexture(GL_TEXTURE0 + normal_texture.gl_texture_frame);
             glBindTexture(GL_TEXTURE_2D, normal_tfbo);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, NULL);
@@ -340,7 +341,8 @@ namespace
               
             // - color + specular frame buffer
             uint32_t albedo_specular_tfbo = register_framebuffer_texture(*texture_manager, "albedo_specular_tfbo");
-            auto& albedo_specular_texture = texture_manager->textures["albedo_specular_tfbo"];
+            auto& albedo_specular_texture = get_texture(*texture_manager, "albedo_specular_tfbo");
+
             glActiveTexture(GL_TEXTURE0 + albedo_specular_texture.gl_texture_frame);
             glBindTexture(GL_TEXTURE_2D, albedo_specular_tfbo);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -385,7 +387,7 @@ namespace
         //------------------------------------------------------
         glGenFramebuffers(1, &depth_map_fbo);
         g_depth_map_tfbo = register_framebuffer_texture(*texture_manager, "depth_map_tfbo");
-        auto& depth_map_texture = texture_manager->textures["depth_map_tfbo"];
+        const auto& depth_map_texture = get_texture(*texture_manager, "depth_map_tfbo");
         glActiveTexture(GL_TEXTURE0 + depth_map_texture.gl_texture_frame);
         glBindTexture(GL_TEXTURE_2D, g_depth_map_tfbo);
         glTexImage2D(
@@ -766,7 +768,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         {
             // render weapon(viewmodel). These values are arbitrary as of now.
             {
-                auto& spear_texture = texture_manager->textures["metal"];
+                const auto& spear_texture = get_texture(*texture_manager, "metal");
                 set_uniform(*shader_manager,  "texture_diffuse", spear_texture.gl_texture_frame);
                 set_uniform(*shader_manager, "view", glm::mat4(1.0f));
 
@@ -784,7 +786,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             set_uniform(*shader_manager, "view", view);
             // for all cubes in the scene..)
             {
-                auto& metal_texture = texture_manager->textures["metal"];
+                const auto& metal_texture = get_texture(*texture_manager, "metal");
                 set_uniform(*shader_manager,  "texture_diffuse", metal_texture.gl_texture_frame);
 
                 glm::mat4 model = glm::mat4(1.0f);
@@ -794,7 +796,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             }
             // render floor
             {
-                auto& ice_diffuse_texture = texture_manager->textures["ice_diffuse"];
+                const auto& ice_diffuse_texture = get_texture(*texture_manager, "ice_diffuse");
                 set_uniform(*shader_manager, "texture_diffuse",  ice_diffuse_texture.gl_texture_frame);
 
                 glm::mat4 model = glm::mat4(1.0f);
@@ -848,9 +850,9 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     }
 
     // get texture handles for the frame buffers.
-    auto& position_tfbo_texture = texture_manager->textures["position_tfbo"];
-    auto& normal_tfbo_texture = texture_manager->textures["normal_tfbo"];
-    auto& albedo_specular_tfbo_texture = texture_manager->textures["albedo_specular_tfbo"];
+    const auto& position_tfbo_texture = get_texture(*texture_manager, "position_tfbo");
+    const auto& normal_tfbo_texture = get_texture(*texture_manager, "normal_tfbo");
+    const auto& albedo_specular_tfbo_texture = get_texture(*texture_manager, "albedo_specular_tfbo");
 
     // @Volatile(Sjors): if this changes, the deferred_lighting shader step should change as well.
     std::vector<Light> lights(NUM_LIGHTS);
@@ -1044,8 +1046,8 @@ void render_shadows(const Camera camera, Particle_Cache& particle_cache)
             set_uniform(*shader_manager, "view_pos", glm::vec3(camera.position.x, camera.position.y, camera.position.z));
             set_uniform(*shader_manager, "light_space_matrix", light_space_matrix);
 
-            auto& diffuse_texture = texture_manager->textures["metal"];
-            auto& shadow_map = texture_manager->textures["depth_map_tfbo"];
+            const auto& diffuse_texture = get_texture(*texture_manager, "metal");
+            const auto& shadow_map = get_texture(*texture_manager, "depth_map_tfbo");
             set_uniform(*shader_manager, "diffuse_texture", diffuse_texture.gl_texture_frame);
             set_uniform(*shader_manager, "shadow_map", shadow_map.gl_texture_frame);
             

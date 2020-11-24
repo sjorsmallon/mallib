@@ -202,6 +202,24 @@ void create_main_window(Window_Manager& window_manager, const char* title, const
 //@TODO(Sjors): swap, clear, poll.
 void poll_input(Window_Manager& window_manager)
 {
+    //@TODO(Sjors): why do we want to do this exactly? at this moment, 
+    // the keyboard perfectly reflects which keys are being pressed. only GLFW_RELEASE
+    // can toggle things back to false.
+    // We could argue that if the event has already been processed (since the event would be repeated)
+    // that we could continue to do something else.
+    // The point being that I don't know how to deal with individual keypresses (what if we want to deal with being held?)
+    // swap the pointers of current keyboard state and previous keyboard state.
+    // std::swap(window_manager.input.keyboard_state,window_manager.input.prev_keyboard_state);
+
+    // swap mouse buttons
+    window_manager.input.prev_mouse_left = window_manager.input.mouse_left; 
+    window_manager.input.prev_mouse_right = window_manager.input.mouse_right;
+
+    // set both to false
+    window_manager.input.mouse_left = false;
+    window_manager.input.mouse_right = false;
+
+    // set mouse delta to zero.
     window_manager.input.mouse_delta_x =  0.0f;
     window_manager.input.mouse_delta_y =  0.0f;
 
@@ -229,7 +247,6 @@ void render_debug_ui(const Window_Manager& window_manager)
 {
     // unhide the cursor.
     // glfwSetInputMode(window_manager.main_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); 
-    
     {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();

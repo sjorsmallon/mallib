@@ -23,6 +23,10 @@ constexpr const int KEY_O = 79;
 constexpr const float FRAMETIME_120_HZ_IN_S = 0.00833333333f;
 constexpr const float FRAMETIME_IN_S = FRAMETIME_120_HZ_IN_S;
 
+constexpr const float FRAMETIME_1000_FPS = 0.001f;
+constexpr const float FRAMETIME_10_FPS = 0.1f;
+
+
 namespace
 {
 
@@ -253,7 +257,6 @@ namespace
 		camera.position = position;
 		camera.movement_vector = movement_vector;
 
-
 		if (input.mouse_delta_x || input.mouse_delta_x)
 			return update_camera_view_with_input(input, camera, dt);
 
@@ -265,23 +268,16 @@ namespace
 // update and render world
 void game_simulate(const double dt, Game_State& game_state, const Input& input, Particle_Cache& particle_cache)
 {
-	//@TODO(Sjors): set bounds for min / max frame time.
 	float clamped_dt = dt;
-	if (clamped_dt < 0.001f)
-	{
-			// logr::report("clamped dt.\n");
-			clamped_dt = 0.001f;
-	}	
-	if (clamped_dt > 0.1f) clamped_dt = 0.1f;
+	
+	if (clamped_dt < FRAMETIME_1000_FPS) clamped_dt = FRAMETIME_1000_FPS; // 1000 fps: upper bound
+	if (clamped_dt > FRAMETIME_10_FPS) clamped_dt = FRAMETIME_10_FPS;  // 10 fps: lower bound
 
 
 	if (input.keyboard_state[KEY_P]) game_state.game_mode = GM_GAME;
 	if (input.keyboard_state[KEY_O]) game_state.game_mode = GM_EDITOR;
 
-
-	float dt_factor = clamped_dt / FRAMETIME_IN_S;
-
-
+	const float dt_factor = clamped_dt / FRAMETIME_IN_S;
 
 	// are we paused?
 	if (game_state.paused)

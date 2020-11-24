@@ -16,6 +16,8 @@
 
 #include <chrono>
 #include <thread>
+#include <array>
+#include <numeric> // for accumulate
 
 const int window_width = 1920;
 const int window_height = 1080;
@@ -27,7 +29,7 @@ int main()
     //@TODO(Sjors): why does using two task systems slow down the application to a crawl?
     //@TODO(Sjors): how to deal with openGL context w. multiple threads?
     constexpr const int worker_count{3};
-    auto high_priority_queue = Task_System(worker_count); 
+    // auto high_priority_queue = Task_System(worker_count); 
 
     auto window_manager = Window_Manager();
     create_main_window(window_manager, "fps", window_width, window_height);
@@ -72,8 +74,9 @@ int main()
     float frame_dt = 0.0f;
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::time_point<std::chrono::system_clock> end;
-    double average_frame_time[120] = {0};
-    double average_render_time[120] = {0};
+    constexpr const int buffer_size = 256;
+    std::array<double, buffer_size> frame_time_ring_buffer{};
+    std::array<double, buffer_size> render_time_ring_buffer{}; 
 
     uint32_t current_idx = 0;
 
@@ -86,33 +89,25 @@ int main()
 
         if (game_state.game_mode == GM_EDITOR) render_debug_ui(window_manager);
 
-        //@TODO(Sjors): swap buffers is done before delta time, is that even correct?
         swap_buffers(window_manager);
 
         // some time calculation.
         end = std::chrono::system_clock::now();
         double delta = static_cast<std::chrono::duration<double>>(end - start).count();
-        average_frame_time[current_idx % 120] = delta;
-        average_render_time[current_idx % 120] = Timed_Function::timed_functions["render"].duration;
+        frame_time_ring_buffer[current_idx % buffer_size] = delta;
+        render_time_ring_buffer[current_idx % buffer_size] = Timed_Function::get_duration("render");
         current_idx += 1;
-        
-        if (current_idx % 120 == 0) 
+    
+        if (current_idx % buffer_size == 0) 
         {
-            double accumulator = 0.0;
-            for (auto& value: average_frame_time)
-                accumulator += value;
-            accumulator /= 120.0;
+            double frame_average =  std::accumulate(frame_time_ring_buffer.begin(), frame_time_ring_buffer.end(), 0.0) / static_cast<double>(buffer_size);
+            double render_average = std::accumulate(render_time_ring_buffer.begin(), render_time_ring_buffer.end(), 0.0) / static_cast<double>(buffer_size);
+           Timed_Function::timed_functions["fps"].duration = 1.0 / frame_average;
+           Timed_Function::timed_functions["average_frame_time"].duration = frame_average;
+           Timed_Function::timed_functions["render_time"].duration = render_average;
 
-            double render_accumulator = 0.0;
-            for (auto& value: average_render_time)
-                render_accumulator += value;
-            render_accumulator /=120.0;
 
-            logr::console("average frame time past 120 frames: {} ({} fps).\n", accumulator, 1.0 / accumulator);
-            logr::console("average render time past 120 frame: {}\n", render_accumulator);
         }
-
-
 
     }
 
@@ -121,3 +116,4 @@ int main()
 
     return 0;
 }
+

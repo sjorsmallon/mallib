@@ -33,30 +33,32 @@
  - vertex picking / object highlighting?
  
 ### Commands
+
 All movement must
-	- feel good
-	- be intuitive
-	- be fun
-	- be fast
-	- be controlled
+- feel good
+- be intuitive
+- be fun
+- be fast
+- be controlled
 
 All images must 
-	- reflect reality (but NOT be realistic)
-	- have solidity
-	- be original
-	- be cool
-	- evoke emotion
-	- look alive
+- reflect reality (but NOT be realistic)
+- have solidity
+- be original
+- be cool
+- evoke emotion
+- look alive
+
 All sounds must 
-	- be diegetic
-	- be distinct
-	- be relatable
-	- be logical
+- be diegetic
+- be distinct
+- be relatable
+- be logical
 
 All menus must
-	- be diegetic
-	- use the SAME input
-	- minimize language use
+- be diegetic
+- use the SAME input as the game
+- minimize language use
 
 # To compile:
 meson builddir
