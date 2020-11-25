@@ -80,6 +80,9 @@ namespace
     unsigned int g_debug_geometry_vbo;
     std::vector<float> g_debug_draw_data;
 
+    unsigned int g_hud_vao;
+    unsigned int g_hud_vbo;
+
     // @dependencies:
     // g_debug_draw_buffer
     // world_up
@@ -509,6 +512,32 @@ namespace
         glBindVertexArray(0);
     }
 
+    //@NOTE: NDC is -1,-1 to 1,1. middle is thus 0.0
+    void init_hud()
+    {
+
+        float vertices[] = {
+            // positions        // texture Coords
+            -0.05f,  0.05f, 0.0f, 0.0f, 1.0f,
+            -0.05f, -0.05f, 0.0f, 0.0f, 0.0f,
+             0.05f,  0.05f, 0.0f, 1.0f, 1.0f,
+             0.05f, -0.05f, 0.0f, 1.0f, 0.0f,
+        };
+        // setup screen plane VAO
+        glGenVertexArrays(1, &g_hud_vao);
+        glGenBuffers(1, &g_hud_vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, g_hud_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+        glBindVertexArray(g_hud_vao);
+
+        // init vertex attributes. {0: position (xyz), 1: texture coords (uv)}
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glBindVertexArray(0);
+    }
+
     void init_unit_cube()
     {
         float vertices[] = {
@@ -603,13 +632,19 @@ namespace
 
     void init_floor()
     {
+        const float floor_dim = 2048.0f; // centered, so from -1024 to +1024
+        const float half_floor_dim = 2048.0f / 2.0f;
+        const float floor_y = -10.0f;
+        const float wrap_count = 2048.0f / 64.0f;
+      
         float floor_vertices[]  = {
-            -1000.f, -5.0f, 1000.f,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-             1000.f, -5.0f, 1000.f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            -1000.f, -5.0f, -1000.f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-            -1000.f, -5.0f, -1000.f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-             1000.f, -5.0f, 1000.f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-             1000.f, -5.0f, -1000.f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+            // |position                                | normals         | uv
+            -half_floor_dim, floor_y, half_floor_dim,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+             half_floor_dim, floor_y, half_floor_dim,  0.0f, 1.0f, 0.0f, wrap_count * 1.0f, 0.0f,
+            -half_floor_dim, floor_y, -half_floor_dim, 0.0f, 1.0f, 0.0f, 0.0f, wrap_count * 1.0f,
+            -half_floor_dim, floor_y, -half_floor_dim, 0.0f, 1.0f, 0.0f, 0.0f, wrap_count * 1.0f,
+             half_floor_dim, floor_y, half_floor_dim,  0.0f, 1.0f, 0.0f, wrap_count * 1.0f, 0.0f,
+             half_floor_dim, floor_y, -half_floor_dim, 0.0f, 1.0f, 0.0f, wrap_count * 1.0f, wrap_count * 1.0f
         };
         glGenVertexArrays(1, &g_floor_vao);
         glBindVertexArray(g_floor_vao);
@@ -679,6 +714,7 @@ void init_renderer(
     init_instanced_wall();
     init_debug_geometry();
     init_viewmodel();
+    init_hud();
 }
 
 //@Temporary
@@ -727,6 +763,15 @@ void render_viewmodel()
 {
     glBindVertexArray(g_viewmodel_vao);
     glDrawArrays(GL_TRIANGLES, 0, g_viewmodel_vertex_count);
+    glBindVertexArray(0);
+}
+
+// render_NDC_quad() renders a 1x1 XY quad in NDC
+// -----------------------------------------
+void render_hud()
+{  
+    glBindVertexArray(g_hud_vao);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
 }
 
@@ -796,8 +841,8 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             }
             // render floor
             {
-                const auto& ice_diffuse_texture = get_texture(*texture_manager, "ice_diffuse");
-                set_uniform(*shader_manager, "texture_diffuse",  ice_diffuse_texture.gl_texture_frame);
+                const auto& floor_texture = get_texture(*texture_manager, "floor_64");
+                set_uniform(*shader_manager, "texture_diffuse",  floor_texture.gl_texture_frame);
 
                 glm::mat4 model = glm::mat4(1.0f);
                 set_uniform(*shader_manager, "model", model);
@@ -922,7 +967,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     // // 3. render geometry on top of scene that does not need to be affected by lighting.
     // --------------------------------
     {
-
         // only render the active lights.normally, for light: active_lights)
         {
             set_shader( *shader_manager, "lightbox");
@@ -956,13 +1000,11 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             // set_uniform(*shader_manager, "model", model);
             // set_uniform(*shader_manager, "light_color", lights[3].color);
             // render_cube();
-
-  
         }
 
         // render debug data
         {
-            set_shader(*shader_manager, "deferred_debug_geometry");
+            set_shader(*shader_manager, "debug_geometry");
 
             set_uniform(*shader_manager, "view", view);
             set_uniform(*shader_manager, "projection", projection);
@@ -975,8 +1017,17 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             // debug draw data = position(3) + normal 3+ color(3)
             glDrawArrays(GL_TRIANGLES, 0, g_debug_draw_data.size() / 9);
         }
-
     }
+
+    // step 4: render HUD
+    {   
+        const auto& crosshair_texture =  get_texture(*texture_manager, "crosshair");
+        set_shader(*shader_manager, "screen_space");
+        set_uniform(*shader_manager, "hud_texture", crosshair_texture.gl_texture_frame);
+
+        render_hud();
+    }
+
 
     set_shader(*shader_manager, "none");
     glBindVertexArray(0);

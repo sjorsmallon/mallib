@@ -48,23 +48,59 @@ namespace
 
     float g_camera_velocity = 0.2f;
 
-  
-  	float g_player_gravity = 0.6667f;
+
+
+ 	float g_player_gravity = 0.6667f;
     float g_player_friction = 0.2f;
 
-    // player movement (120 hz baseline tickrate).
-    float g_player_max_velocity = 15.0f;
+    float g_player_max_velocity = 7.5f;
 
-    float g_player_ground_movespeed = 0.23f;
-    float g_player_ground_acceleration = 0.46f;
-    float g_player_ground_deceleration= 0.33f;
+    float g_player_ground_movespeed = 0.08625f;
+    float g_player_ground_acceleration = 0.1725f;
+    float g_player_ground_deceleration= 0.12375f;
+    float g_player_jump_velocity = 0.133f;
 
-    float g_player_air_acceleration = 0.066f;
-    float g_player_air_deceleration = 0.066f;
+    float g_player_air_acceleration = 0.033f;
+    float g_player_air_deceleration = 0.033f;
     float g_player_air_control = 0.01f;
-    float g_player_jump_velocity = 0.266f;
     float g_player_side_strafe_acceleration = 1.6667f;
     float g_player_side_strafe_speed = 0.0033f;
+
+
+
+    // 25-11-2020
+    // player movement (120 hz baseline tickrate).
+  	// float g_player_gravity = 0.6667f;
+   //  float g_player_friction = 0.2f;
+
+   //  float g_player_max_velocity = 7.5f;
+
+   //  float g_player_ground_movespeed = 0.115f;
+   //  float g_player_ground_acceleration = 0.23f;
+   //  float g_player_ground_deceleration= 0.165f;
+   //  float g_player_jump_velocity = 0.133f;
+
+   //  float g_player_air_acceleration = 0.033f;
+   //  float g_player_air_deceleration = 0.033f;
+   //  float g_player_air_control = 0.01f;
+   //  float g_player_side_strafe_acceleration = 1.6667f;
+   //  float g_player_side_strafe_speed = 0.0033f;
+
+
+
+    // old
+ 	// float g_player_max_velocity = 15.0f;
+
+  //   float g_player_ground_movespeed = 0.23f;
+  //   float g_player_ground_acceleration = 0.46f;
+  //   float g_player_ground_deceleration= 0.33f;
+
+  //   float g_player_air_acceleration = 0.066f;
+  //   float g_player_air_deceleration = 0.066f;
+  //   float g_player_air_control = 0.01f;
+  //   float g_player_jump_velocity = 0.266f;
+  //   float g_player_side_strafe_acceleration = 1.6667f;
+  //   float g_player_side_strafe_speed = 0.0033f;
 
     // @dependencies:
     // g_camera_velocity
@@ -287,16 +323,21 @@ void game_simulate(const double dt, Game_State& game_state, const Input& input, 
 	else
 	{
 
-		// update entities
-		// for (entity_type : entity_types)
-
 		// if game_mode = player_cam:
 		{
+			// update player and camera.
+			{
 			update_player_entity(input);
 			game_state.camera = update_camera_entity(input, game_state.camera, dt_factor);
 			g_player.position = game_state.camera.position;
+			}
+			// update viewable ...
 
-			update_listener(g_player.position.x,
+			// at this point, we can start rendering static geometry.
+
+			// update sound system
+			{
+				update_listener(g_player.position.x,
 				g_player.position.y,
 				g_player.position.z,
 				game_state.camera.front.x,
@@ -310,7 +351,10 @@ void game_simulate(const double dt, Game_State& game_state, const Input& input, 
 				game_state.camera.movement_vector.z
 				);
 			
-			if (input.mouse_left) play_sound_3d("chicken");
+				if (input.mouse_left) play_sound_3d("chicken");
+			}
+
+			
 
 
 		}

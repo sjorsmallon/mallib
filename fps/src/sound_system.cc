@@ -12,7 +12,6 @@ namespace
 
 }
 
-
 void init_sound_system()
 {
 	g_soloud.init(SoLoud::Soloud::ENABLE_VISUALIZATION);

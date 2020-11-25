@@ -35,7 +35,7 @@ void load_tga_texture(Texture_Manager& texture_manager, const std::string& textu
 
     std::string file_path = g_texture_folder_prefix + texture_name + g_texture_tga_extension_suffix;
     
-    // stbi_set_flip_vertically_on_load(true);
+    stbi_set_flip_vertically_on_load(true);
 
     texture.data = stbi_load(file_path.c_str(),
         &texture.dimensions[0], // x_dim
@@ -82,9 +82,9 @@ void load_png_texture(Texture_Manager& texture_manager, const std::string& textu
 {
     //@FIXME(Sjors): implicit creation
     auto& texture = texture_manager.textures[texture_name];
-
     std::string file_path = g_texture_folder_prefix + texture_name + g_texture_png_extension_suffix;
-    // stbi_set_flip_vertically_on_load(true);
+    
+    stbi_set_flip_vertically_on_load(true);
 
     texture.data = stbi_load(file_path.c_str(),
         &texture.dimensions[0], // x_dim

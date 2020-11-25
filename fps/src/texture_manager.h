@@ -31,7 +31,6 @@ struct Texture_Manager
 {
 	int next_free_texture_frame = 0; // this is the first time I feel something should be private.
 	std::map<std::string, Texture> textures;
-	//@Note: eventually, this could be turned into a vector that has gl_texture_id as idx.
 };
 
 

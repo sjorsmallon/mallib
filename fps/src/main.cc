@@ -39,25 +39,26 @@ int main()
     load_shader(shader_manager, "deferred_instanced");
     load_shader(shader_manager, "deferred_lighting");
     load_shader(shader_manager, "lightbox");
-    load_shader(shader_manager, "deferred_debug_geometry");
+    load_shader(shader_manager, "debug_geometry");
     load_shader(shader_manager, "simple_depth");
     load_shader(shader_manager, "simple_depth_shadow_mapping");
+    load_shader(shader_manager, "screen_space");
 
     auto asset_manager = Asset_Manager();
     load_obj(asset_manager, "new_spear");
-    load_obj(asset_manager, "bar");
 
     auto texture_manager = Texture_Manager();
     load_png_texture(texture_manager, "metal");
     load_png_texture(texture_manager, "marble");
     load_tga_texture(texture_manager, "target_wood_diffuse");
     load_png_texture(texture_manager, "wall_64");
+    load_png_texture(texture_manager, "floor_64");
     load_png_texture(texture_manager, "star_64");
     load_png_texture(texture_manager, "wall_stone_specular");
     load_png_texture(texture_manager, "wall_stone_diffuse");
     load_png_texture(texture_manager, "wall_stone_normal");
-    load_png_texture(texture_manager, "ice_diffuse");
     load_png_texture(texture_manager, "new_spear_diffuse");
+    load_png_texture(texture_manager, "crosshair");
 
     init_sound_system();
     load_sound("chicken.wav");
