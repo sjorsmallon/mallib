@@ -28,7 +28,7 @@ uint32_t register_framebuffer_texture(Texture_Manager& texture_manager, const st
 }
 
 
-void load_tga_texture(Texture_Manager& texture_manager, const std::string& texture_name, bool flip_vertically)
+void load_tga_texture(Texture_Manager& texture_manager, const std::string& texture_name)
 {
     //@FIXME(Sjors): implicit creation
     auto& texture = texture_manager.textures[texture_name];
@@ -77,8 +77,58 @@ void load_tga_texture(Texture_Manager& texture_manager, const std::string& textu
 }
 
 
+void load_alpha_png_texture(Texture_Manager& texture_manager, const std::string& texture_name)
+{
+     //@FIXME(Sjors): implicit creation
+    auto& texture = texture_manager.textures[texture_name];
+    std::string file_path = g_texture_folder_prefix + texture_name + g_texture_png_extension_suffix;
+    
+    stbi_set_flip_vertically_on_load(true);
 
-void load_png_texture(Texture_Manager& texture_manager, const std::string& texture_name, bool flip_vertically)
+    texture.data = stbi_load(file_path.c_str(),
+        &texture.dimensions[0], // x_dim
+        &texture.dimensions[1], // y_dim
+        &texture.channels,
+        STBI_rgb_alpha);
+
+    if (texture.data == nullptr)
+    {
+        logr::report_error("[Texture_Manager] failed loading texture \"{}\". stbi_error: {}\n", texture_name, stbi_failure_reason());
+        exit(1);
+        return;
+    }
+    else 
+    {
+        texture.data_size = texture.dimensions[0] * texture.dimensions[1] * texture.channels;
+        logr::report("[Texture_Manager] loaded texture {}.\n", file_path);
+    }
+
+    // bind texture.
+    {
+        glGenTextures(1, &texture.gl_texture_id);
+        texture.gl_texture_frame = get_next_free_texture_frame(texture_manager);
+
+        glActiveTexture(GL_TEXTURE0 + texture.gl_texture_frame);
+        glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA8,
+            texture.dimensions[0], //x
+            texture.dimensions[1], //y
+            0,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            texture.data);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    }
+}
+
+
+void load_png_texture(Texture_Manager& texture_manager, const std::string& texture_name)
 {
     //@FIXME(Sjors): implicit creation
     auto& texture = texture_manager.textures[texture_name];

@@ -58,7 +58,7 @@ int main()
     load_png_texture(texture_manager, "wall_stone_diffuse");
     load_png_texture(texture_manager, "wall_stone_normal");
     load_png_texture(texture_manager, "new_spear_diffuse");
-    load_png_texture(texture_manager, "crosshair");
+    load_alpha_png_texture(texture_manager, "crosshair");
 
     init_sound_system();
     load_sound("chicken.wav");

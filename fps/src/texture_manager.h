@@ -35,8 +35,10 @@ struct Texture_Manager
 
 
 
-void load_tga_texture(Texture_Manager& texture_manager, const std::string& texture_name, bool flip_vertically = true);
-void load_png_texture(Texture_Manager& texture_manager, const std::string& texture_name, bool flip_vertically = true);
+void load_tga_texture(Texture_Manager& texture_manager, const std::string& texture_name);
+void load_png_texture(Texture_Manager& texture_manager, const std::string& texture_name);
+
+void load_alpha_png_texture(Texture_Manager& texture_manager, const std::string& texture_name);
 
 //@FIXME(Sjors): I don't like this (return and do something else.)
 // returns the texture ID

@@ -88,8 +88,8 @@ namespace
 
 
 
-    // old
- 	// float g_player_max_velocity = 15.0f;
+   // old
+  // float g_player_max_velocity = 15.0f;
 
   //   float g_player_ground_movespeed = 0.23f;
   //   float g_player_ground_acceleration = 0.46f;
@@ -177,7 +177,6 @@ namespace
 		{
 			if (grounded)
 			{
-				logr::report("jump\n");
 				input_movement_vector.y += g_player_jump_velocity; 
 				grounded = false;
 				jump_pressed_this_frame = true;
@@ -273,6 +272,7 @@ namespace
 	    front.y = sin(glm::radians(new_camera.pitch));
 	    front.z = sin(glm::radians(new_camera.yaw)) * cos(glm::radians(new_camera.pitch));
 	    new_camera.front = glm::normalize(front);
+	    
 	    // also re-calculate the right and up vector
 	    // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 	    new_camera.right = glm::normalize(glm::cross(new_camera.front, world_up)); 

@@ -515,13 +515,17 @@ namespace
     //@NOTE: NDC is -1,-1 to 1,1. middle is thus 0.0
     void init_hud()
     {
-
+        const float min_x = -0.009f;
+        const float max_x = 0.009f;
+        const float min_y = -0.016f;
+        const float max_y = 0.016f;
+        // 16:9
         float vertices[] = {
             // positions        // texture Coords
-            -0.05f,  0.05f, 0.0f, 0.0f, 1.0f,
-            -0.05f, -0.05f, 0.0f, 0.0f, 0.0f,
-             0.05f,  0.05f, 0.0f, 1.0f, 1.0f,
-             0.05f, -0.05f, 0.0f, 1.0f, 0.0f,
+            min_x, max_y, 0.0f, 0.0f, 1.0f,
+            min_x, min_y, 0.0f, 0.0f, 0.0f,
+            max_x, max_y, 0.0f, 1.0f, 1.0f,
+            max_x, min_y, 0.0f, 1.0f, 0.0f,
         };
         // setup screen plane VAO
         glGenVertexArrays(1, &g_hud_vao);
@@ -1021,11 +1025,16 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
     // step 4: render HUD
     {   
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
         const auto& crosshair_texture =  get_texture(*texture_manager, "crosshair");
         set_shader(*shader_manager, "screen_space");
         set_uniform(*shader_manager, "hud_texture", crosshair_texture.gl_texture_frame);
 
         render_hud();
+
+        glDisable(GL_BLEND);
     }
 
 
