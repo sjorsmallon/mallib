@@ -45,7 +45,8 @@ int main()
     load_shader(shader_manager, "screen_space");
 
     auto asset_manager = Asset_Manager();
-    load_obj(asset_manager, "new_spear");
+    bool should_unitize = true;
+    load_obj(asset_manager, "new_spear", should_unitize);
 
     auto texture_manager = Texture_Manager();
     load_png_texture(texture_manager, "metal");
@@ -62,6 +63,7 @@ int main()
 
     init_sound_system();
     load_sound("chicken.wav");
+    load_sound("plop.wav");
 
     //@Fixme(Sjors): create a render manager?
     init_renderer(shader_manager, texture_manager, asset_manager, window_width, window_height);
@@ -94,22 +96,21 @@ int main()
 
         // some time calculation.
         end = std::chrono::system_clock::now();
-        double delta = static_cast<std::chrono::duration<double>>(end - start).count();
-        frame_time_ring_buffer[current_idx % buffer_size] = delta;
-        render_time_ring_buffer[current_idx % buffer_size] = Timed_Function::get_duration("render");
+        const double delta = static_cast<std::chrono::duration<double>>(end - start).count();
+        const auto buffer_idx = current_idx % buffer_size;
+        frame_time_ring_buffer[buffer_idx] = delta;
+        render_time_ring_buffer[buffer_idx] = Timed_Function::get_duration("render");
         current_idx += 1;
     
         if (current_idx % buffer_size == 0) 
         {
-            double frame_average =  std::accumulate(frame_time_ring_buffer.begin(), frame_time_ring_buffer.end(), 0.0) / static_cast<double>(buffer_size);
-            double render_average = std::accumulate(render_time_ring_buffer.begin(), render_time_ring_buffer.end(), 0.0) / static_cast<double>(buffer_size);
-           Timed_Function::timed_functions["fps"].duration = 1.0 / frame_average;
-           Timed_Function::timed_functions["average_frame_time"].duration = frame_average;
-           Timed_Function::timed_functions["render_time"].duration = render_average;
+            const double frame_average =  std::accumulate(frame_time_ring_buffer.begin(), frame_time_ring_buffer.end(), 0.0) / static_cast<double>(buffer_size);
+            const double render_average = std::accumulate(render_time_ring_buffer.begin(), render_time_ring_buffer.end(), 0.0) / static_cast<double>(buffer_size);
 
-
+            Timed_Function::timed_functions["fps"].duration = 1.0 / frame_average;
+            Timed_Function::timed_functions["average_frame_time"].duration = frame_average;
+            Timed_Function::timed_functions["render_time"].duration = render_average;
         }
-
     }
 
     //@todo: delete glfw?

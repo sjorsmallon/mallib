@@ -3,15 +3,32 @@
 
 #include <tinyobj/tiny_obj_loader.h>
 #include <string>
+#include <glm/vec3.hpp>
+
+//@FIXME(Sjors): proper float min/ max
+#include <limits>
+constexpr const float MIN_FLOAT = std::numeric_limits<float>::min();
+constexpr const float MAX_FLOAT = std::numeric_limits<float>::max();
+
+struct Box_3D
+{
+	glm::vec3 min{MAX_FLOAT, MAX_FLOAT, MAX_FLOAT};
+	glm::vec3 max{MIN_FLOAT, MIN_FLOAT, MIN_FLOAT};
+};
 
 struct obj_t
 {
+	// tiny obj things
 	tinyobj::attrib_t attributes;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 	std::string warn;
 	std::string err;
+	// 
 	std::vector<float> interleaved_XNU;
+	// for meshes
+	bool unitized = false;
+	Box_3D bounds;
 };
 
 struct Asset_Manager
@@ -20,7 +37,7 @@ struct Asset_Manager
 };
 
 
-void load_obj(Asset_Manager& asset_manager, const std::string& obj_name);
+void load_obj(Asset_Manager& asset_manager, const std::string& obj_name, bool should_unitize = false);
 
 
 #endif

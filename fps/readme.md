@@ -13,6 +13,7 @@
 - toon shader (2) (10-11-2020)
 
 ## untimed
+- add pbr
 - make logr console a ring buffer
 - add draw_3d api, think about how to scope the buffers 
 - add draw_2d api, think about how to scope the buffers
@@ -66,10 +67,17 @@ cd builddir
 ninja
 
 # DONE
+- added 3d sound
+- added attenuation
+- added sound (SoLoud)
+- create crosshair texture
+- create GUI view buffer
+- add transparent PNG export
+- crash if gl_texture_frame high watermark is reached
 - create texture in blender
 - create viewmodel weapon in blender
 - add viewmodel weapon
-- change shader extensions to canonical opengl (.vert, .frag, .tesc, tese, .comp) (1) (10-11-2020)
+- change shader extensions to canonical glsl names (.vert, .frag, .tesc, tese, .comp) (1) (10-11-2020)
 - add gravity to movement simulation (2) (10-11-2020)
 - make `timed_function(function_name)` (2) (10-11-2020)
 - pass dt factor instead of actual dt to `update` functions. (1) (10-11-2020)

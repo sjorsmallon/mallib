@@ -12,13 +12,14 @@ namespace
 }
 
 
-void load_obj(Asset_Manager& asset_manager, const std::string& obj_name)
+void load_obj(Asset_Manager& asset_manager, const std::string& obj_name, bool should_unitize)
 {
 
 	const std::string obj_folder_prefix = "../assets/obj/";
 	const std::string model_path = obj_folder_prefix + obj_name + g_obj_extension_suffix;
 	//@FIXME(Sjors): implicit creation.
 	auto& object = asset_manager.meshes[obj_name];
+    object.unitized = should_unitize;
 
     if (!tinyobj::LoadObj(&object.attributes, &object.shapes, &object.materials, &object.warn, &object.err, model_path.c_str()))
     {
@@ -57,6 +58,13 @@ void load_obj(Asset_Manager& asset_manager, const std::string& obj_name)
                     object.interleaved_XNU.push_back(nz);
                     object.interleaved_XNU.push_back(tx);
                     object.interleaved_XNU.push_back(ty);
+
+                    if (vx > object.bounds.max.x) object.bounds.max.x = vx;
+                    if (vy > object.bounds.max.y) object.bounds.max.y = vy;
+                    if (vz > object.bounds.max.z) object.bounds.max.z = vz;
+                    if (vx < object.bounds.min.x) object.bounds.min.x = vx;
+                    if (vx < object.bounds.min.y) object.bounds.min.y = vy;
+                    if (vx < object.bounds.min.z) object.bounds.min.z = vz;
                     // Optional: vertex colors
                     // tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
                     // tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
@@ -68,5 +76,23 @@ void load_obj(Asset_Manager& asset_manager, const std::string& obj_name)
                 // object.shapes[shape_idx].mesh.material_ids[face_idx];
             }
         }
+
+        if (object.unitized)
+        {
+            for (size_t idx = 0; idx != object.interleaved_XNU.size(); idx += 8)
+            {
+                const size_t x_idx = idx;
+                const size_t y_idx = idx + 1;
+                const size_t z_idx = idx + 2;
+
+                object.interleaved_XNU[x_idx] = (object.interleaved_XNU[x_idx] - object.bounds.min.x) / (object.bounds.max.x - object.bounds.min.x);
+                object.interleaved_XNU[y_idx] = (object.interleaved_XNU[y_idx] - object.bounds.min.y) / (object.bounds.max.y - object.bounds.min.y);
+                object.interleaved_XNU[z_idx] = (object.interleaved_XNU[z_idx] - object.bounds.min.z) / (object.bounds.max.z - object.bounds.min.z);
+            }
+
+            object.bounds.min = glm::vec3(0.0f);
+            object.bounds.max = glm::vec3(1.0f);
+        }
+
     }
 }

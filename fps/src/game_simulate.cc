@@ -7,9 +7,8 @@
 #include "input.h"
 #include "log.h"
 #include "entity_system.h"
-
 #include "sound_system.h"
-
+#include "collision_system.h"
 
 // these are the GLFW key presses.
 constexpr const int KEY_SPACE = 32;
@@ -19,6 +18,7 @@ constexpr const int KEY_S = 83;
 constexpr const int KEY_D = 68;
 constexpr const int KEY_P = 80;
 constexpr const int KEY_O = 79;
+constexpr const int KEY_I = 73;
 
 constexpr const float FRAMETIME_120_HZ_IN_S = 0.00833333333f;
 constexpr const float FRAMETIME_IN_S = FRAMETIME_120_HZ_IN_S;
@@ -40,12 +40,10 @@ namespace
 
 	// player entity fields.
    	Player g_player{0, glm::vec3{0.0f,0.0f,3.0f}, glm::vec3{0.0f,0.0f,0.0f}};
-
     // ---------------
 	// cvars
 	// ---------------
     float g_mouse_sensitivity = 0.5f;
-
     float g_camera_velocity = 0.2f;
 
 
@@ -79,26 +77,12 @@ namespace
 	{
 		glm::vec3 position = old_position;
 
-		if (input.keyboard_state[KEY_W])
-		{
-	    	position = position + (front * g_camera_velocity * dt_factor);
-		}
-		if (input.keyboard_state[KEY_S])
-		{
-            position = position - (front * g_camera_velocity * dt_factor);
-		}
-		if (input.keyboard_state[KEY_A])
-		{
-	   		position = position - (right * g_camera_velocity * dt_factor);
-		}
-		if (input.keyboard_state[KEY_D])
-		{
-            position = position + (right * g_camera_velocity * dt_factor);
-		}
-		if (input.keyboard_state[KEY_SPACE])
-		{
-			position = position + (up * g_camera_velocity * dt_factor);
-		}
+		if (input.keyboard_state[KEY_W]) position = position + (front * g_camera_velocity * dt_factor);
+		if (input.keyboard_state[KEY_S]) position = position - (front * g_camera_velocity * dt_factor);
+		if (input.keyboard_state[KEY_A]) position = position - (right * g_camera_velocity * dt_factor);
+		if (input.keyboard_state[KEY_D]) position = position + (right * g_camera_velocity * dt_factor);
+
+		if (input.keyboard_state[KEY_SPACE]) position = position + (up * g_camera_velocity * dt_factor);
 
 		return position;
 	}
@@ -118,52 +102,41 @@ namespace
 		static bool grounded = true;
 		bool jump_pressed_this_frame = false;
 
-		glm::vec3 world_up(0.0f, 1.0f, 0.0f);
-		glm::vec3 input_movement_vector = glm::vec3(0.0f);
-		glm::vec3 front_without_height = glm::vec3(front.x, 0.0f, front.z);
+		const glm::vec3 world_up(0.0f, 1.0f, 0.0f);
+		const glm::vec3 front_without_height = glm::vec3(front.x, 0.0f, front.z);
 
-		if (input.keyboard_state[KEY_W])
-		{
-			input_movement_vector += front_without_height;
-		}
-		if (input.keyboard_state[KEY_S])
-		{
-			input_movement_vector -= front_without_height;
-		}
-		if (input.keyboard_state[KEY_A])
-		{
-			input_movement_vector -= right;
-		}
-		if (input.keyboard_state[KEY_D])
-		{
-			input_movement_vector += right;
-		}
+
+		glm::vec3 input_vector = glm::vec3(0.0f);
+		if (input.keyboard_state[KEY_W]) input_vector += front_without_height;
+		if (input.keyboard_state[KEY_S]) input_vector -= front_without_height;
+		if (input.keyboard_state[KEY_A]) input_vector -= right;
+		if (input.keyboard_state[KEY_D]) input_vector += right;
 		if (input.keyboard_state[KEY_SPACE])
 		{
 			if (grounded)
 			{
-				input_movement_vector.y += g_player_jump_velocity; 
+				input_vector.y += g_player_jump_velocity; 
 				grounded = false;
 				jump_pressed_this_frame = true;
 			}
 		}
+
 		// ground control (to major tom)
-		glm::vec3 input_ground_movement_vector = glm::vec3(input_movement_vector.x, 0.0f, input_movement_vector.z);
-    	float     input_ground_target_velocity = g_player_ground_movespeed * dt_factor;
+		glm::vec3 input_ground_vector = glm::vec3(input_vector.x, 0.0f, input_vector.z);
+    	float     input_ground_velocity = g_player_ground_movespeed * dt_factor;
+    	input_ground_vector = input_ground_vector * input_ground_velocity;
 
-    	input_ground_movement_vector = input_ground_movement_vector * input_ground_target_velocity;
+		glm::vec3 old_ground_vector =   glm::vec3(old_movement_vector.x, 0.0f, old_movement_vector.z);
+		float old_ground_vector_velocity = glm::length(old_ground_vector);
 
-		glm::vec3 old_ground_movement_vector =   glm::vec3(old_movement_vector.x, 0.0f, old_movement_vector.z);
-		float     old_ground_movement_vector_velocity = glm::length(old_ground_movement_vector);
+    	glm::vec3 ground_vector = old_ground_vector + input_ground_vector;
+		float ground_velocity = glm::length(ground_vector);
+    	
 
-    	glm::vec3 ground_movement_vector = old_ground_movement_vector + input_ground_movement_vector;
-
-		float ground_velocity = glm::length(ground_movement_vector);
     	glm::vec3 movement_vector(0.0f);
-
-    	movement_vector.x = ground_movement_vector.x;
+    	movement_vector.x = ground_vector.x;
     	movement_vector.y = 0.0f;
-    	movement_vector.z = ground_movement_vector.z;
+    	movement_vector.z = ground_vector.z;
 
 		// Do not apply friction if the player is queueing up the next jump
 		if(!jump_pressed_this_frame)
@@ -173,7 +146,6 @@ namespace
 			//@FIXME(Sjors): Only if the player is on the ground then apply friction
 			// if (grounded)
 			// {
-				// logr::report("high speed, low drag\n");
 				float control = (ground_velocity < g_player_ground_acceleration) ? g_player_ground_deceleration : ground_velocity;
 				drop = control * g_player_friction * dt_factor;
 			// } 
@@ -182,19 +154,18 @@ namespace
 			if(drop_adjusted_velocity < 0.0f) drop_adjusted_velocity = 0.0f;
 			
 			if(ground_velocity > 0.0f) drop_adjusted_velocity /= ground_velocity;
-			movement_vector = ground_movement_vector * drop_adjusted_velocity;
+			movement_vector = ground_vector * drop_adjusted_velocity;
 		}
 		
 		if (old_movement_vector.y != 0.0f)  movement_vector.y = old_movement_vector.y;
-		if (input_movement_vector.y > 0.0f) movement_vector.y = input_movement_vector.y;
+		if (input_vector.y > 0.0f) movement_vector.y = input_vector.y;
 
 		//@FIXME(Sjors): do air movement here.
 
 		// @FIXME(Sjors): only apply gravity when IN the air.
 		if (old_position.y > 0.0f) movement_vector.y -= g_player_gravity * 0.008f * dt_factor;
 
-
-
+	
 		glm::vec3 position = old_position + movement_vector;
 
 		// clip the movement vector.
@@ -269,16 +240,17 @@ namespace
 // update and render world
 void game_simulate(const double dt, Game_State& game_state, const Input& input, Particle_Cache& particle_cache)
 {
-	float clamped_dt = dt;
-	
+	float clamped_dt = dt;	
 	if (clamped_dt < FRAMETIME_1000_FPS) clamped_dt = FRAMETIME_1000_FPS; // 1000 fps: upper bound
 	if (clamped_dt > FRAMETIME_10_FPS) clamped_dt = FRAMETIME_10_FPS;  // 10 fps: lower bound
-
-
-	if (input.keyboard_state[KEY_P]) game_state.game_mode = GM_GAME;
-	if (input.keyboard_state[KEY_O]) game_state.game_mode = GM_EDITOR;
-
-	const float dt_factor = clamped_dt / FRAMETIME_IN_S;
+ 	const float dt_factor = clamped_dt / FRAMETIME_IN_S;
+	
+	// process higher level input
+	{
+		if (input.keyboard_state[KEY_P]) game_state.game_mode = GM_GAME;
+		if (input.keyboard_state[KEY_O]) game_state.game_mode = GM_EDITOR;
+		if (input.keyboard_state[KEY_I]) game_state.paused = 1 - game_state.paused; // toggle;
+	}
 
 	// are we paused?
 	if (game_state.paused)
@@ -292,44 +264,37 @@ void game_simulate(const double dt, Game_State& game_state, const Input& input, 
 		{
 			// update player and camera.
 			{
-			update_player_entity(input);
-			game_state.camera = update_camera_entity(input, game_state.camera, dt_factor);
-			g_player.position = game_state.camera.position;
+				update_player_entity(input);
+				game_state.camera = update_camera_entity(input, game_state.camera, dt_factor);
+				g_player.position = game_state.camera.position;
 			}
-			// update viewable ...
-
 			// at this point, we can start rendering static geometry.
+			// collision_check()
 
 			// update sound system
 			{
-				update_listener(g_player.position.x,
-				g_player.position.y,
-				g_player.position.z,
-				game_state.camera.front.x,
-				game_state.camera.front.y,
-				game_state.camera.front.z,
-				game_state.camera.up.x,
-				game_state.camera.up.y,
-				game_state.camera.up.z,
-				game_state.camera.movement_vector.x,
-				game_state.camera.movement_vector.y,
-				game_state.camera.movement_vector.z
+				update_listener(
+					g_player.position.x,
+					g_player.position.y,
+					g_player.position.z,
+					game_state.camera.front.x,
+					game_state.camera.front.y,
+					game_state.camera.front.z,
+					game_state.camera.up.x,
+					game_state.camera.up.y,
+					game_state.camera.up.z,
+					game_state.camera.movement_vector.x,
+					game_state.camera.movement_vector.y,
+					game_state.camera.movement_vector.z
 				);
 			
-				if (input.mouse_left) play_sound_3d("chicken");
+				if (input.mouse_right) play_sound_3d("chicken");
+				if (input.mouse_left) play_sound("plop.wav");
 			}
-
-			
-
-
 		}
+
+
 	}
-
-	// BEGIN_SIMULATION
-	// execute brains (update and render entities());
-
-
-	// update and render particle systems();
 
 
 }
