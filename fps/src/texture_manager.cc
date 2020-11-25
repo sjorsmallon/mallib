@@ -180,6 +180,7 @@ void load_png_texture(Texture_Manager& texture_manager, const std::string& textu
 
 int32_t get_next_free_texture_frame(Texture_Manager& manager)
 {
+    assert(manager.next_free_texture_frame < 32);
 	int32_t to_return = manager.next_free_texture_frame;
 	manager.next_free_texture_frame += 1;
 	return to_return;

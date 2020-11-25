@@ -67,41 +67,6 @@ namespace
     float g_player_side_strafe_speed = 0.0033f;
 
 
-
-    // 25-11-2020
-    // player movement (120 hz baseline tickrate).
-  	// float g_player_gravity = 0.6667f;
-   //  float g_player_friction = 0.2f;
-
-   //  float g_player_max_velocity = 7.5f;
-
-   //  float g_player_ground_movespeed = 0.115f;
-   //  float g_player_ground_acceleration = 0.23f;
-   //  float g_player_ground_deceleration= 0.165f;
-   //  float g_player_jump_velocity = 0.133f;
-
-   //  float g_player_air_acceleration = 0.033f;
-   //  float g_player_air_deceleration = 0.033f;
-   //  float g_player_air_control = 0.01f;
-   //  float g_player_side_strafe_acceleration = 1.6667f;
-   //  float g_player_side_strafe_speed = 0.0033f;
-
-
-
-   // old
-  // float g_player_max_velocity = 15.0f;
-
-  //   float g_player_ground_movespeed = 0.23f;
-  //   float g_player_ground_acceleration = 0.46f;
-  //   float g_player_ground_deceleration= 0.33f;
-
-  //   float g_player_air_acceleration = 0.066f;
-  //   float g_player_air_deceleration = 0.066f;
-  //   float g_player_air_control = 0.01f;
-  //   float g_player_jump_velocity = 0.266f;
-  //   float g_player_side_strafe_acceleration = 1.6667f;
-  //   float g_player_side_strafe_speed = 0.0033f;
-
     // @dependencies:
     // g_camera_velocity
 	glm::vec3 update_flying_camera_with_input(

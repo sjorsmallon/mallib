@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/transform.hpp> 
 
 #include <set>
 
@@ -18,6 +19,8 @@
 constexpr const int NUM_LIGHTS = 32;
 constexpr const unsigned int SHADOW_FB_WIDTH = 1024;
 constexpr const unsigned int SHADOW_FB_HEIGHT = 1024;
+constexpr const float M_PI = 3.1415926535897f;
+
 
 namespace
 {
@@ -811,7 +814,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         set_shader(*shader_manager, "deferred_geometry");
         set_uniform(*shader_manager, "projection", projection);
       
-        #define M_PI 3.1415926535897f
         // 1.a:  render static geometry in the scene.
         // ---------------------------------------
         {
@@ -853,43 +855,70 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 render_floor();
             }
 
-            // render walls
-            // {
-            //     timed_function("render_walls");
+           // render walls
+            {
+                timed_function("render_walls");
 
-            //     set_shader(*shader_manager, "deferred_instanced");
-            //     set_uniform(*shader_manager, "view", view);
+                set_shader(*shader_manager, "deferred_instanced");
+                set_uniform(*shader_manager, "view", view);
 
-            //     // update matrix of the wall.
-            //     {
-            //         auto& model_matrix_0 = g_wall_model_matrices[0];
-            //         auto& mvp_matrix_0 = g_wall_mvp_matrices[0];
-            //         model_matrix_0 = glm::mat4(1.0f);
-            //         model_matrix_0 = glm::translate(model_matrix_0, glm::vec3(2.0f, 0.0f, 0.0f));
-            //         model_matrix_0 = glm::scale(model_matrix_0, glm::vec3(100.0f));
-            //         mvp_matrix_0 = projection * view * model_matrix_0;  
-            //     }
+                // update matrix of the walls.
+                {
+                    auto& model_matrix_0 = g_wall_model_matrices[0];
+                    auto& mvp_matrix_0 = g_wall_mvp_matrices[0];
+                    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
+                    glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(1024.0f, 0.0f, 0.0f));
+                    glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), -0.5f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
+                    model_matrix_0 = translate * rotate * scale;
+                    mvp_matrix_0 = projection * view * model_matrix_0;  
 
-            //     glNamedBufferData(g_wall_model_vbo, sizeof(glm::mat4) * g_wall_model_matrices.size(), g_wall_model_matrices.data(), GL_DYNAMIC_DRAW);
-            //     glNamedBufferData(g_wall_mvp_vbo,   sizeof(glm::mat4) * g_wall_mvp_matrices.size(),   g_wall_mvp_matrices.data(), GL_DYNAMIC_DRAW);
+                    auto& model_matrix_1 = g_wall_model_matrices[1];
+                    auto& mvp_matrix_1 = g_wall_mvp_matrices[1];
+                    scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
+                    translate = glm::translate(glm::mat4(1.0f), glm::vec3(-1024.0f, 0.0f, 0.0f));
+                    rotate = glm::rotate(glm::mat4(1.0f), 0.5f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
+                    model_matrix_1 = translate * rotate * scale;
+                    mvp_matrix_1 = projection * view * model_matrix_1;  
 
-            //     auto& wall_stone_diffuse_texture  = texture_manager->textures["wall_stone_diffuse"];
-            //     auto& wall_stone_specular_texture = texture_manager->textures["wall_stone_specular"];
-            //     auto& wall_stone_normal_texture   = texture_manager->textures["wall_stone_normal"];
+                    auto& model_matrix_2 = g_wall_model_matrices[2];
+                    auto& mvp_matrix_2 = g_wall_mvp_matrices[2];
+                    scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
+                    translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1024.0f));
+                    rotate = glm::rotate(glm::mat4(1.0f), 0.0f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
+                    model_matrix_2 = translate * rotate * scale;
+                    mvp_matrix_2 = projection * view * model_matrix_2;  
 
-            //     // set_uniform(*shader_manager, "texture_diffuse", wall_stone_diffuse_texture.gl_texture_frame);
-            //     set_uniform(*shader_manager, "texture_diffuse",  wall_stone_diffuse_texture.gl_texture_frame);
-            //     set_uniform(*shader_manager, "texture_specular", wall_stone_specular_texture.gl_texture_frame);
+                    auto& model_matrix_3 = g_wall_model_matrices[3];
+                    auto& mvp_matrix_3 = g_wall_mvp_matrices[3];
+                    scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
+                    translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1024.0f));
+                    rotate = glm::rotate(glm::mat4(1.0f), -1.0f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
+                    model_matrix_3 = translate * rotate * scale;
+                    mvp_matrix_3 = projection * view * model_matrix_3;  
 
 
-            //     glBindVertexArray(g_wall_vao);
-            //     glDrawArraysInstanced(
-            //         GL_TRIANGLES,
-            //         0,
-            //         6,
-            //         g_wall_model_matrices.size());
-            //     glBindVertexArray(0);
-            // }
+                }
+
+                glNamedBufferData(g_wall_model_vbo, sizeof(glm::mat4) * g_wall_model_matrices.size(), g_wall_model_matrices.data(), GL_DYNAMIC_DRAW);
+                glNamedBufferData(g_wall_mvp_vbo,   sizeof(glm::mat4) * g_wall_mvp_matrices.size(),   g_wall_mvp_matrices.data(), GL_DYNAMIC_DRAW);
+
+                auto& wall_stone_diffuse_texture  = get_texture(*texture_manager, "wall_stone_diffuse");
+                auto& wall_stone_specular_texture = get_texture(*texture_manager, "wall_stone_specular");
+                auto& wall_stone_normal_texture   = get_texture(*texture_manager, "wall_stone_normal");
+
+                // set_uniform(*shader_manager, "texture_diffuse", wall_stone_diffuse_texture.gl_texture_frame);
+                set_uniform(*shader_manager, "texture_diffuse",  wall_stone_diffuse_texture.gl_texture_frame);
+                set_uniform(*shader_manager, "texture_specular", wall_stone_specular_texture.gl_texture_frame);
+
+
+                glBindVertexArray(g_wall_vao);
+                glDrawArraysInstanced(
+                    GL_TRIANGLES,
+                    0,
+                    6,
+                    g_wall_model_matrices.size());
+                glBindVertexArray(0);
+            }
 
 
         }
