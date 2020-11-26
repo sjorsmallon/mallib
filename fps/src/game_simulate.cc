@@ -39,31 +39,14 @@ namespace
 	};
 
 	// player entity fields.
-   	Player g_player{0, glm::vec3{0.0f,0.0f,3.0f}, glm::vec3{0.0f,0.0f,0.0f}};
+   	Player g_player_entity{0, glm::vec3{0.0f,0.0f,3.0f}, glm::vec3{0.0f,0.0f,0.0f}};
     // ---------------
 	// cvars
 	// ---------------
     float g_mouse_sensitivity = 0.5f;
     float g_camera_velocity = 0.2f;
 
-
-    //@NOTE(Sjors): before i discovered the dt bug. oops!
- 	// float g_player_gravity = 0.6667f;
-	  //   float g_player_friction = 0.2f;
-
-	  //   float g_player_max_velocity = 7.5f;
-
-	  //   float g_player_ground_movespeed = 0.08625f;
-	  //   float g_player_ground_acceleration = 0.1725f;
-	  //   float g_player_ground_deceleration= 0.12375f;
-	  //   float g_player_jump_velocity = 0.133f;
-
-	  //   float g_player_air_acceleration = 0.033f;
-	  //   float g_player_air_deceleration = 0.033f;
-	  //   float g_player_air_control = 0.01f;
-	  //   float g_player_side_strafe_acceleration = 1.6667f;
-	  //   float g_player_side_strafe_speed = 0.0033f;
-
+    float g_dodecahedron_velocity = 1.25f;
 
  	float g_player_gravity = 0.3335f;
     float g_player_friction = 0.1f;
@@ -80,29 +63,6 @@ namespace
     float g_player_air_control = 0.01f;
     float g_player_side_strafe_acceleration = 1.6667f;
     float g_player_side_strafe_speed = 0.0033f;
-
-
-    // @dependencies:
-    // g_camera_velocity
-	glm::vec3 update_flying_camera_with_input(
-		const Input& input,
-		const glm::vec3 old_position,
-		const glm::vec3 front,
-		const glm::vec3 right,
-		const glm::vec3 up,
-		const float dt_factor)
-	{
-		glm::vec3 position = old_position;
-
-		if (input.keyboard_state[KEY_W]) position = position + (front * g_camera_velocity * dt_factor);
-		if (input.keyboard_state[KEY_S]) position = position - (front * g_camera_velocity * dt_factor);
-		if (input.keyboard_state[KEY_A]) position = position - (right * g_camera_velocity * dt_factor);
-		if (input.keyboard_state[KEY_D]) position = position + (right * g_camera_velocity * dt_factor);
-
-		if (input.keyboard_state[KEY_SPACE]) position = position + (up * g_camera_velocity * dt_factor);
-
-		return position;
-	}
 
     //@Dependencies:
     // g_player_movespeed
@@ -190,9 +150,29 @@ namespace
 			position.y = 0.0f;
 			movement_vector.y = 0.0f;
 		}
-
-		
 		return std::make_tuple(position, movement_vector);
+	}
+
+    // @dependencies:
+    // g_camera_velocity
+	glm::vec3 update_flying_camera_with_input(
+		const Input& input,
+		const glm::vec3 old_position,
+		const glm::vec3 front,
+		const glm::vec3 right,
+		const glm::vec3 up,
+		const float dt_factor)
+	{
+		glm::vec3 position = old_position;
+
+		if (input.keyboard_state[KEY_W]) position = position + (front * g_camera_velocity * dt_factor);
+		if (input.keyboard_state[KEY_S]) position = position - (front * g_camera_velocity * dt_factor);
+		if (input.keyboard_state[KEY_A]) position = position - (right * g_camera_velocity * dt_factor);
+		if (input.keyboard_state[KEY_D]) position = position + (right * g_camera_velocity * dt_factor);
+
+		if (input.keyboard_state[KEY_SPACE]) position = position + (up * g_camera_velocity * dt_factor);
+
+		return position;
 	}
 
 	// processes input received from a mouse input system.
@@ -232,28 +212,55 @@ namespace
 	    return new_camera;
 	}
 
-	void update_player_entity(const Input& input)
-	{
-		auto& player = g_player;
-	}
-
-	Camera update_camera_entity(const Input& input, const Camera old_camera, const float dt)
+	Camera update_camera_entity(const Input& input, const Camera old_camera, const float dt_factor)
 	{
 		Camera camera = old_camera;
-		auto [position, movement_vector] = update_position_with_input(input, old_camera.position, old_camera.movement_vector, old_camera.front, old_camera.right, dt); 
+		auto [position, movement_vector] = update_position_with_input(input, old_camera.position, old_camera.movement_vector, old_camera.front, old_camera.right, dt_factor); 
 		camera.position = position;
 		camera.movement_vector = movement_vector;
 
 		if (input.mouse_delta_x || input.mouse_delta_x)
-			return update_camera_view_with_input(input, camera, dt);
+			return update_camera_view_with_input(input, camera, dt_factor);
 
 		return camera;
 	}
+
+	void update_player_entity(const Input& input)
+	{
+		auto& player = g_player_entity;
+	}
+
+
+	void update_flying_units(Entity_Manager& entity_manager, const float dt_factor)
+	{
+		auto& player = g_player_entity;
+
+		// separation: steer to avoid crowding local flockmates
+		// alignment: steer towards the average heading of local flockmates
+		// cohesion: steer to move towards the average position (center of mass) of local flockmates
+		// wat we nu gaan doen, kost heel veel tijd.
+		auto dodecahedrons = by_type(entity_manager, Entity_Type::Cube);
+
+		for (auto* entity_ptr: dodecahedrons)
+		{
+			glm::vec3 direction_vector = glm::normalize(player.position - entity_ptr->position);
+			entity_ptr->position = entity_ptr->position + (direction_vector * g_dodecahedron_velocity * dt_factor);
+		}
+
+
+
+		// separation: steer to avoid crowding local flockmates
+		// alignment: steer towards the average heading of local flockmates
+		// cohesion: steer to move towards the average position (center of mass) of local flockmates
+
+	}
+
+
 }
 
-
+// I can't stress enough that we should absolutely NOT use dt.
 // update and render world
-void game_simulate(const double dt, Game_State& game_state, const Input& input, Particle_Cache& particle_cache)
+void game_simulate(const double dt, Game_State& game_state, const Input& input, Particle_Cache& particle_cache, Entity_Manager& entity_manager)
 {
 	float clamped_dt = dt;	
 	if (clamped_dt < 0.00001) clamped_dt = FRAMETIME_1000_FPS; // 1000 fps: upper bound
@@ -278,21 +285,31 @@ void game_simulate(const double dt, Game_State& game_state, const Input& input, 
 
 		// if game_mode = player_cam:
 		{
+			//@Note(Sjors): it is imperative that the player gets updated first, since that 
+			// is the bottleneck we have to be dealing with in the next frames.
+
 			// update player and camera.
 			{
 				update_player_entity(input);
 				game_state.camera = update_camera_entity(input, game_state.camera, dt_factor);
-				g_player.position = game_state.camera.position;
+				g_player_entity.position = game_state.camera.position;
 			}
+
+			// update dodecahedrons
+			{
+				update_flying_units(entity_manager, dt_factor);
+			}
+
+
 			// at this point, we can start rendering static geometry.
 			// collision_check()
 
 			// update sound system
 			{
 				update_listener(
-					g_player.position.x,
-					g_player.position.y,
-					g_player.position.z,
+					g_player_entity.position.x,
+					g_player_entity.position.y,
+					g_player_entity.position.z,
 					game_state.camera.front.x,
 					game_state.camera.front.y,
 					game_state.camera.front.z,

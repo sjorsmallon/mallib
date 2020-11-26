@@ -89,7 +89,7 @@ int main()
         start(frame_timer);
 
         poll_input(window_manager);
-        game_simulate(frame_dt, game_state, window_manager.input, particle_cache);
+        game_simulate(frame_dt, game_state, window_manager.input, particle_cache, entity_manager);
         game_render(game_state, particle_cache);
 
         if (game_state.game_mode == GM_EDITOR) render_debug_ui(window_manager);

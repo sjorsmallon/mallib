@@ -4,6 +4,7 @@
 #include "fmt/color.h"
 #include <vector>
 #include <string>
+#include <map>
 
 namespace logr
 {
@@ -32,8 +33,17 @@ namespace logr
 		vreport(format, fmt::make_format_args(args...));
 	}
 
-
 	// things we still need to think about
+
+	std::map<std::string, std::string>& once_warnings();
+	void vreport_warning_once(const char* format, fmt::format_args args);
+	template<typename... Args>
+	void report_warning_once(const char* format, const Args& ...args)
+	{
+		vreport_warning_once(format, fmt::make_format_args(args...));
+	}
+
+
 	template <typename... Args>
 	void debug(const char* format, const Args& ...args)
 	{
@@ -80,6 +90,19 @@ inline void logr::vreport(const char* format, fmt::format_args args)
 	fmt::print(fg(fmt::color::white), "[INFO]: ");
 	fmt::vprint(format, args);		
 }
+
+inline void logr::vreport_warning_once(const char* format, fmt::format_args args)
+{
+	if (logr::once_warnings().find(format) == logr::once_warnings().end())
+	{
+		fmt::print(fg(fmt::color::yellow), " [WARNING][ONCE]: ");
+		fmt::vprint(format, args);	
+		logr::once_warnings()[format] = format;
+	}
+	
+}
+
+
 
 // inline void logr::(const char* format, fmt::format_args args)
 // {

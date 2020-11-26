@@ -56,8 +56,9 @@ struct Entity_Manager
 };
 
 
-
 void create_entity(Entity_Manager& entity_manager, Entity_Type type);
+
+std::vector<Entity*> by_type(Entity_Manager& manager, Entity_Type type);  
 
 
 #endif

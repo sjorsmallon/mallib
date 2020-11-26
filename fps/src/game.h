@@ -2,6 +2,7 @@
 #define INCLUDED_GAME_
 #include <cstdint>
 #include "camera.h"
+#include "entity_manager.h"
 
 // forward declaration
 struct Input;
@@ -32,7 +33,7 @@ struct Game_State
 };
 
 
-void game_simulate(const double dt, Game_State& game_state,const Input& input, Particle_Cache& particle_cache);
+void game_simulate(const double dt, Game_State& game_state,const Input& input, Particle_Cache& particle_cache, Entity_Manager& manager);
 void game_render(Game_State& game_state, Particle_Cache& particle_cache);
 
 

@@ -9,15 +9,19 @@ namespace
 	SoLoud::Soloud g_soloud;
 	std::map<std::string, SoLoud::Wav> g_samples;
 	std::map<std::string, int> g_handles;
+	std::map<int, int> g_active_voices;
 
-	int g_handle;
 	const std::string sound_path = "../assets/sound/";
-
 }
 
 void init_sound_system()
 {
 	g_soloud.init(SoLoud::Soloud::ENABLE_VISUALIZATION);
+}
+
+void deinit_sound_sytem()
+{
+	g_soloud.deinit();
 }
 
 void load_sound(const std::string& sound_name)
@@ -29,15 +33,25 @@ void load_sound(const std::string& sound_name)
 	g_soloud.play(sample);
 }
 
-void play_sound(const char* sound_name)
+void play_sound(const char* sound_name,
+		 float volume, // Full volume 
+         float pan,    // Centered
+         bool paused,      // Not paused
+         int aBus)        // Primary bus
 {
-	g_soloud.play(g_samples[std::string(sound_name)]);	
+	const int handle = g_soloud.play(g_samples[sound_name]);	
+	g_active_voices[handle] = handle;
 }
 
-void set_source_attenuation(const char* sound_name)
+void play_sound_safe(const char* sound_name)
 {
+	const int handle = g_soloud.play(g_samples[sound_name]);
+	g_soloud.setProtectVoice(handle, true);
+}
 
-	   
+void stop_sound()
+{
+	g_soloud.stopAll();
 }
 
 void play_sound_3d(const char* sound_name)
@@ -55,8 +69,14 @@ void play_sound_3d(const char* sound_name)
 
 }
 
+void set_source_attenuation(const char* sound_name)
+{
 
-// call this every frame.
+	   
+}
+
+
+//@Every_Frame:
 void update_listener(float pos_x, 
                      float pos_y, 
                      float pos_z, 
@@ -83,8 +103,7 @@ void update_listener(float pos_x,
 	g_soloud.update3dAudio(); // apply change to voices  
 }
 
-
-// call this every frame.
+//@Every_Frame:
 void update_attenuation()
 {
 	int g_handle = g_handles["chicken.wav"];
@@ -94,4 +113,5 @@ void update_attenuation()
                            1.f);    
 	g_soloud.update3dAudio(); // apply change to voices  
 }
+
 

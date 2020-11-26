@@ -14,6 +14,12 @@ std::vector<std::string>& logr::console_log()
 	return console_log;
 }
 
+std::map<std::string, std::string>& logr::once_warnings()
+{
+	static std::map<std::string, std::string> once_warnings;
+
+	return once_warnings;
+}
 
 void logr::clear_frame_log()
 {
