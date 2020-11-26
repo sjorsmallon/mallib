@@ -3,6 +3,7 @@
 #include "shader_manager.h"
 #include "texture_manager.h"
 #include "asset_manager.h"
+#include "entity_manager.h"
 
 #include "render_system.h"
 #include "sound_system.h"
@@ -47,6 +48,7 @@ int main()
     auto asset_manager = Asset_Manager();
     bool should_unitize = true;
     load_obj(asset_manager, "new_spear", should_unitize);
+    load_obj(asset_manager, "dodecahedron");
 
     auto texture_manager = Texture_Manager();
     load_png_texture(texture_manager, "metal");
@@ -59,14 +61,20 @@ int main()
     load_png_texture(texture_manager, "wall_stone_diffuse");
     load_png_texture(texture_manager, "wall_stone_normal");
     load_png_texture(texture_manager, "new_spear_diffuse");
+    load_png_texture(texture_manager, "dodecahedron");
     load_alpha_png_texture(texture_manager, "crosshair");
+
+    auto entity_manager = Entity_Manager();
+    for (size_t idx = 0; idx != 100; ++idx)
+        create_entity(entity_manager, Entity_Type::Cube);
+
 
     init_sound_system();
     load_sound("chicken.wav");
     load_sound("plop.wav");
 
     //@Fixme(Sjors): create a render manager?
-    init_renderer(shader_manager, texture_manager, asset_manager, window_width, window_height);
+    init_renderer(shader_manager, texture_manager, asset_manager, entity_manager, window_width, window_height);
 
     Game_State game_state{};
     Particle_Cache particle_cache{}; // uh, allocating this on the stack is maybe a bad idea.

@@ -14,6 +14,7 @@
 #include "shader_manager.h"
 #include "texture_manager.h"
 #include "asset_manager.h"
+#include "entity_manager.h"
 #include "timed_function.h"
 
 constexpr const int NUM_LIGHTS = 32;
@@ -37,7 +38,7 @@ namespace
     Shader_Manager*   shader_manager;
     Texture_Manager* texture_manager;
     Asset_Manager*  asset_manager;
-
+    Entity_Manager* entity_manager;
 
     // openGL record keeping
 
@@ -83,145 +84,17 @@ namespace
     unsigned int g_debug_geometry_vbo;
     std::vector<float> g_debug_draw_data;
 
+    unsigned int g_dodecahedron_vao;
+    unsigned int g_dodecahedron_vbo;
+    unsigned int g_dodecahedron_model_vbo;
+    unsigned int g_dodecahedron_mvp_vbo;
+    std::vector<glm::mat4> g_dodecahedron_model_matrices(256);
+    std::vector<glm::mat4> g_dodecahedron_mvp_matrices(256);
+
+
     unsigned int g_hud_vao;
     unsigned int g_hud_vbo;
-
-    // @dependencies:
-    // g_debug_draw_buffer
-    // world_up
-    void put_arrow(const glm::vec3 start_in, const glm::vec3 end_in, const glm::vec3 color_in, const float thickness_in = 1.0f)
-    {
-        const glm::vec3 world_up = glm::vec3(0.0f,1.0f,0.0f);
-        // https://math.stackexchange.com/questions/2563909/find-points-on-a-plane
-
-        const glm::vec3 normal = glm::normalize(end_in - start_in);
-        const float distance  = glm::distance(end_in, start_in);
-
-        const glm::vec3 distance_per_axis = end_in - start_in;
-
-        const float epsilon = 0.0001f;
-
-        // plane equation:
-        // (Ax + By + Cz + D = 0)
-        // new point: (x + 1, y, z + u)
-        // new point: (x, y + 1, z + v)
-        // assuming C is not 0:
-        // μ= −A/C 
-        // ν=−B/C
-
-        const float u = -start_in.x / start_in.z;
-        const float v = -start_in.y / start_in.z;
-
-        const glm::vec3 first_point{start_in.x + thickness_in, start_in.y, start_in.z + u};
-        const glm::vec3 second_point{start_in.x, start_in.y + thickness_in, start_in.z + v};
-
-        // glm::vec3 second_axis = glm::normalize(first_point - start_in);
-
-        glm::vec3 second_axis = glm::cross(normal, world_up);
-        glm::vec3 third_axis = glm::cross(normal, second_axis);
-
-        glm::vec3 first_plane_point = start_in + third_axis;
-        glm::vec3 second_plane_point = start_in + second_axis;
-
-
-        // slab
-        // stop at 80% of head
-        const glm::vec3 slab_end = start_in + (0.8f * distance) * normal; 
-        glm::vec3 back_top_left  = start_in + (-0.5f * second_axis) + (0.5f * third_axis);
-        glm::vec3 back_top_right = start_in + (0.5f * second_axis) +  (0.5f * third_axis);
-        glm::vec3 back_bot_left  = start_in + (-0.5f * second_axis) + (-0.5f * third_axis);
-        glm::vec3 back_bot_right = start_in + (0.5f * second_axis) +  (-0.5f * third_axis);
-
-
-        glm::vec3 front_top_left  =  slab_end +  (-0.5f * second_axis) + (0.5f * third_axis);
-        glm::vec3 front_top_right =  slab_end + (0.5f * second_axis) + (0.5f * third_axis);
-        glm::vec3 front_bot_left  =  slab_end + (-0.5f * second_axis) + (-0.5f * third_axis);
-        glm::vec3 front_bot_right =  slab_end + (0.5f * second_axis) + (-0.5f * third_axis);
-
-        // pyramid on top:
-        glm::vec3 head_back_top_left  = slab_end + (-0.8f * second_axis) + (0.8f * third_axis);
-        glm::vec3 head_back_top_right = slab_end + (0.8f * second_axis) + (0.8f * third_axis);
-        glm::vec3 head_back_bot_left  = slab_end + (-0.8f * second_axis) + (-0.8f * third_axis);
-        glm::vec3 head_back_bot_right = slab_end + (0.8f * second_axis) + (-0.8f * third_axis);
-        glm::vec3 head_top = end_in;
-
-
-        std::vector<float> buffer
-        {
-            // back face
-            back_bot_left.x, back_bot_left.y, back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            
-            back_top_right.x, back_top_right.y, back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,         
-            back_bot_right.x, back_bot_right.y, back_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,         
-            back_top_right.x, back_top_right.y, back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,         
-            back_bot_left.x, back_bot_left.y, back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            
-            back_top_left.x, back_top_left.y, back_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            
-            // front face
-            front_bot_left.x, front_bot_left.y, front_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,         
-            front_bot_right.x, front_bot_right.y, front_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,      
-            front_top_right.x, front_top_right.y, front_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,      
-            front_top_right.x, front_top_right.y, front_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,      
-            front_top_left.x, front_top_left.y, front_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,         
-            front_bot_left.x, front_bot_left.y, front_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,         
-            // left
-            front_top_left.x, front_top_left.y, front_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,         
-            back_top_left.x, back_top_left.y, back_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            
-            back_bot_left.x, back_bot_left.y, back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            
-            back_bot_left.x, back_bot_left.y, back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            
-            front_bot_left.x, front_bot_left.y, front_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,         
-            front_top_left.x, front_top_left.y, front_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,         
-            // right
-            front_top_right.x, front_top_right.y, front_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,      
-            front_bot_right.x, front_bot_right.y, front_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,      
-            back_bot_right.x, back_bot_right.y, back_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,         
-            back_bot_right.x, back_bot_right.y, back_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,         
-            back_top_right.x, back_top_right.y, back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,         
-            front_top_right.x, front_top_right.y, front_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,      
-             // bottom
-            front_bot_right.x, front_bot_right.y, front_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,      
-            back_bot_right.x, back_bot_right.y, back_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,         
-            back_bot_left.x, back_bot_left.y, back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            
-            back_bot_left.x, back_bot_left.y, back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            
-            front_bot_left.x, front_bot_left.y, front_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,         
-            front_bot_right.x, front_bot_right.y, front_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,      
-            // top
-            front_top_right.x, front_top_right.y, front_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,      
-            back_top_right.x, back_top_right.y, back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,         
-            back_top_left.x, back_top_left.y, back_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            
-            back_top_left.x, back_top_left.y, back_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            
-            front_top_left.x, front_top_left.y, front_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            
-            front_top_right.x, front_top_right.y, front_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z            
-        };
-
-        std::vector<float> head_buffer{
-            // back face
-            head_back_bot_left.x, head_back_bot_left.y, head_back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,           
-            head_back_top_right.x, head_back_top_right.y, head_back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,        
-            head_back_bot_right.x, head_back_bot_right.y, head_back_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,        
-            head_back_top_right.x, head_back_top_right.y, head_back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,        
-            head_back_bot_left.x, head_back_bot_left.y, head_back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,           
-            head_back_top_left.x, head_back_top_left.y, head_back_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,           
-            // sides of the pyramid: left:
-            head_top.x, head_top.y, head_top.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
-            head_back_top_left.x, head_back_top_left.y, head_back_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,           
-            head_back_bot_left.x, head_back_bot_left.y, head_back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,           
-            // rihgt:
-            head_top.x, head_top.y, head_top.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,            //
-            head_back_top_right.x, head_back_top_right.y, head_back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,        
-            head_back_bot_right.x, head_back_bot_right.y, head_back_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,        
-            // bot:
-            head_top.x, head_top.y, head_top.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,
-            head_back_bot_left.x, head_back_bot_left.y, head_back_bot_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,           
-            head_back_bot_right.x, head_back_bot_right.y, head_back_bot_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,        
-            // top:
-            head_top.x, head_top.y, head_top.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,
-            head_back_top_left.x, head_back_top_left.y, head_back_top_left.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z,  
-            head_back_top_right.x, head_back_top_right.y, head_back_top_right.z, 0.0f, 0.0f, 1.0f, color_in.x, color_in.y,color_in.z
-        };
-      
-        g_debug_draw_data.insert(std::end(g_debug_draw_data), std::begin(buffer), std::end(buffer));
-        g_debug_draw_data.insert(std::end(g_debug_draw_data), std::begin(head_buffer), std::end(head_buffer));
-    };
-
+  
 
     // openGL error callback
     void GLAPIENTRY opengl_message_callback(
@@ -421,6 +294,65 @@ namespace
         glBindFramebuffer(GL_FRAMEBUFFER, 0);  
     }
 
+
+    void init_dodecahedron()
+    {
+        const auto& mesh = get_obj(*asset_manager, "dodecahedron");
+
+        glGenVertexArrays(1, &g_dodecahedron_vao);
+        glGenBuffers(1, &g_dodecahedron_vbo);
+
+        glBindVertexArray(g_dodecahedron_vao);
+        
+        // fill buffer with vertices.
+        glBindBuffer(GL_ARRAY_BUFFER, g_dodecahedron_vbo);
+        glBufferData(GL_ARRAY_BUFFER, mesh.interleaved_XNU.size() * sizeof(float), mesh.interleaved_XNU.data(), GL_STATIC_DRAW);
+        
+        // enable vertex attributes (0: position (xyz), 1: normals (xyz), 2: texture coordinates (uv));
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+        // initialize two buffers for model matrices and mvp matrices for instanced objects.
+        glGenBuffers(1, &g_dodecahedron_model_vbo);
+        glGenBuffers(1, &g_dodecahedron_mvp_vbo);
+
+        //@IC(Sjors): BIND the correct buffer, since glVertexAttribPointer refers directly to the bound GL_ARRAY_BUFFER.
+        glBindBuffer(GL_ARRAY_BUFFER, g_dodecahedron_model_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * g_dodecahedron_model_matrices.size(), g_dodecahedron_model_matrices.data(), GL_DYNAMIC_DRAW);
+
+        // since location 0,1,2 are occupied by position, normal, texture coords, 
+        const uint32_t model_location = 3;
+        const uint32_t mat4_row_count = 4;
+        for (unsigned int location_offset = 0; location_offset != mat4_row_count; ++location_offset)
+        {
+            glEnableVertexAttribArray(model_location + location_offset);
+            glVertexAttribPointer(model_location + location_offset, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * location_offset * 4));
+            glVertexAttribDivisor(model_location + location_offset, 1);
+        }
+        
+        //@IC(Sjors): BIND the correct buffer, since glVertexAttribPointer refers directly to the bound GL_ARRAY_BUFFER.
+        glBindBuffer(GL_ARRAY_BUFFER, g_dodecahedron_mvp_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * g_dodecahedron_mvp_matrices.size(), g_dodecahedron_mvp_matrices.data(), GL_DYNAMIC_DRAW);
+
+        const uint32_t mvp_location = 7;
+        for (unsigned int location_offset = 0; location_offset != mat4_row_count; ++location_offset)
+        {
+
+            glEnableVertexAttribArray(mvp_location + location_offset);
+            glVertexAttribPointer(mvp_location + location_offset, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * location_offset * 4));
+            glVertexAttribDivisor(mvp_location + location_offset, 1);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+
     void init_instanced_wall()
     {
         // front face
@@ -493,7 +425,7 @@ namespace
         glGenBuffers(1, &g_viewmodel_vbo);
         glBindVertexArray(g_viewmodel_vao);
 
-        auto &viewmodel = asset_manager->meshes["new_spear"];
+        auto &viewmodel = get_obj(*asset_manager,"new_spear");
         g_viewmodel_vertex_count = viewmodel.interleaved_XNU.size() / 8;
 
          // fill buffer with vertices.
@@ -688,8 +620,8 @@ namespace
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
 
         // add some arbitrary data to the buffer.
-        put_arrow(glm::vec3(1.0f, 0.5f, -2.0f), glm::vec3(1.0f, 5.0f, -2.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-        put_arrow(glm::vec3(1.0f, 0.5f, -2.0f), glm::vec3(6.0f, 0.5f, -2.0f), glm::vec3(1.0f, 0.0f, 1.0f));
+        // put_arrow(glm::vec3(1.0f, 0.5f, -2.0f), glm::vec3(1.0f, 5.0f, -2.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+        // put_arrow(glm::vec3(1.0f, 0.5f, -2.0f), glm::vec3(6.0f, 0.5f, -2.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) *g_debug_draw_data.size(), g_debug_draw_data.data(), GL_STATIC_DRAW);
 
@@ -702,12 +634,15 @@ void init_renderer(
     Shader_Manager& shader_manager_in, 
     Texture_Manager& texture_manager_in, 
     Asset_Manager& asset_manager_in,
+    Entity_Manager& entity_manager_in,
+
     const int frame_buffer_width, const int frame_buffer_height)
 {
     // initialize globals.
     shader_manager = &shader_manager_in;
     texture_manager = &texture_manager_in;
     asset_manager = &asset_manager_in;
+    entity_manager = &entity_manager_in;
 
     g_window_width  = frame_buffer_width;
     g_window_height = frame_buffer_height;
@@ -722,6 +657,7 @@ void init_renderer(
     init_debug_geometry();
     init_viewmodel();
     init_hud();
+    init_dodecahedron();
 }
 
 //@Temporary
@@ -823,12 +759,11 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 set_uniform(*shader_manager,  "texture_diffuse", spear_texture.gl_texture_frame);
                 set_uniform(*shader_manager, "view", glm::mat4(1.0f));
 
-                glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.07f));
+                glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
                 glm::quat quaternion = glm::quat(0.70f, -0.70f, 0.0f, 0.0f);
                 glm::mat4 rotate = glm::toMat4(quaternion);
-                glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f,-0.5f, -0.7f));
+                glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f,-1.0f, -0.7f));
                 glm::mat4 model = translate * rotate * scale;
-
 
                 set_uniform(*shader_manager, "model", model);
                 render_viewmodel();
@@ -895,8 +830,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                     rotate = glm::rotate(glm::mat4(1.0f), -1.0f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
                     model_matrix_3 = translate * rotate * scale;
                     mvp_matrix_3 = projection * view * model_matrix_3;  
-
-
                 }
 
                 glNamedBufferData(g_wall_model_vbo, sizeof(glm::mat4) * g_wall_model_matrices.size(), g_wall_model_matrices.data(), GL_DYNAMIC_DRAW);
@@ -920,6 +853,45 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 glBindVertexArray(0);
             }
 
+            // render dodecahedrons
+            {
+                timed_function("render_dodecahedron");
+
+                set_shader(*shader_manager, "deferred_instanced");
+                set_uniform(*shader_manager, "view", view);
+
+                for(size_t idx =0; idx != entity_manager->entities.size(); ++idx)
+               {
+                    const auto& entity = entity_manager->entities[idx];
+                    auto& model_matrix = g_dodecahedron_model_matrices[idx];
+                    auto& mvp_matrix = g_dodecahedron_mvp_matrices[idx];
+                    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+                    glm::mat4 translate = glm::translate(glm::mat4(1.0f), entity.position);
+                    glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), -0.5f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
+                    model_matrix = translate * rotate * scale;
+                    mvp_matrix = projection * view * model_matrix;  
+                }
+
+                glNamedBufferData(g_dodecahedron_model_vbo, sizeof(glm::mat4) * g_dodecahedron_model_matrices.size(), g_dodecahedron_model_matrices.data(), GL_DYNAMIC_DRAW);
+                glNamedBufferData(g_dodecahedron_mvp_vbo,   sizeof(glm::mat4) * g_dodecahedron_mvp_matrices.size(),   g_dodecahedron_mvp_matrices.data(), GL_DYNAMIC_DRAW);
+
+                auto& dodecahedron_diffuse_texture  = get_texture(*texture_manager, "dodecahedron");
+                auto& wall_stone_specular_texture = get_texture(*texture_manager, "wall_stone_specular");
+
+                // set_uniform(*shader_manager, "texture_diffuse", wall_stone_diffuse_texture.gl_texture_frame);
+                set_uniform(*shader_manager, "texture_diffuse",  dodecahedron_diffuse_texture.gl_texture_frame);
+                set_uniform(*shader_manager, "texture_specular", wall_stone_specular_texture.gl_texture_frame);
+                
+                size_t mesh_size = get_obj(*asset_manager, "dodecahedron").interleaved_XNU.size() / 8;
+
+                glBindVertexArray(g_dodecahedron_vao);
+                glDrawArraysInstanced(
+                    GL_TRIANGLES,
+                    0,
+                    mesh_size,
+                    g_dodecahedron_model_matrices.size());
+                glBindVertexArray(0);
+            }
 
         }
        

@@ -94,5 +94,14 @@ void load_obj(Asset_Manager& asset_manager, const std::string& obj_name, bool sh
             object.bounds.max = glm::vec3(1.0f);
         }
 
+        logr::report("[load_obj] succesfully loaded {} \n", obj_name);
     }
+}
+
+
+const obj_t& get_obj(Asset_Manager& asset_manager, const std::string& obj_name)
+{
+    assert(asset_manager.meshes.find(obj_name) != asset_manager.meshes.end());
+
+    return asset_manager.meshes[obj_name];
 }

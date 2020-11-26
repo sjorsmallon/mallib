@@ -31,7 +31,6 @@ inc_dir = [inc_dir, soloud_inc_dir]
 
 source_files = [
 	'src/main.cc',
-	'src/entity_system.cc',
 	'src/input.cc',
 	'src/player.cc', 
 	'src/render_system.cc',
@@ -45,7 +44,8 @@ source_files = [
 	'src/task_system.cc',
 	'src/timed_function.cc',
 	'src/logr.cc',
-	'src/sound_system.cc'
+	'src/sound_system.cc',
+	'src/entity_manager.cc',
 
 ]
 

@@ -6,7 +6,7 @@
 #include "camera.h"
 #include "input.h"
 #include "log.h"
-#include "entity_system.h"
+#include "entity_manager.h"
 #include "sound_system.h"
 #include "collision_system.h"
 
@@ -105,7 +105,6 @@ namespace
 		const glm::vec3 world_up(0.0f, 1.0f, 0.0f);
 		const glm::vec3 front_without_height = glm::vec3(front.x, 0.0f, front.z);
 
-
 		glm::vec3 input_vector = glm::vec3(0.0f);
 		if (input.keyboard_state[KEY_W]) input_vector += front_without_height;
 		if (input.keyboard_state[KEY_S]) input_vector -= front_without_height;
@@ -165,7 +164,6 @@ namespace
 		// @FIXME(Sjors): only apply gravity when IN the air.
 		if (old_position.y > 0.0f) movement_vector.y -= g_player_gravity * 0.008f * dt_factor;
 
-	
 		glm::vec3 position = old_position + movement_vector;
 
 		// clip the movement vector.

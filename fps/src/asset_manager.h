@@ -38,6 +38,8 @@ struct Asset_Manager
 
 
 void load_obj(Asset_Manager& asset_manager, const std::string& obj_name, bool should_unitize = false);
+const obj_t& get_obj(Asset_Manager& asset_manager, const std::string& obj_name);
+
 
 
 #endif

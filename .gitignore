@@ -22,4 +22,5 @@ build
 fps/builddir
 fps/release
 fps/buildclang
+fps/static_libraries/bullet
 .vs

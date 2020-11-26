@@ -3,6 +3,7 @@
 #include "shader_manager.h"
 #include "texture_manager.h"
 #include "asset_manager.h"
+#include "entity_manager.h"
 
 // forward declarations
 struct Camera;
@@ -11,6 +12,7 @@ struct Particle_Cache;
 void init_renderer(Shader_Manager& shader_manager, 
 				   Texture_Manager& texture_manager,
 				   Asset_Manager& asset_manager,
+				   Entity_Manager& entity_manager,
 
 				   const int frame_buffer_width,
 				   const int frame_buffer_height);
