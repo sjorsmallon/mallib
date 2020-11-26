@@ -20,8 +20,8 @@ constexpr const int KEY_P = 80;
 constexpr const int KEY_O = 79;
 constexpr const int KEY_I = 73;
 
-constexpr const float FRAMETIME_120_HZ_IN_S = 0.00833333333f;
-constexpr const float FRAMETIME_IN_S = FRAMETIME_120_HZ_IN_S;
+constexpr const float FRAMETIME_120_FPS = 0.00833333333f;
+constexpr const float FRAMETIME_IN_S = FRAMETIME_120_FPS;
 
 constexpr const float FRAMETIME_1000_FPS = 0.001f;
 constexpr const float FRAMETIME_10_FPS = 0.1f;
@@ -47,16 +47,33 @@ namespace
     float g_camera_velocity = 0.2f;
 
 
+    //@NOTE(Sjors): before i discovered the dt bug. oops!
+ 	// float g_player_gravity = 0.6667f;
+	  //   float g_player_friction = 0.2f;
 
- 	float g_player_gravity = 0.6667f;
-    float g_player_friction = 0.2f;
+	  //   float g_player_max_velocity = 7.5f;
 
-    float g_player_max_velocity = 7.5f;
+	  //   float g_player_ground_movespeed = 0.08625f;
+	  //   float g_player_ground_acceleration = 0.1725f;
+	  //   float g_player_ground_deceleration= 0.12375f;
+	  //   float g_player_jump_velocity = 0.133f;
 
-    float g_player_ground_movespeed = 0.08625f;
-    float g_player_ground_acceleration = 0.1725f;
-    float g_player_ground_deceleration= 0.12375f;
-    float g_player_jump_velocity = 0.133f;
+	  //   float g_player_air_acceleration = 0.033f;
+	  //   float g_player_air_deceleration = 0.033f;
+	  //   float g_player_air_control = 0.01f;
+	  //   float g_player_side_strafe_acceleration = 1.6667f;
+	  //   float g_player_side_strafe_speed = 0.0033f;
+
+
+ 	float g_player_gravity = 0.3335f;
+    float g_player_friction = 0.1f;
+
+    float g_player_max_velocity = 3.75f;
+
+    float g_player_ground_movespeed = 0.043125f;
+    float g_player_ground_acceleration = 0.08625f;
+    float g_player_ground_deceleration= 0.06187f;
+    float g_player_jump_velocity = 0.0665f;
 
     float g_player_air_acceleration = 0.033f;
     float g_player_air_deceleration = 0.033f;
@@ -239,10 +256,11 @@ namespace
 void game_simulate(const double dt, Game_State& game_state, const Input& input, Particle_Cache& particle_cache)
 {
 	float clamped_dt = dt;	
-	if (clamped_dt < FRAMETIME_1000_FPS) clamped_dt = FRAMETIME_1000_FPS; // 1000 fps: upper bound
+	if (clamped_dt < 0.00001) clamped_dt = FRAMETIME_1000_FPS; // 1000 fps: upper bound
 	if (clamped_dt > FRAMETIME_10_FPS) clamped_dt = FRAMETIME_10_FPS;  // 10 fps: lower bound
- 	const float dt_factor = clamped_dt / FRAMETIME_IN_S;
-	
+ 
+ 	const float dt_factor =  clamped_dt / FRAMETIME_IN_S;
+
 	// process higher level input
 	{
 		if (input.keyboard_state[KEY_P]) game_state.game_mode = GM_GAME;

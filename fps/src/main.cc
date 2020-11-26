@@ -65,7 +65,7 @@ int main()
     load_alpha_png_texture(texture_manager, "crosshair");
 
     auto entity_manager = Entity_Manager();
-    for (size_t idx = 0; idx != 100; ++idx)
+    for (size_t idx = 0; idx != 255; ++idx)
         create_entity(entity_manager, Entity_Type::Cube);
 
 
@@ -104,9 +104,9 @@ int main()
 
         // some time calculation.
         end = std::chrono::system_clock::now();
-        const double delta = static_cast<std::chrono::duration<double>>(end - start).count();
+        frame_dt = static_cast<std::chrono::duration<double>>(end - start).count();
         const auto buffer_idx = current_idx % buffer_size;
-        frame_time_ring_buffer[buffer_idx] = delta;
+        frame_time_ring_buffer[buffer_idx] = frame_dt;
         render_time_ring_buffer[buffer_idx] = Timed_Function::get_duration("render");
         current_idx += 1;
     
@@ -114,7 +114,7 @@ int main()
         {
             const double frame_average =  std::accumulate(frame_time_ring_buffer.begin(), frame_time_ring_buffer.end(), 0.0) / static_cast<double>(buffer_size);
             const double render_average = std::accumulate(render_time_ring_buffer.begin(), render_time_ring_buffer.end(), 0.0) / static_cast<double>(buffer_size);
-
+            //@FIXME(Sjors): this is a degenerate way to persist this data every frame.
             Timed_Function::timed_functions["fps"].duration = 1.0 / frame_average;
             Timed_Function::timed_functions["average_frame_time"].duration = frame_average;
             Timed_Function::timed_functions["render_time"].duration = render_average;
