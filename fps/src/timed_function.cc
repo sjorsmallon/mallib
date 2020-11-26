@@ -1,3 +1,3 @@
 #include "timed_function.h"
 
-std::map<std::string, Timed_Function_Data> Timed_Function::timed_functions = {};
+std::map<std::string, Timer> Timed_Function::timed_functions = {};

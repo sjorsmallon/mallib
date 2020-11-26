@@ -865,9 +865,9 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                     const auto& entity = entity_manager->entities[idx];
                     auto& model_matrix = g_dodecahedron_model_matrices[idx];
                     auto& mvp_matrix = g_dodecahedron_mvp_matrices[idx];
-                    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
-                    glm::mat4 translate = glm::translate(glm::mat4(1.0f), entity.position);
+                    glm::mat4 scale = glm::mat4(1.0f);
                     glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), -0.5f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
+                    glm::mat4 translate = glm::translate(glm::mat4(1.0f), entity.position);
                     model_matrix = translate * rotate * scale;
                     mvp_matrix = projection * view * model_matrix;  
                 }
