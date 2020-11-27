@@ -13,7 +13,7 @@ using entity_id = uint32_t;
 using generation = uint32_t;
 using Mesh_id = size_t;
 
-enum Entity_Type : uint8_t
+enum Entity_Type : uint32_t
 {
 	None = 0,
 	Player = 1,
@@ -50,15 +50,16 @@ struct Entity_Manager
 {
 	std::atomic<uint32_t> next_entity_id;
 	std::deque<uint32_t> free_ids;
-	std::deque<uint32_t> free_indices;
-	std::vector<Entity> entities;
-
+	std::vector<std::deque<uint32_t>> free_indices = std::vector<std::deque<uint32_t>>(Entity_Type::COUNT);
+	std::vector<std::vector<Entity>> entities =  std::vector<std::vector<Entity>>(Entity_Type::COUNT);
 };
 
 
 void create_entity(Entity_Manager& entity_manager, Entity_Type type);
 
-std::vector<Entity*> by_type(Entity_Manager& manager, Entity_Type type);  
+std::vector<Entity>& by_type(Entity_Manager& entity_manager, Entity_Type type);
+
+// std::vector<Entity*> by_type(Entity_Manager& manager, Entity_Type type);  
 
 
 #endif

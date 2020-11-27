@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"update_",
+				"update_flying_units"
+			],
+			[
 				"g_dodeca",
 				"g_dodecahedron_mvp_matrices"
 			],
@@ -510,46 +514,25 @@
 			[
 				"segm",
 				"segmentApproximatelyEqual"
-			],
-			[
-				"aPPRO",
-				"approximatelyEqual"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
+			"file": "src/sound_system.cc",
+			"settings":
+			{
+				"buffer_size": 2660,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
 			"file": "src/game_simulate.cc",
 			"settings":
 			{
-				"buffer_size": 9429,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/main.cc",
-			"settings":
-			{
-				"buffer_size": 4708,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "meson.build",
-			"settings":
-			{
-				"buffer_size": 1457,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/asset_manager.cc",
-			"settings":
-			{
-				"buffer_size": 4646,
+				"buffer_size": 10725,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -558,43 +541,7 @@
 			"file": "src/render_system.cc",
 			"settings":
 			{
-				"buffer_size": 51951,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/render_system.h",
-			"settings":
-			{
-				"buffer_size": 652,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/draw3d_api.h",
-			"settings":
-			{
-				"buffer_size": 10449,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/entity_manager.h",
-			"settings":
-			{
-				"buffer_size": 1221,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/entity_manager.cc",
-			"settings":
-			{
-				"buffer_size": 1231,
+				"buffer_size": 51962,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -776,27 +723,27 @@
 	},
 	"expanded_folders":
 	[
-		"/C/mallib/mallib/fps/src",
-		"/C/mallib/mallib/fps/assets/shaders",
-		"/C/mallib/mallib/fps/assets/shaders/debug_geometry",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_edges",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_geometry",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_instanced",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_lighting",
-		"/C/mallib/mallib/fps/assets/shaders/screen_space"
 	],
 	"file_history":
 	[
-		"/C/mallib/mallib/fps/src/entity_manager.cc",
 		"/C/mallib/mallib/fps/src/main.cc",
+		"/C/mallib/mallib/fps/src/game_simulate.cc",
+		"/C/mallib/mallib/fps/src/sound_system.h",
+		"/C/mallib/mallib/fps/src/log.h",
+		"/C/mallib/mallib/fps/src/logr.cc",
+		"/C/mallib/mallib/fps/src/entity_manager.cc",
+		"/C/mallib/mallib/fps/src/entity_manager.h",
+		"/C/mallib/mallib/fps/src/game.h",
+		"/C/mallib/mallib/fps/src/timed_function.h",
+		"/C/mallib/mallib/fps/src/timed_function.cc",
+		"/C/mallib/mallib/fps/src/shader_manager.cc",
+		"/C/mallib/mallib/fps/src/asset_manager.cc",
+		"/C/mallib/mallib/fps/src/render_system.cc",
+		"/C/mallib/mallib/fps/src/draw3d_api.h",
+		"/C/mallib/mallib/fps/src/render_system.h",
+		"/C/mallib/mallib/fps/meson.build",
 		"/C/mallib/mallib/fps/src/asset_manager.h",
 		"/C/mallib/mallib/fps/src/input.cc",
-		"/C/mallib/mallib/fps/meson.build",
-		"/C/mallib/mallib/fps/src/entity_manager.h",
-		"/C/mallib/mallib/fps/src/game_simulate.cc",
-		"/C/mallib/mallib/fps/src/render_system.h",
-		"/C/mallib/mallib/fps/src/render_system.cc",
-		"/C/mallib/mallib/fps/src/asset_manager.cc",
 		"/C/mallib/mallib/fps/src/sound_system.cc",
 		"/C/mallib/mallib/fps/src/collision_system.cc",
 		"/C/mallib/bullet3-master/examples/BasicDemo/BasicExample.cpp",
@@ -810,26 +757,20 @@
 		"/C/mallib/mallib/fps/src/texture_manager.cc",
 		"/C/mallib/mallib/fps/assets/shaders/screen_space/screen_space.vert",
 		"/C/mallib/mallib/fps/assets/shaders/screen_space/screen_space.frag",
-		"/C/mallib/mallib/fps/src/sound_system.h",
 		"/C/mallib/mallib/fps/src/window_manager.cc",
 		"/C/mallib/mallib/fps/src/input.h",
-		"/C/mallib/mallib/fps/src/timed_function.h",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_pbr/deferred_pbr.vert",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_pbr/deferred_pbr.frag",
 		"/C/Users/Thesis/Desktop/main.cc",
 		"/C/mallib/mallib/fps/assets/obj/spear.obj",
 		"/C/mallib/mallib/fps/src/particle.h",
-		"/C/mallib/mallib/fps/src/draw3d_api.h",
 		"/C/mallib/mallib/fps/src/entity_system.h",
-		"/C/mallib/mallib/fps/src/shader_manager.cc",
 		"/C/mallib/mallib/fps/src/file.h",
 		"/C/mallib/mallib/fps/meson_extra.build",
 		"/C/mallib/mallib/fps/src/window_manager.h",
 		"/C/Users/Thesis/Desktop/clang_test/fps/meson.build",
 		"/C/mallib/mallib/fps/buildclang/compile_commands.json",
-		"/C/mallib/mallib/fps/src/logr.cc",
 		"/C/mallib/mallib/fps/src/ring_buffer.h",
-		"/C/mallib/mallib/fps/src/log.h",
 		"/C/mallib/mallib/fps/assets/shaders/simple_depth_shadow_mapping/simple_depth_shadow_mapping.vert",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_lighting/deferred_lighting.fs",
 		"/C/mallib/mallib/fps/src/camera.h",
@@ -848,14 +789,12 @@
 		"/C/mallib/mallib/fps/assets/shaders/deferred_debug_geometry/deferred_debug_geometry.fs",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_debug_geometry/deferred_debug_geometry.vs",
 		"/C/mallib/mallib/fps/fps.sublime-project",
-		"/C/mallib/mallib/fps/src/timed_function.cc",
 		"/C/mallib/tinyobjloader-master/build.ninja",
 		"/C/mallib/mallib/fps/src/light.h",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_obra_dinn/deferred_obra_dinn.fs",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_normals/deferred_normals.fs",
 		"/C/mallib/mallib/fps/src/debug_output.plan",
 		"/C/mallib/mallib/fps/src/math.h",
-		"/C/mallib/mallib/fps/src/game.h",
 		"/C/mallib/mallib/fps/src/draw2d_api.plan",
 		"/C/mallib/mallib/fps/src/task_system.cc",
 		"/C/mallib/mallib/fps/tests/task_system.cc",
@@ -933,6 +872,14 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"g_dode",
+			"g_cube_velocity",
+			"*>",
+			"update_camera_entity",
+			"g_player",
+			"volume",
+			"timed_functions",
+			"Timed_Function_Data",
 			"FRAMETIME_120_",
 			"init_dode",
 			"get_obj",
@@ -1052,15 +999,7 @@
 			"marble",
 			"marble_texture",
 			"half_way_direction",
-			"view_direction",
-			"view_position",
-			"view_direction",
-			"view_position",
-			"FRAMETIME_120",
-			"new_movement_vector",
-			"g_projection_z_far_plane",
-			"g_player_movespeed",
-			"max_movespeed"
+			"view_direction"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1082,142 +1021,81 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 1,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "src/game_simulate.cc",
+					"file": "src/sound_system.cc",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 9429,
+						"buffer_size": 2660,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								7859,
-								7859
+								1163,
+								1163
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
+							"syntax": "Packages/C++/C++.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 5475.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "src/main.cc",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4708,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3490,
-								3490
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1950.0,
+						"translation.y": 1275.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
-					"file": "meson.build",
+					"buffer": 1,
+					"file": "src/game_simulate.cc",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1457,
+						"buffer_size": 10725,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								1161,
+								1161
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C#/Build.sublime-syntax",
+							"syntax": "Packages/C++/C++.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1062.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
-					"file": "src/asset_manager.cc",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4646,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3786,
-								3786
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 750.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
+					"buffer": 2,
 					"file": "src/render_system.cc",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 51951,
+						"buffer_size": 51962,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								39735,
-								39735
+								28882,
+								28882
 							]
 						],
 						"settings":
@@ -1227,123 +1105,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 21507.0,
+						"translation.y": 15037.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "src/render_system.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 652,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								305,
-								305
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "src/draw3d_api.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10449,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								10449,
-								10449
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 2278.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "src/entity_manager.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1221,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								343,
-								347
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 525.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 7,
-					"type": "text"
-				},
-				{
-					"buffer": 8,
-					"file": "src/entity_manager.cc",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1231,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1130,
-								1130
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 525.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 8,
+					"stack_index": 2,
 					"type": "text"
 				}
 			]
@@ -1418,12 +1183,44 @@
 		"selected_items":
 		[
 			[
-				"render_",
+				"simu",
+				"src\\game_simulate.cc"
+			],
+			[
+				"render",
 				"src\\render_system.cc"
+			],
+			[
+				"game_simul",
+				"src\\game_simulate.cc"
+			],
+			[
+				"game.h",
+				"src\\game.h"
 			],
 			[
 				"game_",
 				"src\\game_simulate.cc"
+			],
+			[
+				"log",
+				"src\\log.h"
+			],
+			[
+				"logr",
+				"src\\logr.cc"
+			],
+			[
+				"entity",
+				"src\\entity_manager.cc"
+			],
+			[
+				"sound_sm",
+				"src\\sound_system.h"
+			],
+			[
+				"render_",
+				"src\\render_system.cc"
 			],
 			[
 				"rem",
@@ -1462,10 +1259,6 @@
 				"src\\shader_manager.cc"
 			],
 			[
-				"render",
-				"src\\render_system.cc"
-			],
-			[
 				"asset",
 				"src\\asset_manager.cc"
 			],
@@ -1476,10 +1269,6 @@
 			[
 				"232",
 				"subprojects\\glfw-3.3.2\\src\\win32_init.c"
-			],
-			[
-				"log",
-				"C:\\mutil\\util\\Main\\src\\log.h"
 			],
 			[
 				"",
@@ -1627,10 +1416,18 @@
 	},
 	"select_symbol":
 	{
-		"height": 88.0,
-		"last_filter": "init_view",
+		"height": 288.0,
+		"last_filter": "main",
 		"selected_items":
 		[
+			[
+				"main",
+				"main"
+			],
+			[
+				"game_Simu",
+				"game_simulate"
+			],
 			[
 				"init_view",
 				"init_viewmodel"
@@ -1717,8 +1514,8 @@
 	"show_minimap": true,
 	"show_open_files": false,
 	"show_tabs": true,
-	"side_bar_visible": true,
-	"side_bar_width": 354.0,
+	"side_bar_visible": false,
+	"side_bar_width": 230.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

@@ -781,14 +781,14 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
             }
             // render floor
-            {
-                const auto& floor_texture = get_texture(*texture_manager, "floor_64");
-                set_uniform(*shader_manager, "texture_diffuse",  floor_texture.gl_texture_frame);
+            // {
+            //     const auto& floor_texture = get_texture(*texture_manager, "floor_64");
+            //     set_uniform(*shader_manager, "texture_diffuse",  floor_texture.gl_texture_frame);
 
-                glm::mat4 model = glm::mat4(1.0f);
-                set_uniform(*shader_manager, "model", model);
-                render_floor();
-            }
+            //     glm::mat4 model = glm::mat4(1.0f);
+            //     set_uniform(*shader_manager, "model", model);
+            //     render_floor();
+            // }
 
            // render walls
             {
@@ -839,10 +839,8 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 auto& wall_stone_specular_texture = get_texture(*texture_manager, "wall_stone_specular");
                 auto& wall_stone_normal_texture   = get_texture(*texture_manager, "wall_stone_normal");
 
-                // set_uniform(*shader_manager, "texture_diffuse", wall_stone_diffuse_texture.gl_texture_frame);
                 set_uniform(*shader_manager, "texture_diffuse",  wall_stone_diffuse_texture.gl_texture_frame);
                 set_uniform(*shader_manager, "texture_specular", wall_stone_specular_texture.gl_texture_frame);
-
 
                 glBindVertexArray(g_wall_vao);
                 glDrawArraysInstanced(
@@ -859,14 +857,30 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
                 set_shader(*shader_manager, "deferred_instanced");
                 set_uniform(*shader_manager, "view", view);
-
-                for(size_t idx =0; idx != entity_manager->entities.size(); ++idx)
-               {
-                    const auto& entity = entity_manager->entities[idx];
+                
+                auto& dodecahedrons = by_type(*entity_manager, Entity_Type::Cube);
+                
+                for (size_t idx =0; idx !=  dodecahedrons.size(); ++idx)
+                {
+                    auto& entity = dodecahedrons[idx];
+                    
                     glm::mat4& model_matrix = g_dodecahedron_model_matrices[idx];
                     glm::mat4& mvp_matrix = g_dodecahedron_mvp_matrices[idx];
-                    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(10.0f));
-                    glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), -0.5f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
+                    glm::mat4 scale = glm::scale(glm::mat4(1.f), glm::vec3(20.f));
+
+                    glm::mat4 rotate = glm::mat4(1.0f);
+                    glm::vec3 target_ray = glm::normalize(camera.position - entity.position);
+                    glm::vec3 object_ray = glm::vec3(0.f,1.f, 0.f);
+                    float angle_dif = acos(glm::dot(target_ray, object_ray));
+
+                    if (angle_dif != 0)
+                    {
+                        glm::vec3 ortho_ray = glm::cross(object_ray, target_ray);
+                        ortho_ray = glm::normalize(ortho_ray);
+                        glm::quat delta_quaternion= glm::angleAxis(angle_dif, ortho_ray);
+                        rotate = glm::toMat4(delta_quaternion);
+                    }
+
                     glm::mat4 translate = glm::translate(glm::mat4(1.0f), entity.position);
                     model_matrix = translate * rotate * scale;
                     mvp_matrix = projection * view * model_matrix;  
@@ -875,7 +889,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 glNamedBufferData(g_dodecahedron_model_vbo, sizeof(glm::mat4) * g_dodecahedron_model_matrices.size(), g_dodecahedron_model_matrices.data(), GL_DYNAMIC_DRAW);
                 glNamedBufferData(g_dodecahedron_mvp_vbo,   sizeof(glm::mat4) * g_dodecahedron_mvp_matrices.size(),   g_dodecahedron_mvp_matrices.data(), GL_DYNAMIC_DRAW);
 
-                auto& dodecahedron_diffuse_texture  = get_texture(*texture_manager, "dodecahedron");
+                auto& dodecahedron_diffuse_texture  = get_texture(*texture_manager, "angry_face");
                 auto& wall_stone_specular_texture = get_texture(*texture_manager, "wall_stone_specular");
 
                 // set_uniform(*shader_manager, "texture_diffuse", wall_stone_diffuse_texture.gl_texture_frame);
@@ -991,20 +1005,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             set_uniform(*shader_manager, "model", model);
             set_uniform(*shader_manager, "light_color", lights[1].color);
             render_cube();
-
-            // model = glm::mat4(1.0f);
-            // model = glm::translate(model, glm::vec3(lights[2].position));
-            // model = glm::scale(model, glm::vec3(0.125f));
-            // set_uniform(*shader_manager, "model", model);
-            // set_uniform(*shader_manager, "light_color", lights[2].color);
-            // render_cube();
-
-            // model = glm::mat4(1.0f);
-            // model = glm::translate(model, glm::vec3(lights[3].position));
-            // model = glm::scale(model, glm::vec3(0.125f));
-            // set_uniform(*shader_manager, "model", model);
-            // set_uniform(*shader_manager, "light_color", lights[3].color);
-            // render_cube();
         }
 
         // render debug data
@@ -1088,8 +1088,6 @@ void render_shadows(const Camera camera, Particle_Cache& particle_cache)
                 glm::mat4 model  = glm::mat4(1.0f);
                 set_uniform(*shader_manager, "model", model);
                 render_cube();
-
-                // render_floor();
             }
             // unbind framebuffer
             glBindFramebuffer(GL_FRAMEBUFFER, 0);

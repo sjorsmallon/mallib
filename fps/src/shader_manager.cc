@@ -91,7 +91,7 @@ namespace
 
     void get_shader_info(Shader_Manager& shader_manager, Shader& shader)
     {
-        logr::report("shader info for program {} \n", shader.name);
+        logr::report("[graphics] shader info for program {} \n", shader.name);
         set_shader(shader_manager, shader.name.c_str());
 
         std::vector<GLchar> name_data(256);
@@ -111,7 +111,7 @@ namespace
             &properties[0], values.size(), nullptr, &values[0]);
             name_data.resize(values[0]);
             glGetProgramResourceName(shader.program_id, GL_PROGRAM_INPUT, attrib, name_data.size(), NULL, &name_data[0]);
-            //IC: -1 here is to skip the null character.
+            //IC(Sjors): -1 here is to skip the null character.
             std::string attribute_name(name_data.begin(), name_data.end() - 1);
             shader.attribute_names.push_back(attribute_name);
         }
@@ -126,7 +126,7 @@ namespace
             name_data.resize(values[0]);
 
             glGetProgramResourceName(shader.program_id, GL_UNIFORM, uniform_idx, name_data.size(), NULL, &name_data[0]);
-            //IC: -1 here is to skip the null character.
+            //IC(Sjors): -1 here is to skip the null character.
             std::string uniform_name(name_data.begin(), name_data.end() - 1);//
             shader.uniform_names.push_back(uniform_name);
         }

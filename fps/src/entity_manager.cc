@@ -1,5 +1,4 @@
 #include "entity_manager.h"
-// #include "components.h"
 #include "log.h"
 
 namespace
@@ -10,23 +9,22 @@ namespace
 		return entity_manager.next_entity_id++;
 	}
 
-	Entity& get_free_entity(Entity_Manager& entity_manager)
+	Entity& get_free_entity(Entity_Manager& entity_manager, Entity_Type type)
 	{
 		uint32_t entity_idx = 0;
 		uint32_t entity_id = 0;
 
 		// do we have a free idx?
-		if (entity_manager.free_indices.size())
+		if (entity_manager.free_indices[type].size())
 		{
-			entity_idx = entity_manager.free_indices.front();
-			entity_manager.free_indices.pop_front();
+			entity_idx = entity_manager.free_indices[type].front();
+			entity_manager.free_indices[type].pop_front();
 		}
 		else
 		{
-			entity_idx = entity_manager.entities.size();
-			entity_manager.entities.push_back({});
+			entity_idx = entity_manager.entities[type].size();
+			entity_manager.entities[type].push_back({});
 		}
-
 
 		// do we have a free id?
 		if (entity_manager.free_ids.size())
@@ -39,7 +37,7 @@ namespace
 			entity_id = get_next_entity_id(entity_manager);
 		}
 
-		auto& entity = entity_manager.entities[entity_idx];
+		auto& entity = entity_manager.entities[type][entity_idx];
 		entity.id = entity_id;
 
 		return entity;
@@ -48,20 +46,25 @@ namespace
 
 void create_entity(Entity_Manager& entity_manager, Entity_Type type)
 {
-	Entity& entity = get_free_entity(entity_manager);
+	Entity& entity = get_free_entity(entity_manager, type);
 	entity.type = type;
 	entity.mesh_name = "dodecahedron";
 	entity.xform_state = {glm::vec3{0.f,2 * entity.id, 0.f}, glm::vec4(0.f), 1.f};
 	entity.position =    glm::vec3{0.f, 2 * entity.id, 0.f};
 }
 
-std::vector<Entity*> by_type(Entity_Manager& entity_manager, Entity_Type type)
+std::vector<Entity>& by_type(Entity_Manager& entity_manager, Entity_Type type)
 {
-	logr::report_warning_once("[entity_manager] by_type: implementation unfinished!\n");
-	std::vector<Entity*> result;
-	for (auto& entity: entity_manager.entities)
-		result.push_back(&entity);
-
-
-	return result; 
+	return entity_manager.entities[type]; 
 }
+
+// std::vector<Entity*> by_type(Entity_Manager& entity_manager, Entity_Type type)
+// {
+// 	logr::report_warning_once("[entity_manager] by_type: implementation unfinished!\n");
+// 	std::vector<Entity*> result;
+// 	for (auto& entity: entity_manager.entities[type])
+// 		result.push_back(&entity);
+
+
+// 	return result; 
+// }

@@ -43,6 +43,8 @@ int main()
     bool should_unitize = true;
     load_obj(asset_manager, "new_spear", should_unitize);
     load_obj(asset_manager, "dodecahedron");
+    load_obj(asset_manager, "arrow");
+
 
     auto texture_manager = Texture_Manager();
     load_png_texture(texture_manager, "metal");
@@ -56,6 +58,8 @@ int main()
     load_png_texture(texture_manager, "wall_stone_normal");
     load_png_texture(texture_manager, "new_spear_diffuse");
     load_png_texture(texture_manager, "dodecahedron");
+    load_png_texture(texture_manager, "arrow_diffuse");
+    load_png_texture(texture_manager, "angry_face");
     load_alpha_png_texture(texture_manager, "crosshair");
 
     auto entity_manager = Entity_Manager();
@@ -65,6 +69,7 @@ int main()
     init_sound_system();
     load_sound("chicken.wav");
     load_sound("plop.wav");
+    load_sound("plop_shorter_runup.wav");
 
     //@Fixme(Sjors): create a render manager?
     init_renderer(
@@ -77,6 +82,7 @@ int main()
 
     Game_State game_state{};
     game_state.game_mode = GM_GAME;
+    game_init();
     
     Particle_Cache particle_cache{}; // uh, allocating this on the stack is maybe a bad idea.
 
@@ -89,7 +95,7 @@ int main()
         start(frame_timer);
 
         poll_input(window_manager);
-        game_simulate(frame_dt, game_state, window_manager.input, particle_cache, entity_manager);
+        game_simulate(game_state, frame_dt, window_manager.input, particle_cache, entity_manager);
         game_render(game_state, particle_cache);
 
         if (game_state.game_mode == GM_EDITOR) render_debug_ui(window_manager);

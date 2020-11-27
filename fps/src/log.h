@@ -70,6 +70,19 @@ namespace logr
 	void clear_frame_log();
 
 
+	struct Debug_Variable
+	{
+		const char* name;
+		float* value;
+		float min = 0.0f;
+		float max = 1.0f;
+	};
+	std::vector<Debug_Variable>& debug_variables();
+	inline void add_float_input(const char* name, float* value, const float min, const float max)
+	{
+		Debug_Variable debug_variable{name, value, min, max};
+		logr::debug_variables().push_back(debug_variable);
+	}
 
 };
 

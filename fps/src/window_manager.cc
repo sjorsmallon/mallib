@@ -32,6 +32,9 @@ namespace
 
         // uh...
         if (key == GLFW_KEY_ESCAPE) glfw_close(window);
+        if (key == GLFW_KEY_M) glfwSetInputMode(window_manager->main_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); 
+        if (key == GLFW_KEY_N) glfwSetInputMode(window_manager->main_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+
 
         // otherwise
         input.keyboard_state[key] = (action == GLFW_PRESS || action == GLFW_REPEAT) ? true : false; 
@@ -136,35 +139,33 @@ Window_Manager::~Window_Manager()
 
 void create_main_window(Window_Manager& window_manager, const char* title, const int window_width, const int window_height)
 {
-     // what version of openGL do we want?
-    // const char* glsl_version = "#version 430";
+    // Request particular opengl version (4.5)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
     glfwWindowHint(GLFW_FOCUSED, GLFW_TRUE);
-    // Create window with graphics context
 
+    // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+
+
+    // Create window with graphics context
     GLFWwindow* main_window = glfwCreateWindow(window_width, window_height, title, nullptr, nullptr);
-    if (nullptr == main_window)
-    {
-        logr::report_error("window is nullptr");
-        exit(1);
-    }
+    assert(nullptr != main_window);
 
     glfwSetWindowPos(main_window, 20, 20);
     //@IMPORTANT!
     glfwMakeContextCurrent(main_window);
-    // glfwSwapInterval(1); // Enable vsync
-    glfwSwapInterval( 0 ); // explicitly disable vsync?
 
-    //@Note(Sjors): gladLoadGL only after makeContextCurrent.    
+    //@IC(Sjors): gladLoadGL only after makeContextCurrent.    
     bool error = (gladLoadGL() == 0);
     if (error)
     {
         logr::report_error("Failed to initialize OpenGL loader!\n");
         exit(1);
     }
+
+    // glfwSwapInterval(1); // Enable vsync
+    glfwSwapInterval( 0 ); // explicitly disable vsync?
 
     // register callbacks
     // glfwSetErrorCallback(glfw_error_callback); (this is done in the constructor since it does not require a window.)
@@ -185,11 +186,8 @@ void create_main_window(Window_Manager& window_manager, const char* title, const
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
-
     const char* glsl_version = "#version 450";
-    // Setup Dear ImGui style
     ImGui::StyleColorsDark();
-    // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(main_window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
@@ -263,8 +261,9 @@ void render_debug_ui(const Window_Manager& window_manager)
 
             {
                 ImGui::Begin("Debug Menu"); 
-                for (auto& text: logr::console_log())
-                    ImGui::Text(text.c_str());
+                for (auto& debug_variables: logr::debug_variables())
+                    ImGui::InputFloat(debug_variables.name, debug_variables.value, debug_variables.min, debug_variables.max, "%.3f");
+
                 ImGui::End();
             }
             

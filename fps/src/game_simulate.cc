@@ -9,6 +9,7 @@
 #include "entity_manager.h"
 #include "sound_system.h"
 #include "collision_system.h"
+#include <numeric> // for accumulate
 
 // these are the GLFW key presses.
 constexpr const int KEY_SPACE = 32;
@@ -46,13 +47,13 @@ namespace
     float g_mouse_sensitivity = 0.5f;
     float g_camera_velocity = 0.2f;
 
-    float g_dodecahedron_velocity = 1.25f;
 
+    // world
  	float g_player_gravity = 0.3335f;
+
+    // player movement
     float g_player_friction = 0.1f;
-
     float g_player_max_velocity = 3.75f;
-
     float g_player_ground_movespeed = 0.043125f;
     float g_player_ground_acceleration = 0.08625f;
     float g_player_ground_deceleration= 0.06187f;
@@ -63,6 +64,16 @@ namespace
     float g_player_air_control = 0.01f;
     float g_player_side_strafe_acceleration = 1.6667f;
     float g_player_side_strafe_speed = 0.0033f;
+
+
+    // flying units
+    float g_dodecahedron_velocity = 1.f;
+    float g_wanted_distance = 80.0f;
+    float g_wanted_height = 50.0f;
+    float g_focus = 1.f;
+    float g_alignment = 1.f;
+    float g_cohesion = 1.f;
+
 
     //@Dependencies:
     // g_player_movespeed
@@ -231,28 +242,123 @@ namespace
 	}
 
 
-	void update_flying_units(Entity_Manager& entity_manager, const float dt_factor)
+	void evaluate_flying_units(Entity_Manager& entity_manager, const float dt_factor)
 	{
+
 		auto& player = g_player_entity;
+		
+		auto& dodecahedrons = by_type(entity_manager, Entity_Type::Cube);
 
-		// separation: steer to avoid crowding local flockmates
-		// alignment: steer towards the average heading of local flockmates
-		// cohesion: steer to move towards the average position (center of mass) of local flockmates
-		// wat we nu gaan doen, kost heel veel tijd.
-		auto dodecahedrons = by_type(entity_manager, Entity_Type::Cube);
+    	auto sum_lambda = [](glm::vec3 sum, Entity& rhs) {
+                         return (sum + rhs.position);
+                     	};
+        glm::vec3 sum = std::accumulate(dodecahedrons.begin(), dodecahedrons.end(), glm::vec3(0.0f), sum_lambda);
 
-		for (auto* entity_ptr: dodecahedrons)
+
+        //@Incomplete(Sjors): div 0?
+        glm::vec3 average_position = sum *  (1.0f/ static_cast<float>(dodecahedrons.size()));
+        glm::vec3 player_position = player.position + glm::vec3(0.0f,10.0f,0.0f);
+
+        glm::vec3 center_to_player_direction = glm::normalize(player_position - average_position);
+		
+		struct Neighbour_Info
 		{
-			glm::vec3 direction_vector = glm::normalize(player.position - entity_ptr->position);
-			entity_ptr->position = entity_ptr->position + (direction_vector * g_dodecahedron_velocity * dt_factor);
+			glm::vec3 direction;
+			float distance;
+		};
+
+		std::vector<Neighbour_Info> neighbour_info(dodecahedrons.size());
+
+		//@Speed(Sjors): O(N^2)
+		// wat we nu gaan doen, kost heel veel tijd.
+		// gather information about closest neighbour.
+		for (size_t lhs_idx = 0; lhs_idx != dodecahedrons.size() -1; ++lhs_idx)
+		{
+			Entity& lhs_e = dodecahedrons[lhs_idx];
+			auto& neighbour = neighbour_info[lhs_idx];
+			neighbour.distance =  1000000.0f;
+			neighbour.direction = glm::vec3(1.0f);
+
+			for (size_t rhs_idx = lhs_idx + 1; rhs_idx != dodecahedrons.size(); ++rhs_idx)
+			{
+				auto& rhs_e = dodecahedrons[rhs_idx];
+
+				glm::vec3 distance  = rhs_e.position - lhs_e.position; 
+				float abs_distance = glm::length(distance);
+				glm::vec3 direction_vector = glm::normalize(distance);
+
+				if (abs_distance < neighbour.distance)
+				{
+					neighbour.distance = abs_distance;
+					neighbour.direction = direction_vector;	
+				}
+			}
 		}
 
+		// update the positions of each thing.
+		for (size_t idx = 0; idx != dodecahedrons.size(); ++idx)
+		{
+			Entity& entity = dodecahedrons[idx];
+			auto& neighbour = neighbour_info[idx]; 
 
+			glm::vec3 focus_direction      = glm::normalize(player_position - entity.position);
+			glm::vec3 cohesion_direction   = glm::normalize(average_position - entity.position);
+			glm::vec3 separation_direction = -neighbour.direction;
+			glm::vec3 height_direction     = glm::vec3(0.f, 1.f, 0.f); 
+
+			glm::vec3 direction_vector(0.0f);
+			bool enable_cohesion = true;
+			bool enable_height = false;
+			bool enable_focus = false;
+			bool enable_separation = true;
+			bool enable_center_to_player = true;
+			bool enable_previous_momentum = false;
+
+			if (enable_cohesion)
+			{
+				direction_vector += cohesion_direction * g_cohesion;
+			}
+
+			if (enable_height)
+			{
+				direction_vector += height_direction;
+			}
+
+			if (enable_separation)
+			{
+				if (neighbour.distance < g_wanted_distance)
+				{
+					direction_vector = separation_direction;
+				}
+			}
+
+			if (enable_focus)
+			{
+				direction_vector += focus_direction;
+			}
+
+			if (enable_center_to_player)
+			{
+				direction_vector += center_to_player_direction;
+			}
+
+			direction_vector = glm::normalize(direction_vector);
+			
+			if (enable_previous_momentum)
+			{
+				glm::vec3 old_direction_vector = entity.movement_vector;
+				direction_vector = glm::normalize(0.1f * direction_vector + 0.9f * old_direction_vector);
+			}
+
+			glm::vec3 old_position = entity.position;
+			entity.position = entity.position + (direction_vector * g_dodecahedron_velocity * dt_factor);	
+			entity.movement_vector = direction_vector;
+
+		}
 
 		// separation: steer to avoid crowding local flockmates
 		// alignment: steer towards the average heading of local flockmates
 		// cohesion: steer to move towards the average position (center of mass) of local flockmates
-
 	}
 
 
@@ -260,13 +366,13 @@ namespace
 
 // I can't stress enough that we should absolutely NOT use dt.
 // update and render world
-void game_simulate(const double dt, Game_State& game_state, const Input& input, Particle_Cache& particle_cache, Entity_Manager& entity_manager)
+void game_simulate(Game_State& game_state, const double dt, const Input& input, Particle_Cache& particle_cache, Entity_Manager& entity_manager)
 {
 	float clamped_dt = dt;	
-	if (clamped_dt < 0.00001) clamped_dt = FRAMETIME_1000_FPS; // 1000 fps: upper bound
-	if (clamped_dt > FRAMETIME_10_FPS) clamped_dt = FRAMETIME_10_FPS;  // 10 fps: lower bound
+	if (clamped_dt < FRAMETIME_1000_FPS) clamped_dt = FRAMETIME_1000_FPS; 
+	if (clamped_dt > FRAMETIME_10_FPS) clamped_dt = FRAMETIME_10_FPS;  
  
- 	const float dt_factor =  clamped_dt / FRAMETIME_IN_S;
+ 	const float dt_factor = clamped_dt / FRAMETIME_IN_S;
 
 	// process higher level input
 	{
@@ -278,13 +384,19 @@ void game_simulate(const double dt, Game_State& game_state, const Input& input, 
 	// are we paused?
 	if (game_state.paused)
 	{
-
+		// paused!
 	}
 	else
 	{
-
 		// if game_mode = player_cam:
 		{
+
+			// BEFORE MOVING ANYTHING, check shot intersection?
+
+
+
+
+
 			//@Note(Sjors): it is imperative that the player gets updated first, since that 
 			// is the bottleneck we have to be dealing with in the next frames.
 
@@ -297,7 +409,7 @@ void game_simulate(const double dt, Game_State& game_state, const Input& input, 
 
 			// update dodecahedrons
 			{
-				update_flying_units(entity_manager, dt_factor);
+				evaluate_flying_units(entity_manager, dt_factor);
 			}
 
 
@@ -322,12 +434,27 @@ void game_simulate(const double dt, Game_State& game_state, const Input& input, 
 				);
 			
 				if (input.mouse_right) play_sound_3d("chicken");
-				if (input.mouse_left) play_sound("plop.wav");
+				if (input.mouse_left) play_sound("plop_shorter_runup.wav");
 			}
 		}
-
-
 	}
+}
 
+
+
+
+
+
+// this is actually a really bad idea.
+void game_init()
+{
+
+    // flying units
+    // logr::add_float_input("g_dodecahedron_velocity", &g_dodecahedron_velocity, 0.0f, 1.0f);
+    // logr::add_float_input("g_wanted_distance", &g_wanted_distance, 0.0f, 1.0f);
+    // logr::add_float_input("g_wanted_height", &g_wanted_height, 0.0f, 1.0f);
+    // logr::add_float_input("g_focus", &g_focus, 0.0f, 1.0f);
+    // logr::add_float_input("g_alignment", &g_alignment, 0.0f, 1.0f);
+    // logr::add_float_input("g_cohesion", &g_cohesion, 0.0f, 1.0f);
 
 }

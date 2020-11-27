@@ -33,7 +33,9 @@ struct Game_State
 };
 
 
-void game_simulate(const double dt, Game_State& game_state,const Input& input, Particle_Cache& particle_cache, Entity_Manager& manager);
+void game_init();
+
+void game_simulate(Game_State& game_state, const double dt,  const Input& input, Particle_Cache& particle_cache, Entity_Manager& manager);
 void game_render(Game_State& game_state, Particle_Cache& particle_cache);
 
 
