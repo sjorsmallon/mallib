@@ -241,12 +241,10 @@ namespace
 		auto& player = g_player_entity;
 	}
 
-
 	void evaluate_flying_units(Entity_Manager& entity_manager, const float dt_factor)
 	{
 
 		auto& player = g_player_entity;
-		
 		auto& dodecahedrons = by_type(entity_manager, Entity_Type::Cube);
 
     	auto sum_lambda = [](glm::vec3 sum, Entity& rhs) {
@@ -350,16 +348,66 @@ namespace
 				direction_vector = glm::normalize(0.1f * direction_vector + 0.9f * old_direction_vector);
 			}
 
-			glm::vec3 old_position = entity.position;
 			entity.position = entity.position + (direction_vector * g_dodecahedron_velocity * dt_factor);	
 			entity.movement_vector = direction_vector;
 
 		}
-
-		// separation: steer to avoid crowding local flockmates
-		// alignment: steer towards the average heading of local flockmates
-		// cohesion: steer to move towards the average position (center of mass) of local flockmates
 	}
+
+
+	void evaluate_shot(Entity_Manager& entity_manager, Camera camera)
+	{
+		glm::vec3 ray_dir = camera.front;
+		glm::vec3 ray_start = camera.position;
+
+		// stopPoints.erase(std::remove_if(stopPoints.begin(),
+  //                               stopPoints.end(),
+  //                               [&](const stopPointPair stopPoint)-> bool 
+  //                                      { return stopPoint.first == 4; }), 
+		std::vector<Entity*>& entities = by_type_ptr(entity_manager, Entity_Type::Cube);
+
+		auto solve_quadratic = [](const float& a, const float& b, const float& c, float& x0, float& x1)
+		{
+			float discr = b * b - 4 * a * c;
+			if (discr < 0) return false;
+			else if (discr == 0) x0 = x1 = -0.5 * b / a;
+			else {
+				float q = (b > 0) ?
+					-0.5 * (b + sqrt(discr)) :
+					-0.5 * (b - sqrt(discr));
+				x0 = q / a;
+				x1 = c / q;
+			}
+			if (x0 > x1) std::swap(x0, x1);
+
+			return true;
+		};
+
+		for (Entity* entity_ptr: entities)
+		{
+
+			glm::vec3 D = ray_dir;
+			glm::vec3 O = ray_start;
+			glm::vec3 C = entity_ptr->position;
+			float R = 1.f;
+			float a = 1.f;
+			float b = 2.f * glm::dot(D, glm::normalize(O - C));
+			float c = glm::dot(glm::normalize(O - C), glm::normalize(O - C)) - R * R;
+
+			float discriminant = (b * b - 4 * a * c);
+			if (discriminant < 0.f) continue;
+
+			// we hit.
+			bool mark_for_deletion = true;
+			schedule_for_destruction(entity_manager, entity_ptr);
+			// float t_1 = -b + discriminant;
+			// float t_2 = -b - discriminant;
+		}
+
+		destroy_scheduled_entities(entity_manager);
+
+	}
+
 
 
 }
@@ -392,11 +440,10 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 		{
 
 			// BEFORE MOVING ANYTHING, check shot intersection?
+			if (input.mouse_left) evaluate_shot(entity_manager, game_state.camera);
 
 
-
-
-
+			// post_shoot_reevaluate(entity_manager);
 			//@Note(Sjors): it is imperative that the player gets updated first, since that 
 			// is the bottleneck we have to be dealing with in the next frames.
 

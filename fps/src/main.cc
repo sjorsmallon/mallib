@@ -65,6 +65,7 @@ int main()
     auto entity_manager = Entity_Manager();
     for (size_t idx = 0; idx != 255; ++idx)
         create_entity(entity_manager, Entity_Type::Cube);
+    make_entities_active(entity_manager);
 
     init_sound_system();
     load_sound("chicken.wav");

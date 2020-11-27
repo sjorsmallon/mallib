@@ -9,7 +9,7 @@ namespace
 		return entity_manager.next_entity_id++;
 	}
 
-	Entity& get_free_entity(Entity_Manager& entity_manager, Entity_Type type)
+	Entity& get_or_create_entity(Entity_Manager& entity_manager, Entity_Type type)
 	{
 		uint32_t entity_idx = 0;
 		uint32_t entity_id = 0;
@@ -23,7 +23,7 @@ namespace
 		else
 		{
 			entity_idx = entity_manager.entities[type].size();
-			entity_manager.entities[type].push_back({});
+			entity_manager.entities[type].push_back(Entity{0});
 		}
 
 		// do we have a free id?
@@ -37,25 +37,38 @@ namespace
 			entity_id = get_next_entity_id(entity_manager);
 		}
 
-		auto& entity = entity_manager.entities[type][entity_idx];
-		entity.id = entity_id;
+		Entity* entity = &entity_manager.entities[type][entity_idx];
+		entity->id = entity_id;
 
-		return entity;
+
+		return (*entity);
 	}
 }
 
 void create_entity(Entity_Manager& entity_manager, Entity_Type type)
 {
-	Entity& entity = get_free_entity(entity_manager, type);
+	Entity& entity = get_or_create_entity(entity_manager, type);
 	entity.type = type;
 	entity.mesh_name = "dodecahedron";
 	entity.xform_state = {glm::vec3{0.f,2 * entity.id, 0.f}, glm::vec4(0.f), 1.f};
 	entity.position =    glm::vec3{0.f, 2 * entity.id, 0.f};
 }
+void make_entities_active(Entity_Manager& entity_manager)
+{
+	for (auto&& entity: entity_manager.entities[Entity_Type::Cube])
+	{
+		entity_manager.active_entities[Entity_Type::Cube].push_back(&entity);
+	}
+}
 
 std::vector<Entity>& by_type(Entity_Manager& entity_manager, Entity_Type type)
 {
 	return entity_manager.entities[type]; 
+}
+
+std::vector<Entity*>& by_type_ptr(Entity_Manager& entity_manager, Entity_Type type)
+{
+	return entity_manager.active_entities[type];
 }
 
 // std::vector<Entity*> by_type(Entity_Manager& entity_manager, Entity_Type type)

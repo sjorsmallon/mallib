@@ -19,6 +19,8 @@ build
 *.exe
 *.pdb
 
+
+fps/debug
 fps/builddir
 fps/release
 fps/buildclang
