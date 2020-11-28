@@ -10,6 +10,13 @@
 constexpr const float MIN_FLOAT = std::numeric_limits<float>::min();
 constexpr const float MAX_FLOAT = std::numeric_limits<float>::max();
 
+// use bounds for broad sweep?
+
+struct Hitbox
+{
+
+};
+
 struct Box_3D
 {
 	glm::vec3 min{MAX_FLOAT, MAX_FLOAT, MAX_FLOAT};
@@ -29,6 +36,7 @@ struct obj_t
 	// for meshes
 	bool unitized = false;
 	Box_3D bounds;
+	Hitbox hitbox;
 };
 
 struct Asset_Manager

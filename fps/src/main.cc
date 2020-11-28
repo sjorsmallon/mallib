@@ -103,8 +103,8 @@ int main()
         if (game_state.game_mode == GM_EDITOR) render_debug_ui(window_manager);
 
         swap_buffers(window_manager);
-
         stop(frame_timer);
+        
         maybe_log_average(frame_timer, frame_count);
 
         frame_dt = frame_timer.dt;

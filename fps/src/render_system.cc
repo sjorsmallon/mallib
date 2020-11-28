@@ -22,7 +22,6 @@ constexpr const unsigned int SHADOW_FB_WIDTH = 1024;
 constexpr const unsigned int SHADOW_FB_HEIGHT = 1024;
 constexpr const float M_PI = 3.1415926535897f;
 
-
 namespace
 {
     // cvars
@@ -393,6 +392,11 @@ namespace
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * g_wall_model_matrices.size(), g_wall_model_matrices.data(), GL_DYNAMIC_DRAW);
 
         // since location 0,1,2 are occupied by position, normal, texture coords, 
+        // the matrix starts at location 3.
+        // @Note(Sjors): since a location occupies at most 16 bytes (vec4),
+        // we need to reserve 4 location indices for any particular matrix.
+        // this means location 3,4,5,6 all are reserved for the model matrix,
+        // and location 7,8,9,10 are reserved for the mvp matrix.
         const uint32_t model_location = 3;
         const uint32_t mat4_row_count = 4;
         for (unsigned int location_offset = 0; location_offset != mat4_row_count; ++location_offset)
@@ -639,10 +643,10 @@ void init_renderer(
     const int frame_buffer_width, const int frame_buffer_height)
 {
     // initialize globals.
-    shader_manager = &shader_manager_in;
+    shader_manager  = &shader_manager_in;
     texture_manager = &texture_manager_in;
-    asset_manager = &asset_manager_in;
-    entity_manager = &entity_manager_in;
+    asset_manager   = &asset_manager_in;
+    entity_manager  = &entity_manager_in;
 
     g_window_width  = frame_buffer_width;
     g_window_height = frame_buffer_height;
@@ -835,9 +839,9 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 glNamedBufferData(g_wall_model_vbo, sizeof(glm::mat4) * g_wall_model_matrices.size(), g_wall_model_matrices.data(), GL_DYNAMIC_DRAW);
                 glNamedBufferData(g_wall_mvp_vbo,   sizeof(glm::mat4) * g_wall_mvp_matrices.size(),   g_wall_mvp_matrices.data(), GL_DYNAMIC_DRAW);
 
-                auto& wall_stone_diffuse_texture  = get_texture(*texture_manager, "wall_stone_diffuse");
-                auto& wall_stone_specular_texture = get_texture(*texture_manager, "wall_stone_specular");
-                auto& wall_stone_normal_texture   = get_texture(*texture_manager, "wall_stone_normal");
+                const auto& wall_stone_diffuse_texture  = get_texture(*texture_manager, "wall_stone_diffuse");
+                const auto& wall_stone_specular_texture = get_texture(*texture_manager, "wall_stone_specular");
+                const auto& wall_stone_normal_texture   = get_texture(*texture_manager, "wall_stone_normal");
 
                 set_uniform(*shader_manager, "texture_diffuse",  wall_stone_diffuse_texture.gl_texture_frame);
                 set_uniform(*shader_manager, "texture_specular", wall_stone_specular_texture.gl_texture_frame);
@@ -858,54 +862,56 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 set_shader(*shader_manager, "deferred_instanced");
                 set_uniform(*shader_manager, "view", view);
                 
-                auto&& dodecahedrons = by_type_ptr(*entity_manager, Entity_Type::Cube);
-                
-                //@Note(Sjors): we now use draw count in order to not overdraw.
-                // draw_count is used in gldrawarraysinstanced.
-                // however, this means that there is garbage at the end of the buffer (past draw count).
-                // we may want to zero that.
 
                 size_t draw_count = 0;
-                for (size_t idx = 0; idx !=  dodecahedrons.size(); ++idx)
+                // this is not actually part of rendering: we are just updating the buffers.
                 {
-                    auto& entity = *dodecahedrons[idx];
-
-                    if (entity.scheduled_for_destruction) continue;
-
-                    glm::mat4& model_matrix = g_dodecahedron_model_matrices[draw_count];
-                    glm::mat4& mvp_matrix = g_dodecahedron_mvp_matrices[draw_count];
-                    draw_count += 1;
-
-                    glm::mat4 scale = glm::scale(glm::mat4(1.f), glm::vec3(20.f));
-                    
-                    // turn angry face towards player
-                    glm::mat4 rotate = glm::mat4(1.0f);
-                    glm::vec3 target_ray = glm::normalize(camera.position - entity.position);
-                    glm::vec3 object_ray = glm::vec3(0.f,1.f, 0.f);
-                    float angle_dif = acos(glm::dot(target_ray, object_ray));
-                    if (angle_dif != 0)
+                    auto&& dodecahedrons = by_type_ptr(*entity_manager, Entity_Type::Cube);
+                    //@Note(Sjors): we now use draw count in order to not overdraw.
+                    // draw_count is used in gldrawarraysinstanced.
+                    // however, this means that there is garbage at the end of the buffer (past draw count).
+                    // we may want to zero that.
+                    for (size_t idx = 0; idx != dodecahedrons.size(); ++idx)
                     {
-                        glm::vec3 ortho_ray = glm::cross(object_ray, target_ray);
-                        ortho_ray = glm::normalize(ortho_ray);
-                        glm::quat delta_quaternion= glm::angleAxis(angle_dif, ortho_ray);
-                        rotate = glm::toMat4(delta_quaternion);
+                        auto& entity = *dodecahedrons[idx];
+
+                        if (entity.scheduled_for_destruction) continue;
+
+                        glm::mat4& model_matrix = g_dodecahedron_model_matrices[draw_count];
+                        glm::mat4& mvp_matrix = g_dodecahedron_mvp_matrices[draw_count];
+                        draw_count += 1;
+
+                        glm::mat4 scale = glm::scale(glm::mat4(1.f), glm::vec3(20.f));
+                        
+                        // turn angry face towards player
+                        glm::mat4 rotate = glm::mat4(1.0f);
+                        glm::vec3 target_ray = glm::normalize(camera.position - entity.position);
+                        glm::vec3 object_ray = glm::vec3(0.f,1.f, 0.f);
+                        float angle_dif = acos(glm::dot(target_ray, object_ray));
+                        if (angle_dif != 0)
+                        {
+                            glm::vec3 ortho_ray = glm::cross(object_ray, target_ray);
+                            ortho_ray = glm::normalize(ortho_ray);
+                            glm::quat delta_quaternion= glm::angleAxis(angle_dif, ortho_ray);
+                            rotate = glm::toMat4(delta_quaternion);
+                        }
+
+                        glm::mat4 translate = glm::translate(glm::mat4(1.0f), entity.position);
+                        model_matrix = translate * rotate * scale;
+                        mvp_matrix = projection * view * model_matrix;  
                     }
 
-                    glm::mat4 translate = glm::translate(glm::mat4(1.0f), entity.position);
-                    model_matrix = translate * rotate * scale;
-                    mvp_matrix = projection * view * model_matrix;  
+                    glNamedBufferData(g_dodecahedron_model_vbo, sizeof(glm::mat4) * g_dodecahedron_model_matrices.size(), g_dodecahedron_model_matrices.data(), GL_DYNAMIC_DRAW);
+                    glNamedBufferData(g_dodecahedron_mvp_vbo,   sizeof(glm::mat4) * g_dodecahedron_mvp_matrices.size(),   g_dodecahedron_mvp_matrices.data(), GL_DYNAMIC_DRAW);
                 }
-
-                glNamedBufferData(g_dodecahedron_model_vbo, sizeof(glm::mat4) * g_dodecahedron_model_matrices.size(), g_dodecahedron_model_matrices.data(), GL_DYNAMIC_DRAW);
-                glNamedBufferData(g_dodecahedron_mvp_vbo,   sizeof(glm::mat4) * g_dodecahedron_mvp_matrices.size(),   g_dodecahedron_mvp_matrices.data(), GL_DYNAMIC_DRAW);
-
-                auto& dodecahedron_diffuse_texture  = get_texture(*texture_manager, "angry_face");
-                auto& wall_stone_specular_texture = get_texture(*texture_manager, "wall_stone_specular");
+            
+                const auto& dodecahedron_diffuse_texture  = get_texture(*texture_manager, "angry_face");
+                const auto& wall_stone_specular_texture = get_texture(*texture_manager, "wall_stone_specular");
 
                 set_uniform(*shader_manager, "texture_diffuse",  dodecahedron_diffuse_texture.gl_texture_frame);
                 set_uniform(*shader_manager, "texture_specular", wall_stone_specular_texture.gl_texture_frame);
                 
-                size_t mesh_size = get_obj(*asset_manager, "dodecahedron").interleaved_XNU.size() / 8;
+                const size_t mesh_size = get_obj(*asset_manager, "dodecahedron").interleaved_XNU.size() / 8;
 
                 glBindVertexArray(g_dodecahedron_vao);
                 glDrawArraysInstanced(
@@ -960,8 +966,8 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             lights[0].position.z = camera.position.z;
             lights[0].color = glm::vec4(1.0f,1.0f,1.0f,0.0f);
             lights[0].on = true;
-            lights[0].linear = 0.1f;
-            lights[0].quadratic = 0.02f;
+            lights[0].linear = 0.001f;
+            lights[0].quadratic = 0.002f;
 
             lights[1].position = glm::vec4(0.0f, 3.0f, 0.0f, 0.0f);
             lights[1].color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);

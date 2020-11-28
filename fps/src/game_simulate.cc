@@ -1,14 +1,14 @@
 #include "game.h"
 
 #include <glm/gtx/string_cast.hpp>
-#include <algorithm> // for clamp, kind of wasteful!
 
 #include "camera.h"
 #include "input.h"
 #include "logr.h"
+#include "math.h"
 #include "entity_manager.h"
 #include "sound_system.h"
-#include "collision_system.h"
+#include "timed_function.h"
 #include <numeric> // for accumulate
 
 // these are the GLFW key presses.
@@ -21,12 +21,12 @@ constexpr const int KEY_P = 80;
 constexpr const int KEY_O = 79;
 constexpr const int KEY_I = 73;
 
-constexpr const float FRAMETIME_120_FPS = 0.00833333333f;
-constexpr const float FRAMETIME_IN_S = FRAMETIME_120_FPS;
 
+constexpr const float FRAMETIME_144_FPS = 0.006944444444f;
+constexpr const float FRAMETIME_120_FPS = 0.00833333333f;
 constexpr const float FRAMETIME_1000_FPS = 0.001f;
 constexpr const float FRAMETIME_10_FPS = 0.1f;
-
+constexpr const float FRAMETIME_IN_S = FRAMETIME_120_FPS;
 
 namespace
 {
@@ -50,6 +50,9 @@ namespace
 
     // world
  	float g_player_gravity = 0.3335f;
+
+
+ 	// calibrated for 120hz, but vsync is 144hz. woops.
 
     // player movement
     float g_player_friction = 0.1f;
@@ -118,7 +121,6 @@ namespace
 
     	glm::vec3 ground_vector = old_ground_vector + input_ground_vector;
 		float ground_velocity = glm::length(ground_vector);
-    	
 
     	glm::vec3 movement_vector(0.0f);
     	movement_vector.x = ground_vector.x;
@@ -243,7 +245,6 @@ namespace
 
 	void evaluate_flying_units(Entity_Manager& entity_manager, const float dt_factor)
 	{
-
 		auto& player = g_player_entity;
 		auto& dodecahedrons = by_type(entity_manager, Entity_Type::Cube);
 
@@ -252,11 +253,9 @@ namespace
                      	};
         glm::vec3 sum = std::accumulate(dodecahedrons.begin(), dodecahedrons.end(), glm::vec3(0.0f), sum_lambda);
 
-
         //@Incomplete(Sjors): div 0?
         glm::vec3 average_position = sum *  (1.0f/ static_cast<float>(dodecahedrons.size()));
         glm::vec3 player_position = player.position + glm::vec3(0.0f,10.0f,0.0f);
-
         glm::vec3 center_to_player_direction = glm::normalize(player_position - average_position);
 		
 		struct Neighbour_Info
@@ -265,8 +264,8 @@ namespace
 			float distance;
 		};
 
+		//@Memory
 		std::vector<Neighbour_Info> neighbour_info(dodecahedrons.size());
-
 		//@Speed(Sjors): O(N^2)
 		// wat we nu gaan doen, kost heel veel tijd.
 		// gather information about closest neighbour.
@@ -346,62 +345,31 @@ namespace
 			{
 				glm::vec3 old_direction_vector = entity.movement_vector;
 				direction_vector = glm::normalize(0.1f * direction_vector + 0.9f * old_direction_vector);
-			}
+			}	
+
+
 
 			entity.position = entity.position + (direction_vector * g_dodecahedron_velocity * dt_factor);	
 			entity.movement_vector = direction_vector;
-
 		}
-	}
 
+		float frametime = dt_factor * FRAMETIME_IN_S;
+		// logr::report("general entity distance this frame: {}\n", g_dodecahedron_velocity * dt_factor);
+		// logr::report("over frametime: {}\n", (g_dodecahedron_velocity * dt_factor) / frametime);
+
+	}
 
 	void evaluate_shot(Entity_Manager& entity_manager, Camera camera)
 	{
-		glm::vec3 ray_dir = camera.front;
-		glm::vec3 ray_start = camera.position;
+		timed_function("evaluate_shot");
 
-		// stopPoints.erase(std::remove_if(stopPoints.begin(),
-  //                               stopPoints.end(),
-  //                               [&](const stopPointPair stopPoint)-> bool 
-  //                                      { return stopPoint.first == 4; }), 
 		std::vector<Entity*>& entities = by_type_ptr(entity_manager, Entity_Type::Cube);
-
-		auto solve_quadratic = [](const float& a, const float& b, const float& c, float& x0, float& x1)
-		{
-			float discr = b * b - 4 * a * c;
-			if (discr < 0) return false;
-			else if (discr == 0) x0 = x1 = -0.5 * b / a;
-			else {
-				float q = (b > 0) ?
-					-0.5 * (b + sqrt(discr)) :
-					-0.5 * (b - sqrt(discr));
-				x0 = q / a;
-				x1 = c / q;
-			}
-			if (x0 > x1) std::swap(x0, x1);
-
-			return true;
-		};
-
 		for (Entity* entity_ptr: entities)
 		{
-
-			glm::vec3 D = ray_dir;
-			glm::vec3 O = ray_start;
-			glm::vec3 C = entity_ptr->position;
-			float R = 1.f;
-			float a = 1.f;
-			float b = 2.f * glm::dot(D, glm::normalize(O - C));
-			float c = glm::dot(glm::normalize(O - C), glm::normalize(O - C)) - R * R;
-
-			float discriminant = (b * b - 4 * a * c);
-			if (discriminant < 0.f) continue;
-
+  			if (!ray_intersects_sphere(camera.position, camera.front, entity_ptr->position, 20.0f)) continue;
 			// we hit.
 			bool mark_for_deletion = true;
 			schedule_for_destruction(entity_manager, entity_ptr);
-			// float t_1 = -b + discriminant;
-			// float t_2 = -b - discriminant;
 		}
 
 	}
@@ -419,6 +387,7 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 	if (clamped_dt > FRAMETIME_10_FPS) clamped_dt = FRAMETIME_10_FPS;  
  
  	const float dt_factor = clamped_dt / FRAMETIME_IN_S;
+	// logr::report("dt_factor: {}\n", dt_factor); 
 
 	// process higher level input
 	{

@@ -164,8 +164,8 @@ void create_main_window(Window_Manager& window_manager, const char* title, const
         exit(1);
     }
 
-    // glfwSwapInterval(1); // Enable vsync
-    glfwSwapInterval( 0 ); // explicitly disable vsync?
+    glfwSwapInterval(1); // Enable vsync
+    // glfwSwapInterval(0); // explicitly disable vsync?
 
     // register callbacks
     // glfwSetErrorCallback(glfw_error_callback); (this is done in the constructor since it does not require a window.)
