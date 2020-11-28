@@ -784,15 +784,15 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 render_cube();
 
             }
-            // render floor
-            // {
-            //     const auto& floor_texture = get_texture(*texture_manager, "floor_64");
-            //     set_uniform(*shader_manager, "texture_diffuse",  floor_texture.gl_texture_frame);
+        //    render floor
+            {
+                const auto& floor_texture = get_texture(*texture_manager, "floor_64");
+                set_uniform(*shader_manager, "texture_diffuse",  floor_texture.gl_texture_frame);
 
-            //     glm::mat4 model = glm::mat4(1.0f);
-            //     set_uniform(*shader_manager, "model", model);
-            //     render_floor();
-            // }
+                glm::mat4 model = glm::mat4(1.0f);
+                set_uniform(*shader_manager, "model", model);
+                render_floor();
+            }
 
            // render walls
             {

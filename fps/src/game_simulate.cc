@@ -21,12 +21,12 @@ constexpr const int KEY_P = 80;
 constexpr const int KEY_O = 79;
 constexpr const int KEY_I = 73;
 
-
 constexpr const float FRAMETIME_144_FPS = 0.006944444444f;
 constexpr const float FRAMETIME_120_FPS = 0.00833333333f;
 constexpr const float FRAMETIME_1000_FPS = 0.001f;
 constexpr const float FRAMETIME_10_FPS = 0.1f;
-constexpr const float FRAMETIME_IN_S = FRAMETIME_120_FPS;
+constexpr const float FRAMETIME_IN_S = FRAMETIME_144_FPS;
+constexpr const float ENGINE_HZ = 120.f; 
 
 namespace
 {
@@ -44,15 +44,17 @@ namespace
     // ---------------
 	// cvars
 	// ---------------
+    // float g_mouse_sensitivity = 0.08f;
+
+
+
     float g_mouse_sensitivity = 0.5f;
     float g_camera_velocity = 0.2f;
-
-
     // world
  	float g_player_gravity = 0.3335f;
 
-
  	// calibrated for 120hz, but vsync is 144hz. woops.
+ 	// but that shouldn't actually matter right?
 
     // player movement
     float g_player_friction = 0.1f;
@@ -269,7 +271,7 @@ namespace
 		//@Speed(Sjors): O(N^2)
 		// wat we nu gaan doen, kost heel veel tijd.
 		// gather information about closest neighbour.
-		for (size_t lhs_idx = 0; lhs_idx != dodecahedrons.size() -1; ++lhs_idx)
+		for (size_t lhs_idx = 0; lhs_idx != dodecahedrons.size(); ++lhs_idx)
 		{
 			Entity& lhs_e = dodecahedrons[lhs_idx];
 			auto& neighbour = neighbour_info[lhs_idx];
@@ -385,9 +387,12 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 	float clamped_dt = dt;	
 	if (clamped_dt < FRAMETIME_1000_FPS) clamped_dt = FRAMETIME_1000_FPS; 
 	if (clamped_dt > FRAMETIME_10_FPS) clamped_dt = FRAMETIME_10_FPS;  
+	bool vsync = true;
+
+	if (vsync) clamped_dt = FRAMETIME_144_FPS;
  
- 	const float dt_factor = clamped_dt / FRAMETIME_IN_S;
-	// logr::report("dt_factor: {}\n", dt_factor); 
+ 	const float dt_factor = clamped_dt / FRAMETIME_144_FPS;
+	logr::report("dt_factor: {}\n", dt_factor); 
 
 	// process higher level input
 	{

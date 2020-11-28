@@ -4,11 +4,27 @@
 #include <map>
 #include <string>
 #include <cassert>
+#include <glm/vec2.hpp>
 
-//@TODO(Sjors): generalize this to image
+struct Texture_Atlas
+{
+    int32_t gl_texture_frame;
+    uint32_t gl_texture_id;
+
+    std::map<std::string, glm::vec2> texture_offset;
+
+};
+
+// struct Texture_Handle
+// {
+//     name;
+//     dimensions;
+//     channels;
+// };
+
 struct Texture
 {
-    uint32_t gl_texture_id; // the actual glgentextures handle returned by openGL.
+    uint32_t gl_texture_id; // the actual glgentextures handle returned by openGL that this texture is bound to.
     int32_t gl_texture_frame; // the GL_TEXTUREN value.
 
     unsigned char* data = nullptr; // hmm. this is malloc'd by stb_img. we call free in the destructor.
@@ -24,7 +40,6 @@ struct Texture
     	}
     }
 };
-
 
 
 struct Texture_Manager
