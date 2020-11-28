@@ -44,33 +44,23 @@ namespace
     // ---------------
 	// cvars
 	// ---------------
-    // float g_mouse_sensitivity = 0.08f;
 
-
-
-    float g_mouse_sensitivity = 0.5f;
-    float g_camera_velocity = 0.2f;
     // world
- 	float g_player_gravity = 0.3335f;
+    float g_mouse_sensitivity = 0.08f;
+    float g_camera_velocity = 0.2f;
+ 	float g_player_gravity = 0.01f;
 
  	// calibrated for 120hz, but vsync is 144hz. woops.
  	// but that shouldn't actually matter right?
 
     // player movement
-    float g_player_friction = 0.1f;
-    float g_player_max_velocity = 3.75f;
-    float g_player_ground_movespeed = 0.043125f;
-    float g_player_ground_acceleration = 0.08625f;
-    float g_player_ground_deceleration= 0.06187f;
-    float g_player_jump_velocity = 0.0665f;
+    float pm_jump_acceleration   = 1.0f;
+    float pm_ground_acceleration = 0.166666666f;
+    float pm_ground_deceleration =  1.66666666f;
+    float pm_friction = 0.1f;
 
-    float g_player_air_acceleration = 0.033f;
-    float g_player_air_deceleration = 0.033f;
-    float g_player_air_control = 0.01f;
-    float g_player_side_strafe_acceleration = 1.6667f;
-    float g_player_side_strafe_speed = 0.0033f;
-
-
+    float pm_air_deceleration = 0.1f;
+  
     // flying units
     float g_dodecahedron_velocity = 1.f;
     float g_wanted_distance = 80.0f;
@@ -79,6 +69,74 @@ namespace
     float g_alignment = 1.f;
     float g_cohesion = 1.f;
 
+
+
+   
+	glm::vec3 apply_friction(glm::vec3 old_movement_vector, bool grounded, float dt_factor)
+	{
+		logr::report("apply_friction\n");
+		if (grounded) old_movement_vector.y = 0.0f;	
+
+
+		float velocity = glm::length(old_movement_vector);
+
+		if (velocity < 0.0000001f)
+		{
+			return glm::vec3(0.0f);
+		}
+
+		float velocity_drop = 0.0f;
+		bool jump_pressed_this_frame = false;
+		if (!jump_pressed_this_frame)
+		{
+			if (grounded) // if grounded, we experience friction. 
+			{ 
+				// if we are moving slower than the acceleration, base decrement on deceleration.
+				// if we are moving faster than the acceleration, base decrement on own velocity (which will be harsher)
+				float drop_base = (velocity < pm_ground_acceleration) ? pm_ground_deceleration : velocity;
+				velocity_drop = drop_base * pm_friction * dt_factor;
+			} 
+		}
+		// adjust the velocity with the induced velocity drop. 
+		float drop_adjusted_velocity = velocity - velocity_drop;
+		if(drop_adjusted_velocity < 0.0f) drop_adjusted_velocity = 0.0f;
+
+		// normalize the velocity based on the ground velocity.
+		if(drop_adjusted_velocity > 0.0f)
+		{
+			drop_adjusted_velocity /= velocity;
+		}
+		
+		float new_velocity = drop_adjusted_velocity;
+		glm::vec3 adjusted_movement_vector = glm::normalize(old_movement_vector);
+		logr::report("velocity: {}\n", velocity);
+		logr::report("drop_adjust_velocity: {}\n", drop_adjusted_velocity);
+		logr::report("apply_friction movement_vector: {}\n", glm::to_string(adjusted_movement_vector));
+
+		return adjusted_movement_vector * new_velocity;
+	}
+
+	glm::vec3 accelerate(glm::vec3 old_movement_vector, glm::vec3 wish_direction, float wish_velocity, float acceleration, float dt_factor)
+	{
+		float current_speed = glm::dot(old_movement_vector, wish_direction);
+		float delta_speed = wish_velocity - current_speed;
+		
+		if (delta_speed <= 0.0f) return glm::vec3(0.0f);
+
+		float accel_speed = acceleration *  wish_velocity * dt_factor;
+		if (accel_speed > delta_speed) accel_speed = delta_speed;
+
+		logr::report("accelerate old movement_vector:{}\n", glm::to_string(old_movement_vector));
+		logr::report("wish_direction: {}\n", glm::to_string(wish_direction));
+		logr::report("wish_velocity: {}\n", wish_velocity);
+		logr::report("current_speed: {}\n", current_speed);
+		logr::report("delta_speed: {}\n", delta_speed);
+		logr::report("accel_speed: {}\n", accel_speed);
+		glm::vec3 result = old_movement_vector + accel_speed * wish_direction;
+		logr::report("result: {}\n", glm::to_string(result));
+
+		return result; 
+	}	
 
     //@Dependencies:
     // g_player_movespeed
@@ -94,71 +152,58 @@ namespace
 	{
 		static bool grounded = true;
 		bool jump_pressed_this_frame = false;
+		logr::report("start: old movement_vector:{}\n", glm::to_string(old_movement_vector));
+		glm::vec3 adjusted_movement_vector = apply_friction(old_movement_vector, grounded, dt_factor);
+		// in very fancy terms: "project forward and right to flat plane"
 
-		const glm::vec3 world_up(0.0f, 1.0f, 0.0f);
-		const glm::vec3 front_without_height = glm::vec3(front.x, 0.0f, front.z);
+		const glm::vec3 plane_front = glm::normalize(glm::vec3(front.x, 0.0f, front.z));
+		const glm::vec3 plane_right = glm::normalize(glm::vec3(right.x, 0.0f, right.z));
 
-		glm::vec3 input_vector = glm::vec3(0.0f);
-		if (input.keyboard_state[KEY_W]) input_vector += front_without_height;
-		if (input.keyboard_state[KEY_S]) input_vector -= front_without_height;
-		if (input.keyboard_state[KEY_A]) input_vector -= right;
-		if (input.keyboard_state[KEY_D]) input_vector += right;
+		glm::vec3 input_vector = glm::vec3(0.0f,0.0f,0.0f);
+
+		float input_y_velocity = 0.0f;
+		if (input.keyboard_state[KEY_W]) input_vector += plane_front;
+		if (input.keyboard_state[KEY_S]) input_vector -= plane_front;
+		if (input.keyboard_state[KEY_A]) input_vector -= plane_right;
+		if (input.keyboard_state[KEY_D]) input_vector += plane_right;
 		if (input.keyboard_state[KEY_SPACE])
 		{
 			if (grounded)
 			{
-				input_vector.y += g_player_jump_velocity; 
+				input_y_velocity += pm_jump_acceleration; 
 				grounded = false;
 				jump_pressed_this_frame = true;
 			}
 		}
 
-		// ground control (to major tom)
-		glm::vec3 input_ground_vector = glm::vec3(input_vector.x, 0.0f, input_vector.z);
-    	float     input_ground_velocity = g_player_ground_movespeed * dt_factor;
-    	input_ground_vector = input_ground_vector * input_ground_velocity;
+		float input_velocity = glm::length(input_vector);
+	
 
-		glm::vec3 old_ground_vector =   glm::vec3(old_movement_vector.x, 0.0f, old_movement_vector.z);
-		float old_ground_vector_velocity = glm::length(old_ground_vector);
-
-    	glm::vec3 ground_vector = old_ground_vector + input_ground_vector;
-		float ground_velocity = glm::length(ground_vector);
-
-    	glm::vec3 movement_vector(0.0f);
-    	movement_vector.x = ground_vector.x;
-    	movement_vector.y = 0.0f;
-    	movement_vector.z = ground_vector.z;
-
-		// Do not apply friction if the player is queueing up the next jump
-		if(!jump_pressed_this_frame)
+		if (input_velocity < 0.0001f) 
 		{
-			float drop = 0.0f;
-
-			//@FIXME(Sjors): Only if the player is on the ground then apply friction
-			// if (grounded)
-			// {
-				float control = (ground_velocity < g_player_ground_acceleration) ? g_player_ground_deceleration : ground_velocity;
-				drop = control * g_player_friction * dt_factor;
-			// } 
-
-			float drop_adjusted_velocity = ground_velocity - drop;
-			if(drop_adjusted_velocity < 0.0f) drop_adjusted_velocity = 0.0f;
-			
-			if(ground_velocity > 0.0f) drop_adjusted_velocity /= ground_velocity;
-			movement_vector = ground_vector * drop_adjusted_velocity;
+			// don't normalize: will yield nan or inf			
 		}
+		else
+		{
+			input_vector = glm::normalize(input_vector);
+		}
+
 		
-		if (old_movement_vector.y != 0.0f)  movement_vector.y = old_movement_vector.y;
-		if (input_vector.y > 0.0f) movement_vector.y = input_vector.y;
+		//@IC(Sjors): DO NOT forget the brackets here.
+		float acceleration = (grounded) ? pm_ground_acceleration : pm_air_deceleration;
+		glm::vec3 movement_vector = accelerate(adjusted_movement_vector, input_vector, input_velocity, acceleration, dt_factor);
+		// at this point, movement_vector is adjusted for dt.
+		// logr::report("movement_vector:{}\n", glm::to_string(movement_vector));
+		movement_vector.y += input_y_velocity;
 
-		//@FIXME(Sjors): do air movement here.
+		if (old_position.y > 0.0f) movement_vector.y -= g_player_gravity * dt_factor;
+		float velocity = glm::length(movement_vector);
 
-		// @FIXME(Sjors): only apply gravity when IN the air.
-		if (old_position.y > 0.0f) movement_vector.y -= g_player_gravity * 0.008f * dt_factor;
+
+		// try to move (collide with ground plane etc etc etc)
 
 		glm::vec3 position = old_position + movement_vector;
-
-		// clip the movement vector.
+		// // clip the movement vector.
 		if (position.y < 0.0f)
 		{
 			grounded = true;
@@ -392,7 +437,6 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 	if (vsync) clamped_dt = FRAMETIME_144_FPS;
  
  	const float dt_factor = clamped_dt / FRAMETIME_144_FPS;
-	logr::report("dt_factor: {}\n", dt_factor); 
 
 	// process higher level input
 	{
@@ -412,7 +456,7 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 		{
 
 			// BEFORE MOVING ANYTHING, check shot intersection?
-			if (input.mouse_left) evaluate_shot(entity_manager, game_state.camera);
+			//if (input.mouse_left) evaluate_shot(entity_manager, game_state.camera);
 
 
 			// post_shoot_reevaluate(entity_manager);
@@ -426,10 +470,10 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 				g_player_entity.position = game_state.camera.position;
 			}
 
-			// update dodecahedrons
-			{
-				evaluate_flying_units(entity_manager, dt_factor);
-			}
+			// // update dodecahedrons
+			// {
+			// 	evaluate_flying_units(entity_manager, dt_factor);
+			// }
 
 			// at this point, we can start rendering static geometry.
 			// collision_check()
