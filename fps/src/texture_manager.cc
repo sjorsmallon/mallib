@@ -1,5 +1,5 @@
 #include "texture_manager.h"
-#include "log.h"
+#include "logr.h"
 #include <glad/glad.h>
 
 #define STB_IMAGE_IMPLEMENTATION

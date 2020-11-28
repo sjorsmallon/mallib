@@ -40,6 +40,7 @@ source_files = [
 	'src/asset_manager.cc',
 	'src/game_simulate.cc',
 	'src/game_render.cc',
+	'src/game_end_frame.cc',
 	'src/game.cc',
 	'src/task_system.cc',
 	'src/timed_function.cc',

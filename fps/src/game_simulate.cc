@@ -5,7 +5,7 @@
 
 #include "camera.h"
 #include "input.h"
-#include "log.h"
+#include "logr.h"
 #include "entity_manager.h"
 #include "sound_system.h"
 #include "collision_system.h"
@@ -404,8 +404,6 @@ namespace
 			// float t_2 = -b - discriminant;
 		}
 
-		destroy_scheduled_entities(entity_manager);
-
 	}
 
 
@@ -458,7 +456,6 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 			{
 				evaluate_flying_units(entity_manager, dt_factor);
 			}
-
 
 			// at this point, we can start rendering static geometry.
 			// collision_check()

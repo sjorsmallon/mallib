@@ -1,5 +1,5 @@
 #include "entity_manager.h"
-#include "log.h"
+#include "logr.h"
 
 namespace
 {

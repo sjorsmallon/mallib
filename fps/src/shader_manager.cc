@@ -3,7 +3,7 @@
 #include <vector>
 
 #include <glad/glad.h>
-#include "log.h"
+#include "logr.h"
 #include <glm/gtc/type_ptr.hpp>
 #include "file.h"
 

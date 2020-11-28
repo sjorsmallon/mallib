@@ -9,7 +9,7 @@
 #include <set>
 
 #include "camera.h"
-#include "log.h"
+#include "logr.h"
 #include "light.h"
 #include "shader_manager.h"
 #include "texture_manager.h"
@@ -858,21 +858,31 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 set_shader(*shader_manager, "deferred_instanced");
                 set_uniform(*shader_manager, "view", view);
                 
-                auto& dodecahedrons = by_type(*entity_manager, Entity_Type::Cube);
+                auto&& dodecahedrons = by_type_ptr(*entity_manager, Entity_Type::Cube);
                 
-                for (size_t idx =0; idx !=  dodecahedrons.size(); ++idx)
-                {
-                    auto& entity = dodecahedrons[idx];
-                    
-                    glm::mat4& model_matrix = g_dodecahedron_model_matrices[idx];
-                    glm::mat4& mvp_matrix = g_dodecahedron_mvp_matrices[idx];
-                    glm::mat4 scale = glm::scale(glm::mat4(1.f), glm::vec3(20.f));
+                //@Note(Sjors): we now use draw count in order to not overdraw.
+                // draw_count is used in gldrawarraysinstanced.
+                // however, this means that there is garbage at the end of the buffer (past draw count).
+                // we may want to zero that.
 
+                size_t draw_count = 0;
+                for (size_t idx = 0; idx !=  dodecahedrons.size(); ++idx)
+                {
+                    auto& entity = *dodecahedrons[idx];
+
+                    if (entity.scheduled_for_destruction) continue;
+
+                    glm::mat4& model_matrix = g_dodecahedron_model_matrices[draw_count];
+                    glm::mat4& mvp_matrix = g_dodecahedron_mvp_matrices[draw_count];
+                    draw_count += 1;
+
+                    glm::mat4 scale = glm::scale(glm::mat4(1.f), glm::vec3(20.f));
+                    
+                    // turn angry face towards player
                     glm::mat4 rotate = glm::mat4(1.0f);
                     glm::vec3 target_ray = glm::normalize(camera.position - entity.position);
                     glm::vec3 object_ray = glm::vec3(0.f,1.f, 0.f);
                     float angle_dif = acos(glm::dot(target_ray, object_ray));
-
                     if (angle_dif != 0)
                     {
                         glm::vec3 ortho_ray = glm::cross(object_ray, target_ray);
@@ -892,7 +902,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 auto& dodecahedron_diffuse_texture  = get_texture(*texture_manager, "angry_face");
                 auto& wall_stone_specular_texture = get_texture(*texture_manager, "wall_stone_specular");
 
-                // set_uniform(*shader_manager, "texture_diffuse", wall_stone_diffuse_texture.gl_texture_frame);
                 set_uniform(*shader_manager, "texture_diffuse",  dodecahedron_diffuse_texture.gl_texture_frame);
                 set_uniform(*shader_manager, "texture_specular", wall_stone_specular_texture.gl_texture_frame);
                 
@@ -903,7 +912,9 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                     GL_TRIANGLES,
                     0,
                     mesh_size,
-                    g_dodecahedron_model_matrices.size());
+                    draw_count);
+
+
                 glBindVertexArray(0);
             }
 

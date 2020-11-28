@@ -2,7 +2,7 @@
 #define INCLUDED_FILE_
 #include <string>
 #include <vector>
-#include "log.h"
+#include "logr.h"
 #include <filesystem>
 #include <fstream>
 

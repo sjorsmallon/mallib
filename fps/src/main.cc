@@ -9,7 +9,7 @@
 #include "sound_system.h"
 #include "task_system.h"
 
-#include "log.h"
+#include "logr.h"
 #include "particle.h"
 #include "game.h"
 
@@ -98,6 +98,7 @@ int main()
         poll_input(window_manager);
         game_simulate(game_state, frame_dt, window_manager.input, particle_cache, entity_manager);
         game_render(game_state, particle_cache);
+        game_end_frame(game_state, entity_manager);
 
         if (game_state.game_mode == GM_EDITOR) render_debug_ui(window_manager);
 

@@ -1,6 +1,6 @@
 #ifndef INCLUDED_WINDOW_MANAGER_
 #define INCLUDED_WINDOW_MANAGER_
-#include "log.h"
+#include "logr.h"
 #include "input.h"
 
 //@FIXME(Sjors): I hate that input is part of the window manager now. where do we want to keep it around?

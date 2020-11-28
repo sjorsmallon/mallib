@@ -9,6 +9,7 @@
 #include <map>
 #include <deque>
 #include <string>
+#include "logr.h"
 
 using entity_id = uint32_t; 
 using generation = uint32_t;
@@ -71,15 +72,13 @@ std::vector<Entity*>& by_type_ptr(Entity_Manager& entity_manager, Entity_Type ty
 
 inline void schedule_for_destruction(Entity_Manager& entity_manager, Entity* entity)
 {
+	entity->scheduled_for_destruction = true;
 	entity_manager.scheduled_for_destruction.push_back(entity);
-
-	
 }
 
 inline void destroy_scheduled_entities(Entity_Manager& entity_manager)
 {
-	// erase from the vector?
-	// entity_manager.active_entities[]
+	logr::report_warning_once("[entity_manager] destroy_scheduled_entites: implementation unfinished!\n");
 	auto&& cubes = entity_manager.active_entities[Entity_Type::Cube];
 	cubes.erase(std::remove_if(cubes.begin(), cubes.end(),
 		[&](Entity* entity) -> bool
@@ -90,8 +89,10 @@ inline void destroy_scheduled_entities(Entity_Manager& entity_manager)
 			}
 			return false;
 		}), cubes.end());
+
 	for (auto* marked_entity : entity_manager.scheduled_for_destruction) 
 			entity_manager.free_indices[marked_entity->type].push_front(marked_entity->id);
+
 	entity_manager.scheduled_for_destruction.clear();
 }
 
