@@ -13,6 +13,16 @@
 
 // these are the GLFW key presses.
 constexpr const int KEY_SPACE = 32;
+constexpr const int KEY_1 = 48;
+constexpr const int KEY_2 = 49;
+constexpr const int KEY_3 = 50;
+constexpr const int KEY_4 = 51;
+constexpr const int KEY_5 = 52;
+constexpr const int KEY_6 = 53;
+constexpr const int KEY_7 = 54;
+constexpr const int KEY_8 = 55;
+constexpr const int KEY_9 = 56;
+
 constexpr const int KEY_W = 87;
 constexpr const int KEY_A = 65;
 constexpr const int KEY_S = 83;
@@ -48,12 +58,12 @@ namespace
     // world
     float g_mouse_sensitivity = 0.08f;
     float g_camera_velocity = 0.2f;
- 	float g_player_gravity = 0.9f;
+ 	float g_player_gravity = 50.0f;
 
  	// calibrated for 120hz, but vsync is 144hz. woops.
  	// but that shouldn't actually matter right?
     // player movement
-    float pm_jump_acceleration  = 100.0f;
+    float pm_jump_acceleration  = 800.0f;
     float pm_ground_acceleration = 10.f;
     float pm_stopspeed = 100.f;
     float pm_maxspeed = 100.0f; 
@@ -71,7 +81,7 @@ namespace
     float g_cohesion = 1.f;
 
     [[nodiscard]]
-	glm::vec3 apply_friction(glm::vec3 old_movement_vector, bool grounded, bool jump_pressed_this_frame, float dt_factor)
+	glm::vec3 apply_friction(glm::vec3 old_movement_vector, bool grounded, bool jump_pressed_this_frame, float dt)
 	{
 		old_movement_vector.y = 0.0f;
 
@@ -88,7 +98,7 @@ namespace
 			if (grounded) // if grounded, we experience friction. 
 			{ 
 				float drop_base = 0.0f;
-				// if we are moving slower than the stopst, base decrement on deceleration.
+				// if we are moving slower than the stopspeed, base decrement on deceleration.
 				// if (velocity < 120300);
 				// {
 				// 	drop_base = pm_stopspeed;
@@ -97,7 +107,7 @@ namespace
 				{
 					drop_base = velocity;
 				}
-				velocity_drop = drop_base * pm_friction * dt_factor;
+				velocity_drop = drop_base * pm_friction * dt;
 			} 
 		}
 
@@ -122,7 +132,7 @@ namespace
 	}
 	
 	[[nodiscard]]
-	glm::vec3 accelerate(glm::vec3 old_movement_vector, glm::vec3 wish_direction, float wish_velocity, float acceleration, float dt_factor)
+	glm::vec3 accelerate(glm::vec3 old_movement_vector, glm::vec3 wish_direction, float wish_velocity, float acceleration, float dt)
 	{
 		// logr::report("accelerate old movement_vector:{}\n", glm::to_string(old_movement_vector));
 		float current_speed_in_wish_direction = glm::dot(old_movement_vector, wish_direction);
@@ -135,7 +145,7 @@ namespace
 		// delta speed will be HUGE when the timestep decreases.
 		// does that matter?
 		float delta_speed = wish_velocity - current_speed_in_wish_direction;
-		float accel_speed = acceleration * wish_velocity * dt_factor;
+		float accel_speed = acceleration * wish_velocity * dt;
 		// logr::report("delta_speed: {}\n", delta_speed);
 		// logr::report("accel_speed: {}\n", accel_speed);
 
@@ -149,9 +159,9 @@ namespace
 
 		glm::vec3 result = old_movement_vector + (accel_speed * wish_direction);
 
-		if (glm::length(result) > (pm_maxspeed * dt_factor))
+		if (glm::length(result) > (pm_maxspeed * dt))
 		{
-			result = glm::normalize(result) * (pm_maxspeed * dt_factor);
+			result = glm::normalize(result) * (pm_maxspeed * dt);
 		}
 
 		return result; 
@@ -167,7 +177,7 @@ namespace
 		const glm::vec3 old_movement_vector,
 		const glm::vec3 front,
 		const glm::vec3 right,
-		const float dt_factor)
+		const float dt)
 	{
 		static bool grounded = true;
 		bool jump_pressed_this_frame = input.keyboard_state[KEY_SPACE];	
@@ -175,7 +185,7 @@ namespace
 		float Y_old_y = old_movement_vector.y;
 		logr::report("Y_old_y: {}\n", Y_old_y);
 
-		glm::vec3 adjusted_movement_vector = apply_friction(old_movement_vector, grounded, jump_pressed_this_frame, dt_factor);
+		glm::vec3 adjusted_movement_vector = apply_friction(old_movement_vector, grounded, jump_pressed_this_frame, dt);
 
 		const glm::vec3 plane_front = glm::normalize(glm::vec3(front.x, 0.0f, front.z));
 		const glm::vec3 plane_right = glm::normalize(glm::vec3(right.x, 0.0f, right.z));
@@ -187,7 +197,8 @@ namespace
 		if (input.keyboard_state[KEY_A]) input_vector -= plane_right;
 		if (input.keyboard_state[KEY_D]) input_vector += plane_right;
 
-	
+		glm::vec3 position{};
+
 		float input_velocity = glm::length(input_vector);
 
 		if (input_velocity > 0.00001f)
@@ -203,9 +214,9 @@ namespace
 		{
 			if (grounded)
 			{
-				// logr::report("jumped\n");
-				// if (input_velocity > 0.0000001f) //input_velocity = 1.0f * dt_factor;
-				Y_input_y_velocity = pm_jump_acceleration * 0.005f; 
+				logr::report("jumped\n");
+				// if (input_velocity > 0.0000001f) //input_velocity = 1.0f * dt;
+				Y_input_y_velocity = 1.0f; 
 				grounded = false;
 				jump_pressed_this_frame = true;
 			}
@@ -231,22 +242,39 @@ namespace
 			{
 				acceleration = pm_ground_acceleration;
 			}
-			movement_vector = accelerate(adjusted_movement_vector, input_vector, input_velocity, acceleration, dt_factor);
+			movement_vector = accelerate(adjusted_movement_vector, input_vector, input_velocity, acceleration, dt);
 		}
 
 		//Y
 		movement_vector.y = 0.0f;
 		movement_vector.y += Y_input_y_velocity;
-		movement_vector.y += Y_old_y;
+
+		if (old_movement_vector.y > 0.0f)
+		{
+			movement_vector.y = Y_old_y; 
+		}
 	
 		if (old_position.y > 0.0f)
 		{
-			movement_vector.y =  movement_vector.y - (g_player_gravity * dt_factor);
+			movement_vector.y -= g_player_gravity  *  dt;
 		}
+ 
 
 		// try to move (collide with ground plane etc etc etc)
+		logr::report("movement_vector: {}\n", movement_vector);
+		position = old_position + movement_vector;
 
-		glm::vec3 position = old_position + movement_vector;
+
+		if (input.keyboard_state[KEY_1]) position.y = 10.0f; 
+		if (input.keyboard_state[KEY_2]) position.y = 20.0f; 
+		if (input.keyboard_state[KEY_3]) position.y = 30.0f; 
+		if (input.keyboard_state[KEY_4]) position.y = 40.0f; 
+		if (input.keyboard_state[KEY_5]) position.y = 50.0f; 
+		if (input.keyboard_state[KEY_6]) position.y = 60.0f; 
+		if (input.keyboard_state[KEY_7]) position.y = 70.0f; 
+		if (input.keyboard_state[KEY_8]) position.y = 80.0f; 
+		if (input.keyboard_state[KEY_9]) position.y = 90.0f;
+
 		// // clip the movement vector.
 		if (position.y < 0.0f)
 		{
@@ -266,16 +294,16 @@ namespace
 		const glm::vec3 front,
 		const glm::vec3 right,
 		const glm::vec3 up,
-		const float dt_factor)
+		const float dt)
 	{
 		glm::vec3 position = old_position;
 
-		if (input.keyboard_state[KEY_W]) position = position + (front * g_camera_velocity * dt_factor);
-		if (input.keyboard_state[KEY_S]) position = position - (front * g_camera_velocity * dt_factor);
-		if (input.keyboard_state[KEY_A]) position = position - (right * g_camera_velocity * dt_factor);
-		if (input.keyboard_state[KEY_D]) position = position + (right * g_camera_velocity * dt_factor);
+		if (input.keyboard_state[KEY_W]) position = position + (front * g_camera_velocity * dt);
+		if (input.keyboard_state[KEY_S]) position = position - (front * g_camera_velocity * dt);
+		if (input.keyboard_state[KEY_A]) position = position - (right * g_camera_velocity * dt);
+		if (input.keyboard_state[KEY_D]) position = position + (right * g_camera_velocity * dt);
 
-		if (input.keyboard_state[KEY_SPACE]) position = position + (up * g_camera_velocity * dt_factor);
+		if (input.keyboard_state[KEY_SPACE]) position = position + (up * g_camera_velocity * dt);
 
 		return position;
 	}
@@ -284,7 +312,7 @@ namespace
 	// assumes world up direction is positive y.
 	// @dependencies: 
 	// g_mouse_sensitivity
-	Camera update_camera_view_with_input(const Input& input, const Camera camera, const float dt_factor, const bool should_constrain_pitch = true)
+	Camera update_camera_view_with_input(const Input& input, const Camera camera, const float dt, const bool should_constrain_pitch = true)
 	{
 		Camera new_camera = camera;
 	    glm::vec3 world_up(0.0f,1.0f, 0.0f);
@@ -317,15 +345,15 @@ namespace
 	    return new_camera;
 	}
 
-	Camera update_camera_entity(const Input& input, const Camera old_camera, const float dt_factor)
+	Camera update_camera_entity(const Input& input, const Camera old_camera, const float dt)
 	{
 		Camera camera = old_camera;
-		auto [position, movement_vector] = update_position_with_input(input, old_camera.position, old_camera.movement_vector, old_camera.front, old_camera.right, dt_factor); 
+		auto [position, movement_vector] = update_position_with_input(input, old_camera.position, old_camera.movement_vector, old_camera.front, old_camera.right, dt); 
 		camera.position = position;
 		camera.movement_vector = movement_vector;
 
 		if (input.mouse_delta_x || input.mouse_delta_x)
-			return update_camera_view_with_input(input, camera, dt_factor);
+			return update_camera_view_with_input(input, camera, dt);
 
 		return camera;
 	}
@@ -335,7 +363,7 @@ namespace
 		auto& player = g_player_entity;
 	}
 
-	void evaluate_flying_units(Entity_Manager& entity_manager, const float dt_factor)
+	void evaluate_flying_units(Entity_Manager& entity_manager, const float dt)
 	{
 		auto& player = g_player_entity;
 		auto& dodecahedrons = by_type(entity_manager, Entity_Type::Cube);
@@ -439,7 +467,7 @@ namespace
 				direction_vector = glm::normalize(0.1f * direction_vector + 0.9f * old_direction_vector);
 			}	
 
-			entity.position = entity.position + (direction_vector * g_dodecahedron_velocity * dt_factor);	
+			entity.position = entity.position + (direction_vector * g_dodecahedron_velocity * dt);	
 			entity.movement_vector = direction_vector;
 		}
 
@@ -468,14 +496,19 @@ namespace
 void game_simulate(Game_State& game_state, const double dt, const Input& input, Particle_Cache& particle_cache, Entity_Manager& entity_manager)
 {
 	float clamped_dt = static_cast<float>(dt);	
-	if (clamped_dt < FRAMETIME_1000_FPS) clamped_dt = FRAMETIME_1000_FPS; 
-	if (clamped_dt > FRAMETIME_10_FPS)   clamped_dt = FRAMETIME_10_FPS;  
-	bool vsync = true;
+	if (clamped_dt < FRAMETIME_1000_FPS)
+	{
+		clamped_dt = FRAMETIME_1000_FPS;	
+	}
+
+	if (clamped_dt > FRAMETIME_10_FPS)
+	{
+		clamped_dt = FRAMETIME_10_FPS;  	
+	}
 
 	// if (vsync) clamped_dt = FRAMETIME_144_FPS;
  
- 	const float dt_factor = clamped_dt;
- 	// logr::report("dt_factor: {}\n", dt_factor);
+ 	// logr::report("dt: {}\n", dt);
 
 	// process higher level input
 	{
@@ -503,13 +536,13 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 			// update player and camera.
 			{
 				update_player_entity(input);
-				game_state.camera = update_camera_entity(input, game_state.camera, dt_factor);
+				game_state.camera = update_camera_entity(input, game_state.camera, clamped_dt);
 				g_player_entity.position = game_state.camera.position;
 			}
 
 			// // update dodecahedrons
 			// {
-			// 	evaluate_flying_units(entity_manager, dt_factor);
+			// 	evaluate_flying_units(entity_manager, dt);
 			// }
 
 			// at this point, we can start rendering static geometry.
