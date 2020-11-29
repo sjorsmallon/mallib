@@ -48,17 +48,18 @@ namespace
     // world
     float g_mouse_sensitivity = 0.08f;
     float g_camera_velocity = 0.2f;
- 	float g_player_gravity = 0.01f;
+ 	float g_player_gravity = 0.9f;
 
  	// calibrated for 120hz, but vsync is 144hz. woops.
  	// but that shouldn't actually matter right?
-
     // player movement
-    float pm_jump_acceleration   = 1.0f;
-    float pm_ground_acceleration = 0.166666666f;
-    float pm_ground_deceleration =  1.66666666f;
-    float pm_friction = 0.1f;
+    float pm_jump_acceleration  = 100.0f;
+    float pm_ground_acceleration = 10.f;
+    float pm_stopspeed = 100.f;
+    float pm_maxspeed = 100.0f; 
+    float pm_friction = 6.f;
 
+    float pm_air_acceleration = 0.10f;
     float pm_air_deceleration = 0.1f;
   
     // flying units
@@ -69,71 +70,89 @@ namespace
     float g_alignment = 1.f;
     float g_cohesion = 1.f;
 
-
-
-   
-	glm::vec3 apply_friction(glm::vec3 old_movement_vector, bool grounded, float dt_factor)
+    [[nodiscard]]
+	glm::vec3 apply_friction(glm::vec3 old_movement_vector, bool grounded, bool jump_pressed_this_frame, float dt_factor)
 	{
-		logr::report("apply_friction\n");
-		if (grounded) old_movement_vector.y = 0.0f;	
-
+		old_movement_vector.y = 0.0f;
 
 		float velocity = glm::length(old_movement_vector);
-
+	
 		if (velocity < 0.0000001f)
 		{
 			return glm::vec3(0.0f);
 		}
 
 		float velocity_drop = 0.0f;
-		bool jump_pressed_this_frame = false;
 		if (!jump_pressed_this_frame)
 		{
 			if (grounded) // if grounded, we experience friction. 
 			{ 
-				// if we are moving slower than the acceleration, base decrement on deceleration.
-				// if we are moving faster than the acceleration, base decrement on own velocity (which will be harsher)
-				float drop_base = (velocity < pm_ground_acceleration) ? pm_ground_deceleration : velocity;
+				float drop_base = 0.0f;
+				// if we are moving slower than the stopst, base decrement on deceleration.
+				// if (velocity < 120300);
+				// {
+				// 	drop_base = pm_stopspeed;
+				// }
+				// else  // if we are moving faster than the acceleration, base decrement on own velocity (which will be harsher)
+				{
+					drop_base = velocity;
+				}
 				velocity_drop = drop_base * pm_friction * dt_factor;
 			} 
 		}
+
 		// adjust the velocity with the induced velocity drop. 
 		float drop_adjusted_velocity = velocity - velocity_drop;
 		if(drop_adjusted_velocity < 0.0f) drop_adjusted_velocity = 0.0f;
+		float new_velocity = 0.0f;
 
 		// normalize the velocity based on the ground velocity.
 		if(drop_adjusted_velocity > 0.0f)
 		{
-			drop_adjusted_velocity /= velocity;
+			new_velocity = drop_adjusted_velocity;
+			if (velocity > 1.0f) new_velocity /= velocity;
 		}
-		
-		float new_velocity = drop_adjusted_velocity;
-		glm::vec3 adjusted_movement_vector = glm::normalize(old_movement_vector);
-		logr::report("velocity: {}\n", velocity);
-		logr::report("drop_adjust_velocity: {}\n", drop_adjusted_velocity);
-		logr::report("apply_friction movement_vector: {}\n", glm::to_string(adjusted_movement_vector));
 
+		// logr::report("velocity: {}\n", velocity);
+		// logr::report("velocity_drop: {}\n", velocity_drop);
+
+		// logr::report("drop_adjusted_velocity: {}\n", drop_adjusted_velocity);
+		glm::vec3 adjusted_movement_vector = glm::normalize(old_movement_vector);
 		return adjusted_movement_vector * new_velocity;
 	}
-
+	
+	[[nodiscard]]
 	glm::vec3 accelerate(glm::vec3 old_movement_vector, glm::vec3 wish_direction, float wish_velocity, float acceleration, float dt_factor)
 	{
-		float current_speed = glm::dot(old_movement_vector, wish_direction);
-		float delta_speed = wish_velocity - current_speed;
-		
-		if (delta_speed <= 0.0f) return glm::vec3(0.0f);
+		// logr::report("accelerate old movement_vector:{}\n", glm::to_string(old_movement_vector));
+		float current_speed_in_wish_direction = glm::dot(old_movement_vector, wish_direction);
 
-		float accel_speed = acceleration *  wish_velocity * dt_factor;
+		// logr::report("current_speed: {}\n", current_speed_in_wish_direction);
+		// logr::report("wish_direction: {}\n", glm::to_string(wish_direction));
+		// logr::report("wish_velocity: {}\n", wish_velocity);
+
+		// things to think about: since the wish direction is a unit vector,
+		// delta speed will be HUGE when the timestep decreases.
+		// does that matter?
+		float delta_speed = wish_velocity - current_speed_in_wish_direction;
+		float accel_speed = acceleration * wish_velocity * dt_factor;
+		// logr::report("delta_speed: {}\n", delta_speed);
+		// logr::report("accel_speed: {}\n", accel_speed);
+
+
+		if (delta_speed < 0.0f)
+		{
+		 	accel_speed = accel_speed;
+		}
+
 		if (accel_speed > delta_speed) accel_speed = delta_speed;
 
-		logr::report("accelerate old movement_vector:{}\n", glm::to_string(old_movement_vector));
-		logr::report("wish_direction: {}\n", glm::to_string(wish_direction));
-		logr::report("wish_velocity: {}\n", wish_velocity);
-		logr::report("current_speed: {}\n", current_speed);
-		logr::report("delta_speed: {}\n", delta_speed);
-		logr::report("accel_speed: {}\n", accel_speed);
-		glm::vec3 result = old_movement_vector + accel_speed * wish_direction;
-		logr::report("result: {}\n", glm::to_string(result));
+		glm::vec3 result = old_movement_vector + (accel_speed * wish_direction);
+
+		if (glm::length(result) > (pm_maxspeed * dt_factor))
+		{
+			result = glm::normalize(result) * (pm_maxspeed * dt_factor);
+		}
 
 		return result; 
 	}	
@@ -151,54 +170,79 @@ namespace
 		const float dt_factor)
 	{
 		static bool grounded = true;
-		bool jump_pressed_this_frame = false;
-		logr::report("start: old movement_vector:{}\n", glm::to_string(old_movement_vector));
-		glm::vec3 adjusted_movement_vector = apply_friction(old_movement_vector, grounded, dt_factor);
-		// in very fancy terms: "project forward and right to flat plane"
+		bool jump_pressed_this_frame = input.keyboard_state[KEY_SPACE];	
+
+		float Y_old_y = old_movement_vector.y;
+		logr::report("Y_old_y: {}\n", Y_old_y);
+
+		glm::vec3 adjusted_movement_vector = apply_friction(old_movement_vector, grounded, jump_pressed_this_frame, dt_factor);
 
 		const glm::vec3 plane_front = glm::normalize(glm::vec3(front.x, 0.0f, front.z));
 		const glm::vec3 plane_right = glm::normalize(glm::vec3(right.x, 0.0f, right.z));
 
 		glm::vec3 input_vector = glm::vec3(0.0f,0.0f,0.0f);
 
-		float input_y_velocity = 0.0f;
 		if (input.keyboard_state[KEY_W]) input_vector += plane_front;
 		if (input.keyboard_state[KEY_S]) input_vector -= plane_front;
 		if (input.keyboard_state[KEY_A]) input_vector -= plane_right;
 		if (input.keyboard_state[KEY_D]) input_vector += plane_right;
+
+	
+		float input_velocity = glm::length(input_vector);
+
+		if (input_velocity > 0.00001f)
+		{
+			// NORMALIZE INPUT DIRECTION (WHAT HAPPENS IF THIS IS ALL ZEROES?)
+			input_vector = glm::normalize(input_vector);
+		} 
+
+		/// ZERO OUT Y COMPONENT
+		float Y_input_y_velocity = 0.0f;
+
 		if (input.keyboard_state[KEY_SPACE])
 		{
 			if (grounded)
 			{
-				input_y_velocity += pm_jump_acceleration; 
+				// logr::report("jumped\n");
+				// if (input_velocity > 0.0000001f) //input_velocity = 1.0f * dt_factor;
+				Y_input_y_velocity = pm_jump_acceleration * 0.005f; 
 				grounded = false;
 				jump_pressed_this_frame = true;
 			}
 		}
 
-		float input_velocity = glm::length(input_vector);
-	
-
-		if (input_velocity < 0.0001f) 
+		glm::vec3 movement_vector = glm::vec3(0.0f);
+		// IF NO INPUT IS RECEIVED, CONTINUE IN THE SAME DIRECTION WITH SAME SPEED AS WE WERE ON.
+		if (input_velocity < 0.00001f) 
 		{
-			// don't normalize: will yield nan or inf			
+			// don't normalize: will yield nan or inf
+			movement_vector = adjusted_movement_vector;
 		}
 		else
 		{
-			input_vector = glm::normalize(input_vector);
+			float acceleration = 0.0f;
+
+			// POSSIBLY USE DIFFERENT ACCELERATION VALUES FOR WHEN WE ARE IN THE AIR.
+			if (grounded)
+			{
+				acceleration = pm_ground_acceleration;
+			}
+			else
+			{
+				acceleration = pm_ground_acceleration;
+			}
+			movement_vector = accelerate(adjusted_movement_vector, input_vector, input_velocity, acceleration, dt_factor);
 		}
 
-		
-		//@IC(Sjors): DO NOT forget the brackets here.
-		float acceleration = (grounded) ? pm_ground_acceleration : pm_air_deceleration;
-		glm::vec3 movement_vector = accelerate(adjusted_movement_vector, input_vector, input_velocity, acceleration, dt_factor);
-		// at this point, movement_vector is adjusted for dt.
-		// logr::report("movement_vector:{}\n", glm::to_string(movement_vector));
-		movement_vector.y += input_y_velocity;
-
-		if (old_position.y > 0.0f) movement_vector.y -= g_player_gravity * dt_factor;
-		float velocity = glm::length(movement_vector);
-
+		//Y
+		movement_vector.y = 0.0f;
+		movement_vector.y += Y_input_y_velocity;
+		movement_vector.y += Y_old_y;
+	
+		if (old_position.y > 0.0f)
+		{
+			movement_vector.y =  movement_vector.y - (g_player_gravity * dt_factor);
+		}
 
 		// try to move (collide with ground plane etc etc etc)
 
@@ -206,6 +250,7 @@ namespace
 		// // clip the movement vector.
 		if (position.y < 0.0f)
 		{
+			// logr::report("grounded.\n");
 			grounded = true;
 			position.y = 0.0f;
 			movement_vector.y = 0.0f;
@@ -244,8 +289,8 @@ namespace
 		Camera new_camera = camera;
 	    glm::vec3 world_up(0.0f,1.0f, 0.0f);
 
-	    float adjusted_x_offset = input.mouse_delta_x * g_mouse_sensitivity * dt_factor;
-	    float adjusted_y_offset = input.mouse_delta_y * g_mouse_sensitivity * dt_factor;
+	    float adjusted_x_offset = static_cast<float>(input.mouse_delta_x) * g_mouse_sensitivity;
+	    float adjusted_y_offset = static_cast<float>(input.mouse_delta_y) * g_mouse_sensitivity;
 
 	    new_camera.yaw   += adjusted_x_offset;
 	    new_camera.pitch += adjusted_y_offset;
@@ -258,7 +303,7 @@ namespace
 	    }
 
 	    // update front, right and up Vectors using the updated euler angles
-	    glm::vec3 front;
+	    glm::vec3 front{};
 	    front.x = cos(glm::radians(new_camera.yaw)) * cos(glm::radians(new_camera.pitch));
 	    front.y = sin(glm::radians(new_camera.pitch));
 	    front.z = sin(glm::radians(new_camera.yaw)) * cos(glm::radians(new_camera.pitch));
@@ -301,7 +346,7 @@ namespace
         glm::vec3 sum = std::accumulate(dodecahedrons.begin(), dodecahedrons.end(), glm::vec3(0.0f), sum_lambda);
 
         //@Incomplete(Sjors): div 0?
-        glm::vec3 average_position = sum *  (1.0f/ static_cast<float>(dodecahedrons.size()));
+        glm::vec3 average_position = sum *  (1.0f / static_cast<float>(dodecahedrons.size()));
         glm::vec3 player_position = player.position + glm::vec3(0.0f,10.0f,0.0f);
         glm::vec3 center_to_player_direction = glm::normalize(player_position - average_position);
 		
@@ -311,7 +356,7 @@ namespace
 			float distance;
 		};
 
-		//@Memory
+		//@Memory(Sjors)
 		std::vector<Neighbour_Info> neighbour_info(dodecahedrons.size());
 		//@Speed(Sjors): O(N^2)
 		// wat we nu gaan doen, kost heel veel tijd.
@@ -394,15 +439,9 @@ namespace
 				direction_vector = glm::normalize(0.1f * direction_vector + 0.9f * old_direction_vector);
 			}	
 
-
-
 			entity.position = entity.position + (direction_vector * g_dodecahedron_velocity * dt_factor);	
 			entity.movement_vector = direction_vector;
 		}
-
-		float frametime = dt_factor * FRAMETIME_IN_S;
-		// logr::report("general entity distance this frame: {}\n", g_dodecahedron_velocity * dt_factor);
-		// logr::report("over frametime: {}\n", (g_dodecahedron_velocity * dt_factor) / frametime);
 
 	}
 
@@ -415,7 +454,6 @@ namespace
 		{
   			if (!ray_intersects_sphere(camera.position, camera.front, entity_ptr->position, 20.0f)) continue;
 			// we hit.
-			bool mark_for_deletion = true;
 			schedule_for_destruction(entity_manager, entity_ptr);
 		}
 
@@ -429,14 +467,15 @@ namespace
 // update and render world
 void game_simulate(Game_State& game_state, const double dt, const Input& input, Particle_Cache& particle_cache, Entity_Manager& entity_manager)
 {
-	float clamped_dt = dt;	
+	float clamped_dt = static_cast<float>(dt);	
 	if (clamped_dt < FRAMETIME_1000_FPS) clamped_dt = FRAMETIME_1000_FPS; 
-	if (clamped_dt > FRAMETIME_10_FPS) clamped_dt = FRAMETIME_10_FPS;  
+	if (clamped_dt > FRAMETIME_10_FPS)   clamped_dt = FRAMETIME_10_FPS;  
 	bool vsync = true;
 
-	if (vsync) clamped_dt = FRAMETIME_144_FPS;
+	// if (vsync) clamped_dt = FRAMETIME_144_FPS;
  
- 	const float dt_factor = clamped_dt / FRAMETIME_144_FPS;
+ 	const float dt_factor = clamped_dt;
+ 	// logr::report("dt_factor: {}\n", dt_factor);
 
 	// process higher level input
 	{
@@ -454,10 +493,8 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 	{
 		// if game_mode = player_cam:
 		{
-
 			// BEFORE MOVING ANYTHING, check shot intersection?
 			//if (input.mouse_left) evaluate_shot(entity_manager, game_state.camera);
-
 
 			// post_shoot_reevaluate(entity_manager);
 			//@Note(Sjors): it is imperative that the player gets updated first, since that 

@@ -12,9 +12,9 @@ inline bool ray_intersects_sphere(const glm::vec3& ray_origin, const glm::vec3& 
 	//ray_sphere intersection
 	glm::vec3 oc = ray_origin - sphere_center;
 	float a = glm::dot(ray_direction, ray_direction);
-	float b = 2.0 * glm::dot(oc, ray_direction);
+	float b = 2.0f * glm::dot(oc, ray_direction);
 	float c = glm::dot(oc, oc) - radius * radius;
-	float discriminant = b * b - 4 * a * c;
+	float discriminant = b * b - 4.f * a * c;
 	return (discriminant > 0.0f);
 	
 

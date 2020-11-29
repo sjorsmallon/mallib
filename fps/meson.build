@@ -1,4 +1,4 @@
-project('testt', 'cpp',default_options : ['cpp_std=c++17'])
+project('testt', 'cpp',default_options : ['cpp_std=c++17', 'warning_level=3'])
 
 libfmt_project = subproject('fmt')
 libfmt_dep = libfmt_project.get_variable('fmt_dep')
@@ -7,7 +7,6 @@ libfmt_dep = libfmt_project.get_variable('fmt_dep')
 #add_project_arguments('-ftime-trace', language:'cpp')
 
 inc_dir = include_directories('include')
-
 
 libimgui_project = subproject('imgui')
 libimgui_dep = libimgui_project.get_variable('imgui_dep')

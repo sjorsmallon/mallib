@@ -4,6 +4,62 @@
 		"selected_items":
 		[
 			[
+				"dt",
+				"dt_factor"
+			],
+			[
+				"adjusted_",
+				"adjusted_movement_vector"
+			],
+			[
+				"old_",
+				"old_position"
+			],
+			[
+				"glfw",
+				"glfwSwapInterval"
+			],
+			[
+				"drop_",
+				"drop_adjusted_velocity"
+			],
+			[
+				"veloc",
+				"velocity_drop"
+			],
+			[
+				"adjusted",
+				"adjusted_movement_vector"
+			],
+			[
+				"movement",
+				"movement_vector"
+			],
+			[
+				"adjuste",
+				"adjusted_movement_vector"
+			],
+			[
+				"g_player",
+				"g_player_air_deceleration"
+			],
+			[
+				"g_playe",
+				"g_player_ground_acceleration"
+			],
+			[
+				"FR",
+				"FRAMETIME_144_FPS"
+			],
+			[
+				"framet",
+				"FRAMETIME_144_FPS"
+			],
+			[
+				"aver",
+				"average_direction_vector"
+			],
+			[
 				"update_",
 				"update_flying_units"
 			],
@@ -72,10 +128,6 @@
 				"normalized_input_ground_movement_vector"
 			],
 			[
-				"old_",
-				"old_movement_vector"
-			],
-			[
 				"g_player_air",
 				"g_player_air_control"
 			],
@@ -102,10 +154,6 @@
 			[
 				"jump",
 				"g_player_jump_velocity"
-			],
-			[
-				"g_player",
-				"g_player_ground_acceleration"
 			],
 			[
 				"input_vec",
@@ -466,82 +514,34 @@
 			[
 				"contr",
 				"control_coord_FS_in"
-			],
-			[
-				"plane",
-				"plane_intersects_patch_gs_in"
-			],
-			[
-				"plane_inters",
-				"plane_intersects_patch_ES_in"
-			],
-			[
-				"curre",
-				"current_loop_indices_size"
-			],
-			[
-				"loop_inde",
-				"loop_index_origin"
-			],
-			[
-				"loop",
-				"loop_index_origin"
-			],
-			[
-				"Poly",
-				"Polygon_Loop_Origin"
-			],
-			[
-				"right_pol",
-				"right_polygon_loop_origin"
-			],
-			[
-				"left_",
-				"left_polygon_loop_origin"
-			],
-			[
-				"POly",
-				"Polygon_Loop_Origin"
-			],
-			[
-				"indexed",
-				"indexed_segments"
-			],
-			[
-				"ordered",
-				"ordered_segments"
-			],
-			[
-				"segm",
-				"segmentApproximatelyEqual"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "src/sound_system.cc",
+			"contents": "[INFO]: old_position: (0.00000000, 44.13879013 3.00000000)\n\n[INFO]: old_position: (0.00000000, 12.76766586 3.00000000)",
 			"settings":
 			{
-				"buffer_size": 2660,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
+				"buffer_size": 118,
+				"line_ending": "Windows",
+				"name": "[INFO]: old_position: (0.00000000, 44.13879013 3.0"
 			}
 		},
 		{
 			"file": "src/game_simulate.cc",
 			"settings":
 			{
-				"buffer_size": 10725,
+				"buffer_size": 18164,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "src/render_system.cc",
+			"file": "/C/Users/Thesis/Desktop/Sublime Text 3/Data/Packages/User/logr_report.sublime-snippet",
 			"settings":
 			{
-				"buffer_size": 51962,
+				"buffer_size": 323,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -723,28 +723,44 @@
 	},
 	"expanded_folders":
 	[
+		"/C/mallib/mallib/fps/src",
+		"/C/mallib/mallib/fps/assets/shaders"
 	],
 	"file_history":
 	[
-		"/C/mallib/mallib/fps/src/main.cc",
-		"/C/mallib/mallib/fps/src/game_simulate.cc",
-		"/C/mallib/mallib/fps/src/sound_system.h",
-		"/C/mallib/mallib/fps/src/log.h",
+		"/C/Users/Thesis/Desktop/Quake-III-Arena-master/code/game/bg_pmove.c",
+		"/C/mallib/mallib/fps/src/window_manager.cc",
+		"/C/mallib/mallib/fps/src/logr.h",
+		"/C/mallib/mallib/fps/meson.build",
+		"/C/mallib/mallib/fps/src/render_system.cc",
+		"/C/mallib/mallib/fps/src/texture_manager.h",
+		"/C/mallib/mallib/fps/src/math.h",
 		"/C/mallib/mallib/fps/src/logr.cc",
-		"/C/mallib/mallib/fps/src/entity_manager.cc",
+		"/C/Users/Thesis/Desktop/temp.cc",
+		"/C/mallib/mallib/fps/src/game_simulate.cc",
+		"/C/mallib/mallib/fps/src/player_movement.cc",
+		"/C/mallib/mallib/fps/src/main.cc",
+		"/C/mallib/mallib/fps/src/asset_manager.h",
+		"/C/mallib/mallib/fps/src/game_end_frame.cc",
 		"/C/mallib/mallib/fps/src/entity_manager.h",
 		"/C/mallib/mallib/fps/src/game.h",
+		"/C/mallib/mallib/fps/src/entity_manager.cc",
+		"/C/mallib/mallib/fps/src/file.h",
+		"/C/mallib/mallib/fps/src/asset_manager.cc",
+		"/C/mallib/mallib/fps/src/log.h",
+		"/C/mallib/mallib/fps/src/shader_manager.cc",
+		"/C/mallib/mallib/fps/src/texture_manager.cc",
+		"/C/mallib/mallib/fps/src/window_manager.h",
+		"/C/mallib/mallib/fps/src/game_render.cc",
+		"/C/mallib/mallib/fps/src/game_init.cc",
+		"/C/mallib/mallib/fps/src/debug_menu.h",
+		"/C/mallib/mallib/fps/src/sound_system.cc",
+		"/C/mallib/mallib/fps/src/sound_system.h",
 		"/C/mallib/mallib/fps/src/timed_function.h",
 		"/C/mallib/mallib/fps/src/timed_function.cc",
-		"/C/mallib/mallib/fps/src/shader_manager.cc",
-		"/C/mallib/mallib/fps/src/asset_manager.cc",
-		"/C/mallib/mallib/fps/src/render_system.cc",
 		"/C/mallib/mallib/fps/src/draw3d_api.h",
 		"/C/mallib/mallib/fps/src/render_system.h",
-		"/C/mallib/mallib/fps/meson.build",
-		"/C/mallib/mallib/fps/src/asset_manager.h",
 		"/C/mallib/mallib/fps/src/input.cc",
-		"/C/mallib/mallib/fps/src/sound_system.cc",
 		"/C/mallib/mallib/fps/src/collision_system.cc",
 		"/C/mallib/bullet3-master/examples/BasicDemo/BasicExample.cpp",
 		"/C/mallib/bullet3-master/examples/BasicDemo/BasicExample.h",
@@ -753,11 +769,8 @@
 		"/C/mallib/mallib/fps/src/collision_system.h",
 		"/C/mallib/bullet3-master/src/btBulletCollisionCommon.h",
 		"/C/mallib/bullet3-master/examples/CommonInterfaces/CommonRigidBodyBase.h",
-		"/C/mallib/mallib/fps/src/texture_manager.h",
-		"/C/mallib/mallib/fps/src/texture_manager.cc",
 		"/C/mallib/mallib/fps/assets/shaders/screen_space/screen_space.vert",
 		"/C/mallib/mallib/fps/assets/shaders/screen_space/screen_space.frag",
-		"/C/mallib/mallib/fps/src/window_manager.cc",
 		"/C/mallib/mallib/fps/src/input.h",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_pbr/deferred_pbr.vert",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_pbr/deferred_pbr.frag",
@@ -765,9 +778,7 @@
 		"/C/mallib/mallib/fps/assets/obj/spear.obj",
 		"/C/mallib/mallib/fps/src/particle.h",
 		"/C/mallib/mallib/fps/src/entity_system.h",
-		"/C/mallib/mallib/fps/src/file.h",
 		"/C/mallib/mallib/fps/meson_extra.build",
-		"/C/mallib/mallib/fps/src/window_manager.h",
 		"/C/Users/Thesis/Desktop/clang_test/fps/meson.build",
 		"/C/mallib/mallib/fps/buildclang/compile_commands.json",
 		"/C/mallib/mallib/fps/src/ring_buffer.h",
@@ -775,7 +786,6 @@
 		"/C/mallib/mallib/fps/assets/shaders/deferred_lighting/deferred_lighting.fs",
 		"/C/mallib/mallib/fps/src/camera.h",
 		"/C/mallib/mallib/fps/src/player.h",
-		"/C/mallib/mallib/fps/src/game_render.cc",
 		"/C/mallib/mallib/fps/assets/shaders/simple_depth_shadow_mapping/simple_depth_shadow_mapping.vs",
 		"/C/mallib/mallib/fps/assets/shaders/simple_depth_shadow_mapping/simple_depth_shadow_mapping.fs",
 		"/C/mallib/mallib/fps/assets/shaders/simple_depth/simple_depth.vs",
@@ -794,7 +804,6 @@
 		"/C/mallib/mallib/fps/assets/shaders/deferred_obra_dinn/deferred_obra_dinn.fs",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_normals/deferred_normals.fs",
 		"/C/mallib/mallib/fps/src/debug_output.plan",
-		"/C/mallib/mallib/fps/src/math.h",
 		"/C/mallib/mallib/fps/src/draw2d_api.plan",
 		"/C/mallib/mallib/fps/src/task_system.cc",
 		"/C/mallib/mallib/fps/tests/task_system.cc",
@@ -846,24 +855,18 @@
 		"/C/mutil/util/meson_test/main.cc",
 		"/C/mutil/util/imgui_glfw_new/glfw-3.3.2/deps/meson.build",
 		"/C/mutil/util/imgui_glfw_new/glfw-3.3.2/cmake2meson.py",
-		"/C/mutil/fps/src/camera.h",
-		"/C/mutil/fps/src/render_system.cc",
-		"/C/mutil/fps/src/main.cc",
-		"/C/mutil/fps/src/window_manager.cc",
-		"/C/mutil/fps/src/window_manager.h",
-		"/C/mutil/util/imgui/meson.build",
-		"/C/mutil/util/imgui_glfw_new/glfw-3.3.2/meson_options.txt",
-		"/C/mutil/util/imgui/builddir/build.ninja"
+		"/C/mutil/fps/src/camera.h"
 	],
 	"find":
 	{
-		"height": 43.0
+		"height": 47.0
 	},
 	"find_in_files":
 	{
 		"height": 160.0,
 		"where_history":
 		[
+			"C:\\mallib\\mallib\\fps\\src",
 			""
 		]
 	},
@@ -872,6 +875,105 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"wish_velocity",
+			"gravity",
+			"PM_WalkMove",
+			"PM_Ground",
+			"move",
+			"g_player_gravity",
+			"pm_jump_acc",
+			"Y_input_y_velocity",
+			"input_y_velocity",
+			"pm_ground_deceleration",
+			"old_movement_vector",
+			"current_speed",
+			"adjusted_movement_vector",
+			"g_player_gravity",
+			"adjusted_movement_vector",
+			"position",
+			"float dt_factor",
+			"movement_vector",
+			"input_velocity",
+			" \n",
+			"pm_friction",
+			"pm_jump_acceleration",
+			"drop_adjusted_velocity",
+			"drop_adjust_velocity",
+			"movement_vector",
+			"pm_walkmove",
+			"camera.front",
+			"apply_friction",
+			"wish_direction",
+			"delta_speed",
+			"current_speed",
+			"PM_Accelerate",
+			"accelerate",
+			"speed",
+			" movement_vector",
+			"apply_friction",
+			"adjusted_movement_vector",
+			"pm_jump_acceleration",
+			"cmd.upmove",
+			"upmove",
+			"jump",
+			"pm_airmove",
+			"PW_FLIGHT",
+			"move",
+			"groundmove",
+			"g_player_gravity",
+			"g_mouse_sensitivity",
+			"g_player_air_deceleration",
+			"g_player_max_velocity",
+			"g_player_ground_deceleration",
+			"g_player_ground_acceleration",
+			"g_player_friction",
+			"deceleration",
+			"stopspeed",
+			"glblitframe",
+			"dt_factor",
+			"adjusted_movement_vector",
+			"dropl",
+			"clipvelocity",
+			"input_direction",
+			"wish_direction",
+			"input_direction",
+			"PM_Friction",
+			"Friction",
+			"friction",
+			"input_direction",
+			"friction",
+			"walkmove",
+			"wish_direction",
+			"input_vector",
+			"g_player_ground_acc",
+			"g_player_max_velocity",
+			"render_floor",
+			"over frametime",
+			"clamp",
+			"draw_count",
+			" )",
+			"#include \"log.h\"",
+			"y_type_ptr",
+			"camera",
+			"left_mouse_button",
+			"to_closest",
+			"lhs_e",
+			"g_dodecah",
+			"->",
+			"shader info for",
+			"cursor",
+			"mouse",
+			"init",
+			"debug_value",
+			"center_to_player",
+			"view",
+			"g_dode",
+			"dodecahedron",
+			"g_dodecahedron_vbo",
+			"render_floor",
+			"player.position",
+			"entity_ptr",
+			"update_flying_units",
 			"g_dode",
 			"g_cube_velocity",
 			"*>",
@@ -900,106 +1002,7 @@
 			"collisionConfiguration",
 			"old_movement_vector",
 			"input_movement_vector",
-			"ground_movement_vector",
-			"old_ground_movement_vector",
-			"input_movement_vector",
-			"input_ground_target_velocity",
-			"input_ground_movement_vector",
-			"glm::mat4 ",
-			"0",
-			"_0",
-			"wall",
-			"M_PI",
-			"0",
-			"_0",
-			"init",
-			"wall",
-			"0.009f",
-			"-0.009f",
-			"0.009f",
-			"-0.009f",
-			"render_hud",
-			"ice_diffuse_texture",
-			"5.0f",
-			"1024.f",
-			"floor",
-			"camera",
-			"g_player_position",
-			"float",
-			"debug",
-			"release",
-			"render_time_ring_bufer",
-			"average_render_time",
-			"average_frame_time",
-			"NdotL",
-			"NdotV",
-			"poll_input",
-			"texture_manager",
-			"texture",
-			"input",
-			"mouse",
-			"metal_",
-			"load_obj",
-			"spear",
-			"glm::rotate",
-			"g_viewmodel",
-			"g_viewmodel_vao",
-			"viewmodel_vbo",
-			"viewmodel_vao",
-			"Vertex_XNU",
-			"object.Vertex_XNU",
-			"attrib",
-			"tinyobj::real_t",
-			"tinyobj::real_t vx",
-			"g_viewmodel_vao",
-			"render_viewmodel",
-			"viewmodel",
-			"input_movement_vector",
-			"g_player_jump",
-			"movement_vector",
-			"input_movement_vector",
-			"g_player_gravity",
-			"ground_accel",
-			"old_movement_vector",
-			"input_ground_target_velocity",
-			"input_ground_vector_velocity",
-			"input_movement_vector",
-			"old_xz_movement_vector",
-			"input_ground_vector_velocity",
-			"wishdir",
-			"playerVelocity",
-			"gravity",
-			"sidestrafe",
-			"resulting_s",
-			"drop_adjusted_velocity",
-			"friction_adjusted_velocity",
-			"applyFriction",
-			"FRAMETIME_IN_S",
-			"FRAMETIME_120",
-			"FRAMETIME_120_HZ",
-			"shader info log",
-			"glm::vec4",
-			"position_tfbo",
-			"file_to_string",
-			"g_player",
-			"g_mouse_sensiti",
-			"g_mouse_sensitivty",
-			"velocity",
-			"update_player_entity",
-			"g_player_max_velocityy",
-			"g_camera_movespeed",
-			"unif",
-			"numActiveUniforms",
-			"render_debug",
-			"debug",
-			"debug3",
-			"g_projection_z_far_plane",
-			"500.0f",
-			"floor",
-			"marble",
-			"marble_texture",
-			"half_way_direction",
-			"view_direction"
+			"ground_movement_vector"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1007,6 +1010,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			"#include \"logr.h\"",
 			"render",
 			"fb_albedo_spec",
 			"fb_position",
@@ -1021,35 +1025,35 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "src/sound_system.cc",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2660,
+						"buffer_size": 118,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1163,
-								1163
+								118,
+								118
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
+							"auto_name": "[INFO]: old_position: (0.00000000, 44.13879013 3.0",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 1275.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
@@ -1058,15 +1062,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10725,
+						"buffer_size": 18164,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1161,
-								1161
+								4021,
+								4021
 							]
 						],
 						"settings":
@@ -1075,40 +1079,39 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1062.0,
+						"translation.y": 2495.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "src/render_system.cc",
+					"file": "/C/Users/Thesis/Desktop/Sublime Text 3/Data/Packages/User/logr_report.sublime-snippet",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 51962,
+						"buffer_size": 323,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								28882,
-								28882
+								30,
+								30
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"default_extension": "sublime-snippet",
+							"syntax": "Packages/XML/XML.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 15037.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 1,
 					"type": "text"
 				}
 			]
@@ -1116,7 +1119,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 34.0
+		"height": 32.0
 	},
 	"input":
 	{
@@ -1173,7 +1176,7 @@
 	"project": "fps.sublime-project",
 	"replace":
 	{
-		"height": 64.0
+		"height": 60.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1183,20 +1186,44 @@
 		"selected_items":
 		[
 			[
-				"simu",
-				"src\\game_simulate.cc"
+				"window_",
+				"src\\window_manager.cc"
 			],
 			[
 				"render",
 				"src\\render_system.cc"
 			],
 			[
-				"game_simul",
+				"game.h",
+				"src\\game.h"
+			],
+			[
+				"game_sim",
 				"src\\game_simulate.cc"
 			],
 			[
-				"game.h",
-				"src\\game.h"
+				"simul",
+				"src\\game_simulate.cc"
+			],
+			[
+				"logr",
+				"src\\logr.cc"
+			],
+			[
+				"log.h",
+				"src\\log.h"
+			],
+			[
+				"main",
+				"src\\main.cc"
+			],
+			[
+				"simu",
+				"src\\game_simulate.cc"
+			],
+			[
+				"game_simul",
+				"src\\game_simulate.cc"
 			],
 			[
 				"game_",
@@ -1205,10 +1232,6 @@
 			[
 				"log",
 				"src\\log.h"
-			],
-			[
-				"logr",
-				"src\\logr.cc"
 			],
 			[
 				"entity",
@@ -1225,10 +1248,6 @@
 			[
 				"rem",
 				"C:\\mallib\\mallib\\fps\\readme.md"
-			],
-			[
-				"main",
-				"src\\main.cc"
 			],
 			[
 				"texture",
@@ -1416,10 +1435,22 @@
 	},
 	"select_symbol":
 	{
-		"height": 288.0,
-		"last_filter": "main",
+		"height": 400.0,
+		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"by_type",
+				"by_type_ptr"
+			],
+			[
+				"game_Simul",
+				"game_simulate"
+			],
+			[
+				"render_debug",
+				"render_debug_ui"
+			],
 			[
 				"main",
 				"main"
@@ -1450,10 +1481,6 @@
 			],
 			[
 				"render_debug_ui",
-				"render_debug_ui"
-			],
-			[
-				"render_debug",
 				"render_debug_ui"
 			],
 			[
@@ -1511,10 +1538,10 @@
 	"settings":
 	{
 	},
-	"show_minimap": true,
+	"show_minimap": false,
 	"show_open_files": false,
 	"show_tabs": true,
-	"side_bar_visible": false,
+	"side_bar_visible": true,
 	"side_bar_width": 230.0,
 	"status_bar_visible": true,
 	"template_settings":

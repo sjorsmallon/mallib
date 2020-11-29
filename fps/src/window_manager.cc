@@ -34,6 +34,9 @@ namespace
         if (key == GLFW_KEY_ESCAPE) glfw_close(window);
         if (key == GLFW_KEY_M) glfwSetInputMode(window_manager->main_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); 
         if (key == GLFW_KEY_N) glfwSetInputMode(window_manager->main_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+        if (key == GLFW_KEY_V) glfwSwapInterval(1); // vsync
+        if (key == GLFW_KEY_U) glfwSwapInterval(0); // unlocked
+
 
 
         // otherwise
@@ -165,7 +168,7 @@ void create_main_window(Window_Manager& window_manager, const char* title, const
     }
 
     glfwSwapInterval(1); // Enable vsync
-    // glfwSwapInterval(0); // explicitly disable vsync?
+  //  glfwSwapInterval(0); // explicitly disable vsync?
 
     // register callbacks
     // glfwSetErrorCallback(glfw_error_callback); (this is done in the constructor since it does not require a window.)
@@ -252,6 +255,11 @@ void render_debug_ui(const Window_Manager& window_manager)
 
         // Debug Menu
         {
+            ImGui::Begin("General Settings");
+            if (ImGui::Button("Vsync on")) glfwSwapInterval(1);
+            if (ImGui::Button("Vsync off")) glfwSwapInterval(0);
+            ImGui::End();
+
             {
                 ImGui::Begin("Timed Functions");
                 for (auto& [key, value]: Timed_Function::timed_functions)

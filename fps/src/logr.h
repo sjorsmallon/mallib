@@ -2,9 +2,16 @@
 #define INCLUDED_LOG_
 #include "fmt/core.h"
 #include "fmt/color.h"
+
 #include <vector>
 #include <string>
 #include <map>
+
+// for fmt type print resolution
+#include <glm/glm.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+// #include <glm/mat4.hpp>
 
 namespace logr
 {
@@ -119,11 +126,89 @@ inline void logr::vreport_warning_once(const char* format, fmt::format_args args
 
 // inline void logr::(const char* format, fmt::format_args args)
 // {
-	// logr::frame_log().push_back(fmt::format(format, args));
+// 	logr::frame_log().push_back(fmt::format(format, args));
 // }
 // inline void logr::vconsole(const char* format, fmt::format_args args)
 // {
 // 	logr::console_log().push_back(fmt::format(format, args));
 // }
+
+
+
+namespace fmt {
+    template <>
+    struct formatter<glm::vec3> {
+      template <typename ParseContext>
+      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+      template <typename FormatContext>
+      auto format(const glm::vec3 &lhs, FormatContext &ctx) {
+        return format_to(ctx.out(), "({:.8f}, {:.8f} {:.8f})",
+           lhs.x, lhs.y, lhs.z);
+      }
+    };
+
+    template <>
+    struct formatter<glm::mat4> {
+      template <typename ParseContext>
+      constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+      template <typename FormatContext>
+      auto format(const glm::mat4 &lhs, FormatContext &ctx) {
+        return format_to(ctx.out(),
+            "\n r0: |{:.3f} {:.3f} {:.3f} {:.3f}|\n r1: |{:.3f} {:.3f} {:.3f} {:.3f}|\n r2: |{:.3f} {:.3f} {:.3f} {:.3f}|\n r3: |{:.3f} {:.3f} {:.3f} {:.3f}|\n",
+            lhs[0][0], lhs[0][1], lhs[0][2], lhs[0][3],
+            lhs[1][0], lhs[1][1], lhs[1][2], lhs[1][3],
+            lhs[2][0], lhs[2][1], lhs[2][2], lhs[2][3],
+            lhs[3][0], lhs[3][1], lhs[3][2], lhs[3][3]);
+      }
+	};
+};
+
+
+// template <>
+// struct fmt::formatter<point> {
+//   // Presentation format: 'f' - fixed, 'e' - exponential.
+//   char presentation = 'f';
+
+//   // Parses format specifications of the form ['f' | 'e'].
+//   constexpr auto parse(format_parse_context& ctx) {
+//   // auto parse(format_parse_context &ctx) -> decltype(ctx.begin()) // c++11
+//     // [ctx.begin(), ctx.end()) is a character range that contains a part of
+//     // the format string starting from the format specifications to be parsed,
+//     // e.g. in
+//     //
+//     //   fmt::format("{:f} - point of interest", point{1, 2});
+//     //
+//     // the range will contain "f} - point of interest". The formatter should
+//     // parse specifiers until '}' or the end of the range. In this example
+//     // the formatter should parse the 'f' specifier and return an iterator
+//     // pointing to '}'.
+
+//     // Parse the presentation format and store it in the formatter:
+//     auto it = ctx.begin(), end = ctx.end();
+//     if (it != end && (*it == 'f' || *it == 'e')) presentation = *it++;
+
+//     // Check if reached the end of the range:
+//     if (it != end && *it != '}')
+//       throw format_error("invalid format");
+
+//     // Return an iterator past the end of the parsed range:
+//     return it;
+//   }
+
+//   // Formats the point p using the parsed format specification (presentation)
+//   // stored in this formatter.
+//   template <typename FormatContext>
+//   auto format(const point& p, FormatContext& ctx) {
+//   // auto format(const point &p, FormatContext &ctx) -> decltype(ctx.out()) // c++11
+//     // ctx.out() is an output iterator to write to.
+//     return format_to(
+//         ctx.out(),
+//         presentation == 'f' ? "({:.1f}, {:.1f})" : "({:.1e}, {:.1e})",
+//         p.x, p.y);
+//   }
+// };
+
 
 #endif
