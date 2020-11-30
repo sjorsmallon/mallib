@@ -66,16 +66,19 @@ namespace
  	// but that shouldn't actually matter right?
     // player movement
     float pm_jump_acceleration  = 35.f;
-    float pm_ground_acceleration = 10.f;
+    float pm_ground_acceleration = 100.f;
     float pm_stopspeed = 100.f;
-    float pm_maxspeed = 100.0f; 
+    
+    float pm_maxspeed = 100.0f; // ground
+    float pm_maxairspeed = 400.f; // air
+
     float pm_friction = 6.f;
 
-    float pm_air_acceleration = 11.0f;
+    float pm_air_acceleration = 150.0f;
     float pm_air_deceleration = 0.1f;
   
     // flying units
-    float g_dodecahedron_velocity = 1.f;
+    float g_dodecahedron_velocity = 70.0f;
     float g_wanted_distance = 80.0f;
     float g_wanted_height = 50.0f;
     float g_focus = 1.f;
@@ -135,44 +138,91 @@ namespace
 	[[nodiscard]]
 	glm::vec3 accelerate(glm::vec3 old_movement_vector, glm::vec3 wish_direction, float wish_velocity, float acceleration, float dt)
 	{
-		// logr::report("accelerate old movement_vector:{}\n", glm::to_string(old_movement_vector));
-		float current_speed_in_wish_direction = glm::dot(old_movement_vector, wish_direction);
+		logr::report("[acceleration]\n");
 
-		// logr::report("current_speed: {}\n", current_speed_in_wish_direction);
-		// logr::report("wish_direction: {}\n", glm::to_string(wish_direction));
-		// logr::report("wish_velocity: {}\n", wish_velocity);
+		float old_velocity = glm::length(old_movement_vector);
 
-		// things to think about: since the wish direction is a unit vector,
-		// delta speed will be HUGE when the timestep decreases.
-		// does that matter?
-		float delta_speed = wish_velocity - current_speed_in_wish_direction;
-		float accel_speed = acceleration * wish_velocity * dt;
-		// logr::report("delta_speed: {}\n", delta_speed);
-		// logr::report("accel_speed: {}\n", accel_speed);
+		glm::vec3 normalized_old = glm::normalize(old_movement_vector);
+		//float current_speed_in_wish_dir = glm::dot(normalized_old, wish_direction);
+		float speed_in_heading = glm::dot(normalized_old, wish_direction);
+		speed_in_heading *= old_velocity;
+		logr::report("actual speed in heading: {}\n", speed_in_heading);
+		logr::report("dot product: {}\n", glm::dot(old_movement_vector, wish_direction));
 
 
-		if (delta_speed < 0.0f)
+		float acceleration_speed = wish_velocity * acceleration * dt;
+		glm::vec3 acceleration_vector = acceleration_speed * wish_direction;
+
+		glm::vec3 old_heading = old_movement_vector;
+
+		logr::report("old_heading: {}\n", old_heading);
+		logr::report("accelleration vector: {}\n", acceleration_vector);
+
+
+		glm::vec3 result = old_heading + acceleration_vector;
+		glm::vec3 result_dir = glm::normalize(result_dir);
+		float result_velocity = glm::length(result);
+
+		if (old_velocity < 0.0000001f)
 		{
-		 	accel_speed = accel_speed;
+			logr::report("returning acceleration vector!\n");
+			return acceleration_vector;
 		}
 
-		if (accel_speed > delta_speed) accel_speed = delta_speed;
-
-		glm::vec3 result = old_movement_vector + (accel_speed * wish_direction);
-
+		float max_speed = (acceleration == pm_ground_acceleration) ?  pm_maxspeed : pm_maxairspeed;
 		
+		if (glm::length(result) > (max_speed * dt))
+		{
+			logr::report("velocity of result: {}\n", glm::length(result));
+			result = glm::normalize(result) * (max_speed * dt);
+		}	
+
+
+		return result;
+
+
+		// float current_speed_in_wish_direction = glm::dot(old_movement_vector, wish_direction);
+		// // things to think about: since the wish direction is a unit vector,
+		// // delta speed will be HUGE when the timestep decreases.
+		// // does that matter?
+		// // logr::report("current_velocity: {}\n", current_velocity);
+		// // logr::report("wish_velocity: {}\n", wish_velocity);
+
+		// float delta_speed = wish_velocity - current_speed_in_wish_direction;
+		// // float accel_speed = wish_velocity * acceleration * dt;
+		// float accel_speed = wish_velocity * acceleration * dt;
+
+		// // logr::report("delta_speed: {}\n", delta_speed);
+		// // logr::report("accel_speed: {}\n", accel_speed);
+
+		// if (delta_speed < 0.01f)
+		// {
+		// 	logr::report_warning("very small delta speed!\n");
+		// 	// return old_movement_vector;
+		// }
+
+		// if (accel_speed > delta_speed)
+		// {
+		// 	logr::report("accel speed is delta speed!!!\n");
+		// 	//accel_speed = delta_speed;
+		// }
+
+		// if (delta_speed > accel_speed) logr::report("delta_speed: {}, accel_speed: {}\n", delta_speed, accel_speed);
+
+		// glm::vec3 accel_vector = accel_speed * (wish_direction);
+		// logr::report("accel_vector: {}\n", accel_vector);
+		
+		// glm::vec3 result = accel_vector;
+		// float max_speed = (acceleration == pm_ground_acceleration) ?  pm_maxspeed : pm_maxairspeed;
+		
+		// logr::report("velocity of result: {}\n", glm::length(result));
+		// logr::report("max_speed: {}\n", max_speed);
+		// logr::report("max_speed_test: {}\n", max_speed * dt);
+
 		// do not normalize if in the air.
-		if (acceleration == pm_ground_acceleration)
-		{
-			if (glm::length(result) > (pm_maxspeed * dt))
-			{
-			result = glm::normalize(result) * (pm_maxspeed * dt);
-			}	
-		}
 
-		
 
-		return result; 
+		// return result; 
 	}	
 
     //@Dependencies:
@@ -187,21 +237,13 @@ namespace
 		const glm::vec3 right,
 		const float dt)
 	{
-		static bool want_to_jump = false;
 		static bool grounded = true;
-		static std::chrono::time_point<std::chrono::system_clock> start{};
-		static std::chrono::time_point<std::chrono::system_clock> end{};
 		static float j_time = 0.0f;
-
-
-
 		bool jump_pressed_this_frame = input.keyboard_state[KEY_SPACE];	
 
 		float Y_old_y = old_movement_vector.y;
-		logr::report("Y_old_y: {}\n", Y_old_y);
 
 		glm::vec3 adjusted_movement_vector = apply_friction(old_movement_vector, grounded, jump_pressed_this_frame, dt);
-
 		const glm::vec3 plane_front = glm::normalize(glm::vec3(front.x, 0.0f, front.z));
 		const glm::vec3 plane_right = glm::normalize(glm::vec3(right.x, 0.0f, right.z));
 
@@ -212,60 +254,47 @@ namespace
 		if (input.keyboard_state[KEY_A]) input_vector -= plane_right;
 		if (input.keyboard_state[KEY_D]) input_vector += plane_right;
 
-		glm::vec3 position{};
+		bool received_input = (input.keyboard_state[KEY_W] ||
+							   input.keyboard_state[KEY_S] || 
+							   input.keyboard_state[KEY_A] || 
+							   input.keyboard_state[KEY_D]);
 
-		float input_velocity = glm::length(input_vector);
-
+		float input_velocity = 0.0f;
 		// IF WE HAVE RECEIVED INPUT, NORMALIZE IT.
-		if (input_velocity > 0.00001f)
+		if (received_input)
 		{
 			// NORMALIZE INPUT DIRECTION (WHAT HAPPENS IF THIS IS ALL ZEROES?)
 			input_vector = glm::normalize(input_vector);
+			input_velocity = 1.0f;
 		} 
 
-		/// ZERO OUT Y COMPONENT
 		float Y_input_y_velocity = 0.0f;
-
 		if (input.keyboard_state[KEY_SPACE])
 		{
-			want_to_jump = true;
+			// want_to_jump = true;
 			if (grounded)
 			{
-				float velocity = glm::length(adjusted_movement_vector);
-				velocity *= 1.1f;
-				adjusted_movement_vector *= velocity;
-
-				logr::report("jumped\n");
-				// if (input_velocity > 0.0000001f) //input_velocity = 1.0f * dt;
-				// Y_input_y_velocity = pm_jump_acceleration * dt;
+				if (received_input)
+				{
+					input_velocity *= 5.f;
+				}
 				j_time = 0.0f;
-
 				grounded = false;
 				jump_pressed_this_frame = true;
-				want_to_jump = false;
 			}
 		}
 
 		glm::vec3 movement_vector = glm::vec3(0.0f);
 		// IF NO INPUT IS RECEIVED, CONTINUE IN THE SAME DIRECTION WITH SAME SPEED AS WE WERE ON.
-		if (input_velocity < 0.00001f) 
+		if (input_velocity < 0.1f) 
 		{
 			// don't normalize: will yield nan or inf
 			movement_vector = adjusted_movement_vector;
 		}
 		else
 		{
-			float acceleration = 0.0f;
-
 			// POSSIBLY USE DIFFERENT ACCELERATION VALUES FOR WHEN WE ARE IN THE AIR.
-			if (grounded)
-			{
-				acceleration = pm_ground_acceleration;
-			}
-			else
-			{
-				acceleration = pm_air_acceleration;
-			}
+			float acceleration = (grounded) ? pm_ground_acceleration : pm_air_acceleration;
 			movement_vector = accelerate(adjusted_movement_vector, input_vector, input_velocity, acceleration, dt);
 		}
 
@@ -281,18 +310,14 @@ namespace
 			float b = pm_jump_acceleration;
 			float a = -g_player_gravity;
 			movement_vector.y = a * x * x + b * x + c; 
-			// movement_vector.y -= g_player_gravity * dt;
-			logr::report("movement_vector: {}\n", movement_vector);
 		}
 		
 		// try to move (collide with ground plane etc etc etc)
-		position = glm::vec3(old_position.x, 0.0f, old_position.z) + movement_vector;
+		glm::vec3 position = glm::vec3(old_position.x, 0.0f, old_position.z) + movement_vector;
 
 		// // clip the movement vector.
 		if (position.y < 0.0f)
 		{
-			end = std::chrono::system_clock::now();
-			logr::report("jump duration: {}\n", static_cast<std::chrono::duration<double>>(end - start).count());
 			grounded = true;
 			position.y = 0.0f;
 			movement_vector.y = 0.0f;
@@ -352,8 +377,7 @@ namespace
 	    front.z = sin(glm::radians(new_camera.yaw)) * cos(glm::radians(new_camera.pitch));
 	    new_camera.front = glm::normalize(front);
 	    
-	    // also re-calculate the right and up vector
-	    // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+	    // also re-calculate  & normalize the right and up vector
 	    new_camera.right = glm::normalize(glm::cross(new_camera.front, world_up)); 
 	    new_camera.up    = glm::normalize(glm::cross(new_camera.right, new_camera.front));
 
@@ -542,7 +566,7 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 		// if game_mode = player_cam:
 		{
 			// BEFORE MOVING ANYTHING, check shot intersection?
-			//if (input.mouse_left) evaluate_shot(entity_manager, game_state.camera);
+			if (input.mouse_left) evaluate_shot(entity_manager, game_state.camera);
 
 			// post_shoot_reevaluate(entity_manager);
 			//@Note(Sjors): it is imperative that the player gets updated first, since that 
@@ -557,7 +581,7 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 
 			// // update dodecahedrons
 			// {
-			// 	evaluate_flying_units(entity_manager, dt);
+				evaluate_flying_units(entity_manager, dt);
 			// }
 
 			// at this point, we can start rendering static geometry.
