@@ -10,6 +10,8 @@
 #include "sound_system.h"
 #include "timed_function.h"
 #include <numeric> // for accumulate
+#include <chrono>
+
 
 // these are the GLFW key presses.
 constexpr const int KEY_SPACE = 32;
@@ -58,18 +60,18 @@ namespace
     // world
     float g_mouse_sensitivity = 0.08f;
     float g_camera_velocity = 0.2f;
- 	float g_player_gravity = 50.0f;
+ 	float g_player_gravity = 50.f;
 
  	// calibrated for 120hz, but vsync is 144hz. woops.
  	// but that shouldn't actually matter right?
     // player movement
-    float pm_jump_acceleration  = 800.0f;
+    float pm_jump_acceleration  = 35.f;
     float pm_ground_acceleration = 10.f;
     float pm_stopspeed = 100.f;
     float pm_maxspeed = 100.0f; 
     float pm_friction = 6.f;
 
-    float pm_air_acceleration = 0.10f;
+    float pm_air_acceleration = 11.0f;
     float pm_air_deceleration = 0.1f;
   
     // flying units
@@ -84,7 +86,6 @@ namespace
 	glm::vec3 apply_friction(glm::vec3 old_movement_vector, bool grounded, bool jump_pressed_this_frame, float dt)
 	{
 		old_movement_vector.y = 0.0f;
-
 		float velocity = glm::length(old_movement_vector);
 	
 		if (velocity < 0.0000001f)
@@ -159,10 +160,17 @@ namespace
 
 		glm::vec3 result = old_movement_vector + (accel_speed * wish_direction);
 
-		if (glm::length(result) > (pm_maxspeed * dt))
+		
+		// do not normalize if in the air.
+		if (acceleration == pm_ground_acceleration)
 		{
+			if (glm::length(result) > (pm_maxspeed * dt))
+			{
 			result = glm::normalize(result) * (pm_maxspeed * dt);
+			}	
 		}
+
+		
 
 		return result; 
 	}	
@@ -179,7 +187,14 @@ namespace
 		const glm::vec3 right,
 		const float dt)
 	{
+		static bool want_to_jump = false;
 		static bool grounded = true;
+		static std::chrono::time_point<std::chrono::system_clock> start{};
+		static std::chrono::time_point<std::chrono::system_clock> end{};
+		static float j_time = 0.0f;
+
+
+
 		bool jump_pressed_this_frame = input.keyboard_state[KEY_SPACE];	
 
 		float Y_old_y = old_movement_vector.y;
@@ -201,6 +216,7 @@ namespace
 
 		float input_velocity = glm::length(input_vector);
 
+		// IF WE HAVE RECEIVED INPUT, NORMALIZE IT.
 		if (input_velocity > 0.00001f)
 		{
 			// NORMALIZE INPUT DIRECTION (WHAT HAPPENS IF THIS IS ALL ZEROES?)
@@ -212,13 +228,21 @@ namespace
 
 		if (input.keyboard_state[KEY_SPACE])
 		{
+			want_to_jump = true;
 			if (grounded)
 			{
+				float velocity = glm::length(adjusted_movement_vector);
+				velocity *= 1.1f;
+				adjusted_movement_vector *= velocity;
+
 				logr::report("jumped\n");
 				// if (input_velocity > 0.0000001f) //input_velocity = 1.0f * dt;
-				Y_input_y_velocity = 1.0f; 
+				// Y_input_y_velocity = pm_jump_acceleration * dt;
+				j_time = 0.0f;
+
 				grounded = false;
 				jump_pressed_this_frame = true;
+				want_to_jump = false;
 			}
 		}
 
@@ -240,48 +264,39 @@ namespace
 			}
 			else
 			{
-				acceleration = pm_ground_acceleration;
+				acceleration = pm_air_acceleration;
 			}
 			movement_vector = accelerate(adjusted_movement_vector, input_vector, input_velocity, acceleration, dt);
 		}
 
-		//Y
-		movement_vector.y = 0.0f;
+		movement_vector.y = Y_old_y;
 		movement_vector.y += Y_input_y_velocity;
 
-		if (old_movement_vector.y > 0.0f)
+		//Y
+		if (!grounded)
 		{
-			movement_vector.y = Y_old_y; 
+			j_time += dt;
+			float x = j_time;
+			float c = 0.0f;
+			float b = pm_jump_acceleration;
+			float a = -g_player_gravity;
+			movement_vector.y = a * x * x + b * x + c; 
+			// movement_vector.y -= g_player_gravity * dt;
+			logr::report("movement_vector: {}\n", movement_vector);
 		}
-	
-		if (old_position.y > 0.0f)
-		{
-			movement_vector.y -= g_player_gravity  *  dt;
-		}
- 
-
+		
 		// try to move (collide with ground plane etc etc etc)
-		logr::report("movement_vector: {}\n", movement_vector);
-		position = old_position + movement_vector;
-
-
-		if (input.keyboard_state[KEY_1]) position.y = 10.0f; 
-		if (input.keyboard_state[KEY_2]) position.y = 20.0f; 
-		if (input.keyboard_state[KEY_3]) position.y = 30.0f; 
-		if (input.keyboard_state[KEY_4]) position.y = 40.0f; 
-		if (input.keyboard_state[KEY_5]) position.y = 50.0f; 
-		if (input.keyboard_state[KEY_6]) position.y = 60.0f; 
-		if (input.keyboard_state[KEY_7]) position.y = 70.0f; 
-		if (input.keyboard_state[KEY_8]) position.y = 80.0f; 
-		if (input.keyboard_state[KEY_9]) position.y = 90.0f;
+		position = glm::vec3(old_position.x, 0.0f, old_position.z) + movement_vector;
 
 		// // clip the movement vector.
 		if (position.y < 0.0f)
 		{
-			// logr::report("grounded.\n");
+			end = std::chrono::system_clock::now();
+			logr::report("jump duration: {}\n", static_cast<std::chrono::duration<double>>(end - start).count());
 			grounded = true;
 			position.y = 0.0f;
 			movement_vector.y = 0.0f;
+			j_time = 0.0f;
 		}
 		return std::make_tuple(position, movement_vector);
 	}
