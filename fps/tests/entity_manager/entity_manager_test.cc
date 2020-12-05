@@ -3,7 +3,12 @@
 
 int main()
 {
-	Entity_Manager<100> entity_manager;
+	Entity_Manager entity_manager;
 
-	create_entity(entity_manager, Entity_Type::Cube);
+	for (int i = 0; i < 100; ++i)
+	{
+		create_entity(entity_manager, Entity_Type::Cube);
+	}
+
+
 }

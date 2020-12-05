@@ -46,23 +46,91 @@ struct Entity
 };
 
 
-template<size_t bucket_size>
+
+
+static const int bucket_size = 100;
+using bucket = Bucket<Entity, bucket_size>;
+using bucket_array = Bucket_Array<Entity, bucket_size>;
+
 struct Entity_Manager
 {
-	using bucket = Bucket<Entity, bucket_size>;
-	using bucket_array = Bucket_Array<Entity, bucket_size>;
-
-	bucket_array array;
-	std::map<Entity_Type, std::vector<bucket*>> per_type; // hmm. this should be an iterator?
-
+	bucket_array all_buckets;
+	std::map<Entity_Type, std::deque<bucket*>> buckets_by_type; // hmm. this should be an iterator?
 };
 
 
-create_entity(Entity_Manager& entity_manager, Entity_Type entity_type)
+
+//@ Me tomorrow: see if we can't use iterators instead... this is kind of ugly.
+
+
+//@Note(Sjors): returns null for invalid.   // haha bucket list
+inline Entity* next_entity(std::deque<bucket*>& bucket_list, size_t& current_bucket_idx, size_t& current_entity_idx)
 {
-	
-	
+	bucket* current_bucket = bucket_list[current_bucket_idx];
+
+	current_entity_idx = current_entity_idx + 1;
+	if (current_entity_idx >= current_bucket->capacity)
+	{
+		if (current_bucket_idx < bucket_list.size() - 1)
+		{
+			current_bucket_idx += 1;
+			current_bucket = bucket_list[current_bucket_idx];
+			current_entity_idx = 0;
+		}
+		else
+		{
+			return nullptr;
+		}
+	}	
+	return &current_bucket->data[current_entity_idx];
 }
+
+
+// #define for_entity_by_type_macro(entity_manager, entity_type) \
+// size_t current_bucket = 0; \
+// size_t current_idx = 0; \
+// while (true) \
+// { \
+// 	Entity *e_ptr = next_entity(entity_manager.buckets_by_type[entity_type], current_bucket, current_entity); \
+// 	if (entity == nullptr) break; \
+// 	Entity& entity = entity_ptr; \
+
+
+
+
+inline void create_entity(Entity_Manager& entity_manager, Entity_Type entity_type)
+{
+	if (!entity_manager.buckets_by_type[entity_type].size())
+		add_bucket(entity_manager.all_buckets);
+
+	auto&& bucket = get_last_bucket(entity_manager.all_buckets);
+
+	Entity entity{};
+	entity.type = entity_type;
+	entity.xform_state = {glm::vec3{0.f,2 * entity.id, 0.f}, glm::vec4(0.f), 1.f};
+	entity.position =    glm::vec3{0.f, 2 * entity.id, 0.f};
+
+	array_add(entity_manager.all_buckets, std::move(entity));
+
+
+	entity_manager.buckets_by_type[entity_type].push_back(bucket);
+
+	// bucket_add(bucket, std::move(entity));
+}
+
+// inline void add_entity(Entity_Manager& entity_manager, Entity& entity)
+// {
+	// if (!entity_manager.buckets_by_type[entity_type].size())
+	// 		add_bucket(entity_manager.all_buckets);
+
+	// array_add(entity_manager.all_buckets, entity);
+
+	// if (entity_manager.per_type[entity.type].size())	add_bucket(entity_manager.all_buckets);
+	// auto&& bucket = get_last_bucket(entity_manager.all_buckets);
+
+	// array_add(bucket, entity);
+
+// }
 
 
 
