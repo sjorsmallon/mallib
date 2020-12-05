@@ -49,7 +49,7 @@ void create_entity(Entity_Manager& entity_manager, Entity_Type type)
 {
 	Entity& entity = get_or_create_entity(entity_manager, type);
 	entity.type = type;
-	entity.mesh_name = "dodecahedron";
+	// entity.mesh_name = "dodecahedron";
 	entity.xform_state = {glm::vec3{0.f,2 * entity.id, 0.f}, glm::vec4(0.f), 1.f};
 	entity.position =    glm::vec3{0.f, 2 * entity.id, 0.f};
 }

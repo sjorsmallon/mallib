@@ -520,39 +520,12 @@
 	"buffers":
 	[
 		{
-			"file": "src/main.cc",
+			"file": "/C/Users/Thesis/Desktop/aoc/three/main.zig",
 			"settings":
 			{
-				"buffer_size": 3602,
+				"buffer_size": 177,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/cvar.h",
-			"settings":
-			{
-				"buffer_size": 76,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/game_simulate.cc",
-			"settings":
-			{
-				"buffer_size": 19333,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "/C/Users/Thesis/Desktop/Quake-III-Arena-master/code/game/bg_pmove.c",
-			"settings":
-			{
-				"buffer_size": 45440,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
 			}
 		}
 	],
@@ -652,6 +625,10 @@
 		"selected_items":
 		[
 			[
+				"isntall pa",
+				"Package Control: Install Package"
+			],
+			[
 				"terminu",
 				"Preferences: Terminus Key Bindings"
 			],
@@ -732,15 +709,19 @@
 	},
 	"expanded_folders":
 	[
-		"/C/mallib/mallib/fps/src",
 		"/C/mallib/mallib/fps/assets/shaders"
 	],
 	"file_history":
 	[
-		"/C/mallib/mallib/fps/src/window_manager.cc",
-		"/C/Users/Thesis/Desktop/Sublime Text 3/Data/Packages/User/logr_report.sublime-snippet",
+		"/C/Users/Thesis/Desktop/aoc/one_part_two/src/main.rs",
+		"/C/mallib/mallib/fps/src/bucket_array.h",
+		"/C/Users/Thesis/Desktop/aoc/one/src/main.rs",
+		"/C/mallib/mallib/fps/src/main.cc",
+		"/C/mallib/mallib/fps/src/cvar.h",
 		"/C/mallib/mallib/fps/src/game_simulate.cc",
 		"/C/Users/Thesis/Desktop/Quake-III-Arena-master/code/game/bg_pmove.c",
+		"/C/mallib/mallib/fps/src/window_manager.cc",
+		"/C/Users/Thesis/Desktop/Sublime Text 3/Data/Packages/User/logr_report.sublime-snippet",
 		"/C/mallib/mallib/fps/src/logr.h",
 		"/C/mallib/mallib/fps/meson.build",
 		"/C/mallib/mallib/fps/src/render_system.cc",
@@ -749,7 +730,6 @@
 		"/C/mallib/mallib/fps/src/logr.cc",
 		"/C/Users/Thesis/Desktop/temp.cc",
 		"/C/mallib/mallib/fps/src/player_movement.cc",
-		"/C/mallib/mallib/fps/src/main.cc",
 		"/C/mallib/mallib/fps/src/asset_manager.h",
 		"/C/mallib/mallib/fps/src/game_end_frame.cc",
 		"/C/mallib/mallib/fps/src/entity_manager.h",
@@ -860,15 +840,11 @@
 		"/C/mutil/util/imgui_glfw_new/test/meson.build",
 		"/C/mutil/util/meson_test/meson.build",
 		"/C/mutil/util/imgui_glfw_new/imgui/meson.build",
-		"/C/mutil/util/imgui_glfw_new/glfw-3.3.2/meson.build",
-		"/C/mutil/util/imgui_glfw_new/glfw-3.3.2/src/meson.build",
-		"/C/mutil/util/meson_test/main.cc",
-		"/C/mutil/util/imgui_glfw_new/glfw-3.3.2/deps/meson.build",
-		"/C/mutil/util/imgui_glfw_new/glfw-3.3.2/cmake2meson.py"
+		"/C/mutil/util/imgui_glfw_new/glfw-3.3.2/meson.build"
 	],
 	"find":
 	{
-		"height": 41.0
+		"height": 43.0
 	},
 	"find_in_files":
 	{
@@ -884,6 +860,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"let",
 			"wish_direction",
 			"friction",
 			"accelerate",
@@ -1010,8 +987,7 @@
 			"g_player",
 			"volume",
 			"timed_functions",
-			"Timed_Function_Data",
-			"FRAMETIME_120_"
+			"Timed_Function_Data"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1034,91 +1010,32 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "src/main.cc",
+					"file": "/C/Users/Thesis/Desktop/aoc/three/main.zig",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3602,
+						"buffer_size": 177,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3248,
-								3248
+								175,
+								175
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1932.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "src/cvar.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 76,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								47,
-								47
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
+							"syntax": "Packages/Zig Language/Syntaxes/Zig.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "src/game_simulate.cc",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 19333,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								4921,
-								4921
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 3085.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -1127,44 +1044,14 @@
 			]
 		},
 		{
-			"selected": 0,
 			"sheets":
 			[
-				{
-					"buffer": 3,
-					"file": "/C/Users/Thesis/Desktop/Quake-III-Arena-master/code/game/bg_pmove.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 45440,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								5384,
-								5384
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 5515.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				}
 			]
 		}
 	],
 	"incremental_find":
 	{
-		"height": 32.0
+		"height": 43.0
 	},
 	"input":
 	{
@@ -1228,7 +1115,7 @@
 	"project": "fps.sublime-project",
 	"replace":
 	{
-		"height": 60.0
+		"height": 82.0
 	},
 	"save_all_on_build": true,
 	"select_file":

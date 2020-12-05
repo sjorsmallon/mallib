@@ -8,6 +8,9 @@
 #include <vector>
 #include <map>
 #include <deque>
+
+#include "bucket_array.h"
+
 #include <string>
 #include "logr.h"
 
@@ -40,7 +43,7 @@ struct Entity
 	glm::vec3 movement_vector;
 
     // things we need to decide on
-    std::string mesh_name;
+    // std::string mesh_name;
     generation generation; // this should actually be a counter for this particular entity ID (i.e. what generation is this?) instead of for this particular entity.
     bool scheduled_for_destruction = false;
     bool visible;

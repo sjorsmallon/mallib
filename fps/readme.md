@@ -62,6 +62,7 @@ All menus must
 - minimize language use
 
 # To compile:
+meson setup --wipe builddir --buildtype debugoptimized
 meson builddir
 cd builddir
 ninja
