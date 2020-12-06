@@ -1,22 +1,20 @@
-#ifndef INCLUDED_ENTITY_MANAGER_
-#define INCLUDED_ENTITY_MANAGER_
-#include <cstdint>
+#ifndef _TEST_ENTITY_CONTAINER_
+#define _TEST_ENTITY_CONTAINER_
+#include "bucket_array.h"
+#include <map>
+#include <vector>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
-#include <atomic>
-#include <vector>
-#include <map>
-#include <deque>
-
-#include "bucket_array.h"
-
-#include <string>
-#include "logr.h"
+#define macro_string_concatenate_helper(a, b) a ## b
+#define macro_string_concatenate(a, b) macro_string_concatenate_helper(a, b)
+#define macro_unique_name(var) macro_string_concatenate(var, __LINE__)
 
 using entity_id = uint32_t; 
 using generation = uint32_t;
 using Mesh_id = size_t;
+using Bucket_idx = size_t;
+using Entity_idx = size_t;
 
 enum Entity_Type : uint32_t
 {
@@ -33,7 +31,6 @@ struct Xform_State
 	float scale;
 };
 
-// don't declare any virtual functions please.
 struct Entity
 {
     // things we thought about
@@ -45,61 +42,147 @@ struct Entity
     // things we need to decide on
     // std::string mesh_name;
     generation generation; // this should actually be a counter for this particular entity ID (i.e. what generation is this?) instead of for this particular entity.
-    bool scheduled_for_destruction = false;
-    bool visible;
+    bool scheduled_for_destruction; // = false
+    bool visible; // = false;
     Mesh_id mesh_id;
     Xform_State xform_state;
+    // should this contain bucket idx etc etc etc?
+    Bucket_idx bucket_idx;
+    Entity_idx entity_idx;
 };
+
+
+static const int bucket_size = 100;
+using bucket = Bucket<Entity, bucket_size>;
+using bucket_array = Bucket_Array<Entity, bucket_size>;
 
 struct Entity_Manager
 {
-	uint32_t next_entity_id;
-	std::deque<uint32_t> free_ids;
-	std::vector<std::vector<Entity>> entities      =  std::vector<std::vector<Entity>>(Entity_Type::COUNT);
-	std::vector<std::vector<Entity*>> active_entities = std::vector<std::vector<Entity*>>(Entity_Type::COUNT);
-
-	//@TODO(Sjors): this should be a single vector.
-	std::vector<std::deque<entity_id>> free_indices = std::vector<std::deque<entity_id>>(Entity_Type::COUNT);
-
-	//@TODO(Sjors): this should actually not be a pointer, but type and id
-	std::vector<Entity*> scheduled_for_destruction;
+	entity_id next_id = 0;
+	bucket_array all_buckets;
+	std::map<Entity_Type, std::deque<bucket*>> buckets_by_type; // hmm. this should be an iterator?
+	
+	std::deque<entity_id> free_ids;
 };
 
-void make_entities_active(Entity_Manager& entity_manager);
 
+inline entity_id get_free_entity_id(Entity_Manager& entity_manager)
+{
+	if (entity_manager.free_ids.size()) 
+	{
+		entity_id id = entity_manager.free_ids.front();
+		entity_manager.free_ids.pop_front();
+		return id;
+	}
+	entity_id id = entity_manager.next_id;
+	entity_manager.next_id += 1;
 
-void create_entity(Entity_Manager& entity_manager, Entity_Type type);
-std::vector<Entity>& by_type(Entity_Manager& entity_manager, Entity_Type type);
+	return id;
+}
 
-std::vector<Entity*>& by_type_ptr(Entity_Manager& entity_manager, Entity_Type type);
+//@Thread(Sjors): get_last_bucket is not guaranteed to work like this)
+inline void create_entity(Entity_Manager& entity_manager, Entity_Type entity_type)
+{
+	bucket* target_bucket = nullptr;
+	// are there any non-full buckets of this particular type?
+	for (auto bucket_ptr:  entity_manager.buckets_by_type[entity_type])
+	{
+		if (bucket_ptr->size != bucket_ptr->capacity)
+		{
+			target_bucket = bucket_ptr;
+			break;
+		}
+	}
+
+	// if no bucket found:
+	if (nullptr == target_bucket)
+	{
+		add_bucket(entity_manager.all_buckets);
+		target_bucket = get_last_bucket(entity_manager.all_buckets);
+		entity_manager.buckets_by_type[entity_type].push_back(target_bucket);
+	}
+
+	Entity entity{};
+	entity.id = get_free_entity_id(entity_manager);
+	entity.type = entity_type;
+	entity.xform_state = {glm::vec3{0.f, entity.id, 0.f}, glm::vec4(0.f), 1.f};
+	entity.position =     glm::vec3{0.f, entity.id, 0.f};
+	entity.bucket_idx = target_bucket->bucket_idx;
+
+	array_add(entity_manager.all_buckets, std::move(entity));
+}
 
 inline void schedule_for_destruction(Entity_Manager& entity_manager, Entity* entity)
 {
 	entity->scheduled_for_destruction = true;
-	entity_manager.scheduled_for_destruction.push_back(entity);
 }
 
 inline void destroy_scheduled_entities(Entity_Manager& entity_manager)
 {
-	logr::report_warning_once("[entity_manager] destroy_scheduled_entites: implementation unfinished!\n");
-	auto&& cubes = entity_manager.active_entities[Entity_Type::Cube];
-	cubes.erase(std::remove_if(cubes.begin(), cubes.end(),
-		[&](Entity* entity) -> bool
+	//@Speed(Sjors): not finished.
+	for (bucket* bucket_ptr: entity_manager.all_buckets.buckets)
+	{
+		for (size_t idx = 0; idx != bucket_ptr->capacity; ++idx)
 		{
-			for (auto* marked_entity : entity_manager.scheduled_for_destruction)
+			Entity& entity = bucket_ptr->data[idx];
+			if (entity.scheduled_for_destruction)
 			{
-				if (entity->id == marked_entity->id) return true;
+				entity = {};
+				bucket_ptr->size -= 1;
 			}
-			return false;
-		}), cubes.end());
-
-	for (auto* marked_entity : entity_manager.scheduled_for_destruction) 
-			entity_manager.free_indices[marked_entity->type].push_front(marked_entity->id);
-
-	entity_manager.scheduled_for_destruction.clear();
+			bucket_ptr->occupied[idx] = false;
+		}
+	}
 }
 
-// std::vector<Entity*> by_type(Entity_Manager& manager, Entity_Type type);  
 
+
+
+
+//@Note(Sjors): this macro works in >= c++17 
+// #define for_entity_by_type_macro(entity_manager, entity_type, it) \
+for (auto [bucket_idx, entity_idx, bucket_list, it] = std::tuple(size_t{0}, size_t{0}, entity_manager.buckets_by_type[entity_type], &entity_manager.buckets_by_type[entity_type][0]->data[0]); it != nullptr; it = next_entity(bucket_list, bucket_idx, entity_idx))
+
+//@Note(Sjors): internal
+
+//@Note(Sjors): returns null for invalid.   // haha bucket list
+inline Entity* next_entity(std::deque<bucket*>& bucket_list,  size_t& current_bucket_idx, size_t& current_entity_idx)
+{
+	Entity* result = nullptr;
+
+	for (size_t bucket_idx = current_bucket_idx; bucket_idx != bucket_list.size(); ++bucket_idx)
+	{
+		bucket* current_bucket = bucket_list[bucket_idx];
+
+		while(current_entity_idx < current_bucket->capacity - 1)
+		{
+			current_entity_idx = current_entity_idx + 1;
+			if (current_bucket->occupied[current_entity_idx]) 
+			{
+				result = &current_bucket->data[current_entity_idx];
+				return result;
+			}
+		}
+
+		current_entity_idx = 0;
+		current_bucket_idx += 1;
+	}
+
+	return result;
+}
+
+
+
+
+
+// @Note(Sjors); this macro works I think in >= C++11.
+#define for_entity_by_type_macro(entity_manager, entity_type, it) \
+size_t macro_unique_name(current_bucket_idx) = 0; \
+size_t macro_unique_name(current_entity_idx) = 0; \
+std::deque<bucket*>& macro_unique_name(bucket_list) = entity_manager.buckets_by_type[entity_type]; \
+bucket* macro_unique_name(current_bucket) = macro_unique_name(bucket_list)[0]; \
+for (Entity* it = &macro_unique_name(current_bucket)->data[0]; 	it != nullptr; 	it = next_entity(macro_unique_name(bucket_list), macro_unique_name(current_bucket_idx), macro_unique_name(current_entity_idx))) 
 
 #endif
+
+

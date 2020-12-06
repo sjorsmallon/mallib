@@ -866,16 +866,16 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 size_t draw_count = 0;
                 // this is not actually part of rendering: we are just updating the buffers.
                 {
-                    auto&& dodecahedrons = by_type_ptr(*entity_manager, Entity_Type::Cube);
+               
                     //@Note(Sjors): we now use draw count in order to not overdraw.
                     // draw_count is used in gldrawarraysinstanced.
                     // however, this means that there is garbage at the end of the buffer (past draw count).
                     // we may want to zero that.
-                    for (size_t idx = 0; idx != dodecahedrons.size(); ++idx)
+                    Entity_Manager& manager = *entity_manager;
+                    for_entity_by_type_macro(manager, Entity_Type::Cube, it)
                     {
-                        auto& entity = *dodecahedrons[idx];
 
-                        if (entity.scheduled_for_destruction) continue;
+                        if (it->scheduled_for_destruction) continue;
 
                         glm::mat4& model_matrix = g_dodecahedron_model_matrices[draw_count];
                         glm::mat4& mvp_matrix = g_dodecahedron_mvp_matrices[draw_count];
@@ -885,7 +885,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                         
                         // turn angry face towards player
                         glm::mat4 rotate = glm::mat4(1.0f);
-                        glm::vec3 target_ray = glm::normalize(camera.position - entity.position);
+                        glm::vec3 target_ray = glm::normalize(camera.position - it->position);
                         glm::vec3 object_ray = glm::vec3(0.f,1.f, 0.f);
                         float angle_dif = acos(glm::dot(target_ray, object_ray));
                         if (angle_dif != 0)
@@ -896,7 +896,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                             rotate = glm::toMat4(delta_quaternion);
                         }
 
-                        glm::mat4 translate = glm::translate(glm::mat4(1.0f), entity.position);
+                        glm::mat4 translate = glm::translate(glm::mat4(1.0f), it->position);
                         model_matrix = translate * rotate * scale;
                         mvp_matrix = projection * view * model_matrix;  
                     }

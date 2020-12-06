@@ -63,9 +63,8 @@ int main()
     load_alpha_png_texture(texture_manager, "crosshair");
 
     auto entity_manager = Entity_Manager();
-    // for (size_t idx = 0; idx != 255; ++idx)
-    //     create_entity(entity_manager, Entity_Type::Cube);
-    // make_entities_active(entity_manager);
+    for (size_t idx = 0; idx != 255; ++idx)
+        create_entity(entity_manager, Entity_Type::Cube);
 
     init_sound_system();
     load_sound("chicken.wav");

@@ -1,0 +1,4 @@
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define for_entity_by_type_macro(entity_manager, entity_type, it) size_t macro_unique_name(current_bucket_idx) = 0; size_t macro_unique_name(current_entity_idx) = 0; std::deque<bucket*>& macro_unique_name(bucket_list) = entity_manager.buckets_by_type[entity_type]; bucket* macro_unique_name(current_bucket) = macro_unique_name(bucket_list)[0]; for (Entity* it = &macro_unique_name(current_bucket)->data[0]; it != nullptr; it = next_entity(macro_unique_name(bucket_list), macro_unique_name(current_bucket_idx), macro_unique_name(current_entity_idx)))

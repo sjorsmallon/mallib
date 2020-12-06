@@ -405,15 +405,24 @@ namespace
 	void evaluate_flying_units(Entity_Manager& entity_manager, const float dt)
 	{
 		auto& player = g_player_entity;
-		auto& dodecahedrons = by_type(entity_manager, Entity_Type::Cube);
 
-    	auto sum_lambda = [](glm::vec3 sum, Entity& rhs) {
-                         return (sum + rhs.position);
-                     	};
-        glm::vec3 sum = std::accumulate(dodecahedrons.begin(), dodecahedrons.end(), glm::vec3(0.0f), sum_lambda);
+		glm::vec3 sum{};
+		size_t entity_count = 0;
+		for_entity_by_type_macro(entity_manager, Entity_Type::Cube, it)
+		{
+			sum += it->position;
+			entity_count += 1;
+		}
+
+		// auto& dodecahedrons = by_type(entity_manager, Entity_Type::Cube);
+
+  //   	auto sum_lambda = [](glm::vec3 sum, Entity& rhs) {
+  //                        return (sum + rhs.position);
+  //                    	};
+  //       glm::vec3 sum = std::accumulate(dodecahedrons.begin(), dodecahedrons.end(), glm::vec3(0.0f), sum_lambda);
 
         //@Incomplete(Sjors): div 0?
-        glm::vec3 average_position = sum *  (1.0f / static_cast<float>(dodecahedrons.size()));
+        glm::vec3 average_position = sum *  (1.0f / static_cast<float>(entity_count));
         glm::vec3 player_position = player.position + glm::vec3(0.0f,10.0f,0.0f);
         glm::vec3 center_to_player_direction = glm::normalize(player_position - average_position);
 		
@@ -424,22 +433,21 @@ namespace
 		};
 
 		//@Memory(Sjors)
-		std::vector<Neighbour_Info> neighbour_info(dodecahedrons.size());
+		std::vector<Neighbour_Info> neighbour_info{};
 		//@Speed(Sjors): O(N^2)
-		// wat we nu gaan doen, kost heel veel tijd.
-		// gather information about closest neighbour.
-		for (size_t lhs_idx = 0; lhs_idx != dodecahedrons.size(); ++lhs_idx)
+
+
+
+		for_entity_by_type_macro(entity_manager, Entity_Type::Cube, lhs_e)
 		{
-			Entity& lhs_e = dodecahedrons[lhs_idx];
-			auto& neighbour = neighbour_info[lhs_idx];
+			Neighbour_Info neighbour{};
 			neighbour.distance =  1000000.0f;
 			neighbour.direction = glm::vec3(1.0f);
 
-			for (size_t rhs_idx = lhs_idx + 1; rhs_idx != dodecahedrons.size(); ++rhs_idx)
+			for_entity_by_type_macro(entity_manager, Entity_Type::Cube, rhs_e)
 			{
-				auto& rhs_e = dodecahedrons[rhs_idx];
 
-				glm::vec3 distance  = rhs_e.position - lhs_e.position; 
+				glm::vec3 distance  = rhs_e->position - lhs_e->position; 
 				float abs_distance = glm::length(distance);
 				glm::vec3 direction_vector = glm::normalize(distance);
 
@@ -449,16 +457,46 @@ namespace
 					neighbour.direction = direction_vector;	
 				}
 			}
+			neighbour_info.push_back(neighbour);
 		}
 
-		// update the positions of each thing.
-		for (size_t idx = 0; idx != dodecahedrons.size(); ++idx)
-		{
-			Entity& entity = dodecahedrons[idx];
-			auto& neighbour = neighbour_info[idx]; 
 
-			glm::vec3 focus_direction      = glm::normalize(player_position - entity.position);
-			glm::vec3 cohesion_direction   = glm::normalize(average_position - entity.position);
+		// // wat we nu gaan doen, kost heel veel tijd.
+		// // gather information about closest neighbour.
+		// for (size_t lhs_idx = 0; lhs_idx != dodecahedrons.size(); ++lhs_idx)
+		// {
+		// 	Entity& lhs_e = dodecahedrons[lhs_idx];
+		// 	auto& neighbour = neighbour_info[lhs_idx];
+		// 	neighbour.distance =  1000000.0f;
+		// 	neighbour.direction = glm::vec3(1.0f);
+
+		// 	for (size_t rhs_idx = lhs_idx + 1; rhs_idx != dodecahedrons.size(); ++rhs_idx)
+		// 	{
+		// 		auto& rhs_e = dodecahedrons[rhs_idx];
+
+		// 		glm::vec3 distance  = rhs_e.position - lhs_e.position; 
+		// 		float abs_distance = glm::length(distance);
+		// 		glm::vec3 direction_vector = glm::normalize(distance);
+
+		// 		if (abs_distance < neighbour.distance)
+		// 		{
+		// 			neighbour.distance = abs_distance;
+		// 			neighbour.direction = direction_vector;	
+		// 		}
+		// 	}
+		// }
+
+		size_t neighbour_idx = 0;
+		for_entity_by_type_macro(entity_manager, Entity_Type::Cube, entity)
+		{
+		// // update the positions of each thing.
+		// for (size_t idx = 0; idx != dodecahedrons.size(); ++idx)
+		// {
+			// Entity& entity = dodecahedrons[idx];
+			auto& neighbour = neighbour_info[neighbour_idx]; 
+
+			glm::vec3 focus_direction      = glm::normalize(player_position - entity->position);
+			glm::vec3 cohesion_direction   = glm::normalize(average_position - entity->position);
 			glm::vec3 separation_direction = -neighbour.direction;
 			glm::vec3 height_direction     = glm::vec3(0.f, 1.f, 0.f); 
 
@@ -502,12 +540,14 @@ namespace
 			
 			if (enable_previous_momentum)
 			{
-				glm::vec3 old_direction_vector = entity.movement_vector;
+				glm::vec3 old_direction_vector = entity->movement_vector;
 				direction_vector = glm::normalize(0.1f * direction_vector + 0.9f * old_direction_vector);
 			}	
 
-			entity.position = entity.position + (direction_vector * g_dodecahedron_velocity * dt);	
-			entity.movement_vector = direction_vector;
+			entity->position = entity->position + (direction_vector * g_dodecahedron_velocity * dt);	
+			entity->movement_vector = direction_vector;
+
+			neighbour_idx +=1;
 		}
 
 	}
@@ -516,8 +556,7 @@ namespace
 	{
 		timed_function("evaluate_shot");
 
-		std::vector<Entity*>& entities = by_type_ptr(entity_manager, Entity_Type::Cube);
-		for (Entity* entity_ptr: entities)
+		for_entity_by_type_macro(entity_manager, Entity_Type::Cube, entity_ptr)
 		{
   			if (!ray_intersects_sphere(camera.position, camera.front, entity_ptr->position, 20.0f)) continue;
 			// we hit.
