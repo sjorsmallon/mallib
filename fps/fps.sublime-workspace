@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"current",
+				"current_bucket_idx"
+			],
+			[
+				"bucky",
+				"buckets_by_type"
+			],
+			[
 				"wish",
 				"wish_direction"
 			],
@@ -506,24 +514,89 @@
 			[
 				"min",
 				"max_triangle_size_VS_in"
-			],
-			[
-				"max_",
-				"max_triangle_size_VS_in"
-			],
-			[
-				"patch",
-				"patch_curvature_VS_in"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "/C/Users/Thesis/Desktop/aoc/three/main.zig",
+			"file": "src/bucket_array.h",
 			"settings":
 			{
-				"buffer_size": 177,
+				"buffer_size": 3830,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/entity_manager.h",
+			"settings":
+			{
+				"buffer_size": 5219,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/game_simulate.cc",
+			"settings":
+			{
+				"buffer_size": 20283,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/main.cc",
+			"settings":
+			{
+				"buffer_size": 3551,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/render_system.cc",
+			"settings":
+			{
+				"buffer_size": 52727,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "Searching 50 files for \"active_entities\"\n\nC:\\mallib\\mallib\\fps\\src\\__entity_manager.cc:\n   58  \tfor (auto&& entity: entity_manager.entities[Entity_Type::Cube])\n   59  \t{\n   60: \t\tentity_manager.active_entities[Entity_Type::Cube].push_back(&entity);\n   61  \t}\n   62  }\n   ..\n   69  std::vector<Entity*>& by_type_ptr(Entity_Manager& entity_manager, Entity_Type type)\n   70  {\n   71: \treturn entity_manager.active_entities[type];\n   72  }\n   73  \n\nC:\\mallib\\mallib\\fps\\src\\__entity_manager.h:\n   57  \tstd::deque<uint32_t> free_ids;\n   58  \tstd::vector<std::vector<Entity>> entities      =  std::vector<std::vector<Entity>>(Entity_Type::COUNT);\n   59: \tstd::vector<std::vector<Entity*>> active_entities = std::vector<std::vector<Entity*>>(Entity_Type::COUNT);\n   60  \n   61  \t//@TODO(Sjors): this should be a single vector.\n   ..\n   83  {\n   84  \tlogr::report_warning_once(\"[entity_manager] destroy_scheduled_entites: implementation unfinished!\\n\");\n   85: \tauto&& cubes = entity_manager.active_entities[Entity_Type::Cube];\n   86  \tcubes.erase(std::remove_if(cubes.begin(), cubes.end(),\n   87  \t\t[&](Entity* entity) -> bool\n\n4 matches across 2 files\n",
+			"settings":
+			{
+				"buffer_size": 1146,
+				"line_ending": "Windows",
+				"name": "Find Results",
+				"scratch": true
+			}
+		},
+		{
+			"file": "meson.build",
+			"settings":
+			{
+				"buffer_size": 1479,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/__entity_manager.cc",
+			"settings":
+			{
+				"buffer_size": 2090,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "tests/entity_manager/entity_manager_test.cc",
+			"settings":
+			{
+				"buffer_size": 447,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -709,10 +782,24 @@
 	},
 	"expanded_folders":
 	[
-		"/C/mallib/mallib/fps/assets/shaders"
+		"/C/mallib/mallib/fps/src",
+		"/C/mallib/mallib/fps/assets/shaders",
+		"/C/mallib/mallib/fps/tests",
+		"/C/mallib/mallib/fps/tests/bucket_array",
+		"/C/mallib/mallib/fps/tests/entity_manager"
 	],
 	"file_history":
 	[
+		"/C/mallib/mallib/fps/src/entity_container.h",
+		"/C/mallib/mallib/fps/src/struct Range;",
+		"/C/mallib/mallib/fps/tests/entity_manager/entity_manager_test.cc",
+		"/C/mallib/mallib/fps/readme.md",
+		"/C/mallib/mallib/fps/meson.build",
+		"/C/mallib/mallib/fps/tests/bucket_array/bucket_array_test.cc",
+		"/C/mallib/mallib/fps/src/entity_manager.cc",
+		"/C/mallib/mallib/fps/src/entity_manager.h",
+		"/C/mallib/mallib/fps/tests/entity_container/entity_container_test.cc",
+		"/C/Users/Thesis/Desktop/aoc/three/main.zig",
 		"/C/Users/Thesis/Desktop/aoc/one_part_two/src/main.rs",
 		"/C/mallib/mallib/fps/src/bucket_array.h",
 		"/C/Users/Thesis/Desktop/aoc/one/src/main.rs",
@@ -723,7 +810,6 @@
 		"/C/mallib/mallib/fps/src/window_manager.cc",
 		"/C/Users/Thesis/Desktop/Sublime Text 3/Data/Packages/User/logr_report.sublime-snippet",
 		"/C/mallib/mallib/fps/src/logr.h",
-		"/C/mallib/mallib/fps/meson.build",
 		"/C/mallib/mallib/fps/src/render_system.cc",
 		"/C/mallib/mallib/fps/src/texture_manager.h",
 		"/C/mallib/mallib/fps/src/math.h",
@@ -732,9 +818,7 @@
 		"/C/mallib/mallib/fps/src/player_movement.cc",
 		"/C/mallib/mallib/fps/src/asset_manager.h",
 		"/C/mallib/mallib/fps/src/game_end_frame.cc",
-		"/C/mallib/mallib/fps/src/entity_manager.h",
 		"/C/mallib/mallib/fps/src/game.h",
-		"/C/mallib/mallib/fps/src/entity_manager.cc",
 		"/C/mallib/mallib/fps/src/file.h",
 		"/C/mallib/mallib/fps/src/asset_manager.cc",
 		"/C/mallib/mallib/fps/src/log.h",
@@ -754,7 +838,6 @@
 		"/C/mallib/mallib/fps/src/collision_system.cc",
 		"/C/mallib/bullet3-master/examples/BasicDemo/BasicExample.cpp",
 		"/C/mallib/bullet3-master/examples/BasicDemo/BasicExample.h",
-		"/C/mallib/mallib/fps/readme.md",
 		"/C/mallib/bullet3-master/README.md",
 		"/C/mallib/mallib/fps/src/collision_system.h",
 		"/C/mallib/bullet3-master/src/btBulletCollisionCommon.h",
@@ -834,17 +917,11 @@
 		"/C/mutil/util/Main/subprojects/fmt-7.0.1/meson.build",
 		"/C/mutil/util/Main/subprojects/fmt/upstream.wrap",
 		"/C/mutil/util/imgui_glfw_new/readme.md",
-		"/C/mutil/util/imgui_glfw_new/main.cc",
-		"/C/mutil/util/imgui_glfw_new/meson.build",
-		"/C/mutil/util/imgui_glfw_new/subprojects/imgui/meson.build",
-		"/C/mutil/util/imgui_glfw_new/test/meson.build",
-		"/C/mutil/util/meson_test/meson.build",
-		"/C/mutil/util/imgui_glfw_new/imgui/meson.build",
-		"/C/mutil/util/imgui_glfw_new/glfw-3.3.2/meson.build"
+		"/C/mutil/util/imgui_glfw_new/main.cc"
 	],
 	"find":
 	{
-		"height": 43.0
+		"height": 41.0
 	},
 	"find_in_files":
 	{
@@ -860,6 +937,30 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"active_entities",
+			"accelerate",
+			"wish_velocity",
+			"entity.",
+			" entity.",
+			".",
+			"entity",
+			"current_bucket",
+			"tuple",
+			",  __LINE__, __FILE__",
+			"macro_string_concatenate",
+			" __LINE__)",
+			"bucket_by_type",
+			"));\n",
+			"bucket_array",
+			"bucket",
+			"\t\n",
+			"get_last_bucket",
+			"entity_type",
+			"Entity_Manager",
+			"Entity_Container",
+			"size_t",
+			"bucket_array",
+			"count_per_bucket",
 			"let",
 			"wish_direction",
 			"friction",
@@ -963,31 +1064,7 @@
 			"camera",
 			"left_mouse_button",
 			"to_closest",
-			"lhs_e",
-			"g_dodecah",
-			"->",
-			"shader info for",
-			"cursor",
-			"mouse",
-			"init",
-			"debug_value",
-			"center_to_player",
-			"view",
-			"g_dode",
-			"dodecahedron",
-			"g_dodecahedron_vbo",
-			"render_floor",
-			"player.position",
-			"entity_ptr",
-			"update_flying_units",
-			"g_dode",
-			"g_cube_velocity",
-			"*>",
-			"update_camera_entity",
-			"g_player",
-			"volume",
-			"timed_functions",
-			"Timed_Function_Data"
+			"lhs_e"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1010,48 +1087,306 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "/C/Users/Thesis/Desktop/aoc/three/main.zig",
+					"file": "src/bucket_array.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 177,
+						"buffer_size": 3830,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								175,
-								175
+								3385,
+								3385
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Zig Language/Syntaxes/Zig.tmLanguage"
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 2303.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "src/entity_manager.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5219,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4710,
+								4710
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 3801.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/game_simulate.cc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 20283,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								19752,
+								19752
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 11957.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "src/main.cc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3551,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2703,
+								2703
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 966.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "src/render_system.cc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 52727,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								39161,
+								39161
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 20263.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1146,
+						"regions":
+						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										194,
+										209
+									],
+									[
+										404,
+										419
+									],
+									[
+										683,
+										698
+									],
+									[
+										984,
+										999
+									]
+								],
+								"scope": ""
+							}
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"detect_indentation": false,
+							"line_numbers": false,
+							"output_tag": 1,
+							"result_base_dir": "",
+							"result_file_regex": "^([^ \t].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "meson.build",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1479,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1333,
+								1333
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C#/Build.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 276.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "src/__entity_manager.cc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2090,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "tests/entity_manager/entity_manager_test.cc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 447,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								159,
+								159
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
 					"type": "text"
 				}
-			]
-		},
-		{
-			"sheets":
-			[
 			]
 		}
 	],
 	"incremental_find":
 	{
-		"height": 43.0
+		"height": 32.0
 	},
 	"input":
 	{
@@ -1066,18 +1401,11 @@
 				0,
 				1,
 				1
-			],
-			[
-				1,
-				0,
-				2,
-				1
 			]
 		],
 		"cols":
 		[
 			0.0,
-			0.5,
 			1.0
 		],
 		"rows":
@@ -1115,7 +1443,7 @@
 	"project": "fps.sublime-project",
 	"replace":
 	{
-		"height": 82.0
+		"height": 60.0
 	},
 	"save_all_on_build": true,
 	"select_file":
