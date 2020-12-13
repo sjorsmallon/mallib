@@ -7,23 +7,6 @@ struct Entity {
 	bool active;
 };
 
-// struct Active_Entity_Iterator
-// {
-// 	Entity* current = nullptr;
-// 	Entity* begin;
-// 	Entity* end;
-// 	Active_Entity_Iterator(Entity* begin_in, Entity* end_in): current(begin_in), begin(begin_in), end(end_in) {};
-// 	Entity* operator++() {
-// 		std::cerr << "calling active_entity_iterator's operator++!\n";
-// 		while (! (current->active) &&  current != end)
-// 		{
-// 			current++;
-// 		}
-// 		return current;
-// 	}
-// };
-
-
 struct Vector_Of_Int
 {
 	std::vector<Entity> entities;
@@ -59,6 +42,10 @@ struct Vector_Of_Int
 
 	Active_Entity_Iterator begin()   {return {&entities[0]};}
 	Active_Entity_Iterator end()	 {return  {&entities[entities.size()]};}
+
+
+
+
 	// iterator operator++(){};
 };
 

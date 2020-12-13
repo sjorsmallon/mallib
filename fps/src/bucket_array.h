@@ -1,140 +1,134 @@
 #ifndef INCLUDED_BUCKET_ARRAY_
 #define INCLUDED_BUCKET_ARRAY_
 #include <array>
-#include <deque>
-#include <cassert>
-#include <iostream>
+#include <vector>
 
-//@Thread
-//@Note(Sjors): as of yet, bucket_array is not threadsafe.
-// This can be problematic when adding new buckets and requesting the last bucket that was added (which can mismatch).
-// I have an idea how to solve it, but I don't want to lock down.
-// For now,we just assume that it is not.
 template <typename Type>
 concept Pod = std::is_standard_layout<Type>::value && std::is_trivial<Type>::value && std::is_aggregate<Type>::value;
 
-template<Pod pod, size_t count>
-struct Bucket
-{
-	std::array<bool, count> occupied;
-	std::array<pod, count> data;
-	size_t size;
-	size_t bucket_idx;
-	size_t capacity{count};
+template <Pod pod, size_t bucket_capacity>
+struct Bucket {
+	std::array<pod, bucket_capacity> data;
+	std::array<bool, bucket_capacity> occupied;
+	// Bucket* next;// = nullptr; //@unused
+	size_t bucket_idx; //= 0;
+	size_t size; // = 0; //
+	size_t capacity{bucket_capacity};
 };
 
-// Adding/removing objects at the end of a std::vector<T> keeps pointers and iterators stable unless the std::vector<T> needs to reallocate its internal structure. That is, pointers and iterators get only invalidated when an object is added and v.size() == v.capacity(). You can use v.reserve(n) to reserve space.
-// Adding/removing objects at either end of a std::deque<T> keeps pointers stable but does invalidate iterators.
-// Adding/removing objects anywhere in a std::list<T> keeps both pointers and iterators stable.
-// cannot use vector,
-// CAN use deque (since we do not care about iterators in this case)
 
-template <Pod pod, size_t count_per_bucket>
+template<Pod pod, size_t bucket_capacity>
 struct Bucket_Array
 {
-	using bucket = Bucket<pod, count_per_bucket>;
-	size_t count = count_per_bucket;
-	std::deque<bucket*> buckets;
-	std::deque<bucket*> unfilled_buckets;
-	bucket* last_bucket = nullptr;
-
-	Bucket_Array()
-	:
-		buckets({}),
-		unfilled_buckets({})
-	{
-	}
+	using bucket = Bucket<pod, bucket_capacity>;
+	std::vector<bucket*> all_buckets;
+	std::vector<bucket*> unfilled_buckets;
 
 	~Bucket_Array()
 	{
-		for (auto* bucket: buckets)
+		for (size_t idx = 0; idx != all_buckets.size(); ++idx)
 		{
-			delete bucket;
-		} 
+			// std::cerr << "deleted bucket\n";
+			bucket* current = all_buckets[idx];
+			delete current;
+		}
 	}
+
+
+};
+
+//@Note(Sjors): prefer to not use this & let it be done by the array itself.
+template<Pod pod, size_t bucket_capacity>
+void add_bucket_by_handle(Bucket_Array<pod, bucket_capacity>&bucket_array, Bucket<pod, bucket_capacity>* new_bucket)
+{
+
+	new_bucket->bucket_idx = bucket_array.all_buckets.size();
+	
+	if (!bucket_array.all_buckets.empty())
+	{
+		Bucket<pod, bucket_capacity>* last_bucket = bucket_array.all_buckets.back();
+		// last_bucket->next = new_bucket;
+	}
+
+	bucket_array.all_buckets.push_back(new_bucket);
+	// std::cerr << "added bucket by handle!\n";
+}
+
+template<Pod pod, size_t bucket_capacity>
+void add_bucket(Bucket_Array<pod, bucket_capacity>& bucket_array)
+{
+	Bucket<pod, bucket_capacity>* new_bucket = new Bucket<pod, bucket_capacity>();
+	new_bucket->bucket_idx = bucket_array.all_buckets.size();
+	
+	if (bucket_array.all_buckets.size())
+	{
+		Bucket<pod, bucket_capacity>* last_bucket = bucket_array.all_buckets.back();
+		// last_bucket->next = new_bucket;
+	}
+
+	bucket_array.all_buckets.push_back(new_bucket);
+	// std::cerr << "added bucket!\n";
 };
 
 
-template<Pod pod, size_t count_per_bucket>
-inline Bucket<pod, count_per_bucket>& get_unfilled_bucket(Bucket_Array<pod, count_per_bucket>& bucket_array)
+template<Pod pod, size_t bucket_capacity>
+struct Occupied_Iterator
 {
-	if (!bucket_array.unfilled_buckets.size()) add_bucket(bucket_array);
+	    using iterator_category = std::forward_iterator_tag;
+	    using value_type = pod;
+	    using difference_type = pod;
+	    using pointer = pod*;
+	    using reference = pod&;
 
-	return *bucket_array.unfilled_buckets.front();
-}
+		using bucket = Bucket<pod, bucket_capacity>;
 
-template<Pod pod, size_t count_per_bucket>
-inline Bucket<pod, count_per_bucket>* get_last_bucket(Bucket_Array<pod, count_per_bucket>& bucket_array)
-{
-	return bucket_array.last_bucket;
-}
+      	pod* current = nullptr;
+      	std::vector<bucket*>& all_buckets;
+      	size_t current_bucket_idx = 0;
+      	size_t current_item_idx = 0;
 
+    	Occupied_Iterator(pod* pod_in, std::vector<bucket*>& all_buckets_in)
+    	:
+    		current{pod_in},
+    		all_buckets(all_buckets_in)
+    	{};
 
-template<Pod pod, size_t count_per_bucket>
-inline void array_add(Bucket_Array<pod, count_per_bucket>& bucket_array, pod&& pod_in)
-{
-	// get the FIRST free bucket.
-	auto&& bucket = get_unfilled_bucket(bucket_array);
+            bool operator== (const Occupied_Iterator& other) {
+                return current == other.current;
+            }
+ 
+			reference operator*() {return *current;}
 
-	size_t old_size = bucket.size;
+            Occupied_Iterator& operator++()
+            {
+            	current_item_idx += 1;
+				current++;
+            	// continue skipping unoccupied slots
+            	while (all_buckets[current_bucket_idx]->occupied[current_item_idx] == false)
+            	{
+	            	if (current_item_idx == bucket_capacity)
+	            	{
+	            		current_bucket_idx += 1;
+	            		current_item_idx = 0;
 
-	for (size_t idx = 0; bucket.capacity; ++idx)
-	{		
-		if (!bucket.occupied[idx])
-		{
-			bucket.data[idx] = pod_in; 
-			bucket.occupied[idx] = true;
-			bucket.size +=1;
-			break;
-		}
-	}
-		
-	assert(old_size != bucket.size);
-	
-	if (bucket.size == bucket.capacity)
-	{
-		// This bucket is full: erase it from the unfilled buckets list.
-		for (size_t idx = 0; idx != bucket_array.unfilled_buckets.size(); ++idx)	
-		{
-			auto&& unfilled_bucket = bucket_array.unfilled_buckets[idx];
+	            		if (current_bucket_idx == all_buckets.size())
+	            		{
+	            			// set current to END (one past the last bucket.)
+	            			current = &all_buckets[all_buckets.size() - 1]->data[bucket_capacity]; 
+	            			return *this;
+	            		}
+	            		current = &all_buckets[current_bucket_idx]->data[current_item_idx];
+	            	}
+	            	else
+	            	{
+	            		current++;
+	            		current_item_idx += 1;
+	            	}
 
-			if (unfilled_bucket  == std::addressof(bucket)) 
-			{
-				bucket_array.unfilled_buckets.erase(bucket_array.unfilled_buckets.begin() + idx);
-				break;
-			}
-		}
-	}
-}
-
-template<Pod pod, size_t count_per_bucket>
-inline void maybe_merge_buckets(Bucket_Array<pod, count_per_bucket>& bucket_array)
-{
-
-}
-
-template<Pod pod, size_t count_per_bucket>
-inline void maybe_compact_bucket(Bucket_Array<pod, count_per_bucket>& bucket_array)
-{
-
-}
-
-
-template<Pod pod, size_t count_per_bucket>
-inline void add_bucket(Bucket_Array<pod, count_per_bucket>& bucket_array)
-{
-	// std::cerr << "add_bucket" << '\n';
-	size_t bucket_count = bucket_array.buckets.size();
-
-	auto&& bucket = new Bucket<pod, count_per_bucket>();
-	bucket->bucket_idx = bucket_count;
-
-	bucket_array.buckets.push_back(bucket);
-	bucket_array.unfilled_buckets.push_back(bucket);
-	bucket_array.last_bucket = bucket;
-}
-
-
+            	}
+            	return *this;
+            }
+};
 
 
 
