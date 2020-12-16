@@ -15,7 +15,7 @@
 //TODO(Sjors): parent id / scope depth.
 // if the name already exists, we can just override ...
 
-struct Timer
+struct Time_Duration
 {
 	std::chrono::time_point<std::chrono::system_clock> start;
 	std::chrono::time_point<std::chrono::system_clock> end;
@@ -29,8 +29,8 @@ struct Timed_Function
 	// std::chrono::time_point<std::chrono::system_clock> start;
 	// static uint32_t next_id;
 	// static uint32_t scope_depth;
-	static std::map<std::string, Timer> timed_functions;
-	Timer& data;
+	static std::map<std::string, Time_Duration> timed_functions;
+	Time_Duration& data;
 
 	static double get_duration(const std::string& function_name)
 	{
@@ -65,8 +65,10 @@ struct Timed_Function
 
 
 
+// TIMER
+
 constexpr const int buffer_size = 256;
-struct Frame_Timer
+struct Timer
 {
 	std::chrono::time_point<std::chrono::system_clock> start;
 	std::chrono::time_point<std::chrono::system_clock> end;
@@ -74,25 +76,25 @@ struct Frame_Timer
 	std::array<double, buffer_size> buffer;
 };
 
-inline void start(Frame_Timer& frame_timer)
+inline void timer_start(Timer& timer)
 {
-    frame_timer.start = std::chrono::system_clock::now();
+    timer.start = std::chrono::system_clock::now();
 
 }
-inline void stop(Frame_Timer& frame_timer)
+inline void timer_stop(Timer& timer)
 {
-	frame_timer.end = std::chrono::system_clock::now();
-    frame_timer.dt = static_cast<std::chrono::duration<double>>(frame_timer.end - frame_timer.start).count();
+	timer.end = std::chrono::system_clock::now();
+    timer.dt = static_cast<std::chrono::duration<double>>(timer.end - timer.start).count();
 }
 
-inline void maybe_log_average(Frame_Timer& frame_timer, uint32_t frame_index)
+inline void timer_maybe_log_average(Timer& timer, uint32_t frame_index)
 {
     const auto buffer_idx = frame_index % buffer_size;
-    frame_timer.buffer[buffer_idx] = frame_timer.dt;
+    timer.buffer[buffer_idx] = timer.dt;
 
     if (frame_index % buffer_size == 0) 
     {
-        const double frame_average =  std::accumulate(frame_timer.buffer.begin(), frame_timer.buffer.end(), 0.0) / static_cast<double>(buffer_size);
+        const double frame_average =  std::accumulate(timer.buffer.begin(), timer.buffer.end(), 0.0) / static_cast<double>(buffer_size);
         //@FIXME(Sjors): this is a degenerate way to persist this data every frame.
         Timed_Function::timed_functions["fps"].duration = 1.0 / frame_average;
         Timed_Function::timed_functions["average_frame_time"].duration = frame_average;

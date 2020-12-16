@@ -64,7 +64,7 @@ int main()
 
     auto entity_manager = Entity_Manager();
     for (size_t idx = 0; idx != 255; ++idx)
-        create_entity(entity_manager, Entity_Type::Cube);
+    create_entity(entity_manager, Entity_Type::Cube);
 
     init_sound_system();
     load_sound("chicken.wav");
@@ -87,12 +87,12 @@ int main()
     Particle_Cache particle_cache{}; // uh, allocating this on the stack is maybe a bad idea.
 
     // Main loop
-    Frame_Timer frame_timer{};
+    Timer frame_timer{};
     double frame_dt = 0.0f;
     uint32_t frame_count = 0;
     while (true)
     {
-        start(frame_timer);
+        timer_start(frame_timer);
 
         poll_input(window_manager);
         game_simulate(game_state, frame_dt, window_manager.input, particle_cache, entity_manager);
@@ -102,9 +102,9 @@ int main()
         if (game_state.game_mode == GM_EDITOR) render_debug_ui(window_manager);
 
         swap_buffers(window_manager);
-        stop(frame_timer);
+        timer_stop(frame_timer);
         
-        maybe_log_average(frame_timer, frame_count);
+        timer_maybe_log_average(frame_timer, frame_count);
 
         frame_dt = frame_timer.dt;
         frame_count +=1;

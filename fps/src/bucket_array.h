@@ -11,8 +11,8 @@ struct Bucket {
 	std::array<pod, bucket_capacity> data;
 	std::array<bool, bucket_capacity> occupied;
 	// Bucket* next;// = nullptr; //@unused
-	size_t bucket_idx; //= 0;
-	size_t size; // = 0; //
+	size_t bucket_idx = 0;
+	size_t size = 0; //
 	size_t capacity{bucket_capacity};
 };
 
@@ -28,7 +28,6 @@ struct Bucket_Array
 	{
 		for (size_t idx = 0; idx != all_buckets.size(); ++idx)
 		{
-			// std::cerr << "deleted bucket\n";
 			bucket* current = all_buckets[idx];
 			delete current;
 		}
@@ -51,7 +50,6 @@ void add_bucket_by_handle(Bucket_Array<pod, bucket_capacity>&bucket_array, Bucke
 	}
 
 	bucket_array.all_buckets.push_back(new_bucket);
-	// std::cerr << "added bucket by handle!\n";
 }
 
 template<Pod pod, size_t bucket_capacity>
@@ -67,7 +65,6 @@ void add_bucket(Bucket_Array<pod, bucket_capacity>& bucket_array)
 	}
 
 	bucket_array.all_buckets.push_back(new_bucket);
-	// std::cerr << "added bucket!\n";
 };
 
 
@@ -90,7 +87,7 @@ struct Occupied_Iterator
     	Occupied_Iterator(pod* pod_in, std::vector<bucket*>& all_buckets_in)
     	:
     		current{pod_in},
-    		all_buckets(all_buckets_in)
+    		all_buckets{all_buckets_in}
     	{};
 
             bool operator== (const Occupied_Iterator& other) {

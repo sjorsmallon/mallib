@@ -520,43 +520,30 @@
 	"buffers":
 	[
 		{
+			"contents": "\n#include \"window_manager.h\"\n#include \"shader_manager.h\"\n#include \"texture_manager.h\"\n#include \"asset_manager.h\"\n#include \"entity_manager.h\"\n\n#include \"render_system.h\"\n#include \"sound_system.h\"\n#include \"task_system.h\"\n\n#include \"logr.h\"\n#include \"particle.h\"\n#include \"game.h\"\n\n#include \"timed_function.h\"\n\n#include <chrono>\n#include <thread>\n#include <array>\n\nconst int window_width = 1920;\nconst int window_height = 1080;\nconst int debug_window_width = 850;\nconst int debug_window_height = 1000;\n\nint main()\n{\n    auto window_manager = Window_Manager();\n    create_main_window(window_manager, \"fps\", window_width, window_height);\n\n    auto shader_manager = Shader_Manager();\n    load_shader(shader_manager, \"deferred_geometry\");\n    load_shader(shader_manager, \"deferred_instanced\");\n    load_shader(shader_manager, \"deferred_lighting\");\n    load_shader(shader_manager, \"lightbox\");\n    load_shader(shader_manager, \"debug_geometry\");\n    load_shader(shader_manager, \"simple_depth\");\n    load_shader(shader_manager, \"simple_depth_shadow_mapping\");\n    load_shader(shader_manager, \"screen_space\");\n\n    auto asset_manager = Asset_Manager();\n    bool should_unitize = true;\n    load_obj(asset_manager, \"new_spear\", should_unitize);\n    load_obj(asset_manager, \"dodecahedron\");\n    load_obj(asset_manager, \"arrow\");\n\n\n    auto texture_manager = Texture_Manager();\n    load_png_texture(texture_manager, \"metal\");\n    load_png_texture(texture_manager, \"marble\");\n    load_tga_texture(texture_manager, \"target_wood_diffuse\");\n    load_png_texture(texture_manager, \"wall_64\");\n    load_png_texture(texture_manager, \"floor_64\");\n    load_png_texture(texture_manager, \"star_64\");\n    load_png_texture(texture_manager, \"wall_stone_specular\");\n    load_png_texture(texture_manager, \"wall_stone_diffuse\");\n    load_png_texture(texture_manager, \"wall_stone_normal\");\n    load_png_texture(texture_manager, \"new_spear_diffuse\");\n    load_png_texture(texture_manager, \"dodecahedron\");\n    load_png_texture(texture_manager, \"arrow_diffuse\");\n    load_png_texture(texture_manager, \"angry_face\");\n    load_alpha_png_texture(texture_manager, \"crosshair\");\n\n    auto entity_manager = Entity_Manager();\n    for (size_t idx = 0; idx != 255; ++idx)\n    create_entity(entity_manager, Entity_Type::Cube);\n\n    init_sound_system();\n    load_sound(\"chicken.wav\");\n    load_sound(\"plop.wav\");\n    load_sound(\"plop_shorter_runup.wav\");\n\n    //@Fixme(Sjors): create a render manager?\n    init_renderer(\n        shader_manager,\n        texture_manager,\n        asset_manager,\n        entity_manager,\n        window_width,\n        window_height);\n\n    Game_State game_state{};\n    game_state.game_mode = GM_GAME;\n    game_init();\n    \n    Particle_Cache particle_cache{}; // uh, allocating this on the stack is maybe a bad idea.\n\n    // Main loop\n    Frame_Timer frame_timer{};\n    double frame_dt = 0.0f;\n    uint32_t frame_count = 0;\n    while (true)\n    {\n        start(frame_timer);\n\n        poll_input(window_manager);\n        game_simulate(game_state, frame_dt, window_manager.input, particle_cache, entity_manager);\n        game_render(game_state, particle_cache);\n        game_end_frame(game_state, entity_manager);\n\n        if (game_state.game_mode == GM_EDITOR) render_debug_ui(window_manager);\n\n        swap_buffers(window_manager);\n        stop(frame_timer);\n        \n        maybe_log_average(frame_timer, frame_count);\n\n        frame_dt = frame_timer.dt;\n        frame_count +=1;\n    }\n\n    //@todo: delete glfw?\n    logr::report(\"exiting...\");\n\n    return 0;\n}\n\n",
+			"file": "src/main.cc",
+			"file_size": 3669,
+			"file_write_time": 132523477837678509,
 			"settings":
 			{
-				"buffer_size": 0,
+				"buffer_size": 3547,
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "tests/iterator_test/bucket_iterator_test.cc",
+			"file": "src/entity_manager.h",
 			"settings":
 			{
-				"buffer_size": 2902,
+				"buffer_size": 3939,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "tests/iterator_test/template_bucket_iterator_test.cc",
+			"file": "src/game_simulate.cc",
 			"settings":
 			{
-				"buffer_size": 5348,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/bucket_array.h",
-			"settings":
-			{
-				"buffer_size": 3830,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "tests/iterator_test/nested_iterator_test.cc",
-			"settings":
-			{
-				"buffer_size": 715,
+				"buffer_size": 19207,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -742,23 +729,27 @@
 	},
 	"expanded_folders":
 	[
-		"/C/mallib/mallib/fps/src",
 		"/C/mallib/mallib/fps/assets/shaders",
 		"/C/mallib/mallib/fps/tests",
 		"/C/mallib/mallib/fps/tests/bucket_array",
+		"/C/mallib/mallib/fps/tests/entity_manager",
 		"/C/mallib/mallib/fps/tests/iterator_test"
 	],
 	"file_history":
 	[
+		"/C/mallib/mallib/fps/src/entity_manager.h",
+		"/C/mallib/mallib/fps/src/bucket_array.h",
+		"/C/mallib/mallib/fps/src/render_system.cc",
+		"/C/mallib/mallib/fps/src/game_end_frame.cc",
+		"/C/mallib/mallib/fps/tests/iterator_test/template_bucket_iterator_test.cc",
+		"/C/mallib/mallib/fps/tests/iterator_test/nested_iterator_test.cc",
+		"/C/mallib/mallib/fps/tests/iterator_test/bucket_iterator_test.cc",
 		"/C/mallib/mallib/fps/tests/iterator_test/custom_type_iterator_test.cc",
 		"/C/mallib/mallib/fps/tests/iterator_test/active_entity_iterator_test.cc",
 		"/C/mallib/mallib/fps/src/iterator_test.h",
-		"/C/mallib/mallib/fps/src/bucket_array.h",
-		"/C/mallib/mallib/fps/src/entity_manager.h",
 		"/C/mallib/mallib/fps/tests/entity_manager/entity_manager_test.cc",
 		"/C/mallib/mallib/fps/src/__entity_manager.cc",
 		"/C/mallib/mallib/fps/meson.build",
-		"/C/mallib/mallib/fps/src/render_system.cc",
 		"/C/mallib/mallib/fps/src/main.cc",
 		"/C/mallib/mallib/fps/src/game_simulate.cc",
 		"/C/Users/Thesis/Desktop/aoc_am/18DecemberATest3.cc",
@@ -783,7 +774,6 @@
 		"/C/Users/Thesis/Desktop/temp.cc",
 		"/C/mallib/mallib/fps/src/player_movement.cc",
 		"/C/mallib/mallib/fps/src/asset_manager.h",
-		"/C/mallib/mallib/fps/src/game_end_frame.cc",
 		"/C/mallib/mallib/fps/src/game.h",
 		"/C/mallib/mallib/fps/src/file.h",
 		"/C/mallib/mallib/fps/src/asset_manager.cc",
@@ -874,14 +864,11 @@
 		"/C/mutil/util/Main/builddir/build.ninja",
 		"/C/mutil/util/Main/src/render_system.cc",
 		"/C/mutil/util/Main/subprojects/fmt/include/fmt/core.h",
-		"/C/mutil/util/Main/meson.build",
-		"/C/mutil/util/Main/main.cc",
-		"/C/mutil/util/Main/subprojects/imgui/include/imgui/imgui_impl_opengl3.h",
-		"/C/mutil/util/Main/subprojects/imgui/src/imgui_impl_opengl3.cc"
+		"/C/mutil/util/Main/meson.build"
 	],
 	"find":
 	{
-		"height": 43.0
+		"height": 34.0
 	},
 	"find_in_files":
 	{
@@ -897,6 +884,21 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"entity.position =",
+			"&&",
+			"evaluate_flying_units",
+			"it->",
+			"->",
+			"Entity_range",
+			"cerr",
+			"next",
+			"bucket",
+			"target_bucket",
+			"occupied[idx][",
+			"occupied",
+			"entytity_type",
+			"by_type",
+			"Bucket_Range",
 			".entities",
 			"bucket_capacity",
 			"100",
@@ -1009,22 +1011,7 @@
 			" movement_vector",
 			"apply_friction",
 			"adjusted_movement_vector",
-			"pm_jump_acceleration",
-			"cmd.upmove",
-			"upmove",
-			"jump",
-			"pm_airmove",
-			"PW_FLIGHT",
-			"move",
-			"groundmove",
-			"g_player_gravity",
-			"g_mouse_sensitivity",
-			"g_player_air_deceleration",
-			"g_player_max_velocity",
-			"g_player_ground_deceleration",
-			"g_player_ground_acceleration",
-			"g_player_friction",
-			"deceleration"
+			"pm_jump_acceleration"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1052,55 +1039,58 @@
 			[
 				{
 					"buffer": 0,
+					"file": "src/main.cc",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 0,
+						"buffer_size": 3547,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								2232,
+								2245
 							]
 						],
 						"settings":
 						{
-							"default_dir": "C:\\mallib\\mallib\\fps\\tests",
-							"syntax": "Packages/Text/Plain text.tmLanguage"
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1030.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "tests/iterator_test/bucket_iterator_test.cc",
+					"file": "src/entity_manager.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2902,
+						"buffer_size": 3939,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								2902
+								3632,
+								3632
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1350.0,
+						"translation.y": 2576.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 2,
@@ -1108,88 +1098,31 @@
 				},
 				{
 					"buffer": 2,
-					"file": "tests/iterator_test/template_bucket_iterator_test.cc",
+					"file": "src/game_simulate.cc",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5348,
+						"buffer_size": 19207,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3320,
-								3320
+								1617,
+								1617
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 3335.0,
+						"translation.y": 1201.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "src/bucket_array.h",
-					"semi_transient": true,
-					"settings":
-					{
-						"buffer_size": 3830,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								751,
-								432
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "tests/iterator_test/nested_iterator_test.cc",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 715,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								708,
-								708
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
 					"type": "text"
 				}
 			]
@@ -1263,6 +1196,10 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"",
+				"src\\entity_manager.h"
+			],
 			[
 				"window_",
 				"src\\window_manager.cc"
@@ -1366,10 +1303,6 @@
 			[
 				"232",
 				"subprojects\\glfw-3.3.2\\src\\win32_init.c"
-			],
-			[
-				"",
-				"main.tex"
 			],
 			[
 				"geome",
