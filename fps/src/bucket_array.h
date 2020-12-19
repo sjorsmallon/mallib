@@ -11,8 +11,8 @@ struct Bucket {
 	std::array<pod, bucket_capacity> data;
 	std::array<bool, bucket_capacity> occupied;
 	// Bucket* next;// = nullptr; //@unused
-	size_t bucket_idx = 0;
-	size_t size = 0; //
+	size_t bucket_id = 0; // For now, equal to its idx.
+	size_t size = 0; // is used to return the "occupied" count without iterating over thte entire bucket.
 	size_t capacity{bucket_capacity};
 };
 
@@ -33,7 +33,6 @@ struct Bucket_Array
 		}
 	}
 
-
 };
 
 //@Note(Sjors): prefer to not use this & let it be done by the array itself.
@@ -41,7 +40,7 @@ template<Pod pod, size_t bucket_capacity>
 void add_bucket_by_handle(Bucket_Array<pod, bucket_capacity>&bucket_array, Bucket<pod, bucket_capacity>* new_bucket)
 {
 
-	new_bucket->bucket_idx = bucket_array.all_buckets.size();
+	new_bucket->bucket_id = bucket_array.all_buckets.size();
 	
 	if (!bucket_array.all_buckets.empty())
 	{
@@ -56,7 +55,7 @@ template<Pod pod, size_t bucket_capacity>
 void add_bucket(Bucket_Array<pod, bucket_capacity>& bucket_array)
 {
 	Bucket<pod, bucket_capacity>* new_bucket = new Bucket<pod, bucket_capacity>();
-	new_bucket->bucket_idx = bucket_array.all_buckets.size();
+	new_bucket->bucket_id = bucket_array.all_buckets.size();
 	
 	if (bucket_array.all_buckets.size())
 	{
@@ -66,6 +65,7 @@ void add_bucket(Bucket_Array<pod, bucket_capacity>& bucket_array)
 
 	bucket_array.all_buckets.push_back(new_bucket);
 };
+
 
 
 template<Pod pod, size_t bucket_capacity>
@@ -84,11 +84,38 @@ struct Occupied_Iterator
       	size_t current_bucket_idx = 0;
       	size_t current_item_idx = 0;
 
-    	Occupied_Iterator(pod* pod_in, std::vector<bucket*>& all_buckets_in)
+    	Occupied_Iterator(bool true_if_end, std::vector<bucket*>& all_buckets_in)
     	:
-    		current{pod_in},
     		all_buckets{all_buckets_in}
-    	{};
+    	{
+			current = &all_buckets[all_buckets.size() - 1]->data[bucket_capacity - 1];
+			
+			if (true_if_end) return;
+    		else
+    		{
+	    		bool found = false;
+	    		for (size_t bucket_idx = 0; bucket_idx != all_buckets.size(); ++bucket_idx)
+	    		{
+					bucket* target_bucket = all_buckets[bucket_idx];
+
+	    			if (found) break;
+
+	    			for (size_t item_idx = 0; item_idx != bucket_capacity; ++item_idx)
+	    			{
+	    				if (target_bucket->occupied[item_idx])
+	    				{
+	    					current = &target_bucket->data[item_idx];
+							current_bucket_idx = bucket_idx;
+							current_item_idx = item_idx;
+	    					found = true;
+	    					break;
+	    				}
+	    			}
+	    		}
+    		}
+    		
+
+    	};
 
             bool operator== (const Occupied_Iterator& other) {
                 return current == other.current;
@@ -98,32 +125,61 @@ struct Occupied_Iterator
 
             Occupied_Iterator& operator++()
             {
-            	current_item_idx += 1;
-				current++;
-            	// continue skipping unoccupied slots
-            	while (all_buckets[current_bucket_idx]->occupied[current_item_idx] == false)
-            	{
-	            	if (current_item_idx == bucket_capacity)
-	            	{
-	            		current_bucket_idx += 1;
-	            		current_item_idx = 0;
+				while (true)
+				{
+					if (current_item_idx < bucket_capacity - 1)
+					{
+						current_item_idx += 1;
+						current++;
+						if (all_buckets[current_bucket_idx]->occupied[current_item_idx]) return *this;
+					}
+					else
+					{
+						if (current_bucket_idx == all_buckets.size() - 1)
+						{
+							// set current to END (one past the last bucket.)
+							current = &all_buckets[all_buckets.size() - 1]->data[bucket_capacity - 1];
+							return *this;
+						}
+						else
+						{
+							current_bucket_idx += 1;
+							current_item_idx = 0;
+							current = &all_buckets[current_bucket_idx]->data[current_item_idx];
+							return *this;
+						}
+					}
+				}
+				
 
-	            		if (current_bucket_idx == all_buckets.size())
-	            		{
-	            			// set current to END (one past the last bucket.)
-	            			current = &all_buckets[all_buckets.size() - 1]->data[bucket_capacity]; 
-	            			return *this;
-	            		}
-	            		current = &all_buckets[current_bucket_idx]->data[current_item_idx];
-	            	}
-	            	else
-	            	{
-	            		current++;
-	            		current_item_idx += 1;
-	            	}
 
-            	}
-            	return *this;
+					
+    //        	current_item_idx += 1;
+				//current++;
+    //        	// continue skipping unoccupied slots
+    //        	while (all_buckets[current_bucket_idx]->occupied[current_item_idx] == false)
+    //        	{
+	   //         	if (current_item_idx == bucket_capacity)
+	   //         	{
+	   //         		current_bucket_idx += 1;
+	   //         		current_item_idx = 0;
+
+	   //         		if (current_bucket_idx == all_buckets.size())
+	   //         		{
+	   //         			// set current to END (one past the last bucket.)
+	   //         			current = &all_buckets[all_buckets.size() - 1]->data[bucket_capacity]; 
+	   //         			return *this;
+	   //         		}
+	   //         		current = &all_buckets[current_bucket_idx]->data[current_item_idx];
+	   //         	}
+	   //         	else
+	   //         	{
+	   //         		current++;
+	   //         		current_item_idx += 1;
+	   //         	}
+
+    //        	}
+    //        	return *this;
             }
 };
 

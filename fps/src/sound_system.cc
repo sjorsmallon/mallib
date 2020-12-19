@@ -3,13 +3,14 @@
 #include <soloud_wav.h>
 #include <map>
 #include <string>
+#include "logr.h"
 
 namespace
 {
 	SoLoud::Soloud g_soloud;
 	std::map<std::string, SoLoud::Wav> g_samples;
 	std::map<std::string, int> g_handles;
-	std::map<int, int> g_active_voices;
+	std::map<int, int> g_active_voices; //uh, why is this not an array? :~)
 
 	const std::string sound_path = "../assets/sound/";
 }
@@ -24,20 +25,24 @@ void deinit_sound_sytem()
 	g_soloud.deinit();
 }
 
-void load_sound(const std::string& sound_name)
+void load_sound(const std::string& sound_name_with_extension)
 {
-	const std::string full_sound_path = sound_path + sound_name;
+	const std::string full_sound_path = sound_path + sound_name_with_extension;
+
+	std::string sound_name = sound_name_with_extension.substr(0, sound_name_with_extension.find("."));
 	//@FIXME(Sjors): IMPLICIT CREATION
 	auto& sample = g_samples[sound_name];
 	sample.load(full_sound_path.c_str());
-	g_soloud.play(sample);
+	// g_soloud.play(sample);
+
+	logr::report("loaded sound {}\n", sound_name);
 }
 
 void play_sound(const char* sound_name,
 		 float volume, // Full volume 
          float pan,    // Centered
-         bool paused,      // Not paused
-         int aBus)        // Primary bus
+         bool paused,  // Not paused
+         int bus)     // Primary bus
 {
 	const int handle = g_soloud.play(g_samples[sound_name]);	
 	g_active_voices[handle] = handle;
@@ -56,7 +61,7 @@ void stop_sound()
 
 void play_sound_3d(const char* sound_name)
 {
-	g_handles["chicken.wav"] = g_soloud.play3d(g_samples["chicken.wav"], 
+	g_handles["chicken"] = g_soloud.play3d(g_samples["chicken"], 
 	              0.0f, 
 	              0.0f, 
 	              0.0f, 
@@ -71,10 +76,8 @@ void play_sound_3d(const char* sound_name)
 
 void set_source_attenuation(const char* sound_name)
 {
-
-	   
+	logr::report_warning_once("[set_source_attenuation] NOT IMPLEMENTED!\n");
 }
-
 
 //@Every_Frame:
 void update_listener(float pos_x, 
@@ -90,13 +93,16 @@ void update_listener(float pos_x,
                      float v_y, 
                      float v_z)
 {
+	//@Fixme(Sjors): I would like this to be one.
+	constexpr float position_attenuation_factor = 1.f / 1000.f;
+
 	g_soloud.set3dListenerParameters(
-		pos_x / 1000.0f, pos_y / 1000.0f, pos_z / 1000.0f, 
+		pos_x * position_attenuation_factor, pos_y * position_attenuation_factor, pos_z * position_attenuation_factor, 
 		front_x, front_y, front_z, 
  		up_x, up_y, up_z,
  		v_x, v_y, v_z);
 
-	int g_handle = g_handles["chicken.wav"];
+	int g_handle = g_handles["chicken"];
 	g_soloud.set3dSourceAttenuation(g_handle, 
                            3,
                            1.f);    
@@ -106,7 +112,7 @@ void update_listener(float pos_x,
 //@Every_Frame:
 void update_attenuation()
 {
-	int g_handle = g_handles["chicken.wav"];
+	int g_handle = g_handles["chicken"];
 	// for all playing handles:
 	g_soloud.set3dSourceAttenuation(g_handle, 
                            3,

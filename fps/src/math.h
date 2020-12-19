@@ -16,6 +16,8 @@ inline bool ray_intersects_sphere(const glm::vec3& ray_origin, const glm::vec3& 
 	float c = glm::dot(oc, oc) - radius * radius;
 	float discriminant = b * b - 4.f * a * c;
 	return (discriminant > 0.0f);
+
+	//@FIXME(Sjors): incomplete.
 	
 
 	// if(discriminant < 0.0)

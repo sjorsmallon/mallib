@@ -45,11 +45,9 @@ int main()
     load_obj(asset_manager, "dodecahedron");
     load_obj(asset_manager, "arrow");
 
-
     auto texture_manager = Texture_Manager();
     load_png_texture(texture_manager, "metal");
     load_png_texture(texture_manager, "marble");
-    load_tga_texture(texture_manager, "target_wood_diffuse");
     load_png_texture(texture_manager, "wall_64");
     load_png_texture(texture_manager, "floor_64");
     load_png_texture(texture_manager, "star_64");
@@ -61,15 +59,18 @@ int main()
     load_png_texture(texture_manager, "arrow_diffuse");
     load_png_texture(texture_manager, "angry_face");
     load_alpha_png_texture(texture_manager, "crosshair");
+    load_tga_texture(texture_manager, "target_wood_diffuse");
+
 
     auto entity_manager = Entity_Manager();
-    for (size_t idx = 0; idx != 255; ++idx)
+    for (size_t idx = 0; idx != 10; ++idx)
     create_entity(entity_manager, Entity_Type::Cube);
 
     init_sound_system();
     load_sound("chicken.wav");
     load_sound("plop.wav");
     load_sound("plop_shorter_runup.wav");
+    load_sound("applause.ogg");
 
     //@Fixme(Sjors): create a render manager?
     init_renderer(

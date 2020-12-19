@@ -62,8 +62,9 @@ namespace
     float g_mouse_sensitivity = 0.08f;
     float g_camera_velocity = 0.2f;
  	float g_player_gravity = 50.f;
+ 	// glm::vec3 world_up?
 
-    // player movement
+    // player movement (these are adjusted by dt)
     float pm_jump_acceleration  = 35.f;
     float pm_ground_acceleration = 100.f;
     float pm_stopspeed = 100.f;
@@ -298,7 +299,7 @@ namespace
 	// g_mouse_sensitivity
 	Camera update_camera_view_with_input(const Input& input, const Camera camera, const float dt, const bool should_constrain_pitch = true)
 	{
-		const float pitch_constrain_treshold = 89.0f;
+		const float pitch_constrain_treshold_degrees = 89.0f;
 
 		Camera new_camera = camera;
 	    glm::vec3 world_up(0.0f,1.0f, 0.0f);
@@ -312,8 +313,8 @@ namespace
 	    // make sure that when pitch is out of bounds, screen doesn't get flipped
 	    if (should_constrain_pitch)
 	    {
-	        if (new_camera.pitch > pitch_constrain_treshold)  new_camera.pitch = pitch_constrain_treshold;
-	        if (new_camera.pitch < -pitch_constrain_treshold) new_camera.pitch = -pitch_constrain_treshold;
+	        if (new_camera.pitch > pitch_constrain_treshold_degrees)  new_camera.pitch = pitch_constrain_treshold_degrees;
+	        if (new_camera.pitch < -pitch_constrain_treshold_degrees) new_camera.pitch = -pitch_constrain_treshold_degrees;
 	    }
 
 	    // update front, right and up Vectors using the updated euler angles
@@ -343,22 +344,18 @@ namespace
 		return camera;
 	}
 
-	void update_player_entity(const Input& input)
-	{
-		auto& player = g_player_entity;
-	}
 
+	// calculate average (cluster) position, move away from "closest neighbour", swarm behavior.
 	void evaluate_flying_units(Entity_Manager& entity_manager, const float dt)
 	{
 		timed_function("evaluate_flying_units");
 		auto& player = g_player_entity;
 
-
-		glm::vec3 sum{};
+		glm::vec3 position_sum{};
 		size_t entity_count = 0;
 		for (auto&& entity: by_type(entity_manager, Entity_Type::Cube))
 		{
-			sum += entity.position;
+			position_sum += entity.position;
 			entity_count += 1;
 		}
 
@@ -369,9 +366,9 @@ namespace
 		}
 
         //@Note(Sjors): be wary of div 0. The check above mitigates it.
-        glm::vec3 average_position = sum *  (1.0f / static_cast<float>(entity_count));
-        glm::vec3 player_position = player.position + glm::vec3(0.0f,10.0f,0.0f);
-        glm::vec3 center_to_player_direction = glm::normalize(player_position - average_position);
+        glm::vec3 average_position = position_sum *  (1.0f / static_cast<float>(entity_count));
+        glm::vec3 player_position  = player.position + glm::vec3(0.0f,10.0f,0.0f);
+        glm::vec3 cluster_center_to_player_direction = glm::normalize(player_position - average_position);
 		
 		struct Neighbour_Info
 		{
@@ -393,6 +390,7 @@ namespace
 
 			for (auto&& rhs_e: by_type(entity_manager, Entity_Type::Cube))
 			{
+				// skip distance to self.
 				if (rhs_e.id == lhs_e.id) continue;
 
 				//@FIXME(Sjors): if position == position, distance becomes NaN.
@@ -432,7 +430,8 @@ namespace
 			if (enable_cohesion)	direction_vector += cohesion_direction * g_cohesion;
 			if (enable_height)		direction_vector += height_direction;
 
-			if (enable_separation)
+		
+			if (enable_separation )
 			{
 				if (neighbour.distance < g_wanted_distance)
 				{
@@ -440,8 +439,8 @@ namespace
 				}
 			}
 
-			if (enable_focus)		direction_vector += focus_direction;
-			if (enable_center_to_player)	direction_vector += center_to_player_direction;
+			if (enable_focus)				direction_vector += focus_direction;
+			if (enable_center_to_player)	direction_vector += cluster_center_to_player_direction;
 
 			direction_vector = glm::normalize(direction_vector);
 			
@@ -451,44 +450,43 @@ namespace
 				direction_vector = glm::normalize(0.1f * direction_vector + 0.9f * old_direction_vector);
 			}	
 
+			if (entity_count == 1) direction_vector = focus_direction;
+
 			entity.position = entity.position + (direction_vector * g_dodecahedron_velocity * dt);	
 			entity.movement_vector = direction_vector;
 
 			neighbour_idx += 1;
 		}
-
 	}
 
 	void evaluate_shot(Entity_Manager& entity_manager, Camera camera)
 	{
 		timed_function("evaluate_shot");
+		const float sphere_radius = 20.f;
 
 		for(auto&& entity: by_type(entity_manager, Entity_Type::Cube))
 		{
-  			if (!ray_intersects_sphere(camera.position, camera.front, entity.position, 20.0f)) continue;
-			
-			// we hit.
+  			if (!ray_intersects_sphere(camera.position, camera.front, entity.position, sphere_radius)) continue;
+
+  			// we hit!
 			schedule_for_destruction(entity_manager, &entity);
 		}
 	}
-
-
 
 }
 
 void game_simulate(Game_State& game_state, const double dt, const Input& input, Particle_Cache& particle_cache, Entity_Manager& entity_manager)
 {
+	// maybe clamp dt
 	float clamped_dt = static_cast<float>(dt);	
 	if (clamped_dt < FRAMETIME_1000_FPS)	clamped_dt = FRAMETIME_1000_FPS;	
 	if (clamped_dt > FRAMETIME_10_FPS)		clamped_dt = FRAMETIME_10_FPS;  	
 
-	//if (vsync) clamped_dt = FRAMETIME_144_FPS;
-
-	// process higher level input
+	// process non-game input
 	{
 		if (input.keyboard_state[KEY_P]) game_state.game_mode = GM_GAME;
 		if (input.keyboard_state[KEY_O]) game_state.game_mode = GM_EDITOR;
-		if (input.keyboard_state[KEY_I]) game_state.paused = 1 - game_state.paused; // toggle;
+		if (input.keyboard_state[KEY_I]) game_state.paused = 1 - game_state.paused; // toggle
 	}
 
 	// are we paused?
@@ -498,28 +496,27 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 	}
 	else
 	{
-		// if game_mode = player_cam:
+		if (game_state.game_mode == GM_GAME)
 		{
 			// BEFORE MOVING ANYTHING, check shot intersection, since we clicked at the position we _are_ in
 			// and target that _are _ in a particular position
 			if (input.mouse_left) evaluate_shot(entity_manager, game_state.camera);
 
-			// post_shoot_reevaluate(entity_manager);
 			//@Note(Sjors): it is imperative that the player gets updated first, since that 
-			// is the bottleneck we have to be dealing with in the next frames.
+			// is the bottleneck we have to be dealing with in the next frames. (after, we can go wide).
 
 			// update player and camera.
 			{
-				update_player_entity(input);
 				game_state.camera = update_camera_entity(input, game_state.camera, clamped_dt);
 				g_player_entity.position = game_state.camera.position;
 			}
 
-			// // update dodecahedrons
-			// {
+			 // update dodecahedrons
+			{
 				evaluate_flying_units(entity_manager, dt);
-			// }
+			}
 
+			if (!count_by_type(entity_manager, Entity_Type::Cube)) play_sound("applause");
 			// at this point, we can start rendering static geometry.
 			// collision_check()
 
@@ -541,8 +538,9 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 				);
 			
 				if (input.mouse_right) play_sound_3d("chicken");
-				if (input.mouse_left) play_sound("plop_shorter_runup.wav");
+				if (input.mouse_left)  play_sound("plop_shorter_runup");
 			}
+
 		}
 	}
 }
@@ -551,5 +549,6 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 // call once
 void game_init()
 {
+
 
 }
