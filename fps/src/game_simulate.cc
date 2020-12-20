@@ -66,13 +66,16 @@ namespace
 
     // player movement (these are adjusted by dt)
     float pm_jump_acceleration  = 35.f;
-    float pm_ground_acceleration = 100.f;
+    float pm_ground_acceleration = 10.f;
     float pm_stopspeed = 100.f;
-    float pm_maxspeed = 100.0f; // ground
-    float pm_maxairspeed = 400.f; // air
+    float pm_maxspeed = 300.0f; // ground
     float pm_friction = 6.f;
+
     
-    float pm_air_acceleration = 150.0f;
+    float pm_air_acceleration = 1.0f;
+    
+
+    float pm_maxairspeed = 400.f; // air
     float pm_air_deceleration = 0.1f;
 
     // flying units
@@ -88,30 +91,33 @@ namespace
 	{
 		old_movement_vector.y = 0.0f;
 		float velocity = glm::length(old_movement_vector);
+
+		const float velocity_treshold = 0.0000001f;
 	
-		if (velocity < 0.0000001f)
+		if (velocity < velocity_treshold)
 		{
 			return glm::vec3(0.0f);
 		}
 
 		float velocity_drop = 0.0f;
-		if (!jump_pressed_this_frame)
-		{
-			if (grounded) // if grounded, we experience friction. 
-			{ 
-				float drop_base = 0.0f;
-				// if we are moving slower than the stopspeed, base decrement on deceleration.
-				// if (velocity < 120300);
-				// {
-				// 	drop_base = pm_stopspeed;
-				// }
-				// else  // if we are moving faster than the acceleration, base decrement on own velocity (which will be harsher)
-				{
-					drop_base = velocity;
-				}
-				velocity_drop = drop_base * pm_friction * dt;
-			} 
-		}
+		// if (!jump_pressed_this_frame)
+		// {
+		// 	if (grounded) // if grounded, we experience friction. 
+		// 	{ 
+		// 		float drop_base = 0.0f;
+		// 		// if we are moving slower than the stopspeed, base decrement on deceleration.
+		// 		// if (velocity < 120300);
+		// 		// {
+		// 		// 	drop_base = pm_stopspeed;
+		// 		// } 
+		// 		// else  // if we are moving faster than the acceleration, base decrement on own velocity (which will be harsher)
+		// 		{
+		// 			drop_base = velocity;
+		// 		}
+		// 		velocity_drop = drop_base * pm_friction * dt;
+		// 	} 
+		// }
+
 
 		// adjust the velocity with the induced velocity drop. 
 		float drop_adjusted_velocity = velocity - velocity_drop;
@@ -130,33 +136,31 @@ namespace
 	}
 	
 	[[nodiscard]]
-	glm::vec3 accelerate(glm::vec3 old_movement_vector, glm::vec3 wish_direction, float wish_velocity, float acceleration, float dt)
+	glm::vec3 accelerate(glm::vec3 adjusted_movement_vector, glm::vec3 wish_direction, float wish_velocity, float acceleration, float dt)
 	{
 		logr::report("[acceleration]\n");
 
-		float old_velocity = glm::length(old_movement_vector);
+		float adjusted_velocity = glm::length(adjusted_movement_vector);
+		logr::report("adjusted_velocity: {}\n", adjusted_velocity);
 
-		glm::vec3 normalized_old = glm::normalize(old_movement_vector);
-		//float current_speed_in_wish_dir = glm::dot(normalized_old, wish_direction);
+		logr::report("adjusted_movement_vector: {}\n", adjusted_movement_vector);
+		logr::report("wish_direction: {}\n", wish_direction);
+		float current_speed_in_wish_dir = glm::dot(adjusted_movement_vector, wish_direction);
+		logr::report("current_speed_in_wish_dir: {}\n", current_speed_in_wish_dir);
 
-		float speed_in_heading = glm::dot(normalized_old, wish_direction);
-		speed_in_heading *= old_velocity;
-		logr::report("actual speed in heading: {}\n", speed_in_heading);
-		logr::report("dot product: {}\n", glm::dot(old_movement_vector, wish_direction));
+		logr::report("wish_direction * adjusted_velocity: {}\n", wish_direction * adjusted_velocity);
 
-		float acceleration_speed = wish_velocity * acceleration * dt;
-		glm::vec3 acceleration_vector = acceleration_speed * wish_direction;
+		
+		float acceleration_factor = acceleration;
+		glm::vec3 acceleration_vector = dt * wish_direction;
+		glm::vec3 old_heading = adjusted_movement_vector;
 
-		glm::vec3 old_heading = old_movement_vector;
+		glm::vec3 result = old_heading * dt + acceleration_factor *  acceleration_vector;
 
-		logr::report("old_heading: {}\n", old_heading);
-		logr::report("acceleration vector: {}\n", acceleration_vector);
-
-		glm::vec3 result = old_heading + acceleration_vector;
 		glm::vec3 result_dir = glm::normalize(result_dir);
 		float result_velocity = glm::length(result);
 
-		if (old_velocity < 0.0000001f)
+		if (adjusted_velocity < 0.0000001f)
 		{
 			logr::report("returning acceleration vector!\n");
 			return acceleration_vector;
@@ -164,11 +168,11 @@ namespace
 
 		float max_speed = (acceleration == pm_ground_acceleration) ?  pm_maxspeed : pm_maxairspeed;
 		
-		if (glm::length(result) > (max_speed * dt))
-		{
-			logr::report("velocity of result: {}\n", glm::length(result));
-			result = glm::normalize(result) * (max_speed * dt);
-		}	
+		// if (glm::length(result) > (max_speed * dt))
+		// {
+		// 	logr::report("velocity of result: {}\n", glm::length(result));
+		// 	result = glm::normalize(result) * (max_speed * dt);
+		// }	
 
 		return result;
 	}	
@@ -189,9 +193,12 @@ namespace
 		static float hang_time = 0.0f;
 		bool jump_pressed_this_frame = input.keyboard_state[KEY_SPACE];	
 
+		glm::vec3 adjusted_movement_vector = apply_friction(old_movement_vector, grounded, jump_pressed_this_frame, dt);
+
+
+
 		float Y_old_y = old_movement_vector.y;
 
-		glm::vec3 adjusted_movement_vector = apply_friction(old_movement_vector, grounded, jump_pressed_this_frame, dt);
 		const glm::vec3 plane_front = glm::normalize(glm::vec3(front.x, 0.0f, front.z));
 		const glm::vec3 plane_right = glm::normalize(glm::vec3(right.x, 0.0f, right.z));
 
@@ -346,6 +353,9 @@ namespace
 
 
 	// calculate average (cluster) position, move away from "closest neighbour", swarm behavior.
+	//@Dependencies:
+	// g_wanted_distance; 
+	// g_wanted_height;
 	void evaluate_flying_units(Entity_Manager& entity_manager, const float dt)
 	{
 		timed_function("evaluate_flying_units");
@@ -361,7 +371,7 @@ namespace
 
 		if (entity_count == 0)
 		{
-			logr::report_warning("[evaluate_flying_units] no units found.\n");
+			// logr::report_warning("[evaluate_flying_units] no units found.\n");
 			return;
 		}
 
@@ -457,7 +467,7 @@ namespace
 
 			neighbour_idx += 1;
 		}
-	}
+ 	}
 
 	void evaluate_shot(Entity_Manager& entity_manager, Camera camera)
 	{
@@ -516,7 +526,15 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 				evaluate_flying_units(entity_manager, dt);
 			}
 
-			if (!count_by_type(entity_manager, Entity_Type::Cube)) play_sound("applause");
+			{
+				static bool played = false;
+				if (!count_by_type(entity_manager, Entity_Type::Cube)) 
+				{
+					if (!played) play_sound("applause");
+					played = true;
+				}
+			}
+
 			// at this point, we can start rendering static geometry.
 			// collision_check()
 
