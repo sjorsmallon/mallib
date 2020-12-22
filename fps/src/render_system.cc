@@ -87,8 +87,8 @@ namespace
     unsigned int g_dodecahedron_vbo;
     unsigned int g_dodecahedron_model_vbo;
     unsigned int g_dodecahedron_mvp_vbo;
-    std::vector<glm::mat4> g_dodecahedron_model_matrices(256);
-    std::vector<glm::mat4> g_dodecahedron_mvp_matrices(256);
+    std::vector<glm::mat4> g_dodecahedron_model_matrices(2048);
+    std::vector<glm::mat4> g_dodecahedron_mvp_matrices(2048);
 
 
     unsigned int g_hud_vao;

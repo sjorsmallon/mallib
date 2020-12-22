@@ -406,7 +406,8 @@ namespace
 				//@FIXME(Sjors): if position == position, distance becomes NaN.
 				glm::vec3 distance  = rhs_e.position - lhs_e.position; 
 
-				float abs_distance = glm::length(distance);
+				float abs_distance = sqrt(distance.x * distance.x + distance.y * distance.y + distance.z * distance.z);
+				// float abs_distance = glm::length(distance);
 				glm::vec3 direction_vector = glm::normalize(distance);
 
 				if (abs_distance < neighbour.distance)
@@ -506,8 +507,8 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 	}
 	else
 	{
-		if (game_state.game_mode == GM_GAME)
-		{
+		// if (game_state.game_mode == GM_GAME)
+		// {
 			// BEFORE MOVING ANYTHING, check shot intersection, since we clicked at the position we _are_ in
 			// and target that _are _ in a particular position
 			if (input.mouse_left) evaluate_shot(entity_manager, game_state.camera);
@@ -559,7 +560,7 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 				if (input.mouse_left)  play_sound("plop_shorter_runup");
 			}
 
-		}
+		// }
 	}
 }
 

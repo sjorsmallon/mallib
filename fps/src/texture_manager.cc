@@ -10,10 +10,15 @@
 
 namespace
 {
-	const std::string g_texture_folder_prefix = "../assets/textures/";
-	const std::string g_texture_png_extension_suffix = ".png";
-    const std::string g_texture_tga_extension_suffix = ".tga";
+	std::string g_texture_folder_prefix{"../assets/textures/"};
+	const std::string g_texture_png_extension_suffix{".png"};
+    const std::string g_texture_tga_extension_suffix{".tga"};
 
+}
+
+void set_texture_path(Texture_Manager& texture_manager, const char* texture_folder_prefix)
+{
+    g_texture_folder_prefix = texture_folder_prefix;
 }
 
 // returns the texture id

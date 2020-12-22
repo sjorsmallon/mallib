@@ -30,6 +30,8 @@ int main()
     create_main_window(window_manager, "fps", window_width, window_height);
 
     auto shader_manager = Shader_Manager();
+    set_shader_path(shader_manager, "../assets/shaders/");
+
     load_shader(shader_manager, "deferred_geometry");
     load_shader(shader_manager, "deferred_instanced");
     load_shader(shader_manager, "deferred_lighting");
@@ -40,12 +42,16 @@ int main()
     load_shader(shader_manager, "screen_space");
 
     auto asset_manager = Asset_Manager();
+    set_asset_path(asset_manager, "../assets/obj/");
     bool should_unitize = true;
+
     load_obj(asset_manager, "new_spear", should_unitize);
     load_obj(asset_manager, "dodecahedron");
     load_obj(asset_manager, "arrow");
 
     auto texture_manager = Texture_Manager();
+    set_texture_path(texture_manager, "../assets/textures/");
+    
     load_png_texture(texture_manager, "metal");
     load_png_texture(texture_manager, "marble");
     load_png_texture(texture_manager, "wall_64");
@@ -63,10 +69,10 @@ int main()
 
 
     auto entity_manager = Entity_Manager();
-    for (size_t idx = 0; idx != 10; ++idx)
-    create_entity(entity_manager, Entity_Type::Cube);
+    for (size_t idx = 0; idx != 2048; ++idx) create_entity(entity_manager, Entity_Type::Cube);
 
     init_sound_system();
+
     load_sound("chicken.wav");
     load_sound("plop.wav");
     load_sound("plop_shorter_runup.wav");

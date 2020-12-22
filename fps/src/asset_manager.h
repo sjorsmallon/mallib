@@ -45,6 +45,8 @@ struct Asset_Manager
 };
 
 
+void set_asset_path(Asset_Manager& asset_manager, const char* asset_folder_prefix);
+
 void load_obj(Asset_Manager& asset_manager, const std::string& obj_name, bool should_unitize = false);
 const obj_t& get_obj(Asset_Manager& asset_manager, const std::string& obj_name);
 

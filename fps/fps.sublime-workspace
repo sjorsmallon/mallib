@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"sound",
+				"sound_name_with_extension"
+			],
+			[
+				"scheud",
+				"scheduled_for_destruction"
+			],
+			[
 				"current",
 				"current_bucket_idx"
 			],
@@ -506,35 +514,16 @@
 			[
 				"outer_",
 				"outer_tess_level_VS_in"
-			],
-			[
-				"inn",
-				"inner_tess_level_VS_in"
-			],
-			[
-				"min",
-				"max_triangle_size_VS_in"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"contents": "\n#include \"window_manager.h\"\n#include \"shader_manager.h\"\n#include \"texture_manager.h\"\n#include \"asset_manager.h\"\n#include \"entity_manager.h\"\n\n#include \"render_system.h\"\n#include \"sound_system.h\"\n#include \"task_system.h\"\n\n#include \"logr.h\"\n#include \"particle.h\"\n#include \"game.h\"\n\n#include \"timed_function.h\"\n\n#include <chrono>\n#include <thread>\n#include <array>\n\nconst int window_width = 1920;\nconst int window_height = 1080;\nconst int debug_window_width = 850;\nconst int debug_window_height = 1000;\n\nint main()\n{\n    auto window_manager = Window_Manager();\n    create_main_window(window_manager, \"fps\", window_width, window_height);\n\n    auto shader_manager = Shader_Manager();\n    load_shader(shader_manager, \"deferred_geometry\");\n    load_shader(shader_manager, \"deferred_instanced\");\n    load_shader(shader_manager, \"deferred_lighting\");\n    load_shader(shader_manager, \"lightbox\");\n    load_shader(shader_manager, \"debug_geometry\");\n    load_shader(shader_manager, \"simple_depth\");\n    load_shader(shader_manager, \"simple_depth_shadow_mapping\");\n    load_shader(shader_manager, \"screen_space\");\n\n    auto asset_manager = Asset_Manager();\n    bool should_unitize = true;\n    load_obj(asset_manager, \"new_spear\", should_unitize);\n    load_obj(asset_manager, \"dodecahedron\");\n    load_obj(asset_manager, \"arrow\");\n\n\n    auto texture_manager = Texture_Manager();\n    load_png_texture(texture_manager, \"metal\");\n    load_png_texture(texture_manager, \"marble\");\n    load_tga_texture(texture_manager, \"target_wood_diffuse\");\n    load_png_texture(texture_manager, \"wall_64\");\n    load_png_texture(texture_manager, \"floor_64\");\n    load_png_texture(texture_manager, \"star_64\");\n    load_png_texture(texture_manager, \"wall_stone_specular\");\n    load_png_texture(texture_manager, \"wall_stone_diffuse\");\n    load_png_texture(texture_manager, \"wall_stone_normal\");\n    load_png_texture(texture_manager, \"new_spear_diffuse\");\n    load_png_texture(texture_manager, \"dodecahedron\");\n    load_png_texture(texture_manager, \"arrow_diffuse\");\n    load_png_texture(texture_manager, \"angry_face\");\n    load_alpha_png_texture(texture_manager, \"crosshair\");\n\n    auto entity_manager = Entity_Manager();\n    for (size_t idx = 0; idx != 255; ++idx)\n    create_entity(entity_manager, Entity_Type::Cube);\n\n    init_sound_system();\n    load_sound(\"chicken.wav\");\n    load_sound(\"plop.wav\");\n    load_sound(\"plop_shorter_runup.wav\");\n\n    //@Fixme(Sjors): create a render manager?\n    init_renderer(\n        shader_manager,\n        texture_manager,\n        asset_manager,\n        entity_manager,\n        window_width,\n        window_height);\n\n    Game_State game_state{};\n    game_state.game_mode = GM_GAME;\n    game_init();\n    \n    Particle_Cache particle_cache{}; // uh, allocating this on the stack is maybe a bad idea.\n\n    // Main loop\n    Frame_Timer frame_timer{};\n    double frame_dt = 0.0f;\n    uint32_t frame_count = 0;\n    while (true)\n    {\n        start(frame_timer);\n\n        poll_input(window_manager);\n        game_simulate(game_state, frame_dt, window_manager.input, particle_cache, entity_manager);\n        game_render(game_state, particle_cache);\n        game_end_frame(game_state, entity_manager);\n\n        if (game_state.game_mode == GM_EDITOR) render_debug_ui(window_manager);\n\n        swap_buffers(window_manager);\n        stop(frame_timer);\n        \n        maybe_log_average(frame_timer, frame_count);\n\n        frame_dt = frame_timer.dt;\n        frame_count +=1;\n    }\n\n    //@todo: delete glfw?\n    logr::report(\"exiting...\");\n\n    return 0;\n}\n\n",
-			"file": "src/main.cc",
-			"file_size": 3669,
-			"file_write_time": 132523477837678509,
-			"settings":
-			{
-				"buffer_size": 3547,
-				"line_ending": "Windows"
-			}
-		},
-		{
 			"file": "src/entity_manager.h",
 			"settings":
 			{
-				"buffer_size": 3939,
+				"buffer_size": 5708,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -543,7 +532,7 @@
 			"file": "src/game_simulate.cc",
 			"settings":
 			{
-				"buffer_size": 19207,
+				"buffer_size": 17493,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -729,18 +718,25 @@
 	},
 	"expanded_folders":
 	[
-		"/C/mallib/mallib/fps/assets/shaders",
-		"/C/mallib/mallib/fps/tests",
-		"/C/mallib/mallib/fps/tests/bucket_array",
-		"/C/mallib/mallib/fps/tests/entity_manager",
-		"/C/mallib/mallib/fps/tests/iterator_test"
+		"/C/mallib/mallib/fps/src",
+		"/C/mallib/mallib/fps/assets/shaders"
 	],
 	"file_history":
 	[
-		"/C/mallib/mallib/fps/src/entity_manager.h",
 		"/C/mallib/mallib/fps/src/bucket_array.h",
+		"/C/Users/Thesis/Desktop/Quake-III-Arena-master/code/game/bg_pmove.c",
 		"/C/mallib/mallib/fps/src/render_system.cc",
+		"/C/Users/Thesis/Desktop/Quake-III-Arena-master/code/cgame/cg_players.c",
+		"/C/mallib/mallib/fps/src/main.cc",
+		"/C/mallib/mallib/fps/src/entity_manager.h",
+		"/C/mallib/mallib/fps/src/sound_system.cc",
+		"/C/mallib/mallib/fps/src/game_simulate.cc",
 		"/C/mallib/mallib/fps/src/game_end_frame.cc",
+		"/C/mallib/mallib/fps/src/timed_function.h",
+		"/C/mallib/mallib/fps/src/timed_function.cc",
+		"/C/mallib/mallib/fps/src/math.h",
+		"/C/mallib/mallib/fps/src/cvar.cc",
+		"/C/mallib/mallib/fps/src/cvar.h",
 		"/C/mallib/mallib/fps/tests/iterator_test/template_bucket_iterator_test.cc",
 		"/C/mallib/mallib/fps/tests/iterator_test/nested_iterator_test.cc",
 		"/C/mallib/mallib/fps/tests/iterator_test/bucket_iterator_test.cc",
@@ -750,8 +746,6 @@
 		"/C/mallib/mallib/fps/tests/entity_manager/entity_manager_test.cc",
 		"/C/mallib/mallib/fps/src/__entity_manager.cc",
 		"/C/mallib/mallib/fps/meson.build",
-		"/C/mallib/mallib/fps/src/main.cc",
-		"/C/mallib/mallib/fps/src/game_simulate.cc",
 		"/C/Users/Thesis/Desktop/aoc_am/18DecemberATest3.cc",
 		"/C/Users/Thesis/Desktop/aoc_am/18DecemberATest3",
 		"/C/mallib/mallib/fps/src/entity_container.h",
@@ -763,13 +757,10 @@
 		"/C/Users/Thesis/Desktop/aoc/three/main.zig",
 		"/C/Users/Thesis/Desktop/aoc/one_part_two/src/main.rs",
 		"/C/Users/Thesis/Desktop/aoc/one/src/main.rs",
-		"/C/mallib/mallib/fps/src/cvar.h",
-		"/C/Users/Thesis/Desktop/Quake-III-Arena-master/code/game/bg_pmove.c",
 		"/C/mallib/mallib/fps/src/window_manager.cc",
 		"/C/Users/Thesis/Desktop/Sublime Text 3/Data/Packages/User/logr_report.sublime-snippet",
 		"/C/mallib/mallib/fps/src/logr.h",
 		"/C/mallib/mallib/fps/src/texture_manager.h",
-		"/C/mallib/mallib/fps/src/math.h",
 		"/C/mallib/mallib/fps/src/logr.cc",
 		"/C/Users/Thesis/Desktop/temp.cc",
 		"/C/mallib/mallib/fps/src/player_movement.cc",
@@ -784,10 +775,7 @@
 		"/C/mallib/mallib/fps/src/game_render.cc",
 		"/C/mallib/mallib/fps/src/game_init.cc",
 		"/C/mallib/mallib/fps/src/debug_menu.h",
-		"/C/mallib/mallib/fps/src/sound_system.cc",
 		"/C/mallib/mallib/fps/src/sound_system.h",
-		"/C/mallib/mallib/fps/src/timed_function.h",
-		"/C/mallib/mallib/fps/src/timed_function.cc",
 		"/C/mallib/mallib/fps/src/draw3d_api.h",
 		"/C/mallib/mallib/fps/src/render_system.h",
 		"/C/mallib/mallib/fps/src/input.cc",
@@ -862,13 +850,11 @@
 		"/C/mutil/util/fmt_test/main.cc",
 		"/C/mutil/util/fmt_test/subprojects/fmt/meson.build",
 		"/C/mutil/util/Main/builddir/build.ninja",
-		"/C/mutil/util/Main/src/render_system.cc",
-		"/C/mutil/util/Main/subprojects/fmt/include/fmt/core.h",
-		"/C/mutil/util/Main/meson.build"
+		"/C/mutil/util/Main/src/render_system.cc"
 	],
 	"find":
 	{
-		"height": 34.0
+		"height": 41.0
 	},
 	"find_in_files":
 	{
@@ -881,9 +867,46 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": false,
+		"case_sensitive": true,
 		"find_history":
 		[
+			"acceleration",
+			"pm_maxspeed",
+			"player_movespeed",
+			"acceleration",
+			"accelerate",
+			"normalized_old",
+			"old_velocity",
+			"old_movement_vector",
+			"hang_time",
+			"entity_count",
+			"separation_direction",
+			"item_idx",
+			"bucket",
+			"occupied_iterator",
+			"floor",
+			"bucket_count",
+			"position_attuenuation_factor",
+			"play_sound",
+			"sound_name",
+			"1000.0f",
+			"pitch_constrain_treshold",
+			"create_entity",
+			"bucket_idx",
+			"ray_intersects",
+			"center_to_player_direction",
+			"sum",
+			"frame_dt",
+			"89.0f",
+			"Timer",
+			"Average_Timer",
+			"frame_timer",
+			"Frame_Timer",
+			"frame_timer",
+			"Frame_Timer",
+			"start",
+			"starty",
+			"j_time",
 			"entity.position =",
 			"&&",
 			"evaluate_flying_units",
@@ -974,44 +997,7 @@
 			"dt_factor",
 			"g_player_gravity",
 			"dt_factor",
-			"wish_velocity",
-			"gravity",
-			"PM_WalkMove",
-			"PM_Ground",
-			"move",
-			"g_player_gravity",
-			"pm_jump_acc",
-			"Y_input_y_velocity",
-			"input_y_velocity",
-			"pm_ground_deceleration",
-			"old_movement_vector",
-			"current_speed",
-			"adjusted_movement_vector",
-			"g_player_gravity",
-			"adjusted_movement_vector",
-			"position",
-			"float dt_factor",
-			"movement_vector",
-			"input_velocity",
-			" \n",
-			"pm_friction",
-			"pm_jump_acceleration",
-			"drop_adjusted_velocity",
-			"drop_adjust_velocity",
-			"movement_vector",
-			"pm_walkmove",
-			"camera.front",
-			"apply_friction",
-			"wish_direction",
-			"delta_speed",
-			"current_speed",
-			"PM_Accelerate",
-			"accelerate",
-			"speed",
-			" movement_vector",
-			"apply_friction",
-			"adjusted_movement_vector",
-			"pm_jump_acceleration"
+			"wish_velocity"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1034,34 +1020,33 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 1,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "src/main.cc",
+					"file": "src/entity_manager.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3547,
+						"buffer_size": 5708,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2232,
-								2245
+								2081,
+								2081
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1030.0,
+						"translation.y": 1605.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
@@ -1069,48 +1054,19 @@
 				},
 				{
 					"buffer": 1,
-					"file": "src/entity_manager.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3939,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3632,
-								3632
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 2576.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
 					"file": "src/game_simulate.cc",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 19207,
+						"buffer_size": 17493,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1617,
-								1617
+								4570,
+								4570
 							]
 						],
 						"settings":
@@ -1119,7 +1075,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1201.0,
+						"translation.y": 3240.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -1130,7 +1086,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 34.0
+		"height": 32.0
 	},
 	"input":
 	{
@@ -1187,7 +1143,7 @@
 	"project": "fps.sublime-project",
 	"replace":
 	{
-		"height": 64.0
+		"height": 60.0
 	},
 	"save_all_on_build": true,
 	"select_file":

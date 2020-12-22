@@ -9,6 +9,8 @@
 
 namespace 
 {
+    std::string g_shader_folder_prefix = "../assets/shaders/";
+
     bool get_shader_link_success(uint32_t program_id)
     {
         int gl_link_status = 0;
@@ -88,6 +90,7 @@ namespace
 
         return shader_id;
     }
+
 
     void get_shader_info(Shader_Manager& shader_manager, Shader& shader)
     {
@@ -291,6 +294,12 @@ namespace
     }
 }
 
+void set_shader_path(Shader_Manager& manager, const char* shader_folder_path)
+{
+    g_shader_folder_prefix = shader_folder_path;
+}
+
+
 //@IC(Sjors):the "none" shader is not any shader.
 void set_shader(Shader_Manager& shader_manager, const char* shader_name)
 {
@@ -308,11 +317,10 @@ void set_shader(Shader_Manager& shader_manager, const char* shader_name)
 
     glUseProgram(shader_id);
 }
-
+ 
 uint32_t load_shader(Shader_Manager& shader_manager, const std::string& shader_name)
 {
-    const std::string shader_folder_prefix = "../assets/shaders/";
-    const std::string shader_folder_path = shader_folder_prefix + shader_name;
+    const std::string shader_folder_path = g_shader_folder_prefix + shader_name;
 
     const uint32_t shader_program = glCreateProgram();
 

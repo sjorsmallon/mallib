@@ -50,6 +50,8 @@ struct Texture_Manager
 
 
 
+void set_texture_path(Texture_Manager& texture_manager, const char* texture_folder_prefix);
+
 void load_tga_texture(Texture_Manager& texture_manager, const std::string& texture_name);
 void load_png_texture(Texture_Manager& texture_manager, const std::string& texture_name);
 

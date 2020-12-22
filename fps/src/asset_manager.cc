@@ -7,16 +7,22 @@
 
 namespace
 {
-	const std::string g_obj_extension_suffix{".obj"};
+	std::string g_obj_extension_suffix{".obj"};
+    std::string g_obj_folder_prefix{"../assets/obj/"};
 
 }
+
+void set_asset_path(Asset_Manager& asset_manager, const char* asset_folder_prefix)
+{
+    g_obj_folder_prefix = asset_folder_prefix;
+}
+
 
 
 void load_obj(Asset_Manager& asset_manager, const std::string& obj_name, bool should_unitize)
 {
 
-	const std::string obj_folder_prefix = "../assets/obj/";
-	const std::string model_path = obj_folder_prefix + obj_name + g_obj_extension_suffix;
+	const std::string model_path = g_obj_folder_prefix + obj_name + g_obj_extension_suffix;
 	//@FIXME(Sjors): implicit creation.
 	auto& object = asset_manager.meshes[obj_name];
     object.unitized = should_unitize;

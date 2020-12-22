@@ -36,6 +36,8 @@ struct Shader_Manager
 };
 
 
+void set_shader_path(Shader_Manager& manager, const char* shader_folder_path);
+
 uint32_t  load_shader(Shader_Manager& manager, const std::string& shader_name);
 void      set_shader(Shader_Manager& manager, const char* shader_name);
 void      set_uniform(Shader_Manager& manager, const std::string& uniform_name, const uniform_t data);
