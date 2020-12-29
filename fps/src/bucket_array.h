@@ -44,7 +44,7 @@ void add_bucket_by_handle(Bucket_Array<pod, bucket_capacity>&bucket_array, Bucke
 	
 	if (!bucket_array.all_buckets.empty())
 	{
-		Bucket<pod, bucket_capacity>* last_bucket = bucket_array.all_buckets.back();
+		// Bucket<pod, bucket_capacity>* last_bucket = bucket_array.all_buckets.back();
 		// last_bucket->next = new_bucket;
 	}
 
@@ -59,7 +59,7 @@ void add_bucket(Bucket_Array<pod, bucket_capacity>& bucket_array)
 	
 	if (bucket_array.all_buckets.size())
 	{
-		Bucket<pod, bucket_capacity>* last_bucket = bucket_array.all_buckets.back();
+		// Bucket<pod, bucket_capacity>* last_bucket = bucket_array.all_buckets.back();
 		// last_bucket->next = new_bucket;
 	}
 

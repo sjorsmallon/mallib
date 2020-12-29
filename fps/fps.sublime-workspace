@@ -520,10 +520,19 @@
 	"buffers":
 	[
 		{
-			"file": "src/entity_manager.h",
+			"file": "src/texture_manager.h",
 			"settings":
 			{
-				"buffer_size": 5708,
+				"buffer_size": 1975,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/main.cc",
+			"settings":
+			{
+				"buffer_size": 3803,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -532,7 +541,52 @@
 			"file": "src/game_simulate.cc",
 			"settings":
 			{
-				"buffer_size": 17493,
+				"buffer_size": 15771,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/bucket_array.h",
+			"settings":
+			{
+				"buffer_size": 5087,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "_deprecated/evaluate_flying_units.cc",
+			"settings":
+			{
+				"buffer_size": 3779,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/sound_system.cc",
+			"settings":
+			{
+				"buffer_size": 3388,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/sound_system.h",
+			"settings":
+			{
+				"buffer_size": 1007,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/game_pm.cc",
+			"settings":
+			{
+				"buffer_size": 0,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -723,14 +777,21 @@
 	],
 	"file_history":
 	[
+		"/C/mallib/mallib/fps/src/texture_manager.cc",
+		"/C/mallib/mallib/fps/src/asset_manager.cc",
+		"/C/mallib/mallib/fps/src/asset_manager.h",
+		"/C/mallib/mallib/fps/src/draw3d_api.h",
+		"/C/mallib/mallib/fps/src/entity_manager.h",
+		"/C/mallib/mallib/fps/src/game_simulate.cc",
+		"/C/mallib/mallib/fps/src/render_system.cc",
+		"/C/mallib/mallib/fps/src/window_manager.cc",
+		"/C/mallib/mallib/fps/src/main.cc",
+		"/C/mallib/mallib/fps/src/shader_manager.cc",
+		"/C/mallib/mallib/fps/src/shader_manager.h",
 		"/C/mallib/mallib/fps/src/bucket_array.h",
 		"/C/Users/Thesis/Desktop/Quake-III-Arena-master/code/game/bg_pmove.c",
-		"/C/mallib/mallib/fps/src/render_system.cc",
 		"/C/Users/Thesis/Desktop/Quake-III-Arena-master/code/cgame/cg_players.c",
-		"/C/mallib/mallib/fps/src/main.cc",
-		"/C/mallib/mallib/fps/src/entity_manager.h",
 		"/C/mallib/mallib/fps/src/sound_system.cc",
-		"/C/mallib/mallib/fps/src/game_simulate.cc",
 		"/C/mallib/mallib/fps/src/game_end_frame.cc",
 		"/C/mallib/mallib/fps/src/timed_function.h",
 		"/C/mallib/mallib/fps/src/timed_function.cc",
@@ -757,26 +818,20 @@
 		"/C/Users/Thesis/Desktop/aoc/three/main.zig",
 		"/C/Users/Thesis/Desktop/aoc/one_part_two/src/main.rs",
 		"/C/Users/Thesis/Desktop/aoc/one/src/main.rs",
-		"/C/mallib/mallib/fps/src/window_manager.cc",
 		"/C/Users/Thesis/Desktop/Sublime Text 3/Data/Packages/User/logr_report.sublime-snippet",
 		"/C/mallib/mallib/fps/src/logr.h",
 		"/C/mallib/mallib/fps/src/texture_manager.h",
 		"/C/mallib/mallib/fps/src/logr.cc",
 		"/C/Users/Thesis/Desktop/temp.cc",
 		"/C/mallib/mallib/fps/src/player_movement.cc",
-		"/C/mallib/mallib/fps/src/asset_manager.h",
 		"/C/mallib/mallib/fps/src/game.h",
 		"/C/mallib/mallib/fps/src/file.h",
-		"/C/mallib/mallib/fps/src/asset_manager.cc",
 		"/C/mallib/mallib/fps/src/log.h",
-		"/C/mallib/mallib/fps/src/shader_manager.cc",
-		"/C/mallib/mallib/fps/src/texture_manager.cc",
 		"/C/mallib/mallib/fps/src/window_manager.h",
 		"/C/mallib/mallib/fps/src/game_render.cc",
 		"/C/mallib/mallib/fps/src/game_init.cc",
 		"/C/mallib/mallib/fps/src/debug_menu.h",
 		"/C/mallib/mallib/fps/src/sound_system.h",
-		"/C/mallib/mallib/fps/src/draw3d_api.h",
 		"/C/mallib/mallib/fps/src/render_system.h",
 		"/C/mallib/mallib/fps/src/input.cc",
 		"/C/mallib/mallib/fps/src/collision_system.cc",
@@ -806,7 +861,6 @@
 		"/C/mallib/mallib/fps/assets/shaders/simple_depth_shadow_mapping/simple_depth_shadow_mapping.vs",
 		"/C/mallib/mallib/fps/assets/shaders/simple_depth_shadow_mapping/simple_depth_shadow_mapping.fs",
 		"/C/mallib/mallib/fps/assets/shaders/simple_depth/simple_depth.vs",
-		"/C/mallib/mallib/fps/src/shader_manager.h",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_instanced/deferred_instanced.vs",
 		"/C/mallib/mallib/fps/src/vertex.h",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_geometry/deferred_geometry.vs",
@@ -854,7 +908,7 @@
 	],
 	"find":
 	{
-		"height": 41.0
+		"height": 43.0
 	},
 	"find_in_files":
 	{
@@ -870,6 +924,20 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"last_bucket",
+			"idx",
+			"pm_air_acce",
+			"player_movespeed",
+			"pm_ground_acceleration",
+			"acceleration",
+			"accelerate",
+			"1024",
+			"count",
+			"occupied at",
+			"debug",
+			"obj_folder_prefix",
+			"const",
+			"shader_folder_prefix",
 			"acceleration",
 			"pm_maxspeed",
 			"player_movespeed",
@@ -983,21 +1051,7 @@
 			"input_velocity",
 			"current_speed_in_wish_direction",
 			"accelerate",
-			"delta_speed",
-			"pm_maxairspeed",
-			"accelerate",
-			"pm_maxspeed",
-			"accelerate",
-			"velocity",
-			"g_player_gravity",
-			"Y_old_y",
-			"1",
-			"g_player_gravity",
-			"pm_jump",
-			"dt_factor",
-			"g_player_gravity",
-			"dt_factor",
-			"wish_velocity"
+			"delta_speed"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1020,24 +1074,84 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 3,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "src/entity_manager.h",
+					"file": "src/texture_manager.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5708,
+						"buffer_size": 1975,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2081,
-								2081
+								1171,
+								1171
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 604.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "src/main.cc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3803,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2649,
+								2649
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1526.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/game_simulate.cc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 15771,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								11950,
+								11950
 							]
 						],
 						"settings":
@@ -1046,27 +1160,27 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1605.0,
+						"translation.y": 8755.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 1,
-					"file": "src/game_simulate.cc",
+					"buffer": 3,
+					"file": "src/bucket_array.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 17493,
+						"buffer_size": 5087,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4570,
-								4570
+								1476,
+								1476
 							]
 						],
 						"settings":
@@ -1075,10 +1189,123 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 3240.0,
+						"translation.y": 375.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "_deprecated/evaluate_flying_units.cc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3779,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3779,
+								3779
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1703.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "src/sound_system.cc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3388,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1581,
+								1581
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1250.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "src/sound_system.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1007,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								301,
+								301
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "src/game_pm.cc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 0,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
 					"type": "text"
 				}
 			]
@@ -1086,7 +1313,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 32.0
+		"height": 34.0
 	},
 	"input":
 	{
@@ -1143,7 +1370,7 @@
 	"project": "fps.sublime-project",
 	"replace":
 	{
-		"height": 60.0
+		"height": 64.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1152,6 +1379,34 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"sound_s",
+				"src\\sound_system.h"
+			],
+			[
+				"asse",
+				"src\\asset_manager.h"
+			],
+			[
+				"asset",
+				"src\\asset_manager.cc"
+			],
+			[
+				"main",
+				"src\\main.cc"
+			],
+			[
+				"text",
+				"src\\texture_manager.cc"
+			],
+			[
+				"shader",
+				"src\\shader_manager.cc"
+			],
+			[
+				"texture",
+				"src\\texture_manager.h"
+			],
 			[
 				"",
 				"src\\entity_manager.h"
@@ -1183,10 +1438,6 @@
 			[
 				"log.h",
 				"src\\log.h"
-			],
-			[
-				"main",
-				"src\\main.cc"
 			],
 			[
 				"simu",
@@ -1221,10 +1472,6 @@
 				"C:\\mallib\\mallib\\fps\\readme.md"
 			],
 			[
-				"texture",
-				"src\\texture_manager.cc"
-			],
-			[
 				"file",
 				"src\\file.h"
 			],
@@ -1243,14 +1490,6 @@
 			[
 				"render_System",
 				"src\\render_system.cc"
-			],
-			[
-				"shader",
-				"src\\shader_manager.cc"
-			],
-			[
-				"asset",
-				"src\\asset_manager.cc"
 			],
 			[
 				"window",

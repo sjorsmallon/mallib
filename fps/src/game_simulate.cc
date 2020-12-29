@@ -62,17 +62,17 @@ namespace
     float g_mouse_sensitivity = 0.08f;
     float g_camera_velocity = 0.2f;
  	float g_player_gravity = 50.f;
- 	// glm::vec3 world_up?
 
     // player movement (these are adjusted by dt)
+    float pm_ground_acceleration = 200.f;
+    float pm_air_acceleration = 150.0f;
+
     float pm_jump_acceleration  = 35.f;
-    float pm_ground_acceleration = 10.f;
     float pm_stopspeed = 100.f;
     float pm_maxspeed = 300.0f; // ground
     float pm_friction = 6.f;
 
     
-    float pm_air_acceleration = 1.0f;
     
 
     float pm_maxairspeed = 400.f; // air
@@ -138,47 +138,38 @@ namespace
 	[[nodiscard]]
 	glm::vec3 accelerate(glm::vec3 adjusted_movement_vector, glm::vec3 wish_direction, float wish_velocity, float acceleration, float dt)
 	{
-		logr::report("[acceleration]\n");
-
-		float adjusted_velocity = glm::length(adjusted_movement_vector);
-		logr::report("adjusted_velocity: {}\n", adjusted_velocity);
-
-		logr::report("adjusted_movement_vector: {}\n", adjusted_movement_vector);
-		logr::report("wish_direction: {}\n", wish_direction);
-		float current_speed_in_wish_dir = glm::dot(adjusted_movement_vector, wish_direction);
-		logr::report("current_speed_in_wish_dir: {}\n", current_speed_in_wish_dir);
-
-		logr::report("wish_direction * adjusted_velocity: {}\n", wish_direction * adjusted_velocity);
-
-		
-		float acceleration_factor = acceleration;
-		glm::vec3 acceleration_vector = dt * wish_direction;
 		glm::vec3 old_heading = adjusted_movement_vector;
 
-		glm::vec3 result = old_heading * dt + acceleration_factor *  acceleration_vector;
+		float adjusted_velocity = glm::length(adjusted_movement_vector);
+		float current_speed_in_wish_dir = glm::dot(adjusted_movement_vector, wish_direction);
+		logr::report("adjusted_velocity: {}\n", adjusted_velocity);
+		logr::report("current_speed_in_wish_dir: {}\n", current_speed_in_wish_dir);
+		//@IC(Sjors): NaN check.
+		if ((current_speed_in_wish_dir != current_speed_in_wish_dir) && adjusted_velocity > 0.0f)
+		{
+			logr::report_warning("opposite directions pressed..\n");
+			return glm::vec3(0.0f);
+		}
 
-		glm::vec3 result_dir = glm::normalize(result_dir);
+		glm::vec3 acceleration_vector = dt * (acceleration * wish_direction);
+		
+		glm::vec3 result = old_heading * dt + acceleration_vector;
+
+		glm::vec3 result_dir  = glm::normalize(result_dir);
 		float result_velocity = glm::length(result);
 
 		if (adjusted_velocity < 0.0000001f)
 		{
-			logr::report("returning acceleration vector!\n");
+			logr::report_warning("adjusted_vector velocity too small, returning acceleration vector\n");
 			return acceleration_vector;
 		}
 
-		float max_speed = (acceleration == pm_ground_acceleration) ?  pm_maxspeed : pm_maxairspeed;
-		
-		// if (glm::length(result) > (max_speed * dt))
-		// {
-		// 	logr::report("velocity of result: {}\n", glm::length(result));
-		// 	result = glm::normalize(result) * (max_speed * dt);
-		// }	
+
 
 		return result;
 	}	
 
     //@Dependencies:
-    // g_player_movespeed
     // g_player_acceleration
     // world_up
 	std::tuple<glm::vec3, glm::vec3> update_position_with_input(
@@ -193,16 +184,19 @@ namespace
 		static float hang_time = 0.0f;
 		bool jump_pressed_this_frame = input.keyboard_state[KEY_SPACE];	
 
-		glm::vec3 adjusted_movement_vector = apply_friction(old_movement_vector, grounded, jump_pressed_this_frame, dt);
+		// glm::vec3 adjusted_movement_vector = apply_friction(old_movement_vector, grounded, jump_pressed_this_frame, dt);
+		glm::vec3 adjusted_movement_vector = old_movement_vector;
+		adjusted_movement_vector.y = 0.0f;
 
-
-
+		float max_velocity = pm_maxspeed / dt;
 		float Y_old_y = old_movement_vector.y;
 
 		const glm::vec3 plane_front = glm::normalize(glm::vec3(front.x, 0.0f, front.z));
 		const glm::vec3 plane_right = glm::normalize(glm::vec3(right.x, 0.0f, right.z));
 
 		glm::vec3 input_vector = glm::vec3(0.0f,0.0f,0.0f);
+		float input_velocity = 0.0f;
+		float actual_input_velocity = 0.0f;
 
 		if (input.keyboard_state[KEY_W]) input_vector += plane_front;
 		if (input.keyboard_state[KEY_S]) input_vector -= plane_front;
@@ -214,11 +208,11 @@ namespace
 							   input.keyboard_state[KEY_A] ||
 							   input.keyboard_state[KEY_D]);
 
-		float input_velocity = 0.0f;
-		// IF WE HAVE RECEIVED INPUT, NORMALIZE IT.
+		// normalize input vector.
 		if (received_input)
 		{
-			// NORMALIZE INPUT DIRECTION (WHAT HAPPENS IF THIS IS ALL ZEROES?)
+			actual_input_velocity = glm::length(input_vector);
+			logr::report("actual_input_velocity: {}\n", actual_input_velocity);
 			input_vector = glm::normalize(input_vector);
 			input_velocity = 1.0f;
 		} 
@@ -228,27 +222,27 @@ namespace
 		{
 			if (grounded)
 			{
-				if (received_input)		input_velocity *= 5.f;
-
 				hang_time = 0.0f;
 				grounded = false;
-				jump_pressed_this_frame = true;
 			}
 		}
 
 		glm::vec3 movement_vector = glm::vec3(0.0f);
-		// IF NO INPUT IS RECEIVED, CONTINUE IN THE SAME DIRECTION WITH SAME SPEED AS WE WERE ON.
-		if (input_velocity < 0.1f) 
+		// IF NO INPUT IS RECEIVED OR INPUT IS CANCELED OUT CONTINUE IN THE SAME DIRECTION WITH SAME SPEED AS WE WERE ON.
+		if (actual_input_velocity < 0.1f) 
 		{
-			// don't normalize: will yield nan or inf
+			//@Note(Sjors) don't normalize: will yield nan or inf
 			movement_vector = adjusted_movement_vector;
+			// logr::report("no input!\n");
 		}
 		else
 		{
-			// POSSIBLY USE DIFFERENT ACCELERATION VALUES FOR WHEN WE ARE IN THE AIR.
+			logr::report("input_velocity: {}\n", input_velocity);
+			// Take into account whether we are grounded or not.
 			float acceleration = (grounded) ? pm_ground_acceleration : pm_air_acceleration;
 			movement_vector = accelerate(adjusted_movement_vector, input_vector, input_velocity, acceleration, dt);
 		}
+
 
 		movement_vector.y  = Y_old_y;
 		movement_vector.y += Y_input_y_velocity;
@@ -359,96 +353,38 @@ namespace
 	void evaluate_flying_units(Entity_Manager& entity_manager, const float dt)
 	{
 		timed_function("evaluate_flying_units");
-		auto& player = g_player_entity;
-
-		glm::vec3 position_sum{};
+		glm::vec3 sum{};
 		size_t entity_count = 0;
 		for (auto&& entity: by_type(entity_manager, Entity_Type::Cube))
-		{
-			position_sum += entity.position;
+		{	
+			sum += entity.position;
 			entity_count += 1;
 		}
 
-		if (entity_count == 0)
-		{
-			// logr::report_warning("[evaluate_flying_units] no units found.\n");
-			return;
-		}
+		glm::vec3 average_position{};
+		if (entity_count > 0) average_position = sum / static_cast<float>(entity_count);
 
-        //@Note(Sjors): be wary of div 0. The check above mitigates it.
-        glm::vec3 average_position = position_sum *  (1.0f / static_cast<float>(entity_count));
-        glm::vec3 player_position  = player.position + glm::vec3(0.0f,10.0f,0.0f);
-        glm::vec3 cluster_center_to_player_direction = glm::normalize(player_position - average_position);
-		
-		struct Neighbour_Info
-		{
-			glm::vec3 direction;
-			float distance;
-		};
 
-		//@Memory(Sjors)
-		std::vector<Neighbour_Info> neighbour_info{};
+		auto& player = g_player_entity;
 
-		//@Speed(Sjors): O(N^2)
-		// // wat we nu gaan doen, kost heel veel tijd.
-		// // gather information about closest neighbour.
-		for (auto&& lhs_e: by_type(entity_manager, Entity_Type::Cube))
-		{
-			Neighbour_Info neighbour{};
-			neighbour.distance =  1000000.0f;
-			neighbour.direction = glm::vec3(0.0f);
-
-			for (auto&& rhs_e: by_type(entity_manager, Entity_Type::Cube))
-			{
-				// skip distance to self.
-				if (rhs_e.id == lhs_e.id) continue;
-
-				//@FIXME(Sjors): if position == position, distance becomes NaN.
-				glm::vec3 distance  = rhs_e.position - lhs_e.position; 
-
-				float abs_distance = sqrt(distance.x * distance.x + distance.y * distance.y + distance.z * distance.z);
-				// float abs_distance = glm::length(distance);
-				glm::vec3 direction_vector = glm::normalize(distance);
-
-				if (abs_distance < neighbour.distance)
-				{
-					neighbour.distance = abs_distance;
-					neighbour.direction = direction_vector;	
-				}
-			}
-			neighbour_info.push_back(neighbour);
-		}
-
-		size_t neighbour_idx = 0;
-		// update the positions of each thing.
 		for (auto&& entity: by_type(entity_manager, Entity_Type::Cube))
 		{
-			auto& neighbour = neighbour_info[neighbour_idx]; 
 
-			glm::vec3 focus_direction      = glm::normalize(player_position - entity.position);
+			glm::vec3 focus_direction      = glm::normalize(player.position - entity.position);
 			glm::vec3 cohesion_direction   = glm::normalize(average_position - entity.position);
-			glm::vec3 separation_direction = -neighbour.direction;
-			glm::vec3 height_direction     = glm::vec3(0.f, 1.f, 0.f); 
+			glm::vec3 height_direction     = glm::vec3(0.0f,1.0f,0.0f);
+			glm::vec3 cluster_center_to_player_direction = glm::normalize(player.position - average_position);
 
-			glm::vec3 direction_vector(0.0f);
 			bool enable_cohesion = true;
-			bool enable_height = false;
-			bool enable_focus = false;
-			bool enable_separation = true;
+			bool enable_height = true;
+			bool enable_separation = false;
+			bool enable_focus = true;
+			bool enable_previous_momentum = true;
 			bool enable_center_to_player = true;
-			bool enable_previous_momentum = false;
 
+			glm::vec3 direction_vector{};
 			if (enable_cohesion)	direction_vector += cohesion_direction * g_cohesion;
 			if (enable_height)		direction_vector += height_direction;
-
-		
-			if (enable_separation )
-			{
-				if (neighbour.distance < g_wanted_distance)
-				{
-					direction_vector = separation_direction;
-				}
-			}
 
 			if (enable_focus)				direction_vector += focus_direction;
 			if (enable_center_to_player)	direction_vector += cluster_center_to_player_direction;
@@ -466,7 +402,6 @@ namespace
 			entity.position = entity.position + (direction_vector * g_dodecahedron_velocity * dt);	
 			entity.movement_vector = direction_vector;
 
-			neighbour_idx += 1;
 		}
  	}
 
@@ -478,9 +413,10 @@ namespace
 		for(auto&& entity: by_type(entity_manager, Entity_Type::Cube))
 		{
   			if (!ray_intersects_sphere(camera.position, camera.front, entity.position, sphere_radius)) continue;
-
+  		
   			// we hit!
 			schedule_for_destruction(entity_manager, &entity);
+			play_sound_at_position("finger_snap", entity.position.x, entity.position.y, entity.position.z);
 		}
 	}
 
@@ -507,37 +443,21 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 	}
 	else
 	{
-		// if (game_state.game_mode == GM_GAME)
-		// {
+		static bool done = false;
+		if (!done) 
+		{
 			// BEFORE MOVING ANYTHING, check shot intersection, since we clicked at the position we _are_ in
 			// and target that _are _ in a particular position
 			if (input.mouse_left) evaluate_shot(entity_manager, game_state.camera);
 
 			//@Note(Sjors): it is imperative that the player gets updated first, since that 
 			// is the bottleneck we have to be dealing with in the next frames. (after, we can go wide).
-
+		}
 			// update player and camera.
 			{
 				game_state.camera = update_camera_entity(input, game_state.camera, clamped_dt);
 				g_player_entity.position = game_state.camera.position;
 			}
-
-			 // update dodecahedrons
-			{
-				evaluate_flying_units(entity_manager, dt);
-			}
-
-			{
-				static bool played = false;
-				if (!count_by_type(entity_manager, Entity_Type::Cube)) 
-				{
-					if (!played) play_sound("applause");
-					played = true;
-				}
-			}
-
-			// at this point, we can start rendering static geometry.
-			// collision_check()
 
 			// update sound system
 			{
@@ -555,12 +475,32 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 					game_state.camera.movement_vector.y,
 					game_state.camera.movement_vector.z
 				);
+			}
 			
-				if (input.mouse_right) play_sound_3d("chicken");
-				if (input.mouse_left)  play_sound("plop_shorter_runup");
+		if (!done)
+		{
+
+			 // update dodecahedrons
+			{
+				evaluate_flying_units(entity_manager, dt);
 			}
 
-		// }
+
+			{
+				if (!count_by_type(entity_manager, Entity_Type::Cube)) 
+				{
+					play_sound("applause");
+					done = true;
+				}
+			}
+			// at this point, we can start rendering static geometry.
+			// collision_check()
+
+	
+				if (input.mouse_right) play_sound_3d("chicken");
+				if (input.mouse_left)  play_sound("plop_shorter_runup");
+		}
+
 	}
 }
 

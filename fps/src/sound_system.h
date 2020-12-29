@@ -8,6 +8,7 @@ void load_sound(const std::string& sound_name);
 void deinit_sound_system();
 
 // whenever
+void play_sound_at_position(const char* sound_name, const float x, const float y, const float z);
 void play_sound_3d(const char* sound_name);
 void play_sound(const char* sound_name,
 		 const float volume = 1.f, // Full volume 

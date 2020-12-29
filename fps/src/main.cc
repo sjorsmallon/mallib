@@ -69,7 +69,7 @@ int main()
 
 
     auto entity_manager = Entity_Manager();
-    for (size_t idx = 0; idx != 2048; ++idx) create_entity(entity_manager, Entity_Type::Cube);
+    for (size_t idx = 0; idx != 10; ++idx) create_entity(entity_manager, Entity_Type::Cube);
 
     init_sound_system();
 
@@ -77,6 +77,7 @@ int main()
     load_sound("plop.wav");
     load_sound("plop_shorter_runup.wav");
     load_sound("applause.ogg");
+    load_sound("finger_snap.wav");
 
     //@Fixme(Sjors): create a render manager?
     init_renderer(

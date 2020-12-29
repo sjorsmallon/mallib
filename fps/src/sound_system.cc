@@ -59,8 +59,25 @@ void stop_sound()
 	g_soloud.stopAll();
 }
 
+void play_sound_at_position(const char* sound_name, const float x, const float y, const float z)
+{
+	g_handles[sound_name] = g_soloud.play3d(g_samples[sound_name],
+		x, // px
+		y, // py
+		z, // pz
+		0.0f, // vx
+		0.0f, // vy
+		0.0f, // vz
+		1.0f, // volume?
+		0,
+		false);
+}
+
+
+
 void play_sound_3d(const char* sound_name)
 {
+
 	g_handles["chicken"] = g_soloud.play3d(g_samples["chicken"], 
 	              0.0f, 
 	              0.0f, 
