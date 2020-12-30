@@ -59,19 +59,23 @@ namespace
 	// ---------------
 
     // world
+    float pm_ground_acceleration = 10.f;
+    float pm_air_acceleration = 1.0f;
+    // quake constants
+    float pm_friction = 6.f;
+    float pm_stopspeed = 100.0f;
+    float pm_maxvelocity = 320.0f;
+    float pm_jumpvelocity = 270.0f;
+
+   	float input_axial_extreme = 127.0f; // -127, 127 for forward and backward (for controller support)
+
+    float pm_jump_acceleration  = 35.f;
+
     float g_mouse_sensitivity = 0.08f;
     float g_camera_velocity = 0.2f;
  	float g_player_gravity = 50.f;
 
-    // player movement (these are adjusted by dt)
-    float pm_ground_acceleration = 200.f;
-    float pm_air_acceleration = 150.0f;
-
-    float pm_jump_acceleration  = 35.f;
-    float pm_stopspeed = 100.f;
-    float pm_maxspeed = 300.0f; // ground
-    float pm_friction = 6.f;
-
+ 	float CLIP_OVERCLIP = 1.0001f;
     
     
 
@@ -89,82 +93,102 @@ namespace
     [[nodiscard]]
 	glm::vec3 apply_friction(glm::vec3 old_movement_vector, bool grounded, bool jump_pressed_this_frame, float dt)
 	{
-		old_movement_vector.y = 0.0f;
+		if (grounded) old_movement_vector.y = 0.0f;
+
 		float velocity = glm::length(old_movement_vector);
 
-		const float velocity_treshold = 0.0000001f;
-	
+		const float velocity_treshold = 0.1f;
 		if (velocity < velocity_treshold)
 		{
+			logr::report("velocity < velocity_treshold\n");
 			return glm::vec3(0.0f);
 		}
 
 		float velocity_drop = 0.0f;
-		// if (!jump_pressed_this_frame)
-		// {
-		// 	if (grounded) // if grounded, we experience friction. 
-		// 	{ 
-		// 		float drop_base = 0.0f;
-		// 		// if we are moving slower than the stopspeed, base decrement on deceleration.
-		// 		// if (velocity < 120300);
-		// 		// {
-		// 		// 	drop_base = pm_stopspeed;
-		// 		// } 
-		// 		// else  // if we are moving faster than the acceleration, base decrement on own velocity (which will be harsher)
-		// 		{
-		// 			drop_base = velocity;
-		// 		}
-		// 		velocity_drop = drop_base * pm_friction * dt;
-		// 	} 
-		// }
-
-
-		// adjust the velocity with the induced velocity drop. 
-		float drop_adjusted_velocity = velocity - velocity_drop;
-		if(drop_adjusted_velocity < 0.0f) drop_adjusted_velocity = 0.0f;
-		float new_velocity = 0.0f;
-
-		// normalize the velocity based on the ground velocity.
-		if(drop_adjusted_velocity > 0.0f)
+		// disregard jump for now.
+		if (grounded && !jump_pressed_this_frame)
 		{
-			new_velocity = drop_adjusted_velocity;
-			if (velocity > 1.0f) new_velocity /= velocity;
+			float control = velocity < pm_stopspeed ? pm_stopspeed : velocity;
+			logr::report_warning("applying friction!\n");
+			velocity_drop += control * pm_friction * dt;
 		}
 
-		glm::vec3 adjusted_movement_vector = glm::normalize(old_movement_vector);
-		return adjusted_movement_vector * new_velocity;
+		// adjust the velocity with the induced velocity drop. 
+		float adjusted_velocity = velocity - velocity_drop;
+
+		if(adjusted_velocity < 0.0f) adjusted_velocity = 0.0f;
+
+		// normalize the velocity based on the ground velocity.
+		if(adjusted_velocity > 0.0f)
+		{
+			adjusted_velocity /= velocity;
+		}
+
+		//@IC(Sjors): we don't need to normalize below since we do that above (normalize the new_velocity by velocity.)
+		return old_movement_vector * adjusted_velocity;
 	}
+
+    [[nodiscard]]
+    float apply_scale(const float forward_move,const float right_move, const float up_move, const float speed)
+    {
+    	int max = abs(forward_move);
+    	if (abs(right_move) > max) max = abs(right_move);
+
+    	if (!max) return 0.f;
+
+    	float total = sqrt(forward_move * forward_move + right_move * right_move);
+    	float scale = pm_maxvelocity * static_cast<float>(max) / (input_axial_extreme * total);
+    	return scale;
+    }
+
+    glm::vec3 clip_velocity(glm::vec3 in, glm::vec3 normal, const float overbounce)
+    {
+    	float backoff = glm::dot(in, normal);
+
+    	if (backoff < 0.0f)
+    	{
+    		backoff *= overbounce;
+    	}
+    	else
+    	{
+    		backoff /= overbounce;
+    	}
+
+    	glm::vec3 change = normal * backoff;
+    	glm::vec3 result = in - change;
+
+    	return result;
+    }
+  
 	
 	[[nodiscard]]
 	glm::vec3 accelerate(glm::vec3 adjusted_movement_vector, glm::vec3 wish_direction, float wish_velocity, float acceleration, float dt)
 	{
-		glm::vec3 old_heading = adjusted_movement_vector;
+		logr::report("[accelerate]\n");
 
-		float adjusted_velocity = glm::length(adjusted_movement_vector);
 		float current_speed_in_wish_dir = glm::dot(adjusted_movement_vector, wish_direction);
-		logr::report("adjusted_velocity: {}\n", adjusted_velocity);
-		logr::report("current_speed_in_wish_dir: {}\n", current_speed_in_wish_dir);
-		//@IC(Sjors): NaN check.
-		if ((current_speed_in_wish_dir != current_speed_in_wish_dir) && adjusted_velocity > 0.0f)
-		{
-			logr::report_warning("opposite directions pressed..\n");
-			return glm::vec3(0.0f);
-		}
+		float add_speed = wish_velocity - current_speed_in_wish_dir;
 
-		glm::vec3 acceleration_vector = dt * (acceleration * wish_direction);
-		
-		glm::vec3 result = old_heading * dt + acceleration_vector;
+		if (add_speed < 0.0f) return adjusted_movement_vector;
 
-		glm::vec3 result_dir  = glm::normalize(result_dir);
-		float result_velocity = glm::length(result);
+		float acceleration_speed = acceleration * dt * wish_velocity;
+		if (acceleration_speed > add_speed) acceleration_speed = add_speed;
 
-		if (adjusted_velocity < 0.0000001f)
-		{
-			logr::report_warning("adjusted_vector velocity too small, returning acceleration vector\n");
-			return acceleration_vector;
-		}
+		glm::vec3 result = adjusted_movement_vector + acceleration_speed * wish_direction;
 
+		// //@IC(Sjors): NaN check.
+		// if ((current_speed_in_wish_dir != current_speed_in_wish_dir) && adjusted_velocity > 0.0f)
+		// {
+		// 	logr::report_warning("opposite directions pressed..\n");
+		// 	return glm::vec3(0.0f);
+		// }
 
+		// logr::report("result: {}\n", result);
+		// if (adjusted_velocity < 0.0000001f)
+		// {
+		// 	logr::report_warning("adjusted_vector velocity too small, returning acceleration vector\n");
+		// 	return acceleration_speed * wish_direction;
+		// }
 
 		return result;
 	}	
@@ -184,37 +208,37 @@ namespace
 		static float hang_time = 0.0f;
 		bool jump_pressed_this_frame = input.keyboard_state[KEY_SPACE];	
 
-		// glm::vec3 adjusted_movement_vector = apply_friction(old_movement_vector, grounded, jump_pressed_this_frame, dt);
-		glm::vec3 adjusted_movement_vector = old_movement_vector;
+		glm::vec3 adjusted_movement_vector = apply_friction(old_movement_vector, grounded, jump_pressed_this_frame, dt);
+		
+		//
 		adjusted_movement_vector.y = 0.0f;
-
-		float max_velocity = pm_maxspeed / dt;
 		float Y_old_y = old_movement_vector.y;
+		//
 
-		const glm::vec3 plane_front = glm::normalize(glm::vec3(front.x, 0.0f, front.z));
-		const glm::vec3 plane_right = glm::normalize(glm::vec3(right.x, 0.0f, right.z));
+		float forward_input = input_axial_extreme * input.keyboard_state[KEY_W] - input_axial_extreme * input.keyboard_state[KEY_S];
+		float right_input = input_axial_extreme * input.keyboard_state[KEY_D] - input_axial_extreme * input.keyboard_state[KEY_A];
+		
+		float scale = apply_scale(forward_input, right_input, 0.0f, pm_maxvelocity);
 
-		glm::vec3 input_vector = glm::vec3(0.0f,0.0f,0.0f);
-		float input_velocity = 0.0f;
-		float actual_input_velocity = 0.0f;
+		glm::vec3 plane_front = clip_velocity(front, glm::vec3(0.0f,1.0f,0.0f), CLIP_OVERCLIP);
+		glm::vec3 plane_right = clip_velocity(right, glm::vec3(0.0f,1.0f,0.0f), CLIP_OVERCLIP);
 
-		if (input.keyboard_state[KEY_W]) input_vector += plane_front;
-		if (input.keyboard_state[KEY_S]) input_vector -= plane_front;
-		if (input.keyboard_state[KEY_A]) input_vector -= plane_right;
-		if (input.keyboard_state[KEY_D]) input_vector += plane_right;
+		plane_front = glm::normalize(plane_front);
+		plane_right = glm::normalize(plane_right);
+
+		glm::vec3 wish_direction = plane_front * forward_input + plane_right * right_input;
+		float wish_velocity = 0.0f;
 
 		bool received_input = (input.keyboard_state[KEY_W] ||
 							   input.keyboard_state[KEY_S] ||
 							   input.keyboard_state[KEY_A] ||
 							   input.keyboard_state[KEY_D]);
 
-		// normalize input vector.
+		// normalize input vector, but keep velocity! this HAS to be normalized by dt.
 		if (received_input)
 		{
-			actual_input_velocity = glm::length(input_vector);
-			logr::report("actual_input_velocity: {}\n", actual_input_velocity);
-			input_vector = glm::normalize(input_vector);
-			input_velocity = 1.0f;
+			wish_velocity  = scale * glm::length(wish_direction);
+			wish_direction = glm::normalize(wish_direction);
 		} 
 
 		float Y_input_y_velocity = 0.0f;
@@ -227,39 +251,50 @@ namespace
 			}
 		}
 
+
 		glm::vec3 movement_vector = glm::vec3(0.0f);
-		// IF NO INPUT IS RECEIVED OR INPUT IS CANCELED OUT CONTINUE IN THE SAME DIRECTION WITH SAME SPEED AS WE WERE ON.
-		if (actual_input_velocity < 0.1f) 
+
+		if (wish_velocity < 0.1f) 
 		{
 			//@Note(Sjors) don't normalize: will yield nan or inf
 			movement_vector = adjusted_movement_vector;
-			// logr::report("no input!\n");
+			logr::report("no input!\n");
 		}
 		else
 		{
-			logr::report("input_velocity: {}\n", input_velocity);
 			// Take into account whether we are grounded or not.
 			float acceleration = (grounded) ? pm_ground_acceleration : pm_air_acceleration;
-			movement_vector = accelerate(adjusted_movement_vector, input_vector, input_velocity, acceleration, dt);
+			movement_vector = accelerate(adjusted_movement_vector, wish_direction, wish_velocity, acceleration, dt);
 		}
 
-
-		movement_vector.y  = Y_old_y;
-		movement_vector.y += Y_input_y_velocity;
+		// slide along the ground plane.
+		// clip the movement vector!
+		// float velocity = glm::length(movement_vector);
+		// clip_velocity(movement_vector, glm::vec3(0.0f,1.0f,0.0f), CLIP_OVERCLIP);
+		// movement_vector = velocity * movement_vector;
 
 		//Y
-		if (!grounded)
 		{
-			hang_time += dt;
-			float x = hang_time;
-			float c = 0.0f;
-			float b = pm_jump_acceleration;
-			float a = -g_player_gravity;
-			movement_vector.y = a * x * x + b * x + c; 
+			movement_vector.y  = Y_old_y;
+			movement_vector.y += Y_input_y_velocity;
+
+			if (!grounded)
+			{
+				hang_time += dt;
+				float x = hang_time;
+				float c = 0.0f;
+				float b = pm_jump_acceleration;
+				float a = -g_player_gravity;
+				movement_vector.y = a * x * x + b * x + c; 
+			}
 		}
 		
-		// try to move (collide with ground plane etc etc etc)
-		glm::vec3 position = glm::vec3(old_position.x, 0.0f, old_position.z) + movement_vector;
+
+		// float movement_vector_velocity = glm::length(movement_vector); 
+
+		
+		//@NOTE: WE NEED TO MOVE _WITH_ DT(!!!!!!!!!!!!!)
+		glm::vec3 position = glm::vec3(old_position.x, 0.0f, old_position.z) + movement_vector * dt;
 		// // clip the movement vector.
 		if (position.y < 0.0f)
 		{
