@@ -52,6 +52,12 @@ namespace
     // unsigned int position_tfbo;
     // unsigned int normal_tfbo;
     // unsigned int albedo_specular_tfbo;
+    // unsigned int roughness_tfbo;
+    // unsigned int metallic_tfbo;
+
+
+    // unsigned int ambient_occlusion_tfbo;
+    // unsigned int 
     // shadow texture buffer
     unsigned int g_depth_map_tfbo;
 
@@ -185,9 +191,21 @@ namespace
             int32_t max_fragment_uniform_blocks;
             glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_BLOCKS, &max_fragment_uniform_blocks);
             logr::report("[OpenGL] max Fragment uniform blocks: {} \n", max_fragment_uniform_blocks);
+
+            int32_t max_frame_buffer_color_attachments;
+            glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &max_frame_buffer_color_attachments);
+            logr::report("[OpenGL] max fragment uniform blocks: {}\n", max_fragment_uniform_blocks);            
         }      
 
-        // init Deferred renderer (position, normal, diffuse + specular)
+        // init Deferred renderer context (position, normal, diffuse + specular, roughness, metallic, ambient_occlusion)
+        // order:
+        // position,
+        // normal
+        // diffuse / specular,
+        // roughness
+        // metallic
+        // ambient_occlusion
+        // displacement
         // -----------------------------------------------------------
         {
             // init geometry_fbo
@@ -202,7 +220,7 @@ namespace
 
             glActiveTexture(GL_TEXTURE0 + position_texture.gl_texture_frame);
             glBindTexture(GL_TEXTURE_2D, position_tfbo);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, NULL);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, nullptr);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, position_tfbo, 0);
@@ -212,7 +230,7 @@ namespace
             const auto& normal_texture = get_texture(*texture_manager, "normal_tfbo");
             glActiveTexture(GL_TEXTURE0 + normal_texture.gl_texture_frame);
             glBindTexture(GL_TEXTURE_2D, normal_tfbo);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, NULL);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, nullptr);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, normal_tfbo, 0);
@@ -223,14 +241,87 @@ namespace
 
             glActiveTexture(GL_TEXTURE0 + albedo_specular_texture.gl_texture_frame);
             glBindTexture(GL_TEXTURE_2D, albedo_specular_tfbo);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, albedo_specular_tfbo, 0);
               
+            // roughness frame buffer
+            uint32_t roughness_tfbo = register_framebuffer_texture(*texture_manager, "roughness_tfbo"); 
+            auto& roughness_texture = get_texture(*texture_manager, "roughness_tfbo");
+
+            glActiveTexture(GL_TEXTURE0 + roughness_texture.gl_texture_frame);
+            glBindTexture(GL_TEXTURE_2D, roughness_tfbo);
+            // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glFramebufferTexture2D(GL_FRAMEBUFFER,  GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, roughness_tfbo, 0);
+
+            // metallic frame buffer.
+            uint32_t metallic_tfbo = register_framebuffer_texture(*texture_manager, "metallic_tfbo");
+            auto& metallic_texture = get_texture(*texture_manager, "metallic_tfbo");
+
+            glActiveTexture(GL_TEXTURE0 + metallic_texture.gl_texture_frame);
+            glBindTexture(GL_TEXTURE_2D, metallic_tfbo);
+            // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glFramebufferTexture2D(GL_FRAMEBUFFER,  GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, metallic_tfbo, 0);
+
+            // ambient occlusion frame buffer.
+            uint32_t ambient_occlusion_tfbo = register_framebuffer_texture(*texture_manager, "ambient_occlusion_tfbo");
+            auto& ambient_occlusion_texture = get_texture(*texture_manager, "ambient_occlusion_tfbo");
+
+            glActiveTexture(GL_TEXTURE0 + ambient_occlusion_texture.gl_texture_frame);
+            glBindTexture(GL_TEXTURE_2D, ambient_occlusion_tfbo);
+            // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glFramebufferTexture2D(GL_FRAMEBUFFER,  GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, ambient_occlusion_tfbo, 0);
+
+            // displacement frame buffer
+            uint32_t displacement_tfbo = register_framebuffer_texture(*texture_manager, "displacement_tfbo");
+            auto& displacement_texture = get_texture(*texture_manager, "displacement_tfbo");
+
+            glActiveTexture(GL_TEXTURE0 + displacement_texture.gl_texture_frame);
+            glBindTexture(GL_TEXTURE_2D, displacement_tfbo);
+            // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glFramebufferTexture2D(GL_FRAMEBUFFER,  GL_COLOR_ATTACHMENT6, GL_TEXTURE_2D, displacement_tfbo, 0);
+
+            uint32_t tnormal_tfbo = register_framebuffer_texture(*texture_manager, "tnormal_tfbo");
+            auto& tnormal_texture = get_texture(*texture_manager, "tnormal_tfbo");
+
+            glActiveTexture(GL_TEXTURE0 + tnormal_texture.gl_texture_frame);
+            glBindTexture(GL_TEXTURE_2D, tnormal_tfbo);
+            // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, frame_buffer_width, frame_buffer_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glFramebufferTexture2D(GL_FRAMEBUFFER,  GL_COLOR_ATTACHMENT7, GL_TEXTURE_2D, tnormal_tfbo, 0);
+
+
             // - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-            unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
-            glDrawBuffers(3, attachments);
+            unsigned int attachments[8] = {
+                GL_COLOR_ATTACHMENT0,
+                GL_COLOR_ATTACHMENT1,
+                GL_COLOR_ATTACHMENT2,
+                GL_COLOR_ATTACHMENT3,
+                GL_COLOR_ATTACHMENT4,
+                GL_COLOR_ATTACHMENT5,
+                GL_COLOR_ATTACHMENT6,
+                GL_COLOR_ATTACHMENT7};
+
+            glDrawBuffers(8, attachments);
               
             // then also add render buffer object as depth buffer and check for completeness.
             unsigned int depth_rbo;
@@ -750,10 +841,40 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         glBindFramebuffer(GL_FRAMEBUFFER, geometry_fbo);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+        // 0? PBR
+        // ------------------------------------------
+        set_shader(*shader_manager, "deferred_pbr");
+        set_uniform(*shader_manager, "projection", projection);
+        set_uniform(*shader_manager, "view", view);
+
+        {
+            const auto& concrete_albedo_texture = get_texture(*texture_manager, "concrete_4K_color");
+            const auto& concrete_normal_texture = get_texture(*texture_manager, "concrete_4K_normal");
+            const auto& concrete_roughness_texture = get_texture(*texture_manager, "concrete_4K_roughness");
+            // const auto& concrete_metallic_texture does not exist :^)
+            const auto& concrete_ambient_occlusion_texture = get_texture(*texture_manager, "concrete_4K_ambient_occlusion");
+            const auto& concrete_displacement_texture = get_texture(*texture_manager, "concrete_4K_displacement");
+
+            set_uniform(*shader_manager, "texture_albedo", concrete_albedo_texture.gl_texture_frame);
+            set_uniform(*shader_manager, "texture_normal", concrete_normal_texture.gl_texture_frame);
+            set_uniform(*shader_manager, "texture_roughness", concrete_roughness_texture.gl_texture_frame);
+            set_uniform(*shader_manager, "texture_ambient_occlusion", concrete_ambient_occlusion_texture.gl_texture_frame);
+            set_uniform(*shader_manager, "texture_displacement", concrete_displacement_texture.gl_texture_frame);
+
+            // render floor
+            glm::mat4 model = glm::mat4(1.0f);
+            set_uniform(*shader_manager, "model", model);
+            render_floor();
+
+        }
+
+
+
         // bind shader and update all relevant uniforms.
         set_shader(*shader_manager, "deferred_geometry");
         set_uniform(*shader_manager, "projection", projection);
-      
+
         // 1.a:  render static geometry in the scene.
         // ---------------------------------------
         {
@@ -785,15 +906,15 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
             }
         
-        //   render floor
-            {
-                const auto& floor_texture = get_texture(*texture_manager, "floor_64");
-                set_uniform(*shader_manager, "texture_diffuse",  floor_texture.gl_texture_frame);
+        // //   render floor
+        //     {
+        //         const auto& floor_texture = get_texture(*texture_manager, "floor_64");
+        //         set_uniform(*shader_manager, "texture_diffuse",  floor_texture.gl_texture_frame);
 
-                glm::mat4 model = glm::mat4(1.0f);
-                set_uniform(*shader_manager, "model", model);
-                render_floor();
-            }
+        //         glm::mat4 model = glm::mat4(1.0f);
+        //         set_uniform(*shader_manager, "model", model);
+        //         render_floor();
+        //     }
 
            // render walls
             {
@@ -939,20 +1060,31 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     // @Volatile(Sjors): if this changes, the deferred_lighting shader step should change as well.
     std::vector<Light> lights(NUM_LIGHTS);
 
-    // 2. lighting pass:
-    // -----------------------------------------------------------------
-    {
-        set_shader(*shader_manager, "deferred_lighting");
+    { //2.PBR whatever:
+        const auto& position_tfbo_texture = get_texture(*texture_manager, "position_tfbo");
+        const auto& normal_tfbo_texture = get_texture(*texture_manager, "normal_tfbo");
+        const auto& albedo_specular_tfbo_texture = get_texture(*texture_manager, "albedo_specular_tfbo");
+        const auto& roughness_tfbo_texture= get_texture(*texture_manager, "roughness_tfbo");
+        const auto& metallic_tfbo_texture = get_texture(*texture_manager, "metallic_tfbo");
+        const auto& ambient_occlusion_tfbo_texture = get_texture(*texture_manager, "ambient_occlusion_tfbo");
+        const auto& displacement_tfbo_texture = get_texture(*texture_manager, "displacement_tfbo");
+        const auto& tnormal_tfbo_texture = get_texture(*texture_manager, "tnormal_tfbo");
 
-        set_uniform(*shader_manager, "fb_position",    position_tfbo_texture.gl_texture_frame);
-        set_uniform(*shader_manager, "fb_normal",      normal_tfbo_texture.gl_texture_frame);    
-        set_uniform(*shader_manager, "fb_albedo_spec", albedo_specular_tfbo_texture.gl_texture_frame);    
+        set_shader(*shader_manager, "post_deferred_pbr");
+
+        set_uniform(*shader_manager,"fb_position", position_tfbo_texture.gl_texture_frame);
+        set_uniform(*shader_manager,"fb_normal", normal_tfbo_texture.gl_texture_frame);
+        set_uniform(*shader_manager,"fb_albedo_spec", albedo_specular_tfbo_texture.gl_texture_frame);
+        set_uniform(*shader_manager,"fb_roughness", roughness_tfbo_texture.gl_texture_frame);
+        set_uniform(*shader_manager,"fb_metallic", metallic_tfbo_texture.gl_texture_frame);
+        set_uniform(*shader_manager,"fb_ambient_occlusion", ambient_occlusion_tfbo_texture.gl_texture_frame);
+        set_uniform(*shader_manager,"fb_displacement", displacement_tfbo_texture.gl_texture_frame);
+        set_uniform(*shader_manager,"fb_tnormal", tnormal_tfbo_texture.gl_texture_frame);
 
         glm::vec4 camera_position = glm::vec4(camera.position, 1.0f); 
         set_uniform(*shader_manager, "view_position", glm::vec4(camera_position));
 
-        // for (auto& light: lights)
-        {
+        { 
             static float time = 0.0f;
             static float y_position = 0.0f;
             static float x_position = 0.0f;
@@ -967,17 +1099,15 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             lights[0].position.z = camera.position.z;
             lights[0].color = glm::vec4(1.0f,1.0f,1.0f,0.0f);
             lights[0].on = true;
-            lights[0].linear = 0.001f;
-            lights[0].quadratic = 0.002f;
+            lights[0].linear = 0.1f;
+            lights[0].quadratic = 0.2f;
 
-            lights[1].position = glm::vec4(0.0f, 3.0f, 0.0f, 0.0f);
-            lights[1].color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-            lights[1].on = true;
-            lights[1].linear = 0.1;
-            lights[1].quadratic = 0.2;
-
+            // lights[1].position = glm::vec4(0.0f, 3.0f, 0.0f, 0.0f);
+            // lights[1].color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+            // lights[1].on = true;
+            // lights[1].linear = 0.1;
+            // lights[1].quadratic = 0.2;
         }
-        
         //@Note(Sjors): while not necessary to bind the buffer
         // when using glnamedbufferdata to update the buffer. it IS important to still bind it before rendering the
         // NDC quad, since any glDraw* call will take the currently bound array / index buffer.
@@ -986,6 +1116,61 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
         render_NDC_quad();
     }
+
+
+
+    // // 2. lighting pass:
+    // // -----------------------------------------------------------------
+    // {
+    //     // get texture handles for the frame buffers.
+    //     const auto& position_tfbo_texture = get_texture(*texture_manager, "position_tfbo");
+    //     const auto& normal_tfbo_texture = get_texture(*texture_manager, "normal_tfbo");
+    //     const auto& albedo_specular_tfbo_texture = get_texture(*texture_manager, "albedo_specular_tfbo");
+
+    //     set_shader(*shader_manager, "post_deferred_lighting");
+
+    //     set_uniform(*shader_manager, "fb_position",    position_tfbo_texture.gl_texture_frame);
+    //     set_uniform(*shader_manager, "fb_normal",      normal_tfbo_texture.gl_texture_frame);    
+    //     set_uniform(*shader_manager, "fb_albedo_spec", albedo_specular_tfbo_texture.gl_texture_frame);    
+
+    //     glm::vec4 camera_position = glm::vec4(camera.position, 1.0f); 
+    //     set_uniform(*shader_manager, "view_position", glm::vec4(camera_position));
+
+    //     // for (auto& light: lights)
+    //     {
+    //         static float time = 0.0f;
+    //         static float y_position = 0.0f;
+    //         static float x_position = 0.0f;
+    //         time += 2.0f;
+    //         time = fmod(time, 6280.0f);
+    //         y_position = sin(time/ 1000.0f);
+    //         x_position = cos(time/ 1000.0f);
+
+    //         // player light.
+    //         lights[0].position.x = camera.position.x;
+    //         lights[0].position.y = camera.position.y;
+    //         lights[0].position.z = camera.position.z;
+    //         lights[0].color = glm::vec4(1.0f,1.0f,1.0f,0.0f);
+    //         lights[0].on = true;
+    //         lights[0].linear = 0.001f;
+    //         lights[0].quadratic = 0.002f;
+
+    //         lights[1].position = glm::vec4(0.0f, 3.0f, 0.0f, 0.0f);
+    //         lights[1].color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+    //         lights[1].on = true;
+    //         lights[1].linear = 0.1;
+    //         lights[1].quadratic = 0.2;
+
+    //     }
+        
+    //     //@Note(Sjors): while not necessary to bind the buffer
+    //     // when using glnamedbufferdata to update the buffer. it IS important to still bind it before rendering the
+    //     // NDC quad, since any glDraw* call will take the currently bound array / index buffer.
+    //     glBindBuffer(GL_UNIFORM_BUFFER, light_ubo);
+    //     glNamedBufferData(light_ubo, lights.size() * sizeof(Light),  lights.data(), GL_DYNAMIC_DRAW);
+
+    //     render_NDC_quad();
+    // }
 
     // // 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
     // // ----------------------------------------------------------------------------------

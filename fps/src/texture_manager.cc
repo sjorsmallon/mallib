@@ -8,11 +8,15 @@
 //@Temporary:
 #include "timed_function.h"
 
+#include "logr.h"
+
+
 namespace
 {
 	std::string g_texture_folder_prefix{"../assets/textures/"};
 	const std::string g_texture_png_extension_suffix{".png"};
     const std::string g_texture_tga_extension_suffix{".tga"};
+
 
 }
 
@@ -24,6 +28,7 @@ void set_texture_path(Texture_Manager& texture_manager, const char* texture_fold
 // returns the texture id
 uint32_t register_framebuffer_texture(Texture_Manager& texture_manager, const std::string& framebuffer_name)
 {
+    logr::report("register_framebuffer_texture: {}\n", framebuffer_name);
     //@FIXME(Sjors): implicit creation
     auto& texture = texture_manager.textures[framebuffer_name];
     glGenTextures(1, &texture.gl_texture_id);
@@ -31,7 +36,6 @@ uint32_t register_framebuffer_texture(Texture_Manager& texture_manager, const st
     
     return texture.gl_texture_id;
 }
-
 
 void load_tga_texture(Texture_Manager& texture_manager, const std::string& texture_name)
 {

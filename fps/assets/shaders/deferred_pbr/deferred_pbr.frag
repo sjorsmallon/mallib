@@ -1,48 +1,70 @@
 #version 450 core
 
+//-------------------
+// Defines
+//-------------------
+
+// order:
+// position,
+// normal
+// diffuse / specular,
+// roughness
+// metallic
+// ambient_occlusion
+// displacement
+
+//-------------------
+// Outputs
+//-------------------
+layout (location = 0) out vec3 fb_position;
+layout (location = 1) out vec3 fb_normal;
+layout (location = 2) out vec4 fb_albedo_spec;
+layout (location = 3) out vec3 fb_roughness;
+layout (location = 4) out vec3 fb_metallic;
+layout (location = 5) out vec3 fb_ambient_occlusion;
+layout (location = 6) out vec3 fb_displacement;
+layout (location = 7) out vec3 fb_tnormal;
+
+//-------------------
+// Inputs
+//-------------------
+layout (location = 0) in vec3 fragment_position;
+layout (location = 1) in vec3 fragment_normal;
+layout (location = 2) in vec2 texture_coords;
+
+//-------------------
+// uniforms
+//-------------------
+uniform sampler2D texture_albedo;
+uniform sampler2D texture_normal;
+uniform sampler2D texture_roughness;
+uniform sampler2D texture_metallic;
+uniform sampler2D texture_ambient_occlusion;
+uniform sampler2D texture_displacement;
+
+//-------------------
+// Implementation
+//-------------------
+
+void main()
+{    
+    // store the fragment position vector in the first gbuffer texture
+    fb_position = fragment_position;
+
+    // also store the per-fragment normals into the gbuffer
+    fb_normal = normalize(fragment_normal);
+
+    // and the diffuse per-fragment color ("albedo")
+    fb_albedo_spec.rgb = texture(texture_albedo, texture_coords).rgb;
+    fb_albedo_spec.a = 16.0f;
 
 
-
-in sampler2D texture_albedo;
-in sampler2D texture_normal;
-in sampler2D texture_metallic;
-in sampler2D texture_roughness;
-in sampler2D texture_ao;
-
-
-float distribution_GGX(vec3 N, vec3 H, float a)
-{
-    float a_squared = a * a;
-    float n_dot_h  = max(dot(N, H), 0.0f);
-    float ndh_squared = n_dot_h * n_dot_h;
-
-    float denom  = (ndh_squared * (a_squared - 1.0f) + 1.0f);
-    denom        = PI * denom * denom;
-	
-    return a_squared / denom;
-}
-
-
-float geometry_schlick_GGX(float n_dot_v, float k)
-{
+    // store PBR related things.
+    fb_roughness = texture(texture_roughness, texture_coords).rgb;
+    fb_metallic = vec3(0.0f);
+    fb_ambient_occlusion = texture(texture_ambient_occlusion, texture_coords).rgb;
     
-    float denom = n_dot_v * (1.0f - k) + k;
-	
-    return n_dot_v / denom;
-}
-  
-float geometry_smith(vec3 N, vec3 V, vec3 L, float k)
-{
-    float n_dot_v = max(dot(N, V), 0.0);
-    float n_dot_l = max(dot(N, L), 0.0);
-    float GGX_1 = geometry_schlick_GGX(n_dot_v, k);
-    float GGX_2 = geometry_schlick_GGX(n_dot_l, k);
-	
-    return GGX_1 * GGX_2;
-}
+    fb_displacement = texture(texture_displacement, texture_coords).rgb;
 
-vec3 fresnel_schlick(float cosTheta, vec3 F0)
-{
-    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
-}
-
+    fb_tnormal = texture(texture_normal, texture_coords).rgb;
+}  

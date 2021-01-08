@@ -32,9 +32,11 @@ int main()
     auto shader_manager = Shader_Manager();
     set_shader_path(shader_manager, "../assets/shaders/");
 
+    load_shader(shader_manager, "deferred_pbr");
+    load_shader(shader_manager, "post_deferred_pbr");
     load_shader(shader_manager, "deferred_geometry");
     load_shader(shader_manager, "deferred_instanced");
-    load_shader(shader_manager, "deferred_lighting");
+    load_shader(shader_manager, "post_deferred_lighting");
     load_shader(shader_manager, "lightbox");
     load_shader(shader_manager, "debug_geometry");
     load_shader(shader_manager, "simple_depth");
@@ -64,6 +66,14 @@ int main()
     load_png_texture(texture_manager, "dodecahedron");
     load_png_texture(texture_manager, "arrow_diffuse");
     load_png_texture(texture_manager, "angry_face");
+    load_png_texture(texture_manager, "concrete_4K_color");
+    load_png_texture(texture_manager, "concrete_4K_ambient_occlusion");
+    load_png_texture(texture_manager, "concrete_4K_roughness");
+    load_png_texture(texture_manager, "concrete_4K_normal");
+    load_png_texture(texture_manager, "concrete_4K_displacement");
+
+
+
     load_alpha_png_texture(texture_manager, "crosshair");
     load_tga_texture(texture_manager, "target_wood_diffuse");
 

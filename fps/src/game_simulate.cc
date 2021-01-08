@@ -57,33 +57,24 @@ namespace
     // ---------------
 	// cvars
 	// ---------------
+    // quake constants
 
     // world
     float pm_ground_acceleration = 10.f;
-    float pm_air_acceleration = 1.0f;
-    // quake constants
+    float pm_air_acceleration = 10.0f; // was 1.0f;
     float pm_friction = 6.f;
     float pm_stopspeed = 100.0f;
     float pm_maxvelocity = 320.0f;
-
-
-   	float g_gravity = 800.0f;
     float pm_jumpvelocity = 270.0f;
 
+   	float g_gravity = 800.0f;
    	float input_axial_extreme = 127.0f; // -127, 127 for forward and backward (for controller support)
 
     float g_mouse_sensitivity = 0.08f;
     float g_camera_velocity = 0.2f;
 
-
-
  	float CLIP_OVERCLIP = 1.001f;
     
-    
-
-    float pm_maxairspeed = 400.f; // air
-    float pm_air_deceleration = 0.1f;
-
     // flying units
     float g_dodecahedron_velocity = 70.0f;
     float g_wanted_distance = 80.0f;

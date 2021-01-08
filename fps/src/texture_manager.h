@@ -5,6 +5,7 @@
 #include <string>
 #include <cassert>
 #include <glm/vec2.hpp>
+#include "logr.h"
 
 struct Texture_Atlas
 {
@@ -44,18 +45,18 @@ struct Texture
 
 struct Texture_Manager
 {
-	int next_free_texture_frame = 0; // this is the first time I feel something should be private.
+	int next_free_texture_frame = 0;
 	std::map<std::string, Texture> textures;
 };
 
-
-
 void set_texture_path(Texture_Manager& texture_manager, const char* texture_folder_prefix);
+
 
 void load_tga_texture(Texture_Manager& texture_manager, const std::string& texture_name);
 void load_png_texture(Texture_Manager& texture_manager, const std::string& texture_name);
-
 void load_alpha_png_texture(Texture_Manager& texture_manager, const std::string& texture_name);
+
+
 
 //@FIXME(Sjors): I don't like this (return and do something else.)
 // returns the texture ID
@@ -65,6 +66,7 @@ int32_t get_next_free_texture_frame(Texture_Manager& manager);
 
 inline const Texture& get_texture(Texture_Manager& texture_manager, const std::string& texture_name)
 {
+    if (texture_manager.textures.find(texture_name) == texture_manager.textures.end()) logr::report_error("[texture_manager] could not find {}\n",  texture_name);
     assert(texture_manager.textures.find(texture_name) != texture_manager.textures.end());
     return texture_manager.textures[texture_name];
 }
