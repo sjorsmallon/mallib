@@ -33,6 +33,7 @@ struct obj_t
 	std::string err;
 	// 
 	std::vector<float> interleaved_XNU;
+	std::vector<float> interleaved_XNTBU;
 	// for meshes
 	bool unitized = false;
 	Box_3D bounds;

@@ -58,13 +58,14 @@ void main()
     fb_albedo_spec.rgb = texture(texture_albedo, texture_coords).rgb;
     fb_albedo_spec.a = 16.0f;
 
-
     // store PBR related things.
     fb_roughness = texture(texture_roughness, texture_coords).rgb;
     fb_metallic = vec3(0.0f);
     fb_ambient_occlusion = texture(texture_ambient_occlusion, texture_coords).rgb;
     
     fb_displacement = texture(texture_displacement, texture_coords).rgb;
-
     fb_tnormal = texture(texture_normal, texture_coords).rgb;
+
 }  
+
+

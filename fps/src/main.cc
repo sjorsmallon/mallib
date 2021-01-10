@@ -33,6 +33,10 @@ int main()
     set_shader_path(shader_manager, "../assets/shaders/");
 
     load_shader(shader_manager, "deferred_pbr");
+    load_shader(shader_manager, "deferred_instanced_pbr");
+    load_shader(shader_manager, "deferred_parallax_pbr");
+    load_shader(shader_manager, "post_deferred_parallax_pbr");
+
     load_shader(shader_manager, "post_deferred_pbr");
     load_shader(shader_manager, "deferred_geometry");
     load_shader(shader_manager, "deferred_instanced");
@@ -47,21 +51,29 @@ int main()
     set_asset_path(asset_manager, "../assets/obj/");
     bool should_unitize = true;
 
+    load_obj(asset_manager, "sphere", should_unitize);
     load_obj(asset_manager, "new_spear", should_unitize);
+    load_obj(asset_manager, "cube", should_unitize);
     load_obj(asset_manager, "dodecahedron");
+    load_obj(asset_manager, "chicken");
     load_obj(asset_manager, "arrow");
 
     auto texture_manager = Texture_Manager();
     set_texture_path(texture_manager, "../assets/textures/");
     
-    load_png_texture(texture_manager, "metal");
-    load_png_texture(texture_manager, "marble");
-    load_png_texture(texture_manager, "wall_64");
-    load_png_texture(texture_manager, "floor_64");
-    load_png_texture(texture_manager, "star_64");
-    load_png_texture(texture_manager, "wall_stone_specular");
-    load_png_texture(texture_manager, "wall_stone_diffuse");
-    load_png_texture(texture_manager, "wall_stone_normal");
+    // load_png_texture(texture_manager, "metal");
+    // load_png_texture(texture_manager, "marble");
+    // load_png_texture(texture_manager, "wall_64");
+    // load_png_texture(texture_manager, "floor_64");
+    // load_png_texture(texture_manager, "star_64");
+    // load_png_texture(texture_manager, "wall_stone_specular");
+    // load_png_texture(texture_manager, "wall_stone_diffuse");
+    // load_png_texture(texture_manager, "wall_stone_normal");
+    load_png_texture(texture_manager, "pavingstones_4K_color");
+    load_png_texture(texture_manager, "pavingstones_4K_normal");
+    load_png_texture(texture_manager, "pavingstones_4K_roughness");
+    load_png_texture(texture_manager, "pavingstones_4K_displacement");
+    load_png_texture(texture_manager, "pavingstones_4K_ambient_occlusion");
     load_png_texture(texture_manager, "new_spear_diffuse");
     load_png_texture(texture_manager, "dodecahedron");
     load_png_texture(texture_manager, "arrow_diffuse");

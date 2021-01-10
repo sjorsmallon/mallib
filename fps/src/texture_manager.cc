@@ -16,8 +16,6 @@ namespace
 	std::string g_texture_folder_prefix{"../assets/textures/"};
 	const std::string g_texture_png_extension_suffix{".png"};
     const std::string g_texture_tga_extension_suffix{".tga"};
-
-
 }
 
 void set_texture_path(Texture_Manager& texture_manager, const char* texture_folder_prefix)
@@ -133,6 +131,8 @@ void load_alpha_png_texture(Texture_Manager& texture_manager, const std::string&
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
+
     }
 }
 
@@ -181,8 +181,12 @@ void load_png_texture(Texture_Manager& texture_manager, const std::string& textu
             texture.data);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glBindTexture(GL_TEXTURE_2D, texture.gl_texture_id);
+
     }
 
 }
