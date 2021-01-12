@@ -48,7 +48,7 @@ namespace
     unsigned int depth_map_fbo;
 
     //--- textures for framebuffers
-    // @IC(Sjors): these are not necessary. They are bound once to the geometry framebuffer.    
+    // @IC(Sjors): these are not necessary. They are bound once to the deferred geometry framebuffer.    
     // unsigned int position_tfbo;
     // unsigned int normal_tfbo;
     // unsigned int albedo_specular_tfbo;
@@ -869,7 +869,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     Camera player_camera = camera;
     glm::mat4 view       = create_view_matrix_from_camera(player_camera);
     glm::mat4 projection = glm::perspective(glm::radians(g_fov), g_aspect_ratio, g_projection_z_near_plane, g_projection_z_far_plane);  
-
+    logr::report("camera.position: {}\n", camera.position);
 
     // 1. geometry pass: render scene's geometry/color data into geometry_fbo
     // -----------------------------------------------------------------

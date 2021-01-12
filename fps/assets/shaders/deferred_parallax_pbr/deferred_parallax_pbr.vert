@@ -46,10 +46,9 @@ void main()
     vec3 bitangent = normalize(normal_matrix * bitangent_VS_in);
     mat3 TBN = transpose(mat3(tangent, bitangent, normal));
 
-
     fragment_position = TBN * fragment_position;
     out_view_position = TBN * view_position.xyz;
-    out_light_position = TBN * glm::vec3(light_position.xyz);
+    out_light_position = TBN * vec3(light_position.xyz);
 
 
     gl_Position = projection * view * world_position;

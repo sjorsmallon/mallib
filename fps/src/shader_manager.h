@@ -43,5 +43,12 @@ void      set_shader(Shader_Manager& manager, const char* shader_name);
 void      set_uniform(Shader_Manager& manager, const std::string& uniform_name, const uniform_t data);
 
 
+//@Fixme(Sjors): this is garbage.
+Shader_Manager& get_global_shader_manager();
+void set_global_shader_manager(Shader_Manager& shader_manager);
+void clear_shader_gl_components(Shader_Manager& shader_manager, const std::string& shader_name);
+
+
+
 
 #endif

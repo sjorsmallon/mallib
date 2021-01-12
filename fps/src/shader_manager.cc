@@ -7,9 +7,14 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "file.h"
 
+// Defines
+constexpr const int NONE_SHADER_PROGRAM_ID = 0;
+
 namespace 
 {
     std::string g_shader_folder_prefix = "../assets/shaders/";
+    Shader_Manager* g_shader_manager = nullptr;
+
 
     bool get_shader_link_success(uint32_t program_id)
     {
@@ -114,7 +119,7 @@ namespace
             &properties[0], values.size(), nullptr, &values[0]);
             name_data.resize(values[0]);
             glGetProgramResourceName(shader.program_id, GL_PROGRAM_INPUT, attrib, name_data.size(), NULL, &name_data[0]);
-            //IC(Sjors): -1 here is to skip the null character.
+            //IC(Sjors): -1 here is to skip the null character (I think.)
             std::string attribute_name(name_data.begin(), name_data.end() - 1);
             shader.attribute_names.push_back(attribute_name);
         }
@@ -294,6 +299,32 @@ namespace
     }
 }
 
+//@assumptions: shader_name is a valid shader name.
+void clear_shader_gl_components(Shader_Manager& shader_manager, const std::string& shader_name)
+{
+    auto& shader = shader_manager.shaders[shader_name];
+    auto old_shader_id = shader.program_id;
+    shader.program_id = NONE_SHADER_PROGRAM_ID;
+    shader.uniforms.clear();
+    shader.uniform_names.clear();
+    shader.attribute_names.clear();
+
+    // also delete the shader.
+    //@VOLATILE(Sjors): the shaders are now deleted after linking in load_compile_attach_shader();
+    glDeleteProgram(old_shader_id);
+}
+
+
+void set_global_shader_manager(Shader_Manager& shader_manager)
+{
+    g_shader_manager = &shader_manager;
+}
+
+Shader_Manager& get_global_shader_manager()
+{
+    return *g_shader_manager;
+}
+
 void set_shader_path(Shader_Manager& manager, const char* shader_folder_path)
 {
     g_shader_folder_prefix = shader_folder_path;
@@ -303,7 +334,7 @@ void set_shader_path(Shader_Manager& manager, const char* shader_folder_path)
 //@IC(Sjors):the "none" shader is not any shader.
 void set_shader(Shader_Manager& shader_manager, const char* shader_name)
 {
-    uint32_t shader_id = 0; 
+    uint32_t shader_id = NONE_SHADER_PROGRAM_ID; 
     // if (shader_name != "none")
     {
         shader_id = shader_manager.shaders[shader_name].program_id;
@@ -320,7 +351,17 @@ void set_shader(Shader_Manager& shader_manager, const char* shader_name)
  
 uint32_t load_shader(Shader_Manager& shader_manager, const std::string& shader_name)
 {
-    const std::string shader_folder_path = g_shader_folder_prefix + shader_name;
+    std::string shader_folder_path{};
+
+    //@FIXME(Sjors): this is a very hacky way to detect whether we were called from "main" or as a reload.
+    if (shader_name[0] == '.')
+    {
+        shader_folder_path = shader_name;
+    }
+    else
+    {
+        shader_folder_path = g_shader_folder_prefix + shader_name;
+    }
 
     const uint32_t shader_program = glCreateProgram();
 
@@ -334,9 +375,12 @@ uint32_t load_shader(Shader_Manager& shader_manager, const std::string& shader_n
 
     if (!get_shader_link_success(shader_program)) logr::report_error("[graphics] error: shader {} could not be linked!\n", shader_folder_path);
     
-    // Detach shaders in any case. we do not need them after they have been attached.
+    // Detach and delete shaders in any case. we do not need them after the shader program is linked.
     for (const auto& shader_id: shader_ids)
+    {
         glDetachShader(shader_program, shader_id);
+        glDeleteShader(shader_id);
+    }
     
     // gather uniforms & attributes.
     // @FIXME(Sjors): implicit creation!

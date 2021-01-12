@@ -4,6 +4,22 @@
 		"selected_items":
 		[
 			[
+				"dodd",
+				"dodecahedron"
+			],
+			[
+				"temporar",
+				"temporary_positions"
+			],
+			[
+				"GL_COLOR_",
+				"GL_COLOR_ATTACHMENT7"
+			],
+			[
+				"GL_COLOR",
+				"GL_COLOR_ATTACHMENT6"
+			],
+			[
 				"sound",
 				"sound_name_with_extension"
 			],
@@ -498,95 +514,34 @@
 			[
 				"glBind",
 				"glBindVertexArray"
-			],
-			[
-				"triangle",
-				"triangle_area_VS_in"
-			],
-			[
-				"local_",
-				"local_curvature_VS_in"
-			],
-			[
-				"locaL",
-				"local_curvature_FS_in"
-			],
-			[
-				"outer_",
-				"outer_tess_level_VS_in"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "src/texture_manager.h",
+			"file": "src/render_system.cc",
 			"settings":
 			{
-				"buffer_size": 1975,
+				"buffer_size": 79395,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "src/main.cc",
+			"file": "src/camera.h",
 			"settings":
 			{
-				"buffer_size": 3803,
+				"buffer_size": 1033,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "src/game_simulate.cc",
+			"file": "assets/shaders/deferred_parallax_pbr/deferred_parallax_pbr.vert",
 			"settings":
 			{
-				"buffer_size": 15771,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/bucket_array.h",
-			"settings":
-			{
-				"buffer_size": 5087,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "_deprecated/evaluate_flying_units.cc",
-			"settings":
-			{
-				"buffer_size": 3779,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/sound_system.cc",
-			"settings":
-			{
-				"buffer_size": 3388,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/sound_system.h",
-			"settings":
-			{
-				"buffer_size": 1007,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/game_pm.cc",
-			"settings":
-			{
-				"buffer_size": 0,
+				"buffer_size": 1812,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -688,6 +643,14 @@
 		"selected_items":
 		[
 			[
+				"install ",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
 				"isntall pa",
 				"Package Control: Install Package"
 			],
@@ -706,10 +669,6 @@
 			[
 				"termi",
 				"Terminus: List Shells"
-			],
-			[
-				"install",
-				"Package Control: Install Package"
 			],
 			[
 				"install pack",
@@ -773,25 +732,54 @@
 	"expanded_folders":
 	[
 		"/C/mallib/mallib/fps/src",
-		"/C/mallib/mallib/fps/assets/shaders"
+		"/C/mallib/mallib/fps/assets/shaders",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_parallax_pbr",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_pbr",
+		"/C/mallib/mallib/fps/assets/shaders/post_deferred_lighting",
+		"/C/mallib/mallib/fps/assets/shaders/post_deferred_parallax_pbr",
+		"/C/mallib/mallib/fps/assets/shaders/post_deferred_pbr",
+		"/C/mallib/mallib/fps/assets/shaders/screen_space"
 	],
 	"file_history":
 	[
-		"/C/mallib/mallib/fps/src/texture_manager.cc",
+		"/C/mallib/mallib/fps/assets/shaders/post_deferred_parallax_pbr/post_deferred_parallax_pbr.frag",
+		"/C/mallib/mallib/fps/src/render_system.cc",
+		"/C/mallib/mallib/fps/assets/obj/cube.obj",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_parallax_pbr/deferred_parallax_pbr.vert",
+		"/C/mallib/mallib/fps/assets/shaders/post_deferred_pbr/post_deferred_pbr.frag",
+		"/C/mallib/mallib/fps/src/main.cc",
 		"/C/mallib/mallib/fps/src/asset_manager.cc",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_parallax_pbr/deferred_parallax_pbr.frag",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_pbr/deferred_pbr.frag",
+		"/C/mallib/mallib/fps/src/texture_manager.cc",
+		"/C/mallib/mallib/fps/assets/obj/cube_NEW.obj",
+		"/C/mallib/mallib/fps/assets/obj/newest_sphere.obj",
+		"/C/mallib/mallib/fps/assets/obj/sphere.obj",
+		"/C/mallib/mallib/fps/assets/obj/new_sphere.obj",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_pbr/deferred_pbr.vert",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_instanced_pbr/deferred_instanced_pbr.vert",
+		"/C/mallib/mallib/fps/assets/obj/chicken.obj",
 		"/C/mallib/mallib/fps/src/asset_manager.h",
+		"/C/mallib/mallib/fps/assets/obj/dodecahedron.obj",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_normals/deferred_normals.frag",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_instanced_pbr/deferred_instanced_pbr.frag",
+		"/C/mallib/mallib/fps/src/texture_manager.h",
+		"/C/mallib/mallib/fps/assets/shaders/post_deferred_pbr/post_deferred_pbr.vert",
+		"/C/mallib/mallib/fps/assets/shaders/post_deferred_lighting/post_deferred_lighting.frag",
+		"/C/mallib/mallib/fps/src/game_simulate.cc",
+		"/C/mallib/mallib/fps/include/icbc/icbc.h",
+		"/C/mallib/mallib/fps/src/game_pm.cc",
+		"/C/mallib/mallib/fps/src/sound_system.h",
+		"/C/mallib/mallib/fps/src/sound_system.cc",
+		"/C/mallib/mallib/fps/src/bucket_array.h",
+		"/C/mallib/mallib/fps/_deprecated/evaluate_flying_units.cc",
 		"/C/mallib/mallib/fps/src/draw3d_api.h",
 		"/C/mallib/mallib/fps/src/entity_manager.h",
-		"/C/mallib/mallib/fps/src/game_simulate.cc",
-		"/C/mallib/mallib/fps/src/render_system.cc",
 		"/C/mallib/mallib/fps/src/window_manager.cc",
-		"/C/mallib/mallib/fps/src/main.cc",
 		"/C/mallib/mallib/fps/src/shader_manager.cc",
 		"/C/mallib/mallib/fps/src/shader_manager.h",
-		"/C/mallib/mallib/fps/src/bucket_array.h",
 		"/C/Users/Thesis/Desktop/Quake-III-Arena-master/code/game/bg_pmove.c",
 		"/C/Users/Thesis/Desktop/Quake-III-Arena-master/code/cgame/cg_players.c",
-		"/C/mallib/mallib/fps/src/sound_system.cc",
 		"/C/mallib/mallib/fps/src/game_end_frame.cc",
 		"/C/mallib/mallib/fps/src/timed_function.h",
 		"/C/mallib/mallib/fps/src/timed_function.cc",
@@ -820,7 +808,6 @@
 		"/C/Users/Thesis/Desktop/aoc/one/src/main.rs",
 		"/C/Users/Thesis/Desktop/Sublime Text 3/Data/Packages/User/logr_report.sublime-snippet",
 		"/C/mallib/mallib/fps/src/logr.h",
-		"/C/mallib/mallib/fps/src/texture_manager.h",
 		"/C/mallib/mallib/fps/src/logr.cc",
 		"/C/Users/Thesis/Desktop/temp.cc",
 		"/C/mallib/mallib/fps/src/player_movement.cc",
@@ -831,7 +818,6 @@
 		"/C/mallib/mallib/fps/src/game_render.cc",
 		"/C/mallib/mallib/fps/src/game_init.cc",
 		"/C/mallib/mallib/fps/src/debug_menu.h",
-		"/C/mallib/mallib/fps/src/sound_system.h",
 		"/C/mallib/mallib/fps/src/render_system.h",
 		"/C/mallib/mallib/fps/src/input.cc",
 		"/C/mallib/mallib/fps/src/collision_system.cc",
@@ -844,8 +830,6 @@
 		"/C/mallib/mallib/fps/assets/shaders/screen_space/screen_space.vert",
 		"/C/mallib/mallib/fps/assets/shaders/screen_space/screen_space.frag",
 		"/C/mallib/mallib/fps/src/input.h",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_pbr/deferred_pbr.vert",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_pbr/deferred_pbr.frag",
 		"/C/Users/Thesis/Desktop/main.cc",
 		"/C/mallib/mallib/fps/assets/obj/spear.obj",
 		"/C/mallib/mallib/fps/src/particle.h",
@@ -885,30 +869,11 @@
 		"/C/mallib/mallib/fps/src/simulate.cc",
 		"/C/mallib/mallib/fps/src/game.cc",
 		"/C/mallib/mallib/fps/src/fimualte",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_lighting/deferred_lighting.vs",
-		"/C/mutil/util/Main/src/window.h",
-		"/C/mutil/util/Main/src/window.cc",
-		"/C/mutil/util/Main/subprojects/glfw-3.3.2/src/win32_init.c",
-		"/C/mutil/util/Main/src/shader_manager.cc",
-		"/C/mutil/util/Main/src/log.h",
-		"/C/mutil/util/Main/src/texture_manager.cc",
-		"/C/mutil/util/Main/src/window_manager.cc",
-		"/C/mutil/util/Main/src/player.h",
-		"/C/mutil/util/Main/src/main.cc",
-		"/C/mutil/util/Main/src/entity_system.cc",
-		"/C/mutil/util/Main/src/file.h",
-		"/C/mutil/util/Main/src/entity_system.h",
-		"/C/mutil/util/Main/subprojects/glfw-3.3.2/meson.build",
-		"/C/mutil/util/Main/subprojects/fmt/meson.build",
-		"/C/mutil/util/fmt_test/meson.build",
-		"/C/mutil/util/fmt_test/main.cc",
-		"/C/mutil/util/fmt_test/subprojects/fmt/meson.build",
-		"/C/mutil/util/Main/builddir/build.ninja",
-		"/C/mutil/util/Main/src/render_system.cc"
+		"/C/mallib/mallib/fps/assets/shaders/deferred_lighting/deferred_lighting.vs"
 	],
 	"find":
 	{
-		"height": 43.0
+		"height": 38.0
 	},
 	"find_in_files":
 	{
@@ -921,137 +886,137 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": true,
+		"case_sensitive": false,
 		"find_history":
 		[
-			"last_bucket",
-			"idx",
-			"pm_air_acce",
-			"player_movespeed",
-			"pm_ground_acceleration",
-			"acceleration",
+			"depth_rbo",
+			"sphere",
+			"parallax_cube",
+			"concrete_",
+			"concrete_albedo_texture",
+			"init_opengl",
+			" out",
+			"out",
+			"interleaved_XNTBU",
+			"Math",
+			"8",
+			"0",
+			"bitangent_0",
+			"t0",
+			" Math::Vec3f",
+			"_cube",
+			"g_cube_vao",
+			"sphere",
+			"-0.003247",
+			"view",
+			"pavingstones_",
+			"sphere",
+			"n",
+			"scale",
+			"get_obj",
+			"vt",
+			"t",
+			"u",
+			"_0",
+			"draw_count",
+			"g_dodecahedron_vbo",
+			"g_dodecahedron_vao",
+			"dodecahedron",
+			"temporary_positions",
+			"0",
+			"object.interleaved_XNU",
+			"interleaved_XNU",
+			"interleaved_XNTBU",
+			"load_obj",
+			"concrete_4K_",
+			"wall_stone_diffuse",
+			"wall_stone_diffuse_texture",
+			"concrete_",
+			"concrete_albedo_texture",
+			"concrete",
+			"new_tex_coords",
+			"new_tex_coor",
+			"new_tex_coords",
+			"heightScale",
+			"fragment_normal",
+			"t",
+			"pos_dy",
+			"pos_dx",
+			"texC_dx",
+			"texC_dy",
+			"cullFace",
+			"rgb",
+			"view",
+			"render floor",
+			"normal_matrix",
+			"normal",
+			"fragment_normal",
+			";\n",
+			"texCoords",
+			"depthMap",
+			"fb_displacement",
+			"gl_depth_test",
+			"lightDir",
+			"diffuseMap",
+			"texCoords",
+			"2048",
+			"cosTheta",
+			"2.2",
+			"distribution_Ggx",
+			"NDF",
+			"roughness",
+			"wall",
+			"render_walls",
+			"light_idx",
+			"lightDir",
+			"gldrawarraysinstanced",
+			"WorldPos",
+			"[i]",
+			"metallic_tfbo_texture",
+			"albedo_specular_tfbo",
+			"albedo_specular_tfbo_texture",
+			"lightPositions",
+			"ao",
+			"TexCoords",
+			"fb",
+			"TexCoords",
+			"WorldPos",
+			"tangentNormal",
+			"n",
+			"concrete/",
+			"4K",
+			"concrete_",
+			"concrete/",
+			"tnormal",
+			"displacement_",
+			"_texture",
+			"Outputs",
+			"ambient_occlusion",
+			"metallic_texture",
+			"metallic_tfbo",
+			"roughness_tfbo",
+			"roughness_tfboi",
+			"roughness",
+			"roughness_texture",
+			"NULL",
+			"albedo_specular_tfbo",
+			"\");\n",
+			"max_framgent_uniform_blocks",
+			"in",
+			"maxairspeed",
+			"init_cluster_tables",
+			"init_dxt1",
+			"step_slide_move",
+			"check_jump",
+			"step_slide_move",
 			"accelerate",
-			"1024",
-			"count",
-			"occupied at",
-			"debug",
-			"obj_folder_prefix",
-			"const",
-			"shader_folder_prefix",
-			"acceleration",
-			"pm_maxspeed",
-			"player_movespeed",
-			"acceleration",
-			"accelerate",
-			"normalized_old",
-			"old_velocity",
+			"camera.position",
 			"old_movement_vector",
-			"hang_time",
-			"entity_count",
-			"separation_direction",
-			"item_idx",
-			"bucket",
-			"occupied_iterator",
-			"floor",
-			"bucket_count",
-			"position_attuenuation_factor",
-			"play_sound",
-			"sound_name",
-			"1000.0f",
-			"pitch_constrain_treshold",
-			"create_entity",
-			"bucket_idx",
-			"ray_intersects",
-			"center_to_player_direction",
-			"sum",
-			"frame_dt",
-			"89.0f",
-			"Timer",
-			"Average_Timer",
-			"frame_timer",
-			"Frame_Timer",
-			"frame_timer",
-			"Frame_Timer",
-			"start",
-			"starty",
-			"j_time",
-			"entity.position =",
-			"&&",
-			"evaluate_flying_units",
-			"it->",
-			"->",
-			"Entity_range",
-			"cerr",
-			"next",
-			"bucket",
-			"target_bucket",
-			"occupied[idx][",
-			"occupied",
-			"entytity_type",
-			"by_type",
-			"Bucket_Range",
-			".entities",
-			"bucket_capacity",
-			"100",
-			"all_buckets",
-			"entities",
-			"type_range",
-			"bucket_count",
-			"current_entity_idx",
-			"current_bucket_idx",
-			"current_entity_idx",
-			"Active_Entity_Iterator",
-			"entities",
-			"bucket_array",
-			"bucket",
-			"Bucket",
-			"bucket",
-			"new_bucket",
-			"current_bucket_idx",
-			"vector_of_int",
-			"current_entity",
-			"Vector_Of_Int",
-			"int",
-			"iterator",
-			"Active_Entity_Iterator",
-			"iterator",
-			"Active_Entity_Iterator",
-			"vector_of_int",
-			"Vector_Of_Int",
-			"vector_of_int",
-			"SearchableIterator",
-			"active_entities",
-			"accelerate",
-			"wish_velocity",
-			"entity.",
-			" entity.",
-			".",
-			"entity",
-			"current_bucket",
-			"tuple",
-			",  __LINE__, __FILE__",
-			"macro_string_concatenate",
-			" __LINE__)",
-			"bucket_by_type",
-			"));\n",
-			"bucket_array",
-			"bucket",
-			"\t\n",
-			"get_last_bucket",
-			"entity_type",
-			"Entity_Manager",
-			"Entity_Container",
-			"size_t",
-			"bucket_array",
-			"count_per_bucket",
-			"let",
-			"wish_direction",
-			"friction",
-			"accelerate",
-			"input_velocity",
-			"current_speed_in_wish_direction",
-			"accelerate",
-			"delta_speed"
+			"old_position",
+			"new_movement_vector",
+			"movement_vector",
+			"new_movement_vector",
+			"gravity"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1074,24 +1039,24 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "src/texture_manager.h",
+					"file": "src/render_system.cc",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1975,
+						"buffer_size": 79395,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1171,
-								1171
+								41764,
+								41764
 							]
 						],
 						"settings":
@@ -1101,211 +1066,70 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 604.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "src/main.cc",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3803,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2649,
-								2649
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1526.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "src/game_simulate.cc",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 15771,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								11950,
-								11950
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 8755.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "src/bucket_array.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5087,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1476,
-								1476
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 375.0,
+						"translation.y": 21358.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
-					"file": "_deprecated/evaluate_flying_units.cc",
+					"buffer": 1,
+					"file": "src/camera.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3779,
+						"buffer_size": 1033,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3779,
-								3779
+								431,
+								431
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1703.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "assets/shaders/deferred_parallax_pbr/deferred_parallax_pbr.vert",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1812,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1599,
+								1599
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 483.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "src/sound_system.cc",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3388,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1581,
-								1581
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 1250.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "src/sound_system.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1007,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								301,
-								301
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "src/game_pm.cc",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 0,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 7,
 					"type": "text"
 				}
 			]
@@ -1313,7 +1137,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 34.0
+		"height": 32.0
 	},
 	"input":
 	{
@@ -1370,7 +1194,7 @@
 	"project": "fps.sublime-project",
 	"replace":
 	{
-		"height": 64.0
+		"height": 60.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1379,6 +1203,10 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"render",
+				"src\\render_system.cc"
+			],
 			[
 				"sound_s",
 				"src\\sound_system.h"
@@ -1414,10 +1242,6 @@
 			[
 				"window_",
 				"src\\window_manager.cc"
-			],
-			[
-				"render",
-				"src\\render_system.cc"
 			],
 			[
 				"game.h",
