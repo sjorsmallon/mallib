@@ -520,28 +520,73 @@
 	"buffers":
 	[
 		{
+			"file": "src/main.cc",
+			"settings":
+			{
+				"buffer_size": 6805,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/texture_manager.cc",
+			"settings":
+			{
+				"buffer_size": 7355,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/game_simulate.cc",
+			"settings":
+			{
+				"buffer_size": 21457,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/file_watcher.h",
+			"settings":
+			{
+				"buffer_size": 3546,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/texture_manager.h",
+			"settings":
+			{
+				"buffer_size": 2256,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "assets/shaders/post_deferred_pbr/post_deferred_pbr.frag",
+			"settings":
+			{
+				"buffer_size": 6116,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
 			"file": "src/render_system.cc",
 			"settings":
 			{
-				"buffer_size": 79395,
+				"buffer_size": 74903,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "src/camera.h",
+			"file": "src/parallax_rendering_.plan",
 			"settings":
 			{
-				"buffer_size": 1033,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "assets/shaders/deferred_parallax_pbr/deferred_parallax_pbr.vert",
-			"settings":
-			{
-				"buffer_size": 1812,
+				"buffer_size": 4352,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -733,6 +778,7 @@
 	[
 		"/C/mallib/mallib/fps/src",
 		"/C/mallib/mallib/fps/assets/shaders",
+		"/C/mallib/mallib/fps/assets/shaders/deferred_instanced_pbr",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_parallax_pbr",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_pbr",
 		"/C/mallib/mallib/fps/assets/shaders/post_deferred_lighting",
@@ -742,10 +788,15 @@
 	],
 	"file_history":
 	[
+		"/C/mallib/mallib/fps/src/shader_manager.cc",
+		"/C/mallib/mallib/fps/src/math.h",
+		"/C/mallib/mallib/fps/src/file_watcher.h",
 		"/C/mallib/mallib/fps/assets/shaders/post_deferred_parallax_pbr/post_deferred_parallax_pbr.frag",
 		"/C/mallib/mallib/fps/src/render_system.cc",
-		"/C/mallib/mallib/fps/assets/obj/cube.obj",
+		"/C/mallib/mallib/fps/assets/shaders/simple_depth_shadow_mapping/simple_depth_shadow_mapping.frag",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_parallax_pbr/deferred_parallax_pbr.vert",
+		"/C/mallib/mallib/fps/src/camera.h",
+		"/C/mallib/mallib/fps/assets/obj/cube.obj",
 		"/C/mallib/mallib/fps/assets/shaders/post_deferred_pbr/post_deferred_pbr.frag",
 		"/C/mallib/mallib/fps/src/main.cc",
 		"/C/mallib/mallib/fps/src/asset_manager.cc",
@@ -776,14 +827,12 @@
 		"/C/mallib/mallib/fps/src/draw3d_api.h",
 		"/C/mallib/mallib/fps/src/entity_manager.h",
 		"/C/mallib/mallib/fps/src/window_manager.cc",
-		"/C/mallib/mallib/fps/src/shader_manager.cc",
 		"/C/mallib/mallib/fps/src/shader_manager.h",
 		"/C/Users/Thesis/Desktop/Quake-III-Arena-master/code/game/bg_pmove.c",
 		"/C/Users/Thesis/Desktop/Quake-III-Arena-master/code/cgame/cg_players.c",
 		"/C/mallib/mallib/fps/src/game_end_frame.cc",
 		"/C/mallib/mallib/fps/src/timed_function.h",
 		"/C/mallib/mallib/fps/src/timed_function.cc",
-		"/C/mallib/mallib/fps/src/math.h",
 		"/C/mallib/mallib/fps/src/cvar.cc",
 		"/C/mallib/mallib/fps/src/cvar.h",
 		"/C/mallib/mallib/fps/tests/iterator_test/template_bucket_iterator_test.cc",
@@ -840,7 +889,6 @@
 		"/C/mallib/mallib/fps/src/ring_buffer.h",
 		"/C/mallib/mallib/fps/assets/shaders/simple_depth_shadow_mapping/simple_depth_shadow_mapping.vert",
 		"/C/mallib/mallib/fps/assets/shaders/deferred_lighting/deferred_lighting.fs",
-		"/C/mallib/mallib/fps/src/camera.h",
 		"/C/mallib/mallib/fps/src/player.h",
 		"/C/mallib/mallib/fps/assets/shaders/simple_depth_shadow_mapping/simple_depth_shadow_mapping.vs",
 		"/C/mallib/mallib/fps/assets/shaders/simple_depth_shadow_mapping/simple_depth_shadow_mapping.fs",
@@ -867,13 +915,11 @@
 		"/C/mallib/mallib/fps/assets/shaders/particles/downsampled_depth_buffer.cs",
 		"/C/mallib/mallib/fps/assets/shaders/particles/particles.cs",
 		"/C/mallib/mallib/fps/src/simulate.cc",
-		"/C/mallib/mallib/fps/src/game.cc",
-		"/C/mallib/mallib/fps/src/fimualte",
-		"/C/mallib/mallib/fps/assets/shaders/deferred_lighting/deferred_lighting.vs"
+		"/C/mallib/mallib/fps/src/game.cc"
 	],
 	"find":
 	{
-		"height": 38.0
+		"height": 40.0
 	},
 	"find_in_files":
 	{
@@ -889,6 +935,33 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"4K",
+			"pavingstones",
+			"plastic",
+			"pavingstones",
+			"concrete",
+			"concrete_albedo_texture",
+			"plastic",
+			"ambient_occlusion",
+			"texture_ambient_occlusion",
+			"pavingstones",
+			"concrete",
+			"fov",
+			"apply_friction",
+			"logr::report",
+			"pavingstones_4k_normal",
+			"concrete_4K",
+			"concrete_4K_color",
+			"scale",
+			"folder_name",
+			"load_compile_attach_shader",
+			"uint32_t shader_id ",
+			"NONE_SHADER_PROGRAM_ID",
+			"gldeleteshade",
+			"load_compile_attach_shader",
+			"action",
+			"paths_",
+			"paths",
 			"depth_rbo",
 			"sphere",
 			"parallax_cube",
@@ -989,34 +1062,7 @@
 			"concrete/",
 			"tnormal",
 			"displacement_",
-			"_texture",
-			"Outputs",
-			"ambient_occlusion",
-			"metallic_texture",
-			"metallic_tfbo",
-			"roughness_tfbo",
-			"roughness_tfboi",
-			"roughness",
-			"roughness_texture",
-			"NULL",
-			"albedo_specular_tfbo",
-			"\");\n",
-			"max_framgent_uniform_blocks",
-			"in",
-			"maxairspeed",
-			"init_cluster_tables",
-			"init_dxt1",
-			"step_slide_move",
-			"check_jump",
-			"step_slide_move",
-			"accelerate",
-			"camera.position",
-			"old_movement_vector",
-			"old_position",
-			"new_movement_vector",
-			"movement_vector",
-			"new_movement_vector",
-			"gravity"
+			"_texture"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1039,24 +1085,24 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 6,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "src/render_system.cc",
+					"file": "src/main.cc",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 79395,
+						"buffer_size": 6805,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								41764,
-								41764
+								3851,
+								3851
 							]
 						],
 						"settings":
@@ -1066,57 +1112,146 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 21358.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "src/camera.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1033,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								431,
-								431
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 2120.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
-					"file": "assets/shaders/deferred_parallax_pbr/deferred_parallax_pbr.vert",
+					"buffer": 1,
+					"file": "src/texture_manager.cc",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1812,
+						"buffer_size": 7355,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1599,
-								1599
+								5009,
+								5009
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3070.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/game_simulate.cc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 21457,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4915,
+								4915
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 3445.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "src/file_watcher.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3546,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1975,
+								1975
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1050.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "src/texture_manager.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2256,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2141,
+								2141
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 925.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "assets/shaders/post_deferred_pbr/post_deferred_pbr.frag",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6116,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5912,
+								5912
 							]
 						],
 						"settings":
@@ -1126,10 +1261,70 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 483.0,
+						"translation.y": 1125.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "src/render_system.cc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 74903,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								39590,
+								39590
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 22020.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "src/parallax_rendering_.plan",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4352,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2317,
+								2317
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 8,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 350.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
 					"type": "text"
 				}
 			]
@@ -1137,7 +1332,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 32.0
+		"height": 34.0
 	},
 	"input":
 	{
@@ -1194,7 +1389,7 @@
 	"project": "fps.sublime-project",
 	"replace":
 	{
-		"height": 60.0
+		"height": 64.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1203,6 +1398,10 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"amin",
+				"shaders\\simple_depth_shadow_mapping\\simple_depth_shadow_mapping.frag"
+			],
 			[
 				"render",
 				"src\\render_system.cc"

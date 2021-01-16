@@ -93,7 +93,19 @@ int main()
 
     auto texture_manager = Texture_Manager();
     set_texture_path(texture_manager, "../assets/textures/");
-    
+     
+
+    load_png_texture(texture_manager, "painted_metal/painted_metal_2K_color");
+    load_png_texture(texture_manager, "painted_metal/painted_metal_2K_roughness");
+    load_png_texture(texture_manager, "painted_metal/painted_metal_2K_normal");
+    load_png_texture(texture_manager, "painted_metal/painted_metal_2K_displacement");
+
+    load_png_texture(texture_manager, "moss/moss_2K_color");
+    load_png_texture(texture_manager, "moss/moss_2K_roughness");
+    load_png_texture(texture_manager, "moss/moss_2K_normal");
+    load_png_texture(texture_manager, "moss/moss_2K_displacement");
+        
+
     // load_png_texture(texture_manager, "metal");
     // load_png_texture(texture_manager, "marble");
     // load_png_texture(texture_manager, "wall_64");
@@ -102,11 +114,11 @@ int main()
     // load_png_texture(texture_manager, "wall_stone_specular");
     // load_png_texture(texture_manager, "wall_stone_diffuse");
     // load_png_texture(texture_manager, "wall_stone_normal");
-    load_png_texture(texture_manager, "pavingstones_4K_color");
-    load_png_texture(texture_manager, "pavingstones_4K_normal");
-    load_png_texture(texture_manager, "pavingstones_4K_roughness");
-    load_png_texture(texture_manager, "pavingstones_4K_displacement");
-    load_png_texture(texture_manager, "pavingstones_4K_ambient_occlusion");
+    // load_png_texture(texture_manager, "pavingstones_4K_color");
+    // load_png_texture(texture_manager, "pavingstones_4K_normal");
+    // load_png_texture(texture_manager, "pavingstones_4K_roughness");
+    // load_png_texture(texture_manager, "pavingstones_4K_displacement");
+    // load_png_texture(texture_manager, "pavingstones_4K_ambient_occlusion");
     // load_png_texture(texture_manager, "new_spear_diffuse");
     // load_png_texture(texture_manager, "dodecahedron");
     // load_png_texture(texture_manager, "arrow_diffuse");

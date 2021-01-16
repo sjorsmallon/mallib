@@ -137,10 +137,28 @@ void load_alpha_png_texture(Texture_Manager& texture_manager, const std::string&
 }
 
 
-void load_png_texture(Texture_Manager& texture_manager, const std::string& texture_name)
+void load_png_texture(Texture_Manager& texture_manager, const std::string& texture_folder_path)
 {
+
+    std::string texture_name{};
+    //@Hack(Sjors): if texture folder path contains a slash, keep the "last" part as the texture name std::string teture_name;
+    // Assumption is that there is no slash at the end.
+    assert(texture_folder_path[texture_folder_path.size() - 1] != '/');
+
+    if (texture_folder_path.find('/') != std::string::npos)
+    {
+        texture_name = texture_folder_path.substr(texture_folder_path.find('/') + 1);
+    }
+    else
+    {
+        texture_name = texture_folder_path;
+    }
     //@FIXME(Sjors): implicit creation
     auto& texture = texture_manager.textures[texture_name];
+
+    //@FIXME: reassign to correct folder path..
+    texture_name = texture_folder_path;
+
     std::string file_path = g_texture_folder_prefix + texture_name + g_texture_png_extension_suffix;
     
     stbi_set_flip_vertically_on_load(true);

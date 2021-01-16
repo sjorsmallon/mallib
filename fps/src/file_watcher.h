@@ -72,7 +72,7 @@ inline void check_files_for_change(File_Watcher& file_watcher)
     	   // Check if a file was modified, not for creation.
 	    for(auto &file : std::filesystem::recursive_directory_iterator(folder))
 	    {
-            logr::report("file: {}\n", file.path().string());
+            // logr::report("file: {}\n", file.path().string());
 	        auto current_file_last_write_time = std::filesystem::last_write_time(file);
 
 	        // File creation

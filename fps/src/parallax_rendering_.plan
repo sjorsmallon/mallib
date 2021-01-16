@@ -1,0 +1,67 @@
+        // 00? parallax PBR
+        // {
+        //     set_shader(*shader_manager, "deferred_parallax_pbr");
+        //     set_uniform(*shader_manager, "projection", projection);
+        //     set_uniform(*shader_manager, "view", view);
+        //     {
+        //         const auto& pavingstones_albedo_texture = get_texture(*texture_manager, "pavingstones_4K_color");
+        //         const auto& pavingstones_normal_texture = get_texture(*texture_manager, "pavingstones_4K_normal");
+        //         const auto& pavingstones_roughness_texture = get_texture(*texture_manager, "pavingstones_4K_roughness");
+        //         // const auto& pavingstones_metallic_texture does not exist :^)
+        //         const auto& pavingstones_ambient_occlusion_texture = get_texture(*texture_manager, "pavingstones_4K_ambient_occlusion");
+        //         const auto& pavingstones_displacement_texture = get_texture(*texture_manager, "pavingstones_4K_displacement");
+
+        //         set_uniform(*shader_manager, "texture_albedo", pavingstones_albedo_texture.gl_texture_frame);
+        //         set_uniform(*shader_manager, "texture_normal", pavingstones_normal_texture.gl_texture_frame);
+        //         set_uniform(*shader_manager, "texture_roughness", pavingstones_roughness_texture.gl_texture_frame);
+        //         set_uniform(*shader_manager, "texture_metallic", pavingstones_roughness_texture.gl_texture_frame); // this does not exist.
+        //         set_uniform(*shader_manager, "texture_ambient_occlusion", pavingstones_ambient_occlusion_texture.gl_texture_frame);
+        //         set_uniform(*shader_manager, "texture_displacement", pavingstones_displacement_texture.gl_texture_frame);
+
+        //         // render parallax cube
+        //         glm::mat4 model = glm::mat4(1.0f);
+        //         glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(40.0f));
+        //         model = scale;
+        //         set_uniform(*shader_manager, "model", model);
+        //         set_uniform(*shader_manager, "view_position", glm::vec4(camera.position, 1.f));
+        //         set_uniform(*shader_manager, "light_position", glm::vec4(0.0f, 50.0f, 10.0f, 1.f));
+        //         render_parallax_cube();
+        //     }
+        // }
+
+
+
+
+    //post deferred parallax PBR (step 2)
+
+    // {
+    //     const auto& position_tfbo_texture = get_texture(*texture_manager, "position_tfbo");
+    //     const auto& normal_tfbo_texture = get_texture(*texture_manager, "normal_tfbo");
+    //     const auto& albedo_specular_tfbo_texture = get_texture(*texture_manager, "albedo_specular_tfbo");
+    //     const auto& roughness_tfbo_texture= get_texture(*texture_manager, "roughness_tfbo");
+    //     const auto& metallic_tfbo_texture = get_texture(*texture_manager, "metallic_tfbo");
+    //     const auto& ambient_occlusion_tfbo_texture = get_texture(*texture_manager, "ambient_occlusion_tfbo");
+    //     const auto& displacement_tfbo_texture = get_texture(*texture_manager, "displacement_tfbo");
+    //     const auto& tnormal_tfbo_texture = get_texture(*texture_manager, "tnormal_tfbo");
+
+    //     set_shader(*shader_manager, "post_deferred_parallax_pbr");
+
+    //     set_uniform(*shader_manager,"fb_position", position_tfbo_texture.gl_texture_frame);
+    //     set_uniform(*shader_manager,"fb_normal", normal_tfbo_texture.gl_texture_frame);
+    //     set_uniform(*shader_manager,"fb_albedo_spec", albedo_specular_tfbo_texture.gl_texture_frame);
+    //     set_uniform(*shader_manager,"fb_roughness", roughness_tfbo_texture.gl_texture_frame);
+    //     set_uniform(*shader_manager,"fb_metallic", metallic_tfbo_texture.gl_texture_frame);
+    //     set_uniform(*shader_manager,"fb_ambient_occlusion", ambient_occlusion_tfbo_texture.gl_texture_frame);
+    //     set_uniform(*shader_manager,"fb_displacement", displacement_tfbo_texture.gl_texture_frame);
+    //     set_uniform(*shader_manager,"fb_tnormal", tnormal_tfbo_texture.gl_texture_frame);
+
+    //     glm::vec4 camera_position = glm::vec4(camera.position, 1.0f); 
+    //     set_uniform(*shader_manager, "view_position", glm::vec4(camera_position));
+    //     glBindBuffer(GL_UNIFORM_BUFFER, light_ubo);
+    //     glNamedBufferData(light_ubo, lights.size() * sizeof(Light),  lights.data(), GL_DYNAMIC_DRAW);
+
+    //     render_NDC_quad();
+
+    // }
+
+

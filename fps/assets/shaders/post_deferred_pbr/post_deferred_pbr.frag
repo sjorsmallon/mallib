@@ -3,6 +3,8 @@
 //@Note(Sjors): the Normal that is used here is not the default normal (i.e. normal_matrix * inverse(tranpose(model))),
 // but a normal in a different space (model_matrix * normal). I don't know why.
 
+//@NOTE(SJORS): AMBIENT & METALLIC ARE DISABLED!
+
 
 //-------------------
 // Defines
@@ -125,6 +127,7 @@ mat3 get_TBN_matrix()
 }
 
 const float gamma = 2.2f;
+const float ambient_light_amount = 0.5f;
 
 void main() 
 {
@@ -188,7 +191,8 @@ void main()
 
     // ambient lighting (note that the next IBL tutorial will replace 
     // this ambient lighting with environment lighting).
-    vec3 ambient = vec3(0.05) * albedo * ambient_occlusion;
+    vec3 ambient = vec3(ambient_light_amount) * albedo * ambient_occlusion;
+
 
     vec3 color = ambient + Lo;
 

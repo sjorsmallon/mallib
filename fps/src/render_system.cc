@@ -29,7 +29,7 @@ namespace
     int g_window_height;
     float g_aspect_ratio;
 
-    constexpr const float g_fov = 90.0f;
+    constexpr const float g_fov = 110.0f;
     constexpr const float g_projection_z_near_plane = 0.1f;
     constexpr const float g_projection_z_far_plane = 2000.0f;
 
@@ -869,7 +869,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     Camera player_camera = camera;
     glm::mat4 view       = create_view_matrix_from_camera(player_camera);
     glm::mat4 projection = glm::perspective(glm::radians(g_fov), g_aspect_ratio, g_projection_z_near_plane, g_projection_z_far_plane);  
-    logr::report("camera.position: {}\n", camera.position);
 
     // 1. geometry pass: render scene's geometry/color data into geometry_fbo
     // -----------------------------------------------------------------
@@ -882,210 +881,177 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         glBindFramebuffer(GL_FRAMEBUFFER, geometry_fbo);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-        // 00? parallax PBR
-        {
-            set_shader(*shader_manager, "deferred_parallax_pbr");
-            set_uniform(*shader_manager, "projection", projection);
-            set_uniform(*shader_manager, "view", view);
-            {
-                const auto& pavingstones_albedo_texture = get_texture(*texture_manager, "pavingstones_4K_color");
-                const auto& pavingstones_normal_texture = get_texture(*texture_manager, "pavingstones_4K_normal");
-                const auto& pavingstones_roughness_texture = get_texture(*texture_manager, "pavingstones_4K_roughness");
-                // const auto& pavingstones_metallic_texture does not exist :^)
-                const auto& pavingstones_ambient_occlusion_texture = get_texture(*texture_manager, "pavingstones_4K_ambient_occlusion");
-                const auto& pavingstones_displacement_texture = get_texture(*texture_manager, "pavingstones_4K_displacement");
-
-                set_uniform(*shader_manager, "texture_albedo", pavingstones_albedo_texture.gl_texture_frame);
-                set_uniform(*shader_manager, "texture_normal", pavingstones_normal_texture.gl_texture_frame);
-                set_uniform(*shader_manager, "texture_roughness", pavingstones_roughness_texture.gl_texture_frame);
-                set_uniform(*shader_manager, "texture_metallic", pavingstones_roughness_texture.gl_texture_frame); // this does not exist.
-                set_uniform(*shader_manager, "texture_ambient_occlusion", pavingstones_ambient_occlusion_texture.gl_texture_frame);
-                set_uniform(*shader_manager, "texture_displacement", pavingstones_displacement_texture.gl_texture_frame);
-
-                // render parallax cube
-                glm::mat4 model = glm::mat4(1.0f);
-                glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(40.0f));
-                model = scale;
-                set_uniform(*shader_manager, "model", model);
-                set_uniform(*shader_manager, "view_position", glm::vec4(camera.position, 1.f));
-                set_uniform(*shader_manager, "light_position", glm::vec4(0.0f, 50.0f, 10.0f, 1.f));
-                render_parallax_cube();
-            }
-
-        }
-
-
         // 0? PBR
         // ------------------------------------------
-        // set_shader(*shader_manager, "deferred_pbr");
-        // set_uniform(*shader_manager, "projection", projection);
-        // set_uniform(*shader_manager, "view", view);
+   
+        {
+            set_shader(*shader_manager, "deferred_pbr");
+            set_uniform(*shader_manager, "projection", projection);
+            set_uniform(*shader_manager, "view", view);
 
-        //{
-        //     const auto& concrete_albedo_texture = get_texture(*texture_manager, "pavingstones_4K_color");
-        //     const auto& concrete_normal_texture = get_texture(*texture_manager, "pavingstones_4K_normal");
-        //     const auto& concrete_roughness_texture = get_texture(*texture_manager, "pavingstones_4K_roughness");
-        //     // const auto& concrete_metallic_texture does not exist :^)
-        //     const auto& concrete_ambient_occlusion_texture = get_texture(*texture_manager, "pavingstones_4K_ambient_occlusion");
-        //     const auto& concrete_displacement_texture = get_texture(*texture_manager, "pavingstones_4K_displacement");
+            const auto& moss_albedo_texture = get_texture(*texture_manager, "moss_2K_color");
+            const auto& moss_normal_texture = get_texture(*texture_manager, "moss_2K_normal");
+            const auto& moss_roughness_texture = get_texture(*texture_manager, "moss_2K_roughness");
+            // const auto& moss_metallic_texture does not exist :^)
+            const auto& moss_ambient_occlusion_texture = get_texture(*texture_manager, "moss_2K_ambient_occlusion");
+            const auto& moss_displacement_texture = get_texture(*texture_manager, "moss_2K_displacement");
 
-        //     set_uniform(*shader_manager, "texture_albedo", concrete_albedo_texture.gl_texture_frame);
-        //     set_uniform(*shader_manager, "texture_normal", concrete_normal_texture.gl_texture_frame);
-        //     set_uniform(*shader_manager, "texture_roughness", concrete_roughness_texture.gl_texture_frame);
-        //     set_uniform(*shader_manager, "texture_metallic", concrete_roughness_texture.gl_texture_frame); // this does not exist.
-        //     set_uniform(*shader_manager, "texture_ambient_occlusion", concrete_ambient_occlusion_texture.gl_texture_frame);
-        //     set_uniform(*shader_manager, "texture_displacement", concrete_displacement_texture.gl_texture_frame);
+            set_uniform(*shader_manager, "texture_albedo", moss_albedo_texture.gl_texture_frame);
+            set_uniform(*shader_manager, "texture_normal", moss_normal_texture.gl_texture_frame);
+            set_uniform(*shader_manager, "texture_roughness", moss_roughness_texture.gl_texture_frame);
+            // set_uniform(*shader_manager, "texture_metallic", moss_roughness_texture.gl_texture_frame); // this does not exist.
+            set_uniform(*shader_manager, "texture_ambient_occlusion", moss_ambient_occlusion_texture.gl_texture_frame);
+            set_uniform(*shader_manager, "texture_displacement", moss_displacement_texture.gl_texture_frame);
 
-        //     // // render floor
-        //     // glm::mat4 model = glm::mat4(1.0f);
-        //     // set_uniform(*shader_manager, "model", model);
-        //     // render_floor();
-
+            // // render floor
+            glm::mat4 model = glm::mat4(1.0f);
+            set_uniform(*shader_manager, "model", model);
+            render_floor();
              
-        //     // render walls
-        //     {
-        //         timed_function("render_walls");
+            // render walls
+            {
+                timed_function("render_walls");
 
-        //         set_shader(*shader_manager, "deferred_instanced_pbr");
-        //         set_uniform(*shader_manager, "view", view);
-        //         const auto& concrete_albedo_texture = get_texture(*texture_manager, "concrete_4K_color");
-        //         const auto& concrete_normal_texture = get_texture(*texture_manager, "concrete_4K_normal");
-        //         const auto& concrete_roughness_texture = get_texture(*texture_manager, "concrete_4K_roughness");
-        //         // const auto& concrete_metallic_texture does not exist :^)
-        //         const auto& concrete_ambient_occlusion_texture = get_texture(*texture_manager, "concrete_4K_ambient_occlusion");
-        //         const auto& concrete_displacement_texture = get_texture(*texture_manager, "concrete_4K_displacement");
+                set_shader(*shader_manager, "deferred_instanced_pbr");
+                // set_uniform(*shader_manager, "view", view); // this does not exist. only mvp.
+                // set_uniform(*shader_manager, "projection", projection); this does not exist. only mvp.
 
-        //         set_uniform(*shader_manager, "projection", projection);
-        //         set_uniform(*shader_manager, "texture_albedo", concrete_albedo_texture.gl_texture_frame);
-        //         set_uniform(*shader_manager, "texture_normal", concrete_normal_texture.gl_texture_frame);
-        //         set_uniform(*shader_manager, "texture_roughness", concrete_roughness_texture.gl_texture_frame);
-        //         set_uniform(*shader_manager, "texture_metallic", concrete_roughness_texture.gl_texture_frame); // this does not exist.
-        //         set_uniform(*shader_manager, "texture_ambient_occlusion", concrete_ambient_occlusion_texture.gl_texture_frame);
-        //         set_uniform(*shader_manager, "texture_displacement", concrete_displacement_texture.gl_texture_frame);
+                const auto& painted_metal_albedo_texture = get_texture(*texture_manager, "painted_metal_2K_color");
+                const auto& painted_metal_normal_texture = get_texture(*texture_manager, "painted_metal_2K_normal");
+                const auto& painted_metal_roughness_texture = get_texture(*texture_manager, "painted_metal_2K_roughness");
+                // const auto& painted_metal_metallic_texture does not exist :^)
+                const auto& painted_metal_ambient_occlusion_texture = get_texture(*texture_manager, "painted_metal_2K_ambient_occlusion");
+                const auto& painted_metal_displacement_texture = get_texture(*texture_manager, "painted_metal_2K_displacement");
 
-        //         // update matrix of the walls.
-        //         {
-        //             auto& model_matrix_0 = g_wall_model_matrices[0];
-        //             auto& mvp_matrix_0 = g_wall_mvp_matrices[0];
-        //             glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
-        //             glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(1024.0f, 0.0f, 0.0f));
-        //             glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), -0.5f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
-        //             model_matrix_0 = translate * rotate * scale;
-        //             mvp_matrix_0 = projection * view * model_matrix_0;  
+                set_uniform(*shader_manager, "texture_albedo", painted_metal_albedo_texture.gl_texture_frame);
+                set_uniform(*shader_manager, "texture_normal", painted_metal_normal_texture.gl_texture_frame);
+                set_uniform(*shader_manager, "texture_roughness", painted_metal_roughness_texture.gl_texture_frame);
+                // set_uniform(*shader_manager, "texture_metallic", painted_metal_metallic_texture.gl_texture_frame); // this does not exist.
+                set_uniform(*shader_manager, "texture_ambient_occlusion", painted_metal_ambient_occlusion_texture.gl_texture_frame);
+                set_uniform(*shader_manager, "texture_displacement", painted_metal_displacement_texture.gl_texture_frame);
 
-        //             auto& model_matrix_1 = g_wall_model_matrices[1];
-        //             auto& mvp_matrix_1 = g_wall_mvp_matrices[1];
-        //             scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
-        //             translate = glm::translate(glm::mat4(1.0f), glm::vec3(-1024.0f, 0.0f, 0.0f));
-        //             rotate = glm::rotate(glm::mat4(1.0f), 0.5f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
-        //             model_matrix_1 = translate * rotate * scale;
-        //             mvp_matrix_1 = projection * view * model_matrix_1;  
+                // update matrix of the walls.
+                {
+                    auto& model_matrix_0 = g_wall_model_matrices[0];
+                    auto& mvp_matrix_0 = g_wall_mvp_matrices[0];
+                    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
+                    glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(1024.0f, 0.0f, 0.0f));
+                    glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), -0.5f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
+                    model_matrix_0 = translate * rotate * scale;
+                    mvp_matrix_0 = projection * view * model_matrix_0;  
 
-        //             auto& model_matrix_2 = g_wall_model_matrices[2];
-        //             auto& mvp_matrix_2 = g_wall_mvp_matrices[2];
-        //             scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
-        //             translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1024.0f));
-        //             rotate = glm::rotate(glm::mat4(1.0f), 0.0f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
-        //             model_matrix_2 = translate * rotate * scale;
-        //             mvp_matrix_2 = projection * view * model_matrix_2;  
+                    auto& model_matrix_1 = g_wall_model_matrices[1];
+                    auto& mvp_matrix_1 = g_wall_mvp_matrices[1];
+                    scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
+                    translate = glm::translate(glm::mat4(1.0f), glm::vec3(-1024.0f, 0.0f, 0.0f));
+                    rotate = glm::rotate(glm::mat4(1.0f), 0.5f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
+                    model_matrix_1 = translate * rotate * scale;
+                    mvp_matrix_1 = projection * view * model_matrix_1;  
 
-        //             auto& model_matrix_3 = g_wall_model_matrices[3];
-        //             auto& mvp_matrix_3 = g_wall_mvp_matrices[3];
-        //             scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
-        //             translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1024.0f));
-        //             rotate = glm::rotate(glm::mat4(1.0f), -1.0f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
-        //             model_matrix_3 = translate * rotate * scale;
-        //             mvp_matrix_3 = projection * view * model_matrix_3;  
-        //         }
+                    auto& model_matrix_2 = g_wall_model_matrices[2];
+                    auto& mvp_matrix_2 = g_wall_mvp_matrices[2];
+                    scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
+                    translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1024.0f));
+                    rotate = glm::rotate(glm::mat4(1.0f), 0.0f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
+                    model_matrix_2 = translate * rotate * scale;
+                    mvp_matrix_2 = projection * view * model_matrix_2;  
 
-        //         glNamedBufferData(g_wall_model_vbo, sizeof(glm::mat4) * g_wall_model_matrices.size(), g_wall_model_matrices.data(), GL_DYNAMIC_DRAW);
-        //         glNamedBufferData(g_wall_mvp_vbo,   sizeof(glm::mat4) * g_wall_mvp_matrices.size(),   g_wall_mvp_matrices.data(), GL_DYNAMIC_DRAW);
+                    auto& model_matrix_3 = g_wall_model_matrices[3];
+                    auto& mvp_matrix_3 = g_wall_mvp_matrices[3];
+                    scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
+                    translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1024.0f));
+                    rotate = glm::rotate(glm::mat4(1.0f), -1.0f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
+                    model_matrix_3 = translate * rotate * scale;
+                    mvp_matrix_3 = projection * view * model_matrix_3;  
+                }
+
+                glNamedBufferData(g_wall_model_vbo, sizeof(glm::mat4) * g_wall_model_matrices.size(), g_wall_model_matrices.data(), GL_DYNAMIC_DRAW);
+                glNamedBufferData(g_wall_mvp_vbo,   sizeof(glm::mat4) * g_wall_mvp_matrices.size(),   g_wall_mvp_matrices.data(), GL_DYNAMIC_DRAW);
 
 
-        //         glBindVertexArray(g_wall_vao);
-        //         glDrawArraysInstanced(
-        //             GL_TRIANGLES,
-        //             0,
-        //             6,
-        //             g_wall_model_matrices.size());
-        //         glBindVertexArray(0);
-        //     }
+                glBindVertexArray(g_wall_vao);
+                glDrawArraysInstanced(
+                    GL_TRIANGLES,
+                    0,
+                    6,
+                    g_wall_model_matrices.size());
+                glBindVertexArray(0);
+            }
         
-        //     // render spheres
-        //     {
-        //         timed_function("render_spheres");
+            // // render spheres
+            // {
+            //     timed_function("render_spheres");
 
-        //         set_shader(*shader_manager, "deferred_instanced_pbr");
-        //         set_uniform(*shader_manager, "view", view);
-        //         set_uniform(*shader_manager, "projection", projection);
+            //     set_shader(*shader_manager, "deferred_instanced_pbr");
+            //     // set_uniform(*shader_manager, "view", view);
+            //     // set_uniform(*shader_manager, "projection", projection);
 
-        //         const auto& pavingstones_albedo_texture = get_texture(*texture_manager, "pavingstones_4K_color");
-        //         const auto& pavingstones_normal_texture = get_texture(*texture_manager, "pavingstones_4K_normal");
-        //         const auto& pavingstones_roughness_texture = get_texture(*texture_manager, "pavingstones_4K_roughness");
-        //         // const auto& pavingstones_metallic_texture does not exist :^)
-        //         const auto& pavingstones_ambient_occlusion_texture = get_texture(*texture_manager, "pavingstones_4K_ambient_occlusion");
-        //         const auto& pavingstones_displacement_texture = get_texture(*texture_manager, "pavingstones_4K_displacement");
+            //     const auto& pavingstones_albedo_texture = get_texture(*texture_manager, "pavingstones_4K_color");
+            //     const auto& pavingstones_normal_texture = get_texture(*texture_manager, "pavingstones_4K_normal");
+            //     const auto& pavingstones_roughness_texture = get_texture(*texture_manager, "pavingstones_4K_roughness");
+            //     // const auto& pavingstones_metallic_texture does not exist :^)
+            //     const auto& pavingstones_ambient_occlusion_texture = get_texture(*texture_manager, "pavingstones_4K_ambient_occlusion");
+            //     const auto& pavingstones_displacement_texture = get_texture(*texture_manager, "pavingstones_4K_displacement");
 
-        //         set_uniform(*shader_manager, "texture_albedo", pavingstones_albedo_texture.gl_texture_frame);
-        //         set_uniform(*shader_manager, "texture_normal", pavingstones_normal_texture.gl_texture_frame);
-        //         set_uniform(*shader_manager, "texture_roughness", pavingstones_roughness_texture.gl_texture_frame);
-        //         set_uniform(*shader_manager, "texture_metallic", pavingstones_roughness_texture.gl_texture_frame); // this does not exist.
-        //         set_uniform(*shader_manager, "texture_ambient_occlusion", pavingstones_ambient_occlusion_texture.gl_texture_frame);
-        //         set_uniform(*shader_manager, "texture_displacement", pavingstones_displacement_texture.gl_texture_frame);
+            //     set_uniform(*shader_manager, "texture_albedo", pavingstones_albedo_texture.gl_texture_frame);
+            //     set_uniform(*shader_manager, "texture_normal", pavingstones_normal_texture.gl_texture_frame);
+            //     set_uniform(*shader_manager, "texture_roughness", pavingstones_roughness_texture.gl_texture_frame);
+            //     // set_uniform(*shader_manager, "texture_metallic", pavingstones_roughness_texture.gl_texture_frame); // this does not exist.
+            //     set_uniform(*shader_manager, "texture_ambient_occlusion", pavingstones_ambient_occlusion_texture.gl_texture_frame);
+            //     set_uniform(*shader_manager, "texture_displacement", pavingstones_displacement_texture.gl_texture_frame);
 
 
-        //         size_t draw_count = 0;
-        //         // this is not actually part of rendering: we are just updating the buffers.
-        //         {
+            //     size_t draw_count = 0;
+            //     // this is not actually part of rendering: we are just updating the buffers.
+            //     {
     
-        //             glm::mat4& model_matrix_0 = g_dodecahedron_model_matrices[0];
-        //             glm::mat4& mvp_matrix_0 = g_dodecahedron_mvp_matrices[0];
-        //             glm::mat4& model_matrix_1 = g_dodecahedron_model_matrices[1];
-        //             glm::mat4& mvp_matrix_1 = g_dodecahedron_mvp_matrices[1];
-        //             glm::mat4& model_matrix_2 = g_dodecahedron_model_matrices[2];
-        //             glm::mat4& mvp_matrix_2 = g_dodecahedron_mvp_matrices[2];
-        //             glm::mat4& model_matrix_3 = g_dodecahedron_model_matrices[2];
-        //             glm::mat4& mvp_matrix_3 = g_dodecahedron_mvp_matrices[2];
+            //         glm::mat4& model_matrix_0 = g_dodecahedron_model_matrices[0];
+            //         glm::mat4& mvp_matrix_0 = g_dodecahedron_mvp_matrices[0];
+            //         glm::mat4& model_matrix_1 = g_dodecahedron_model_matrices[1];
+            //         glm::mat4& mvp_matrix_1 = g_dodecahedron_mvp_matrices[1];
+            //         glm::mat4& model_matrix_2 = g_dodecahedron_model_matrices[2];
+            //         glm::mat4& mvp_matrix_2 = g_dodecahedron_mvp_matrices[2];
+            //         glm::mat4& model_matrix_3 = g_dodecahedron_model_matrices[2];
+            //         glm::mat4& mvp_matrix_3 = g_dodecahedron_mvp_matrices[2];
 
-        //             glm::mat4 scale = glm::scale(glm::mat4(1.f), glm::vec3(20.f));
-        //             glm::mat4 translate_0 = glm::translate(glm::mat4(1.f), glm::vec3(300.f, -5.f, 0.f));
-        //             glm::mat4 translate_1 = glm::translate(glm::mat4(1.f), glm::vec3(300.f, -5.f, 300.f));
-        //             glm::mat4 translate_2 = glm::translate(glm::mat4(1.f), glm::vec3(0.f, -5.f, 300.f));
-        //             glm::mat4 translate_3 = glm::translate(glm::mat4(1.f), glm::vec3(0.0f, -5.f, 0.0f));
-        //             glm::mat4 rotate = glm::mat4(1.0f);
+            //         glm::mat4 scale = glm::scale(glm::mat4(1.f), glm::vec3(20.f));
+            //         glm::mat4 translate_0 = glm::translate(glm::mat4(1.f), glm::vec3(300.f, -5.f, 0.f));
+            //         glm::mat4 translate_1 = glm::translate(glm::mat4(1.f), glm::vec3(300.f, -5.f, 300.f));
+            //         glm::mat4 translate_2 = glm::translate(glm::mat4(1.f), glm::vec3(0.f, -5.f, 300.f));
+            //         glm::mat4 translate_3 = glm::translate(glm::mat4(1.f), glm::vec3(0.0f, -5.f, 0.0f));
+            //         glm::mat4 rotate = glm::mat4(1.0f);
 
-        //             model_matrix_0 = translate_0 * rotate * scale;
-        //             model_matrix_1 = translate_1 * rotate * scale;
-        //             model_matrix_2 = translate_2 * rotate * scale;
-        //             model_matrix_3 = translate_3 * rotate * scale;
-        //             mvp_matrix_0 = projection * view * model_matrix_0;
-        //             mvp_matrix_1 = projection * view * model_matrix_1;
-        //             mvp_matrix_2 = projection * view * model_matrix_2;
-        //             mvp_matrix_3 = projection * view * model_matrix_3;
+            //         model_matrix_0 = translate_0 * rotate * scale;
+            //         model_matrix_1 = translate_1 * rotate * scale;
+            //         model_matrix_2 = translate_2 * rotate * scale;
+            //         model_matrix_3 = translate_3 * rotate * scale;
+            //         mvp_matrix_0 = projection * view * model_matrix_0;
+            //         mvp_matrix_1 = projection * view * model_matrix_1;
+            //         mvp_matrix_2 = projection * view * model_matrix_2;
+            //         mvp_matrix_3 = projection * view * model_matrix_3;
 
-        //             draw_count = 4;
+            //         draw_count = 4;
 
 
-        //             glNamedBufferData(g_dodecahedron_model_vbo, sizeof(glm::mat4) * g_dodecahedron_model_matrices.size(), g_dodecahedron_model_matrices.data(), GL_DYNAMIC_DRAW);
-        //             glNamedBufferData(g_dodecahedron_mvp_vbo,   sizeof(glm::mat4) * g_dodecahedron_mvp_matrices.size(),   g_dodecahedron_mvp_matrices.data(), GL_DYNAMIC_DRAW);
-        //         }
+            //         glNamedBufferData(g_dodecahedron_model_vbo, sizeof(glm::mat4) * g_dodecahedron_model_matrices.size(), g_dodecahedron_model_matrices.data(), GL_DYNAMIC_DRAW);
+            //         glNamedBufferData(g_dodecahedron_mvp_vbo,   sizeof(glm::mat4) * g_dodecahedron_mvp_matrices.size(),   g_dodecahedron_mvp_matrices.data(), GL_DYNAMIC_DRAW);
+            //     }
                 
-        //         const size_t mesh_size = get_obj(*asset_manager, "cube").interleaved_XNU.size() / 8;
+            //     const size_t mesh_size = get_obj(*asset_manager, "cube").interleaved_XNU.size() / 8;
 
-        //         glBindVertexArray(g_dodecahedron_vao);
-        //         glDrawArraysInstanced(
-        //             GL_TRIANGLES,
-        //             0,
-        //             mesh_size,
-        //             draw_count);
-
-
-        //         glBindVertexArray(0);
-        //     }
+            //     glBindVertexArray(g_dodecahedron_vao);
+            //     glDrawArraysInstanced(
+            //         GL_TRIANGLES,
+            //         0,
+            //         mesh_size,
+            //         draw_count);
 
 
-        //}
+            //     glBindVertexArray(0);
+            // }
+
+
+        }
 
 
 
@@ -1274,9 +1240,8 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     // @Volatile(Sjors): if this changes, the deferred_lighting shader step should change as well.
     std::vector<Light> lights(NUM_LIGHTS);
 
-    // parallax PBR:
-
-    {
+    //  2.post deferred PBR
+    { 
         const auto& position_tfbo_texture = get_texture(*texture_manager, "position_tfbo");
         const auto& normal_tfbo_texture = get_texture(*texture_manager, "normal_tfbo");
         const auto& albedo_specular_tfbo_texture = get_texture(*texture_manager, "albedo_specular_tfbo");
@@ -1286,83 +1251,52 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         const auto& displacement_tfbo_texture = get_texture(*texture_manager, "displacement_tfbo");
         const auto& tnormal_tfbo_texture = get_texture(*texture_manager, "tnormal_tfbo");
 
-        set_shader(*shader_manager, "post_deferred_parallax_pbr");
+        set_shader(*shader_manager, "post_deferred_pbr");
 
         set_uniform(*shader_manager,"fb_position", position_tfbo_texture.gl_texture_frame);
         set_uniform(*shader_manager,"fb_normal", normal_tfbo_texture.gl_texture_frame);
         set_uniform(*shader_manager,"fb_albedo_spec", albedo_specular_tfbo_texture.gl_texture_frame);
         set_uniform(*shader_manager,"fb_roughness", roughness_tfbo_texture.gl_texture_frame);
-        set_uniform(*shader_manager,"fb_metallic", metallic_tfbo_texture.gl_texture_frame);
+        // set_uniform(*shader_manager,"fb_metallic", metallic_tfbo_texture.gl_texture_frame); // disabled
         set_uniform(*shader_manager,"fb_ambient_occlusion", ambient_occlusion_tfbo_texture.gl_texture_frame);
-        set_uniform(*shader_manager,"fb_displacement", displacement_tfbo_texture.gl_texture_frame);
+        // set_uniform(*shader_manager,"fb_displacement", displacement_tfbo_texture.gl_texture_frame); // disabled
         set_uniform(*shader_manager,"fb_tnormal", tnormal_tfbo_texture.gl_texture_frame);
 
         glm::vec4 camera_position = glm::vec4(camera.position, 1.0f); 
         set_uniform(*shader_manager, "view_position", glm::vec4(camera_position));
+
+        { 
+            static float time = 0.0f;
+            static float y_position = 0.0f;
+            static float x_position = 0.0f;
+            time += 2.0f;
+            time = fmod(time, 6280.0f);
+            y_position = sin(time/ 1000.0f);
+            x_position = cos(time/ 1000.0f);
+
+            // player light.
+            lights[0].position.x = camera.position.x;
+            lights[0].position.y = camera.position.y;
+            lights[0].position.z = camera.position.z;
+            lights[0].color = glm::vec4(1.0f,1.0f,1.0f,0.0f);
+            lights[0].on = true;
+            lights[0].linear = 0.1f;
+            lights[0].quadratic = 0.2f;
+
+            // lights[1].position = glm::vec4(0.0f, 3.0f, 0.0f, 0.0f);
+            // lights[1].color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+            // lights[1].on = true;
+            // lights[1].linear = 0.1;
+            // lights[1].quadratic = 0.2;
+        }
+        //@Note(Sjors): while not necessary to bind the buffer
+        // when using glnamedbufferdata to update the buffer. it IS important to still bind it before rendering the
+        // NDC quad, since any glDraw* call will take the currently bound array / index buffer.
         glBindBuffer(GL_UNIFORM_BUFFER, light_ubo);
         glNamedBufferData(light_ubo, lights.size() * sizeof(Light),  lights.data(), GL_DYNAMIC_DRAW);
 
         render_NDC_quad();
-
     }
-
-
-    // { //2.PBR whatever:
-    //     const auto& position_tfbo_texture = get_texture(*texture_manager, "position_tfbo");
-    //     const auto& normal_tfbo_texture = get_texture(*texture_manager, "normal_tfbo");
-    //     const auto& albedo_specular_tfbo_texture = get_texture(*texture_manager, "albedo_specular_tfbo");
-    //     const auto& roughness_tfbo_texture= get_texture(*texture_manager, "roughness_tfbo");
-    //     const auto& metallic_tfbo_texture = get_texture(*texture_manager, "metallic_tfbo");
-    //     const auto& ambient_occlusion_tfbo_texture = get_texture(*texture_manager, "ambient_occlusion_tfbo");
-    //     const auto& displacement_tfbo_texture = get_texture(*texture_manager, "displacement_tfbo");
-    //     const auto& tnormal_tfbo_texture = get_texture(*texture_manager, "tnormal_tfbo");
-
-    //     set_shader(*shader_manager, "post_deferred_pbr");
-
-    //     set_uniform(*shader_manager,"fb_position", position_tfbo_texture.gl_texture_frame);
-    //     set_uniform(*shader_manager,"fb_normal", normal_tfbo_texture.gl_texture_frame);
-    //     set_uniform(*shader_manager,"fb_albedo_spec", albedo_specular_tfbo_texture.gl_texture_frame);
-    //     set_uniform(*shader_manager,"fb_roughness", roughness_tfbo_texture.gl_texture_frame);
-    //     set_uniform(*shader_manager,"fb_metallic", metallic_tfbo_texture.gl_texture_frame);
-    //     set_uniform(*shader_manager,"fb_ambient_occlusion", ambient_occlusion_tfbo_texture.gl_texture_frame);
-    //     set_uniform(*shader_manager,"fb_displacement", displacement_tfbo_texture.gl_texture_frame);
-    //     set_uniform(*shader_manager,"fb_tnormal", tnormal_tfbo_texture.gl_texture_frame);
-
-    //     glm::vec4 camera_position = glm::vec4(camera.position, 1.0f); 
-    //     set_uniform(*shader_manager, "view_position", glm::vec4(camera_position));
-
-    //     { 
-    //         static float time = 0.0f;
-    //         static float y_position = 0.0f;
-    //         static float x_position = 0.0f;
-    //         time += 2.0f;
-    //         time = fmod(time, 6280.0f);
-    //         y_position = sin(time/ 1000.0f);
-    //         x_position = cos(time/ 1000.0f);
-
-    //         // player light.
-    //         lights[0].position.x = camera.position.x;
-    //         lights[0].position.y = camera.position.y;
-    //         lights[0].position.z = camera.position.z;
-    //         lights[0].color = glm::vec4(1.0f,1.0f,1.0f,0.0f);
-    //         lights[0].on = true;
-    //         lights[0].linear = 0.1f;
-    //         lights[0].quadratic = 0.2f;
-
-    //         // lights[1].position = glm::vec4(0.0f, 3.0f, 0.0f, 0.0f);
-    //         // lights[1].color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-    //         // lights[1].on = true;
-    //         // lights[1].linear = 0.1;
-    //         // lights[1].quadratic = 0.2;
-    //     }
-    //     //@Note(Sjors): while not necessary to bind the buffer
-    //     // when using glnamedbufferdata to update the buffer. it IS important to still bind it before rendering the
-    //     // NDC quad, since any glDraw* call will take the currently bound array / index buffer.
-    //     glBindBuffer(GL_UNIFORM_BUFFER, light_ubo);
-    //     glNamedBufferData(light_ubo, lights.size() * sizeof(Light),  lights.data(), GL_DYNAMIC_DRAW);
-
-    //     render_NDC_quad();
-    // }
 
 
     // // 2. lighting pass:

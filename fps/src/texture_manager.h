@@ -66,8 +66,19 @@ int32_t get_next_free_texture_frame(Texture_Manager& manager);
 
 inline const Texture& get_texture(Texture_Manager& texture_manager, const std::string& texture_name)
 {
-    if (texture_manager.textures.find(texture_name) == texture_manager.textures.end()) logr::report_error("[texture_manager] could not find {}\n",  texture_name);
-    assert(texture_manager.textures.find(texture_name) != texture_manager.textures.end());
+    if (texture_manager.textures.find(texture_name) == texture_manager.textures.end())
+    {
+        logr::report_error("[texture_manager] could not find {}\n",  texture_name);
+        for (auto& [key, value] : texture_manager.textures)
+        {
+            logr::report("key, [{}]\n", key);
+        }
+        assert(texture_manager.textures.find(texture_name) == texture_manager.textures.end());
+    }    
+
+
+    
+
     return texture_manager.textures[texture_name];
 }
 

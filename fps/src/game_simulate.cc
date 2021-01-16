@@ -94,7 +94,6 @@ namespace
 		const float velocity_treshold = 0.1f;
 		if (velocity < velocity_treshold)
 		{
-			logr::report("velocity < velocity_treshold\n");
 			return glm::vec3(0.0f);
 		}
 
@@ -163,6 +162,7 @@ namespace
 		float current_speed_in_wish_dir = glm::dot(adjusted_movement_vector, wish_direction);
 		float add_speed = wish_velocity - current_speed_in_wish_dir;
 
+		// logr::report("add_speed: {}\n", add_speed);
 		if (add_speed < 0.0f) return adjusted_movement_vector;
 
 		float acceleration_speed = acceleration * dt * wish_velocity;
@@ -210,9 +210,7 @@ namespace
 		glm::vec3 new_movement_vector = movement_vector;
 		if (player_is_airborne)
 		{
-			logr::report("player_is_airborne: {}\n", player_is_airborne);
 			new_movement_vector.y -= g_gravity * dt;
-			logr::report("new_movement_vector.y: {}\n", new_movement_vector.y);
 		}
 		glm::vec3 position = old_position + (new_movement_vector * dt);
 		return std::make_tuple(position, new_movement_vector);
@@ -234,14 +232,16 @@ namespace
 		const glm::vec3 right,
 		const float dt)
 	{
-		logr::report_warning("[air_move]\n");
+		// logr::report_warning("[air_move]\n");
 		bool grounded = false;
 		bool jump_pressed_this_frame = false;
 		
 		glm::vec3 adjusted_movement_vector = apply_friction(old_movement_vector, grounded, jump_pressed_this_frame, dt);
+
 		float forward_input = input_axial_extreme * input.keyboard_state[KEY_W] - input_axial_extreme * input.keyboard_state[KEY_S];
 		float right_input   = input_axial_extreme * input.keyboard_state[KEY_D] - input_axial_extreme * input.keyboard_state[KEY_A];
 		float up_input      = input_axial_extreme;
+
 		float scale = calculate_input_scale(forward_input, right_input, up_input, pm_maxvelocity);
 
 		glm::vec3 plane_front = glm::vec3(front.x, 0.0f, front.z);
@@ -266,8 +266,19 @@ namespace
 			wish_direction = glm::normalize(wish_direction);
 		} 
 
-		// not on ground!
-		glm::vec3 movement_vector = accelerate(old_movement_vector, wish_direction, wish_velocity, pm_air_acceleration, dt);
+		glm::vec3 movement_vector = glm::vec3(0.0f);
+
+		if (wish_velocity < 0.1f) 
+		{
+			//@Note(Sjors) don't normalize: will yield nan or inf
+			movement_vector = adjusted_movement_vector;
+			// logr::report("no input!\n");
+		}
+		else
+		{
+			// Take into account whether we need air value or not.
+			movement_vector = accelerate(adjusted_movement_vector, wish_direction, wish_velocity, pm_air_acceleration, dt);
+		}
 
 		bool player_is_airborne = true;
 	
@@ -296,13 +307,18 @@ namespace
 			return air_move(input, old_position, jump_movement_vector, front, right, dt);	
 		}
 
-		// otherwise, we wouldn't be in here!
+		// The switch to air movement occurs before this. If we are in the air, we should never end up here.
+		// this means that we are always grounded.
+
 		grounded = true;
 		// apply friction
 		glm::vec3 adjusted_movement_vector = apply_friction(old_movement_vector, grounded, jump_pressed_this_frame, dt);
+
 		float forward_input = input_axial_extreme * input.keyboard_state[KEY_W] - input_axial_extreme * input.keyboard_state[KEY_S];
 		float right_input   = input_axial_extreme * input.keyboard_state[KEY_D] - input_axial_extreme * input.keyboard_state[KEY_A];
 		float up_input      = input_axial_extreme * (jump_pressed_this_frame && grounded);
+
+		// input scale is dependent on axial input. Keyboard keys always provide maximum input.
 		float scale = calculate_input_scale(forward_input, right_input, up_input, pm_maxvelocity);
 
 		glm::vec3 plane_front = glm::vec3(front.x, 0.0f, front.z);
@@ -321,14 +337,15 @@ namespace
 							   input.keyboard_state[KEY_A] ||
 							   input.keyboard_state[KEY_D]);
 
-		// normalize input vector, but keep velocity! this HAS to be normalized by dt.
+		// normalize input vector, but keep velocity! this HAS to be normalized by dt later.
 		if (received_input)
 		{
 			wish_velocity  = scale * glm::length(wish_direction);
 			wish_direction = glm::normalize(wish_direction);
 		} 
+
 		// if we are ducking
-		// if (player_state & PMF_DUCKED) wish_speed = pm_maxspeed * pm_duckscale (pm_duckscale = 0.5)
+		// if (player_state & PMF_DUCKED) wish_speed = pm_maxspeed * pm_duckscale (pm_duckscale = 0.5);
 		
 		glm::vec3 movement_vector = glm::vec3(0.0f);
 
@@ -336,7 +353,7 @@ namespace
 		{
 			//@Note(Sjors) don't normalize: will yield nan or inf
 			movement_vector = adjusted_movement_vector;
-			logr::report("no input!\n");
+			// logr::report("no input!\n");
 		}
 		else
 		{
