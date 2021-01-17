@@ -132,8 +132,8 @@ const float ambient_light_amount = 0.5f;
 void main() 
 {
     vec3 albedo = pow(texture(fb_albedo_spec, texture_coords).rgb, vec3(gamma));
-    // float metallic  = texture(fb_metallic, texture_coords).r;
-    float metallic = 0.0f;
+    float metallic  = texture(fb_metallic, texture_coords).r;
+    // float metallic = 0.0f;
     float roughness = texture(fb_roughness, texture_coords).r;
     float ambient_occlusion = texture(fb_ambient_occlusion, texture_coords).r;
     vec3 world_position = texture(fb_position, texture_coords).rgb;

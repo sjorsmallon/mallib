@@ -45,6 +45,8 @@ source_files = [
 	'src/timed_function.cc',
 	'src/logr.cc',
 	'src/sound_system.cc',
+	'src/game_combat.cc',
+	'src/game_weapons.cc',
 
 ]
 

@@ -39,5 +39,7 @@ void game_simulate(Game_State& game_state, const double dt,  const Input& input,
 void game_render(Game_State& game_state, Particle_Cache& particle_cache);
 void game_end_frame(Game_State& game_state, Entity_Manager& entity_manager);
 
+// combat
+void damage(Entity& target, Entity& inflictor, Entity& attacker,const glm::vec3 dmg_direction_in, int damage);
 
 #endif

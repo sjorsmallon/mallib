@@ -60,7 +60,7 @@ void main()
 
     // store PBR related things.
     fb_roughness = texture(texture_roughness, texture_coords).rgb;
-    fb_metallic = vec3(0.0f);
+    fb_metallic = texture(texture_metallic, texture_coords).rgb;
     fb_ambient_occlusion = texture(texture_ambient_occlusion, texture_coords).rgb;
     
     fb_displacement = texture(texture_displacement, texture_coords).rgb;

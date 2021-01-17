@@ -21,7 +21,8 @@ enum Entity_Type : uint32_t
 	None = 0,
 	Player = 1,
 	Cube = 2,
-	COUNT = 3
+	Rocket = 3,
+	COUNT = 4
 };
 
 struct Xform_State
@@ -38,6 +39,16 @@ struct Entity
     Entity_Type type;
     glm::vec3 position;
 	glm::vec3 movement_vector;
+
+	// dmg
+	bool can_take_damage;
+	int32_t health;
+	int32_t damage;
+
+	// relation
+	entity_id parent_id;
+
+
 
     // things we need to decide on
     bool visible;
@@ -109,7 +120,8 @@ inline size_t count_by_type(Entity_Manager& entity_manager, Entity_Type entity_t
 }
 
 
-inline void create_entity(Entity_Manager& entity_manager, Entity_Type type)
+//@FIXME(Sjors): unite spawn_entities and create_default_entities
+inline Entity& spawn_entity(Entity_Manager& entity_manager, Entity_Type type)
 {
 	using bucket = Bucket<Entity, BUCKET_CAPACITY>;
 	
@@ -146,6 +158,61 @@ inline void create_entity(Entity_Manager& entity_manager, Entity_Type type)
 			entity.position = glm::vec3(0.0f, id, 0.0f);
 
 			// unsure things go here.
+			entity.can_take_damage = true;
+			entity.health = 100;
+			// this is actually an implementational detail. Not very nice.
+			entity.bucket_id = target_bucket->bucket_id;
+
+
+			target_bucket->data[idx] = entity;
+			target_bucket->occupied[idx] = true;
+			target_bucket->size += 1;
+			
+			return target_bucket->data[idx];
+		}		
+	}
+}
+
+inline void create_default_entity(Entity_Manager& entity_manager, Entity_Type type)
+{
+	using bucket = Bucket<Entity, BUCKET_CAPACITY>;
+	
+	bucket* target_bucket = nullptr;
+	// are there any non-full buckets of this particular type?
+	for (auto bucket_ptr:  entity_manager.buckets_by_type[type])
+	{
+		if (bucket_ptr->size != bucket_ptr->capacity)
+		{
+			target_bucket = bucket_ptr;
+			break;
+		}
+	}
+
+	// are there any buckets of this entity type?
+	// if no bucket found:
+	if (nullptr == target_bucket)
+	{
+		//@memory
+		target_bucket = new bucket();
+		add_bucket_by_handle(entity_manager.entities, target_bucket); // handoff
+		entity_manager.buckets_by_type[type].push_back(target_bucket);
+	}
+
+	for (size_t idx = 0; idx != BUCKET_CAPACITY; ++idx)
+	{
+		if (!target_bucket->occupied[idx]) 
+		{
+			uint32_t id = entity_manager.next_entity_id;
+			entity_manager.next_entity_id += 1;
+			Entity entity{};
+			entity.id = id;
+			entity.type = type;
+			entity.position = glm::vec3(0.0f, id, 0.0f);
+
+			// unsure things go here.
+			entity.can_take_damage = true;
+			entity.health = 100;
+			// this is actually an implementational detail. Not very nice.
 			entity.bucket_id = target_bucket->bucket_id;
 
 

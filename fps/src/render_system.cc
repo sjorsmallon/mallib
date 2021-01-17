@@ -899,7 +899,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             set_uniform(*shader_manager, "texture_albedo", moss_albedo_texture.gl_texture_frame);
             set_uniform(*shader_manager, "texture_normal", moss_normal_texture.gl_texture_frame);
             set_uniform(*shader_manager, "texture_roughness", moss_roughness_texture.gl_texture_frame);
-            // set_uniform(*shader_manager, "texture_metallic", moss_roughness_texture.gl_texture_frame); // this does not exist.
+            set_uniform(*shader_manager, "texture_metallic", moss_roughness_texture.gl_texture_frame); // this does not exist.
             set_uniform(*shader_manager, "texture_ambient_occlusion", moss_ambient_occlusion_texture.gl_texture_frame);
             set_uniform(*shader_manager, "texture_displacement", moss_displacement_texture.gl_texture_frame);
 
@@ -919,14 +919,14 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 const auto& painted_metal_albedo_texture = get_texture(*texture_manager, "painted_metal_2K_color");
                 const auto& painted_metal_normal_texture = get_texture(*texture_manager, "painted_metal_2K_normal");
                 const auto& painted_metal_roughness_texture = get_texture(*texture_manager, "painted_metal_2K_roughness");
-                // const auto& painted_metal_metallic_texture does not exist :^)
+                const auto& painted_metal_metallic_texture = get_texture(*texture_manager, "painted_metal_2K_metallic");
                 const auto& painted_metal_ambient_occlusion_texture = get_texture(*texture_manager, "painted_metal_2K_ambient_occlusion");
                 const auto& painted_metal_displacement_texture = get_texture(*texture_manager, "painted_metal_2K_displacement");
 
                 set_uniform(*shader_manager, "texture_albedo", painted_metal_albedo_texture.gl_texture_frame);
                 set_uniform(*shader_manager, "texture_normal", painted_metal_normal_texture.gl_texture_frame);
                 set_uniform(*shader_manager, "texture_roughness", painted_metal_roughness_texture.gl_texture_frame);
-                // set_uniform(*shader_manager, "texture_metallic", painted_metal_metallic_texture.gl_texture_frame); // this does not exist.
+                set_uniform(*shader_manager, "texture_metallic", painted_metal_metallic_texture.gl_texture_frame); // this does not exist.
                 set_uniform(*shader_manager, "texture_ambient_occlusion", painted_metal_ambient_occlusion_texture.gl_texture_frame);
                 set_uniform(*shader_manager, "texture_displacement", painted_metal_displacement_texture.gl_texture_frame);
 
