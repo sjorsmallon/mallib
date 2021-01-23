@@ -52,24 +52,6 @@ int main()
     auto file_watcher = File_Watcher();
     watch_folder(file_watcher, "../assets/shaders/post_deferred_parallax_pbr", 100ms, shader_reload_callback);
 
-    // [](const std::string& shader_folder_name){
-    //     // get the shader manager.
-    //     Shader_Manager& manager = get_global_shader_manager();
-    //     std::string shader_name = shader_folder_name.substr(shader_folder_name.find_last_of('/') + 1);
-    //     logr::report("shader_name: {}\n", shader_name);
-    //     bool shader_found = manager.shaders.find(shader_name) != manager.shaders.end();
-        
-    //     assert(shader_found && "shader not found!");
-
-    //     if (shader_found)
-    //     {
-    //         // clear shader info, except for name.
-    //         clear_shader_gl_components(manager, shader_name);
-    //         // at this point, the shader no longer exists, and we can (re)load the shader.
-    //         load_shader(manager, shader_name);
-    //     }
-    // });
-
     auto asset_manager = Asset_Manager();
     set_asset_path(asset_manager, "../assets/obj/");
     bool should_unitize = true;
@@ -82,7 +64,6 @@ int main()
 
     auto texture_manager = Texture_Manager();
     set_texture_path(texture_manager, "../assets/textures/");
-
 
     load_png_texture(texture_manager, "painted_metal/painted_metal_2K_color");
     load_png_texture(texture_manager, "painted_metal/painted_metal_2K_roughness");
@@ -101,7 +82,6 @@ int main()
 
     auto entity_manager = Entity_Manager();
     for (size_t idx = 0; idx != 10; ++idx) create_default_entity(entity_manager, Entity_Type::Cube);
-
 
     init_sound_system();
     load_sound("chicken.wav");
