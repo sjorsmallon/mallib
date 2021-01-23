@@ -49,8 +49,8 @@ struct Entity
 	entity_id parent_id;
 
 
-
     // things we need to decide on
+    char* mesh_name;
     bool visible;
     generation generation; // this should actually be a counter for this particular entity ID (i.e. what generation is this?) instead of for this particular entity.
     size_t bucket_id;
