@@ -50,7 +50,7 @@ struct Entity
 
 
     // things we need to decide on
-    char* mesh_name;
+    char mesh_name[64];
     bool visible;
     generation generation; // this should actually be a counter for this particular entity ID (i.e. what generation is this?) instead of for this particular entity.
     size_t bucket_id;

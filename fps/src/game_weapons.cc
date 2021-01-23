@@ -51,7 +51,8 @@ Entity& fire_rocket(Entity_Manager& entity_manager, Entity& self, glm::vec3 star
 	bolt.type = Entity_Type::Rocket;
 	bolt.parent_id = self.id;
 	bolt.damage = 100;
-	bolt.mesh_name = "cube";
+	//@Fixme(Sjors): strcpy..
+	std::strcpy(bolt.mesh_name,"cube");
 	bolt.position = start;
 	bolt.movement_vector = direction * wp_rocket_speed;
 

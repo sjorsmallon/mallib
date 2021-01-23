@@ -24,6 +24,10 @@ void render_shadows(const Camera camera, Particle_Cache& particle_cache);
 
 
 
+// add buffers.
+void create_interleaved_XNU_model_buffer(const std::string& model_name, const std::vector<float>& interleaved_XNU_values, const size_t draw_count);
+
+
 
 
 #endif

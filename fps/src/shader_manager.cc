@@ -299,6 +299,31 @@ namespace
     }
 }
 
+void set_global_shader_manager(Shader_Manager& shader_manager)
+{
+    g_shader_manager = &shader_manager;
+}
+
+//@dependencies: g_shader_manager.
+void shader_reload_callback(const std::string& shader_folder_name)
+{
+        // get the shader manager.
+        Shader_Manager& manager = get_global_shader_manager();
+        std::string shader_name = shader_folder_name.substr(shader_folder_name.find_last_of('/') + 1);
+        logr::report("Detected change. reloading shader: {}\n", shader_name);
+        bool shader_found = manager.shaders.find(shader_name) != manager.shaders.end();
+        
+        assert(shader_found && "shader not found!");
+
+        if (shader_found)
+        {
+            // clear shader info, except for name.
+            clear_shader_gl_components(manager, shader_name);
+            // at this point, the shader no longer exists, and we can (re)load the shader.
+            load_shader(manager, shader_name);
+        }
+}
+
 //@assumptions: shader_name is a valid shader name.
 void clear_shader_gl_components(Shader_Manager& shader_manager, const std::string& shader_name)
 {
@@ -315,10 +340,6 @@ void clear_shader_gl_components(Shader_Manager& shader_manager, const std::strin
 }
 
 
-void set_global_shader_manager(Shader_Manager& shader_manager)
-{
-    g_shader_manager = &shader_manager;
-}
 
 Shader_Manager& get_global_shader_manager()
 {

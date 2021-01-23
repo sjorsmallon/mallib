@@ -1,0 +1,1 @@
+cl.exe /Fe:test /std:c++latest /Zi /EHsc command_test.cc ../../src/command_system.cc -I ../../subprojects/fmt/include -I ../../include/

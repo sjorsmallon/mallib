@@ -43,29 +43,32 @@ int main()
     load_shader(shader_manager, "deferred_parallax_pbr");
     load_shader(shader_manager, "post_deferred_parallax_pbr");
     load_shader(shader_manager, "post_deferred_pbr");
+    load_shader(shader_manager, "screen_space");
 
     //@Fixme(Sjors): this is an ugly hack to enable the file_watcher lambda
     // to access the shader manager.
     set_global_shader_manager(shader_manager);
 
     auto file_watcher = File_Watcher();
-    watch_folder(file_watcher, "../assets/shaders/post_deferred_parallax_pbr", 100ms, [](const std::string& shader_folder_name){
-        // get the shader manager.
-        Shader_Manager& manager = get_global_shader_manager();
-        std::string shader_name = shader_folder_name.substr(shader_folder_name.find_last_of('/') + 1);
-        logr::report("shader_name: {}\n", shader_name);
-        bool shader_found = manager.shaders.find(shader_name) != manager.shaders.end();
-        
-        assert(shader_found && "shader not found!");
+    watch_folder(file_watcher, "../assets/shaders/post_deferred_parallax_pbr", 100ms, shader_reload_callback);
 
-        if (shader_found)
-        {
-            // clear shader info, except for name.
-            clear_shader_gl_components(manager, shader_name);
-            // at this point, the shader no longer exists, and we can (re)load the shader.
-            load_shader(manager, shader_name);
-        }
-    });
+    // [](const std::string& shader_folder_name){
+    //     // get the shader manager.
+    //     Shader_Manager& manager = get_global_shader_manager();
+    //     std::string shader_name = shader_folder_name.substr(shader_folder_name.find_last_of('/') + 1);
+    //     logr::report("shader_name: {}\n", shader_name);
+    //     bool shader_found = manager.shaders.find(shader_name) != manager.shaders.end();
+        
+    //     assert(shader_found && "shader not found!");
+
+    //     if (shader_found)
+    //     {
+    //         // clear shader info, except for name.
+    //         clear_shader_gl_components(manager, shader_name);
+    //         // at this point, the shader no longer exists, and we can (re)load the shader.
+    //         load_shader(manager, shader_name);
+    //     }
+    // });
 
     auto asset_manager = Asset_Manager();
     set_asset_path(asset_manager, "../assets/obj/");
@@ -75,7 +78,6 @@ int main()
     load_obj(asset_manager, "new_spear", should_unitize);
     load_obj(asset_manager, "cube", should_unitize);
     load_obj(asset_manager, "dodecahedron");
-    load_obj(asset_manager, "chicken");
     load_obj(asset_manager, "arrow");
 
     auto texture_manager = Texture_Manager();

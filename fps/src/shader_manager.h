@@ -49,6 +49,8 @@ void set_global_shader_manager(Shader_Manager& shader_manager);
 void clear_shader_gl_components(Shader_Manager& shader_manager, const std::string& shader_name);
 
 
+void shader_reload_callback(const std::string& shader_folder_name);
+
 
 
 #endif

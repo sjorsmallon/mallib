@@ -22,8 +22,21 @@ constexpr const unsigned int SHADOW_FB_WIDTH = 1024;
 constexpr const unsigned int SHADOW_FB_HEIGHT = 1024;
 constexpr const float M_PI = 3.1415926535897f;
 
+constexpr const int NONE_VAO = 0;
+constexpr const int NONE_VBO = 0;
+
+struct Model_Buffer
+{
+    unsigned int VAO;
+    unsigned int VBO;
+    unsigned int model_matrix_VBO;    
+    std::vector<glm::mat4> model_matrix_buffer;
+};
+
 namespace
 {
+    std::map<std::string, Model_Buffer> f_model_buffers;
+
     // cvars
     int g_window_width;
     int g_window_height;
@@ -35,9 +48,9 @@ namespace
 
     // "members"
     Shader_Manager*   shader_manager;
-    Texture_Manager* texture_manager;
-    Asset_Manager*  asset_manager;
-    Entity_Manager* entity_manager;
+    Texture_Manager*  texture_manager;
+    Asset_Manager*    asset_manager;
+    Entity_Manager*   entity_manager;
 
     // openGL record keeping
 
@@ -1407,19 +1420,19 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     //     }
     // }
 
-    // // step 4: render HUD
-    // {   
+    // step 4: render HUD
+    {   
 
-    //     glEnable(GL_BLEND);
-    //     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
-    //     const auto& crosshair_texture =  get_texture(*texture_manager, "crosshair");
-    //     set_shader(*shader_manager, "screen_space");
-    //     set_uniform(*shader_manager, "hud_texture", crosshair_texture.gl_texture_frame);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
+        const auto& crosshair_texture =  get_texture(*texture_manager, "crosshair");
+        set_shader(*shader_manager, "screen_space");
+        set_uniform(*shader_manager, "hud_texture", crosshair_texture.gl_texture_frame);
 
-    //     render_hud();
+        render_hud();
 
-    //     glDisable(GL_BLEND);
-    // }
+        glDisable(GL_BLEND);
+    }
 
 
     set_shader(*shader_manager, "none");
@@ -1520,26 +1533,118 @@ void render_shadows(const Camera camera, Particle_Cache& particle_cache)
 }
 
 
+//@Globals:
+//  NONE_VAO
+//  NONE_VBO
 
-//@Note(Sjors)light falloff calculation.
+// @Assumptions
+// GL_STATIC_DRAW for the bufferData (GL_DYNAMIC_DRAW, etc).
+// GL_FLOAT for glVertexAttribPointer (the data type / size)
+// GL_FALSE for glVertexAttribPointer (normalize fixed-point data values)
+// GL_DYNAMIC_DRAW for the bufferData of the model matrices
+void create_interleaved_XNU_model_buffer(const std::string& model_name, const std::vector<float>& interleaved_XNU_values, const size_t draw_count)
+{
+    Model_Buffer model_buffer{};
 
-// 1.0/(1.0 + c1*d + c2*d^2)
+    glGenVertexArrays(1, &model_buffer.VAO); 
+    glGenBuffers(1,      &model_buffer.VBO);
+    glBindVertexArray(model_buffer.VAO);
 
-//  // //     //     // update attenuation parameters and calculate radius
-//  //         // const float constant = 1.0f;
-//  //         // const float linear = 0.7f;
-//  //         // const float quadratic = 1.8f;
-//  // //     //     shaderLightingPass.setFloat("lights[" + std::to_string(i) + "].Linear", linear);
-//  // //     //     shaderLightingPass.setFloat("lights[" + std::to_string(i) + "].Quadratic", quadratic);
-//  // //     //     // then calculate radius of light volume/sphere
-//  // //     //     const float maxBrightness = std::fmaxf(std::fmaxf(lightColors[i].r, lightColors[i].g), lightColors[i].b);
-//  // //     //     float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
-//  // //     //     shaderLightingPass.setFloat("lights[" + std::to_string(i) + "].Radius", radius);
-//  //     }
+    // fill buffer with vertices.
+    glBindBuffer(GL_ARRAY_BUFFER, model_buffer.VBO);
+    glBufferData(GL_ARRAY_BUFFER, interleaved_XNU_values.size() * sizeof(float), interleaved_XNU_values.data(), GL_STATIC_DRAW);
+
+    const int32_t position_attribute_id = 0;
+    const int32_t normal_attribute_id   = 1;
+    const int32_t uv_attribute_id       = 2;
+
+    const int32_t position_float_count  = 3;
+    const int32_t normal_float_count    = 3;
+    const int32_t uv_float_count        = 2;
+
+    const int32_t position_byte_offset  = 0; // 0
+    const int32_t normal_byte_offset    =  position_float_count * sizeof(float); // 3
+    const int32_t uv_byte_offset        = (position_float_count + normal_float_count) * sizeof(float); // 6
+
+    constexpr int32_t vertex_byte_stride = (position_float_count + normal_float_count + uv_float_count) * sizeof(float); // 8
+
+    // position vertex attribute
+    glEnableVertexAttribArray(position_attribute_id);
+    glVertexAttribPointer(
+        position_attribute_id,
+        position_float_count,
+        GL_FLOAT,
+        GL_FALSE,
+        vertex_byte_stride,
+        (void*)position_byte_offset
+        );
+
+    // normal vertex attribute
+    glEnableVertexAttribArray(normal_attribute_id);
+    glVertexAttribPointer(
+        normal_attribute_id,
+        normal_float_count,
+        GL_FLOAT,
+        GL_FALSE,
+        vertex_byte_stride,
+        (void*)normal_byte_offset
+        );
+
+    // texture vertex attribute
+    glEnableVertexAttribArray(uv_attribute_id);
+    glVertexAttribPointer(
+        uv_attribute_id,
+        uv_float_count,
+        GL_FLOAT,
+        GL_FALSE,
+        vertex_byte_stride,
+        (void*)uv_byte_offset
+        );
 
 
-// read framebuffer
-// GLint drawFboId = 0, readFboId = 0;
-// glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFboId);
-// glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readFboId);
-// logr::report("current draw framebuffer bound: {}.\n current  read framebuffer bound: {}\n", drawFboId, readFboId);
+    // model matrix buffer.
+    {
+        //@Memory(Sjors):
+        // allocate data for the matrices.
+        model_buffer.model_matrix_buffer.resize(draw_count);
+        const int buffer_size = draw_count * sizeof(glm::mat4);
+
+
+        glGenBuffers(1, &model_buffer.model_matrix_VBO);
+        //@IC(Sjors): BIND the correct buffer, since glVertexAttribPointer refers directly to the bound GL_ARRAY_BUFFER.
+        glBindBuffer(GL_ARRAY_BUFFER, model_buffer.model_matrix_VBO);
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            buffer_size,
+            model_buffer.model_matrix_buffer.data(),
+            GL_DYNAMIC_DRAW
+            );
+
+        // since location 0,1,2 are occupied by position, normal, texture coords:
+        const int32_t model_matrix_attribute_id = 3;
+        const int32_t row_count = 4;
+        const int row_float_count = 4;
+        const int matrix_byte_stride = sizeof(glm::mat4);
+        const int row_byte_stride = sizeof(glm::vec4);
+
+        for (int32_t location_offset = 0; location_offset != row_count; ++location_offset)
+        {
+            const int row_attribute_id = model_matrix_attribute_id + location_offset;
+            glEnableVertexAttribArray(row_attribute_id);
+            glVertexAttribPointer(
+                row_attribute_id,
+                row_float_count,
+                GL_FLOAT,
+                GL_FALSE,
+                matrix_byte_stride,
+                (void*)(location_offset * row_byte_stride)
+                );
+            glVertexAttribDivisor(row_attribute_id, 1);
+        } 
+    }
+    
+    glBindBuffer(GL_ARRAY_BUFFER, NONE_VBO);
+    glBindVertexArray(NONE_VAO);
+
+    f_model_buffers[model_name] = model_buffer;
+}

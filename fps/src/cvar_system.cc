@@ -1,13 +1,6 @@
 #include "cvar_system.h"
 #include <utility>
 
-
-// namespace
-// {
-// 	static Cvar_System g_cvar_system;
-// }
-
-
 Cvar_System& get_global_cvar_system()
 {
 	static Cvar_System cvar_system;
@@ -33,7 +26,6 @@ Cvar::Cvar(
 		description(description_in),
 		value_set()
 {
-	std::cerr << "bool cvar" << '\n';
 
 	register_cvar(get_global_cvar_system(), this);
 }
@@ -52,7 +44,6 @@ Cvar::Cvar(
 		description(description_in),
 		value_set(value_set_in.begin(), value_set_in.end())
 {
-	std::cerr << "string cvar" << '\n';
 	register_cvar(get_global_cvar_system(), this);
 }
 
@@ -75,7 +66,6 @@ Cvar::Cvar(
 		max(max_value_in),
 		value_set(value_set_in.begin(), value_set_in.end())
 {
-	std::cerr << "float cvar" << '\n';
 	register_cvar(get_global_cvar_system(), this);
 }
 
@@ -99,8 +89,6 @@ Cvar::Cvar(
 		max(max_value_in),
 		value_set(value_set_in.begin(), value_set_in.end())
 {
-	std::cerr << "int cvar" << '\n';
-	assert(std::holds_alternative<int32_t>(data));
 	register_cvar(get_global_cvar_system(), this);
 }
 
@@ -125,7 +113,6 @@ int32_t get_int(const Cvar& cvar)
 
 void set_float(Cvar& cvar, float value)
 {
-	std::cerr << "set_float!\n";
 	assert(std::holds_alternative<float>(cvar.data));
 	cvar.data = value;
 }
