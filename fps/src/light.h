@@ -4,6 +4,7 @@
 
 using bool32 = uint32_t;
 
+//@VOLATILE: if the layout of this struct changes, all shaders will need to be changed as well.
 struct Light
 {
 	glm::vec4 position;

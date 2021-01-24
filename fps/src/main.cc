@@ -40,10 +40,11 @@ int main()
 
     load_shader(shader_manager, "deferred_pbr");
     load_shader(shader_manager, "deferred_instanced_pbr");
-    load_shader(shader_manager, "deferred_parallax_pbr");
-    load_shader(shader_manager, "post_deferred_parallax_pbr");
+    load_shader(shader_manager, "deferred_instanced_pbr_no_mvp");
     load_shader(shader_manager, "post_deferred_pbr");
     load_shader(shader_manager, "screen_space");
+    load_shader(shader_manager, "screen_space");
+
 
     //@Fixme(Sjors): this is an ugly hack to enable the file_watcher lambda
     // to access the shader manager.
@@ -91,7 +92,7 @@ int main()
     load_sound("finger_snap.wav");
 
     //@Fixme(Sjors): create a render manager?
-    init_renderer(
+    init_render_system(
         shader_manager,
         texture_manager,
         asset_manager,

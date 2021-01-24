@@ -18,9 +18,5 @@ inline void cmd_set_position(const std::vector<std::string>& args)
 int main()
 {
 	add_command("set_position", cmd_set_position, CMD_FL_CHEAT, "set camera position\n");
-
-	
-
 	execute_command("set_position", {"12.0f", "12.0f", "12.0f"});
-
 }

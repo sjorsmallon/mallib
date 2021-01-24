@@ -9,7 +9,7 @@
 struct Camera;
 struct Particle_Cache;
 
-void init_renderer(Shader_Manager& shader_manager, 
+void init_render_system(Shader_Manager& shader_manager, 
 				   Texture_Manager& texture_manager,
 				   Asset_Manager& asset_manager,
 				   Entity_Manager& entity_manager,
@@ -20,14 +20,6 @@ void init_renderer(Shader_Manager& shader_manager,
 
 // per frame
 void render(const Camera camera, Particle_Cache& particle_cache);
-void render_shadows(const Camera camera, Particle_Cache& particle_cache);
-
-
-
-// add buffers.
-void create_interleaved_XNU_model_buffer(const std::string& model_name, const std::vector<float>& interleaved_XNU_values, const size_t draw_count);
-
-
 
 
 #endif

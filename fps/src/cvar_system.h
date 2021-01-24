@@ -36,102 +36,95 @@
 using cvar_data_t = std::variant<float, bool, int32_t, std::string>;
 
 enum Cvar_Flags : int64_t
-	{
-		CVAR_NOFLAGS	 = 0,       // 0
-		CVAR_SERIALIZE   = 1 << 0,  // 1
-		CVAR_NOCHEAT     = 1 << 1,  // 2
-		CVAR_CHEAT       = 1 << 2,  // 4
-	    CVAR_SOUND       = 1 << 3,  // 8
-	    CVAR_RENDERER    = 1 << 4,  // 16
-	    CVAR_SETTINGS    = 1 << 5,  // 32
-	    CVAR_SYSTEM      = 1 << 6   // 64
+{
+    CVAR_NOFLAGS     = 0,       // 0
+    CVAR_SERIALIZE   = 1 << 0,  // 1
+    CVAR_NOCHEAT     = 1 << 1,  // 2
+    CVAR_CHEAT       = 1 << 2,  // 4
+    CVAR_SOUND       = 1 << 3,  // 8
+    CVAR_RENDERER    = 1 << 4,  // 16
+    CVAR_SETTINGS    = 1 << 5,  // 32
+    CVAR_SYSTEM      = 1 << 6   // 64
 };
 
 class Cvar
 {
 public:
-	const char* name;
-	const char* description;
-	int64_t registry_flags;
-	cvar_data_t data;
-	cvar_data_t min;
-	cvar_data_t max;
-	std::vector<cvar_data_t> value_set;
+    const char* name;
+    const char* description;
+    int64_t registry_flags;
+    cvar_data_t data;
+    cvar_data_t min;
+    cvar_data_t max;
+    std::vector<cvar_data_t> value_set;
 
-	Cvar() = delete;
+    Cvar() = delete;
 
-	explicit Cvar(
-		const char* name,
-		bool default_data,
-		int64_t cvar_registry_flags,
-		const char* description);
+    explicit Cvar(
+        const char* name,
+        bool default_data,
+        int64_t cvar_registry_flags,
+        const char* description);
 
-	explicit Cvar(
-		const char* name,
-		std::string default_data,
-		int64_t cvar_registry_flags,
-		const char* description,
-		std::vector<std::string> value_set = std::vector<std::string>());
+    explicit Cvar(
+        const char* name,
+        std::string default_data,
+        int64_t cvar_registry_flags,
+        const char* description,
+        std::vector<std::string> value_set = std::vector<std::string>());
 
-	explicit Cvar(
-		const char* name,
-		float default_data,
-		int64_t cvar_registry_flags,
-		const char* description,
-		float min_value,
-		float max_value,
-		std::vector<float> value_set = std::vector<float>());
+    explicit Cvar(
+        const char* name,
+        float default_data,
+        int64_t cvar_registry_flags,
+        const char* description,
+        float min_value,
+        float max_value,
+        std::vector<float> value_set = std::vector<float>());
 
-	explicit Cvar(
-		const char* name,
-		int32_t default_data,
-		int64_t cvar_registry_flags,
-		const char* description,
-		int32_t min_value,
-		int32_t max_value,
-		std::vector<int> value_set = std::vector<int>());
+    explicit Cvar(
+        const char* name,
+        int32_t default_data,
+        int64_t cvar_registry_flags,
+        const char* description,
+        int32_t min_value,
+        int32_t max_value,
+        std::vector<int> value_set = std::vector<int>());
 
-	Cvar(const Cvar&) = delete;
+    Cvar(const Cvar&) = delete;
 
-	Cvar& operator=(const Cvar&) = delete;
+    Cvar& operator=(const Cvar&) = delete;
 
 };
 
-float get_float(const Cvar&);
+float       get_float(const Cvar&);
 std::string get_string(const Cvar&);
-bool get_bool(const Cvar&);
-int32_t get_int(const Cvar&);
+bool        get_bool(const Cvar&);
+int32_t     get_int(const Cvar&);
 
 void set_float(Cvar& cvar, float value);
 void set_string(Cvar& cvar, std::string value);
 void set_bool(Cvar& cvar, bool value);
 void set_int(Cvar& cvar, int32_t value);
 
-bool get_bool(const char* cvar_name);
-
-float get_float(const char* cvar_name);
-
-int32_t get_int(const char* cvar_name);
-
+bool        get_bool(const char* cvar_name);
+float       get_float(const char* cvar_name);
+int32_t     get_int(const char* cvar_name);
 std::string get_string(const char* cvar_name);
 
 void set_float(const char* cvar_name, float value);
-
 void set_bool(const char* cvar_name, bool value);
-
 void set_int(const char* cvar_name, int32_t value);
-
 void set_string(const char* cvar_name, std::string value);
-
 
 class Cvar_System
 {
 public:
-	std::map<std::string, Cvar*> cvars;
-	Cvar_System() = default;
-	// Cvar_System(const Cvar_System&) = delete;
+    std::map<std::string, Cvar*> cvars;
+    Cvar_System() = default;
+    // Cvar_System(const Cvar_System&) = delete;
 
-	// Cvar_System& operator=(const Cvar_System&) = delete;
+    // Cvar_System& operator=(const Cvar_System&) = delete;
 };
 
 void register_cvar(Cvar_System& cvar_system, Cvar* cvar);
