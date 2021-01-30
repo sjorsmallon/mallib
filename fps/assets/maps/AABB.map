@@ -1,0 +1,21 @@
+# Example of a map file. Commetns start with #, the rest of the line is ignored.
+# sections are indicated by :/ . It will either recognize a basic type, or.. do something
+# which is not implemented yet.
+# currently supported predefined tags are AABB.
+# the start of an object is signifed by { and ended by }.
+# members of tagged objects are expected to be in _FIXED_ order, with no empty lines in between.
+# furthermore, both opening and closing braces should be on separate lines,
+# and now white space is expected before opening and closing brace.
+# whitespace at the start of tags is consumed.
+
+
+:/ AABB
+{
+	min 0.0 0.0 0.0
+	max 128.0 128.0 128.0
+}
+
+{
+	min 256.0 256.0 256.0
+	max 1024.0 1024.0 1024.0
+}

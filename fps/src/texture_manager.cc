@@ -11,6 +11,8 @@
 #include "logr.h"
 
 
+//@TODO: switch to GL_COMPRESSED_RGBA_S3TC_DXT5_EXT internal representation.
+
 namespace
 {
 	std::string g_texture_folder_prefix{"../assets/textures/"};

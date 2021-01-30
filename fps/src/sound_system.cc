@@ -35,7 +35,7 @@ void load_sound(const std::string& sound_name_with_extension)
 	sample.load(full_sound_path.c_str());
 	// g_soloud.play(sample);
 
-	logr::report("loaded sound {}\n", sound_name);
+	logr::report("[load_sound] loaded sound: {}\n", sound_name);
 }
 
 void play_sound(const char* sound_name,

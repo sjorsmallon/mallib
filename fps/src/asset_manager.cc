@@ -9,15 +9,12 @@ namespace
 {
 	std::string g_obj_extension_suffix{".obj"};
     std::string g_obj_folder_prefix{"../assets/obj/"};
-
 }
 
 void set_asset_path(Asset_Manager& asset_manager, const char* asset_folder_prefix)
 {
     g_obj_folder_prefix = asset_folder_prefix;
 }
-
-
 
 void load_obj(Asset_Manager& asset_manager, const std::string& obj_name, bool should_unitize)
 {
@@ -192,7 +189,7 @@ void load_obj(Asset_Manager& asset_manager, const std::string& obj_name, bool sh
             object.bounds.max = glm::vec3(1.0f);
         }
 
-        logr::report("[load_obj] succesfully loaded {} \n", obj_name);
+        logr::report("[load_obj] succesfully loaded obj: {}\n", obj_name);
     }
 }
 

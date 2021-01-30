@@ -1,6 +1,10 @@
 
 #include <chrono>
 
+#include "mallet.h"
+#include "plane.h"
+
+
 #include "window_manager.h"
 #include "shader_manager.h"
 #include "texture_manager.h"
@@ -9,7 +13,6 @@
 
 #include "render_system.h"
 #include "sound_system.h"
-// #include "task_system.h"
 
 #include "file_watcher.h"
 
@@ -32,6 +35,9 @@ const int debug_window_height = 1000;
 
 int main()
 {
+
+    load_map_from_file("../assets/maps/AABB.map");
+
     auto window_manager = Window_Manager();
     create_main_window(window_manager, "fps", window_width, window_height);
 

@@ -57,7 +57,7 @@ namespace
         if (shader_id == GL_FAILURE) logr::report_error("[graphics] glCreateShader failed.\n");
         else 
         {
-            logr::report("[graphics] glCreateShader succeeded. created shader ID {} \n",shader_id);
+            // logr::report("[graphics] glCreateShader succeeded. created shader ID {} \n",shader_id);
         }
 
         std::string target = {};
@@ -99,7 +99,9 @@ namespace
 
     void get_shader_info(Shader_Manager& shader_manager, Shader& shader)
     {
-        logr::report("[graphics] shader info for program {} \n", shader.name);
+        bool print_shader_info = false;
+
+       if (print_shader_info) logr::report("[graphics] shader info for program {} \n", shader.name);
         set_shader(shader_manager, shader.name.c_str());
 
         std::vector<GLchar> name_data(256);
@@ -166,7 +168,7 @@ namespace
                     uniform.data = glm::vec4(0.0f);
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_FLOAT_VEC4\n", uniform.name);
+                   if (print_shader_info) logr::report("{} : GL_FLOAT_VEC4\n", uniform.name);
                     break;
                 }
                 case GL_FLOAT_VEC3:
@@ -176,7 +178,7 @@ namespace
                     uniform.data = glm::vec3(0.0f);
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_FLOAT_VEC3\n", uniform.name);
+                   if (print_shader_info) logr::report("{} : GL_FLOAT_VEC3\n", uniform.name);
                     break;
                 }
                 case GL_FLOAT:
@@ -186,7 +188,7 @@ namespace
                     uniform.data = float{0.0f};
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_FLOAT\n", uniform.name);
+                   if (print_shader_info) logr::report("{} : GL_FLOAT\n", uniform.name);
                     break;
                 }
                 case GL_FLOAT_MAT4:
@@ -196,7 +198,7 @@ namespace
                     uniform.data = glm::mat4(1.0f);
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_FLOAT_MAT4\n", uniform.name);
+                   if (print_shader_info) logr::report("{} : GL_FLOAT_MAT4\n", uniform.name);
                     break;
                 }
                 case GL_FLOAT_MAT3x4:
@@ -206,7 +208,7 @@ namespace
                     uniform.data = glm::mat3x4(1.0f);
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_FLOAT_MAT3x4\n", uniform.name);
+                   if (print_shader_info) logr::report("{} : GL_FLOAT_MAT3x4\n", uniform.name);
                     break;
                 }
 
@@ -217,7 +219,7 @@ namespace
                     uniform.data = int32_t{0};
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_INT\n", uniform.name);
+                   if (print_shader_info) logr::report("{} : GL_INT\n", uniform.name);
                     break;
                 }
                 case GL_INT_VEC2:
@@ -227,7 +229,7 @@ namespace
                     uniform.data = glm::ivec2(0);
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_INT_VEC2\n", uniform.name);
+                   if (print_shader_info) logr::report("{} : GL_INT_VEC2\n", uniform.name);
                     break;
                 }
                 case GL_INT_VEC3:
@@ -237,7 +239,7 @@ namespace
                     uniform.data = glm::ivec3(0);
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_INT_VEC3\n", uniform.name);
+                   if (print_shader_info) logr::report("{} : GL_INT_VEC3\n", uniform.name);
 
                     break;
                 }
@@ -248,7 +250,7 @@ namespace
                     uniform.data = int32_t{0};
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_SAMPLER_2D\n", uniform.name);
+                   if (print_shader_info) logr::report("{} : GL_SAMPLER_2D\n", uniform.name);
                     break;
                 }
                 case GL_UNSIGNED_INT:
@@ -258,7 +260,7 @@ namespace
                     uniform.data = uint32_t{0};
                     uniform.name = shader.uniform_names[idx];
                     shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_UNSIGNED_INT\n", uniform.name);
+                   if (print_shader_info) logr::report("{} : GL_UNSIGNED_INT\n", uniform.name);
                     break;
                 }
                 case GL_UNSIGNED_INT_ATOMIC_COUNTER:
@@ -268,7 +270,7 @@ namespace
                     // uniform.data = uint32_t{0};
                     // uniform.name = shader.uniform_names[idx];
                     // shader.uniforms[uniform.name] = uniform;
-                    logr::report("{} : GL_UNSIGNED_INT_ATOMIC_COUNTER\n", shader.uniform_names[idx]);
+                   if (print_shader_info) logr::report("{} : GL_UNSIGNED_INT_ATOMIC_COUNTER\n", shader.uniform_names[idx]);
                     break;
                 }
                 default:
@@ -361,7 +363,9 @@ void set_shader(Shader_Manager& shader_manager, const char* shader_name)
         shader_id = shader_manager.shaders[shader_name].program_id;
     }
     shader_manager.active_shader_name = shader_name;
-    if (shader_id == 0 && shader_name != "none")
+
+    //@Fixme(Sjors): strcmp..
+    if (shader_id == 0 && strcmp(shader_name,"none") != 0)
     {
         logr::report_error("[set_shader]: UNKNOWN SHADER NAME: {}. exiting.", shader_name);
         exit(1);

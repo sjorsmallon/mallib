@@ -5,6 +5,45 @@
 #include "logr.h"
 #include <filesystem>
 #include <fstream>
+#include <sstream>
+
+// string processing function
+const std::string WHITESPACE = " \n\r\t\f\v";
+
+struct File_Reader
+{
+    size_t line_count = 0;
+    std::string file_name;
+    std::stringstream file_stream;
+};
+
+// @Fixme(Sjors): should be in string.
+inline void eat_leading_whitespace(std::string& line)
+{
+    size_t start = line.find_first_not_of(WHITESPACE);
+    line = (start == std::string::npos) ? "" : line.substr(start);
+}
+
+//std::optional<std::string>
+[[nodiscard]]
+inline bool maybe_get_nonempty_line(File_Reader& file_reader, std::string& destination)
+{
+    while(std::getline(file_reader.file_stream, destination))
+    {
+        // bool result = std::getline(file_reader.file_stream, destination);
+        // if (!result) return false;
+
+        // we have a valid name: increment line count.
+        ++file_reader.line_count;
+
+        if (destination.empty())
+        {
+            continue;
+        }   
+        return true;
+    }
+    return false;
+}
 
 inline void file_to_string(const std::string& filename, std::string& target)
 {
@@ -25,6 +64,17 @@ inline void file_to_string(const std::string& filename, std::string& target)
     target.assign((std::istreambuf_iterator<char>(file)),
                    std::istreambuf_iterator<char>());
 }
+
+
+inline void read_file(File_Reader& file_reader, const char* file_path)
+{
+    file_reader.file_name = file_path;
+    std::string temp;
+    file_to_string(file_path, temp);
+    file_reader.file_stream = std::stringstream(temp);
+}
+
+
 
 inline std::vector<std::string> list_files_in_dir(const std::string& dir_name)
 {
