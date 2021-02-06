@@ -27,7 +27,6 @@ soloud_inc_dir = include_directories(soloud_include_path)
 
 inc_dir = [inc_dir, soloud_inc_dir]
 
-
 source_files = [
 	'src/main.cc',
 	'src/input.cc',
@@ -47,11 +46,28 @@ source_files = [
 	'src/sound_system.cc',
 	'src/game_combat.cc',
 	'src/game_weapons.cc',
-
+	'src/mallet.cc',
+	'src/plane.cc',
+	'src/bsp.cc',
 ]
 
-executable('testt',
+executable('run',
   source_files,
   include_directories: inc_dir,
   dependencies : [libimgui_dep, libglfw_dep, libfmt_dep,libsoloud_dep]
   )
+
+# test_source_files = [
+# 	'src/logr.cc',
+# 	'tests/bsp/bsp_test.cc',
+# 	'src/plane.cc',
+# 	'src/bsp.cc',
+# 	'src/mallet.cc',
+# 	'src/render_system.cc',
+# ]
+
+# executable('testt',
+# 	test_source_files,
+# 	include_directories: inc_dir,
+# 	dependencies: [libfmt_dep, libimgui_dep]
+# 	)

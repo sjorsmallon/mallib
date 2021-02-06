@@ -378,6 +378,12 @@ uint32_t load_shader(Shader_Manager& shader_manager, const std::string& shader_n
 {
     std::string shader_folder_path{};
 
+    if (shader_manager.shaders.find(shader_name) != shader_manager.shaders.end())
+    {
+        logr::report_warning("[load_shader] loading a shader we have already loaded! ");
+        exit(1);
+    }
+
     //@FIXME(Sjors): this is a very hacky way to detect whether we were called from "main" or as a reload.
     if (shader_name[0] == '.')
     {

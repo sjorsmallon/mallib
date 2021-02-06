@@ -17,15 +17,24 @@
 #include "entity_manager.h"
 #include "timed_function.h"
 
+constexpr const int INVALID_VAO = -1;
+constexpr const int INVALID_VBO = -1;
+constexpr const int INVALID_UBO = -1;
+
 constexpr const int NUM_LIGHTS = 32;
 constexpr const unsigned int SHADOW_FB_WIDTH = 1024;
 constexpr const unsigned int SHADOW_FB_HEIGHT = 1024;
 constexpr const float M_PI = 3.1415926535897f;
 
+
+
 constexpr const int NONE_VAO = 0;
 constexpr const int NONE_VBO = 0;
 constexpr const int DEFAULT_FRAMEBUFFER_ID = 0;
 constexpr const int NONE_UBO = 0;
+
+unsigned int DEBUG_POSITION_VAO = INVALID_VAO;
+unsigned int DEBUG_POSITION_VBO = INVALID_VBO;
 
 struct gl_state_t
 {
@@ -51,6 +60,10 @@ struct Model_Buffer
 
 namespace
 {
+    // draw_request
+    std::vector<Draw_Request> f_debug_draw_requests;
+
+
     std::map<std::string, Model_Buffer> f_model_buffers;
     gl_state_t f_gl_state;
 
@@ -553,6 +566,36 @@ namespace
         glBindVertexArray(0);
     }
 
+
+    //@Once
+    void init_debug_buffers()
+    {
+        glGenVertexArrays(1, &DEBUG_POSITION_VAO);
+        glBindVertexArray(DEBUG_POSITION_VAO);
+        glGenBuffers(1, &DEBUG_POSITION_VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, DEBUG_POSITION_VBO);
+
+        const int32_t position_attribute_id = 0;
+        const int32_t position_float_count  = 3;
+        const int32_t position_byte_offset  = 0; // 0
+        const int32_t vertex_float_count    = position_float_count;
+
+        constexpr int32_t vertex_byte_stride = vertex_float_count * sizeof(float); 
+
+        glEnableVertexAttribArray(position_attribute_id);
+        glVertexAttribPointer(
+            position_attribute_id,
+            position_float_count,
+            GL_FLOAT,
+            GL_FALSE,
+            vertex_byte_stride,
+            (void*)position_byte_offset
+        );
+
+        glBindBuffer(GL_ARRAY_BUFFER, NONE_VBO);
+        glBindVertexArray(NONE_VAO);
+    }
+
     //@Globals:
     //  NONE_VAO
     //  NONE_VBO
@@ -671,8 +714,13 @@ namespace
 
         f_model_buffers[model_name] = model_buffer;
     }
-
 }
+
+void submit_debug_draw_request(Draw_Request& draw_request)
+{
+    f_debug_draw_requests.push_back(draw_request);
+}
+
 
 void init_render_system(
     Shader_Manager& shader_manager_in, 
@@ -699,6 +747,7 @@ void init_render_system(
     init_floor();
     init_instanced_wall();
     init_hud();
+    init_debug_buffers();
 
 
     auto& dodecahedron_obj = get_obj(*asset_manager, "dodecahedron");
@@ -709,6 +758,7 @@ void init_render_system(
         logr::report("model_buffer: {}\n", key);
     }
 }
+
 
 
 // render_NDC_quad() renders a 1x1 XY quad in NDC
@@ -785,24 +835,27 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             set_uniform(*shader_manager, "projection", projection);
             set_uniform(*shader_manager, "view", view);
 
-            const auto& moss_albedo_texture =            get_texture(*texture_manager, "moss_2K_color");
-            const auto& moss_normal_texture =            get_texture(*texture_manager, "moss_2K_normal");
-            const auto& moss_roughness_texture =         get_texture(*texture_manager, "moss_2K_roughness");
-            // const auto& moss_metallic_texture does not exist :^)
-            const auto& moss_ambient_occlusion_texture = get_texture(*texture_manager, "moss_2K_ambient_occlusion");
-            const auto& moss_displacement_texture =      get_texture(*texture_manager, "moss_2K_displacement");
+            // render floor
+            {
+                const auto& moss_albedo_texture =            get_texture(*texture_manager, "moss_2K_color");
+                const auto& moss_normal_texture =            get_texture(*texture_manager, "moss_2K_normal");
+                const auto& moss_roughness_texture =         get_texture(*texture_manager, "moss_2K_roughness");
+                // const auto& moss_metallic_texture does not exist :^)
+                const auto& moss_ambient_occlusion_texture = get_texture(*texture_manager, "moss_2K_ambient_occlusion");
+                const auto& moss_displacement_texture =      get_texture(*texture_manager, "moss_2K_displacement");
 
-            set_uniform(*shader_manager, "texture_albedo",            moss_albedo_texture.gl_texture_frame);
-            set_uniform(*shader_manager, "texture_normal",            moss_normal_texture.gl_texture_frame);
-            set_uniform(*shader_manager, "texture_roughness",         moss_roughness_texture.gl_texture_frame);
-            set_uniform(*shader_manager, "texture_metallic",          moss_roughness_texture.gl_texture_frame); // this does not exist.
-            set_uniform(*shader_manager, "texture_ambient_occlusion", moss_ambient_occlusion_texture.gl_texture_frame);
-            set_uniform(*shader_manager, "texture_displacement",      moss_displacement_texture.gl_texture_frame);
+                set_uniform(*shader_manager, "texture_albedo",            moss_albedo_texture.gl_texture_frame);
+                set_uniform(*shader_manager, "texture_normal",            moss_normal_texture.gl_texture_frame);
+                set_uniform(*shader_manager, "texture_roughness",         moss_roughness_texture.gl_texture_frame);
+                set_uniform(*shader_manager, "texture_metallic",          moss_roughness_texture.gl_texture_frame); // this does not exist.
+                set_uniform(*shader_manager, "texture_ambient_occlusion", moss_ambient_occlusion_texture.gl_texture_frame);
+                set_uniform(*shader_manager, "texture_displacement",      moss_displacement_texture.gl_texture_frame);
 
-            // // render floor
-            glm::mat4 model = glm::mat4(1.0f);
-            set_uniform(*shader_manager, "model", model);
-            render_floor();
+                glm::mat4 model = glm::mat4(1.0f);
+                set_uniform(*shader_manager, "model", model);
+                render_floor();
+            }
+           
              
             // render walls
             {
@@ -1012,8 +1065,56 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
     // // // 3. render geometry on top of scene that does not need to be affected by lighting.
     // // --------------------------------
-    // {
-    // }
+   {
+         // render debug draw requests.
+        {
+            // bind shader:
+            set_shader(*shader_manager,  "debug_position_world"); // expects 1:1 world space.
+
+            //@Note(sjors): no model matrix needed /expected
+            set_uniform(*shader_manager, "model", glm::mat4(1.f));
+            set_uniform(*shader_manager, "view", view);
+            set_uniform(*shader_manager, "projection", projection);
+
+            // bind VAO 
+            glBindVertexArray(DEBUG_POSITION_VAO);
+
+            for (auto&& draw_request: f_debug_draw_requests)
+            {
+                // update uniforms.
+                set_uniform(*shader_manager, "color", draw_request.color);
+                set_uniform(*shader_manager, "highlight_color", draw_request.highlight_color);
+
+
+                const int buffer_byte_size = draw_request.vertices.size() * sizeof(glm::vec3);
+
+                
+                if (draw_request.wireframe)
+                {
+                    glLineWidth(draw_request.line_width);
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                }
+                else
+                {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                }
+
+                // upload data to buffer.
+                glNamedBufferData(DEBUG_POSITION_VBO, buffer_byte_size, draw_request.vertices.data(), GL_DYNAMIC_DRAW);
+
+                //draw the actual thing.
+                glDrawArrays(draw_request.primitive, 0, draw_request.vertices.size());
+            }
+
+            //@FIXME(Sjors): end-of-frame clear / memset to zero.
+            f_debug_draw_requests.clear();
+
+            // unbind vertex array and shader.
+            glBindVertexArray(NONE_VAO);
+            set_shader(*shader_manager, "none");
+        }
+   }
+   
 
     // step 4: render HUD
     {   
@@ -1028,6 +1129,8 @@ void render(const Camera camera, Particle_Cache& particle_cache)
 
         glDisable(GL_BLEND);
     }
+
+
 
 
     set_shader(*shader_manager, "none");

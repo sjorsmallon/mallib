@@ -49,7 +49,7 @@ int main()
     load_shader(shader_manager, "deferred_instanced_pbr_no_mvp");
     load_shader(shader_manager, "post_deferred_pbr");
     load_shader(shader_manager, "screen_space");
-    load_shader(shader_manager, "screen_space");
+    load_shader(shader_manager, "debug_position_world");
 
 
     //@Fixme(Sjors): this is an ugly hack to enable the file_watcher lambda
@@ -122,6 +122,9 @@ int main()
 
         poll_input(window_manager);
         game_simulate(game_state, frame_dt, window_manager.input, particle_cache, entity_manager);
+    
+        draw_AABBs();
+
         game_render(game_state, particle_cache);
         game_end_frame(game_state, entity_manager);
 

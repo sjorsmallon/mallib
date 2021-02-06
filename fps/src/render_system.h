@@ -5,6 +5,20 @@
 #include "asset_manager.h"
 #include "entity_manager.h"
 
+using Render_Primitive = uint32_t; // = GLenum
+
+struct Draw_Request
+{   
+    Render_Primitive primitive;
+    std::vector<glm::vec3> vertices;
+
+    glm::vec4 color;
+    glm::vec4 highlight_color;
+    bool wireframe;
+    float line_width;
+};
+
+
 // forward declarations
 struct Camera;
 struct Particle_Cache;
@@ -20,6 +34,12 @@ void init_render_system(Shader_Manager& shader_manager,
 
 // per frame
 void render(const Camera camera, Particle_Cache& particle_cache);
+
+
+void submit_debug_draw_request(Draw_Request& draw_request);
+
+
+
 
 
 #endif

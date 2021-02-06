@@ -19,30 +19,30 @@ struct Hitbox
 
 struct Box_3D
 {
-	glm::vec3 min{MAX_FLOAT, MAX_FLOAT, MAX_FLOAT};
-	glm::vec3 max{MIN_FLOAT, MIN_FLOAT, MIN_FLOAT};
+    glm::vec3 min{MAX_FLOAT, MAX_FLOAT, MAX_FLOAT};
+    glm::vec3 max{MIN_FLOAT, MIN_FLOAT, MIN_FLOAT};
 };
 
 struct obj_t
 {
-	// tiny obj things
-	tinyobj::attrib_t attributes;
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
-	std::string warn;
-	std::string err;
-	// 
-	std::vector<float> interleaved_XNU;
-	std::vector<float> interleaved_XNTBU;
-	// for meshes
-	bool unitized = false;
-	Box_3D bounds;
-	Hitbox hitbox;
+    // tiny obj things
+    tinyobj::attrib_t attributes;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string warn;
+    std::string err;
+    // 
+    std::vector<float> interleaved_XNU;
+    std::vector<float> interleaved_XNTBU;
+    // for meshes
+    bool unitized = false;
+    Box_3D bounds;
+    Hitbox hitbox;
 };
 
 struct Asset_Manager
-{	
-	std::map<std::string, obj_t> meshes;
+{   
+    std::map<std::string, obj_t> meshes;
 };
 
 
