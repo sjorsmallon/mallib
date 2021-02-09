@@ -16,13 +16,6 @@ struct Texture_Atlas
 
 };
 
-// struct Texture_Handle
-// {
-//     name;
-//     dimensions;
-//     channels;
-// };
-
 struct Texture
 {
     uint32_t gl_texture_id; // the actual glgentextures handle returned by openGL that this texture is bound to.

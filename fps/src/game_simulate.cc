@@ -273,7 +273,6 @@ namespace
         {
             //@Note(Sjors) don't normalize: will yield nan or inf
             movement_vector = adjusted_movement_vector;
-            // logr::report("no input!\n");
         }
         else
         {
@@ -629,7 +628,7 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
 
     
                 if (input.mouse_right) play_sound_3d("chicken");
-                if (input.mouse_left)  play_sound("plop_shorter_runup");
+                if (input.mouse_left)  play_sound("dk_barrel_blast");
         }
 
     }

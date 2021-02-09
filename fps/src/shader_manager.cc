@@ -265,6 +265,7 @@ namespace
                 }
                 case GL_UNSIGNED_INT_ATOMIC_COUNTER:
                 {
+                    // @Note(Sjors): This is commented out because we don't need to record this right now.
                     // Uniform uniform;
                     // uniform.type = GL_UNSIGNED_INT;
                     // uniform.data = uint32_t{0};
@@ -309,7 +310,7 @@ void set_global_shader_manager(Shader_Manager& shader_manager)
 //@dependencies: g_shader_manager.
 void shader_reload_callback(const std::string& shader_folder_name)
 {
-        // get the shader manager.
+        // get the global shader manager.
         Shader_Manager& manager = get_global_shader_manager();
         std::string shader_name = shader_folder_name.substr(shader_folder_name.find_last_of('/') + 1);
         logr::report("Detected change. reloading shader: {}\n", shader_name);
@@ -341,8 +342,6 @@ void clear_shader_gl_components(Shader_Manager& shader_manager, const std::strin
     glDeleteProgram(old_shader_id);
 }
 
-
-
 Shader_Manager& get_global_shader_manager()
 {
     return *g_shader_manager;
@@ -353,19 +352,15 @@ void set_shader_path(Shader_Manager& manager, const char* shader_folder_path)
     g_shader_folder_prefix = shader_folder_path;
 }
 
-
 //@IC(Sjors):the "none" shader is not any shader.
 void set_shader(Shader_Manager& shader_manager, const char* shader_name)
 {
     uint32_t shader_id = NONE_SHADER_PROGRAM_ID; 
-    // if (shader_name != "none")
-    {
-        shader_id = shader_manager.shaders[shader_name].program_id;
-    }
+    shader_id = shader_manager.shaders[shader_name].program_id;
     shader_manager.active_shader_name = shader_name;
 
     //@Fixme(Sjors): strcmp..
-    if (shader_id == 0 && strcmp(shader_name,"none") != 0)
+    if (shader_id == 0 && strcmp(shader_name, "none") != 0)
     {
         logr::report_error("[set_shader]: UNKNOWN SHADER NAME: {}. exiting.", shader_name);
         exit(1);
@@ -380,7 +375,7 @@ uint32_t load_shader(Shader_Manager& shader_manager, const std::string& shader_n
 
     if (shader_manager.shaders.find(shader_name) != shader_manager.shaders.end())
     {
-        logr::report_warning("[load_shader] loading a shader we have already loaded! ");
+        logr::report_error("[load_shader] loading a shader we have already loaded! ");
         exit(1);
     }
 

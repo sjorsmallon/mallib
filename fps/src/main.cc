@@ -95,6 +95,7 @@ int main()
     load_sound("plop.wav");
     load_sound("plop_shorter_runup.wav");
     load_sound("applause.ogg");
+    load_sound("dk_barrel_blast.ogg");
     load_sound("finger_snap.wav");
 
     //@Fixme(Sjors): create a render manager?

@@ -100,16 +100,6 @@ void destroy_scheduled_entities(Entity_Manager&entity_manager)
 	for (auto* entity_ptr: entity_manager.scheduled_for_destruction)
 	{
 		bucket* host_bucket = entity_manager.entities.all_buckets[entity_ptr->bucket_id];
-		// size_t count = 0;
-		// for (size_t idx =0; idx != host_bucket->capacity; ++idx)
-		// {
-		// 	if (host_bucket->occupied[idx])
-		// 	{
-		// 		// logr::report("occupied at idx {}\n", idx);
-		// 		count++;
-		// 	}
-		// }
-		// logr::report("occupied slots: {}\n", count);
 			
 		for (size_t entity_idx = 0; entity_idx != host_bucket->capacity; ++entity_idx)
 		{
@@ -117,10 +107,6 @@ void destroy_scheduled_entities(Entity_Manager&entity_manager)
 			if (current_entity_ptr == entity_ptr)
 			{
 				host_bucket->size -= 1;
-				// logr::report("host_bucket->size: {}\n", host_bucket->size);
-				// logr::report("count_by_type: {}\n", count_by_type(entity_manager, Entity_Type::Cube));
-				// logr::report("bucket_count: {}\n", entity_manager.entities.all_buckets.size());
-				
 				*entity_ptr = {0};
 				host_bucket->occupied[entity_idx] = false;
 				entity_ptr->bucket_id = host_bucket->bucket_id;

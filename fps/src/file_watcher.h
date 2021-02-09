@@ -15,8 +15,6 @@ enum class File_Status {created, modified, erased};
 
 struct File_Watcher
 {
-
-
 	std::vector<std::string> folders;
     std::map<std::string, std::filesystem::file_time_type> paths = std::map<std::string, std::filesystem::file_time_type>();
     std::map<std::string, std::function<void(const std::string&)>> actions;
@@ -50,7 +48,7 @@ inline void watch_folder(
 
 inline void check_files_for_change(File_Watcher& file_watcher)
 {
-    // check for deleted files., but don't do anything with that information.
+    // checks for deleted files., but don't do anything with that information.
     {
         auto it = file_watcher.paths.begin();
         while (it != file_watcher.paths.end())
@@ -69,10 +67,9 @@ inline void check_files_for_change(File_Watcher& file_watcher)
 
     for (auto& folder: file_watcher.folders)
     {
-    	   // Check if a file was modified, not for creation.
+    	 // Check if a file was modified, or created. Ignore created files.
 	    for(auto &file : std::filesystem::recursive_directory_iterator(folder))
 	    {
-            // logr::report("file: {}\n", file.path().string());
 	        auto current_file_last_write_time = std::filesystem::last_write_time(file);
 
 	        // File creation
