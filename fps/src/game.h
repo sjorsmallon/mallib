@@ -33,13 +33,34 @@ struct Game_State
 };
 
 
-void game_init();
+void game_init(Entity_Manager& entity_manager);
 
 void game_simulate(Game_State& game_state, const double dt,  const Input& input, Particle_Cache& particle_cache, Entity_Manager& manager);
 void game_render(Game_State& game_state, Particle_Cache& particle_cache);
 void game_end_frame(Game_State& game_state, Entity_Manager& entity_manager);
 
-// combat
+
+
+// game_combat.cc
 void damage(Entity& target, Entity& inflictor, Entity& attacker,const glm::vec3 dmg_direction_in, int damage);
+
+
+
+// game_player_movement.cc 
+std::tuple<glm::vec3, glm::vec3> walk_move(
+	const Input& input,
+    const glm::vec3 old_position,
+    const glm::vec3 old_movement_vector,
+	const glm::vec3 front,
+    const glm::vec3 right,
+    const float dt);
+
+std::tuple<glm::vec3, glm::vec3> air_move(
+    const Input& input,
+    const glm::vec3 old_position,
+    const glm::vec3 old_movement_vector,
+    const glm::vec3 front,
+    const glm::vec3 right,
+    const float dt);
 
 #endif

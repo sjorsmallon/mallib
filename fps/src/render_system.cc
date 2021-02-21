@@ -73,7 +73,7 @@ namespace
 
     const float g_fov = 110.0f;
     const float g_projection_z_near_plane = 0.1f;
-    const float g_projection_z_far_plane = 2000.0f;
+    const float g_projection_z_far_plane = 8192.0f;
 
     // "members"
     Shader_Manager*   shader_manager;
@@ -376,111 +376,7 @@ namespace
         }
     }
 
-    // void init_instanced_wall()
-    // {
-    //     // front face
-    //     float vertices[] = {
-    //     -1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-    //      1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
-    //      1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-    //      1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-    //     -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
-    //     -1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-    //     };
-
-    //     glGenVertexArrays(1, &g_wall_vao);
-    //     glGenBuffers(1, &g_wall_vbo);
-
-    //     glBindVertexArray(g_wall_vao);
-        
-    //     // fill buffer with vertices.
-    //     glBindBuffer(GL_ARRAY_BUFFER, g_wall_vbo);
-    //     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        
-    //     // enable vertex attributes (0: position (xyz), 1: normals (xyz), 2: texture coordinates (uv));
-    //     glEnableVertexAttribArray(0);
-    //     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-
-    //     glEnableVertexAttribArray(1);
-    //     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-
-    //     glEnableVertexAttribArray(2);
-    //     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-
-    //     // initialize two buffers for model matrices and mvp matrices for instanced objects.
-    //     glGenBuffers(1, &g_wall_model_vbo);
-    //     glGenBuffers(1, &g_wall_mvp_vbo);
-
-    //     //@IC(Sjors): BIND the correct buffer, since glVertexAttribPointer refers directly to the bound GL_ARRAY_BUFFER.
-    //     glBindBuffer(GL_ARRAY_BUFFER, g_wall_model_vbo);
-    //     glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * g_wall_model_matrices.size(), g_wall_model_matrices.data(), GL_DYNAMIC_DRAW);
-
-    //     // since location 0,1,2 are occupied by position, normal, texture coords, 
-    //     // the matrix starts at location 3.
-    //     // @Note(Sjors): since a location occupies at most 16 bytes (vec4),
-    //     // we need to reserve 4 location indices for any particular matrix.
-    //     // this means location 3,4,5,6 all are reserved for the model matrix,
-    //     // and location 7,8,9,10 are reserved for the mvp matrix.
-    //     const uint32_t model_location = 3;
-    //     const uint32_t mat4_row_count = 4;
-    //     for (unsigned int location_offset = 0; location_offset != mat4_row_count; ++location_offset)
-    //     {
-    //         glEnableVertexAttribArray(model_location + location_offset);
-    //         glVertexAttribPointer(model_location + location_offset, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * location_offset * 4));
-    //         glVertexAttribDivisor(model_location + location_offset, 1);
-    //     }
-        
-    //     //@IC(Sjors): BIND the correct buffer, since glVertexAttribPointer refers directly to the bound GL_ARRAY_BUFFER.
-    //     glBindBuffer(GL_ARRAY_BUFFER, g_wall_mvp_vbo);
-    //     glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * g_wall_mvp_matrices.size(), g_wall_mvp_matrices.data(), GL_DYNAMIC_DRAW);
-
-    //     const uint32_t mvp_location = 7;
-    //     for (unsigned int location_offset = 0; location_offset != mat4_row_count; ++location_offset)
-    //     {
-
-    //         glEnableVertexAttribArray(mvp_location + location_offset);
-    //         glVertexAttribPointer(mvp_location + location_offset, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * location_offset * 4));
-    //         glVertexAttribDivisor(mvp_location + location_offset, 1);
-    //     }
-    //     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    //     glBindVertexArray(0);
-    // }
-
-        // void init_floor()
-    // {
-    //     const float floor_dim = 8192.0f; // centered, so from -1024 to +1024
-    //     const float half_floor_dim = 8192.0f / 2.0f;
-    //     const float floor_y = -10.0f;
-    //     const float wrap_count = 8192.0f / 128.0f;
-      
-    //     float floor_vertices[]  = {
-    //         // |position                               | normals         | uv
-    //         -half_floor_dim, floor_y, half_floor_dim,  0.0f, 1.0f, 0.0f, 0.0f, wrap_count * 1.0f, 
-    //          half_floor_dim, floor_y, half_floor_dim,  0.0f, 1.0f, 0.0f, wrap_count * 1.0f, wrap_count * 1.0f,
-    //         -half_floor_dim, floor_y, -half_floor_dim, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-    //         -half_floor_dim, floor_y, -half_floor_dim, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-    //          half_floor_dim, floor_y, half_floor_dim,  0.0f, 1.0f, 0.0f, wrap_count * 1.0f, wrap_count * 1.0f,
-    //          half_floor_dim, floor_y, -half_floor_dim, 0.0f, 1.0f, 0.0f, wrap_count * 1.0f, 0.0f
-    //     };
-
-    //     glGenVertexArrays(1, &g_floor_vao);
-    //     glBindVertexArray(g_floor_vao);
-    //     glGenBuffers(1, &g_floor_vbo);
-    //     glBindBuffer(GL_ARRAY_BUFFER, g_floor_vbo);
-    //     glBufferData(GL_ARRAY_BUFFER, sizeof(floor_vertices), &floor_vertices, GL_STATIC_DRAW);
-
-    //     // link vertex attributes (position, normals, texture coordinates);
-    //     glEnableVertexAttribArray(0);
-    //     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-
-    //     glEnableVertexAttribArray(1);
-    //     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-
-    //     glEnableVertexAttribArray(2);
-    //     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    //     glBindVertexArray(0);
-    // }
-
+    //@Once
     void init_viewmodel()
     {
         glGenVertexArrays(1, &g_viewmodel_vao);
@@ -509,6 +405,7 @@ namespace
         glBindVertexArray(0);
     }
 
+    //@Once
     //@NOTE: NDC is -1,-1 to 1,1. middle is thus 0.0
     void init_hud()
     {
@@ -540,7 +437,7 @@ namespace
         glBindVertexArray(0);
     }
 
-   
+    //@Once
     void init_NDC_quad()
     {
         float quad_vertices[] = {
@@ -564,7 +461,6 @@ namespace
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
         glBindVertexArray(0);
     }
-
 
     //@Once
     void init_debug_buffers()
@@ -743,11 +639,7 @@ void init_render_system(
     init_opengl(frame_buffer_width, frame_buffer_height);
     init_NDC_quad();
     init_hud();
-    // init_floor();
-    // init_instanced_wall();
-    init_hud();
     init_debug_buffers();
-
 
     //@cleanup: how to do this?
     auto& dodecahedron_obj = get_obj(*asset_manager, "dodecahedron");
@@ -818,103 +710,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         // deferred_PBR
         // ------------------------------------------
         {
-            set_shader(*shader_manager, "deferred_pbr");
-            set_uniform(*shader_manager, "projection", projection);
-            set_uniform(*shader_manager, "view", view);
-
             // render static geometry.
-
-            // static: render floor
-            // {
-            //     const auto& moss_albedo_texture =            get_texture(*texture_manager, "moss_2K_color");
-            //     const auto& moss_normal_texture =            get_texture(*texture_manager, "moss_2K_normal");
-            //     const auto& moss_roughness_texture =         get_texture(*texture_manager, "moss_2K_roughness");
-            //     // const auto& moss_metallic_texture does not exist :^)
-            //     const auto& moss_ambient_occlusion_texture = get_texture(*texture_manager, "moss_2K_ambient_occlusion");
-            //     const auto& moss_displacement_texture =      get_texture(*texture_manager, "moss_2K_displacement");
-
-            //     set_uniform(*shader_manager, "texture_albedo",            moss_albedo_texture.gl_texture_frame);
-            //     set_uniform(*shader_manager, "texture_normal",            moss_normal_texture.gl_texture_frame);
-            //     set_uniform(*shader_manager, "texture_roughness",         moss_roughness_texture.gl_texture_frame);
-            //     set_uniform(*shader_manager, "texture_metallic",          moss_roughness_texture.gl_texture_frame); // this does not exist.
-            //     set_uniform(*shader_manager, "texture_ambient_occlusion", moss_ambient_occlusion_texture.gl_texture_frame);
-            //     set_uniform(*shader_manager, "texture_displacement",      moss_displacement_texture.gl_texture_frame);
-
-            //     glm::mat4 model = glm::mat4(1.0f);
-            //     set_uniform(*shader_manager, "model", model);
-            //     render_floor();
-            // }
-           
-             
-            // static: render walls
-            // {
-            //     timed_function("render_walls");
-
-            //     set_shader(*shader_manager, "deferred_instanced_pbr");
-            //     // set_uniform(*shader_manager, "view", view); // this does not exist. only mvp.
-            //     // set_uniform(*shader_manager, "projection", projection); this does not exist. only mvp.
-
-            //     const auto& painted_metal_albedo_texture =            get_texture(*texture_manager, "painted_metal_2K_color");
-            //     const auto& painted_metal_normal_texture =            get_texture(*texture_manager, "painted_metal_2K_normal");
-            //     const auto& painted_metal_roughness_texture =         get_texture(*texture_manager, "painted_metal_2K_roughness");
-            //     const auto& painted_metal_metallic_texture =          get_texture(*texture_manager, "painted_metal_2K_metallic");
-            //     const auto& painted_metal_ambient_occlusion_texture = get_texture(*texture_manager, "painted_metal_2K_ambient_occlusion");
-            //     const auto& painted_metal_displacement_texture =      get_texture(*texture_manager, "painted_metal_2K_displacement");
-
-            //     set_uniform(*shader_manager, "texture_albedo",            painted_metal_albedo_texture.gl_texture_frame);
-            //     set_uniform(*shader_manager, "texture_normal",            painted_metal_normal_texture.gl_texture_frame);
-            //     set_uniform(*shader_manager, "texture_roughness",         painted_metal_roughness_texture.gl_texture_frame);
-            //     set_uniform(*shader_manager, "texture_metallic",          painted_metal_metallic_texture.gl_texture_frame); // this does not exist.
-            //     set_uniform(*shader_manager, "texture_ambient_occlusion", painted_metal_ambient_occlusion_texture.gl_texture_frame);
-            //     set_uniform(*shader_manager, "texture_displacement",      painted_metal_displacement_texture.gl_texture_frame);
-
-            //     // update matrix of the walls.
-            //     {
-            //         auto& model_matrix_0 = g_wall_model_matrices[0];
-            //         auto& mvp_matrix_0 = g_wall_mvp_matrices[0];
-            //         glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
-            //         glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(1024.0f, 0.0f, 0.0f));
-            //         glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), -0.5f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
-            //         model_matrix_0 = translate * rotate * scale;
-            //         mvp_matrix_0 = projection * view * model_matrix_0;  
-
-            //         auto& model_matrix_1 = g_wall_model_matrices[1];
-            //         auto& mvp_matrix_1 = g_wall_mvp_matrices[1];
-            //         scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
-            //         translate = glm::translate(glm::mat4(1.0f), glm::vec3(-1024.0f, 0.0f, 0.0f));
-            //         rotate = glm::rotate(glm::mat4(1.0f), 0.5f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
-            //         model_matrix_1 = translate * rotate * scale;
-            //         mvp_matrix_1 = projection * view * model_matrix_1;  
-
-            //         auto& model_matrix_2 = g_wall_model_matrices[2];
-            //         auto& mvp_matrix_2 = g_wall_mvp_matrices[2];
-            //         scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
-            //         translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1024.0f));
-            //         rotate = glm::rotate(glm::mat4(1.0f), 0.0f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
-            //         model_matrix_2 = translate * rotate * scale;
-            //         mvp_matrix_2 = projection * view * model_matrix_2;  
-
-            //         auto& model_matrix_3 = g_wall_model_matrices[3];
-            //         auto& mvp_matrix_3 = g_wall_mvp_matrices[3];
-            //         scale = glm::scale(glm::mat4(1.0f), glm::vec3(1024.0f));
-            //         translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1024.0f));
-            //         rotate = glm::rotate(glm::mat4(1.0f), -1.0f * M_PI, glm::vec3(0.0f,1.0f,0.0f));
-            //         model_matrix_3 = translate * rotate * scale;
-            //         mvp_matrix_3 = projection * view * model_matrix_3;  
-            //     }
-
-            //     glNamedBufferData(g_wall_model_vbo, sizeof(glm::mat4) * g_wall_model_matrices.size(), g_wall_model_matrices.data(), GL_DYNAMIC_DRAW);
-            //     glNamedBufferData(g_wall_mvp_vbo,   sizeof(glm::mat4) * g_wall_mvp_matrices.size(),   g_wall_mvp_matrices.data(), GL_DYNAMIC_DRAW);
-
-
-            //     glBindVertexArray(g_wall_vao);
-            //     glDrawArraysInstanced(
-            //         GL_TRIANGLES,
-            //         0,
-            //         6,
-            //         g_wall_model_matrices.size());
-            //     glBindVertexArray(0);
-            // }
 
             // render dynamic geometry.
 
@@ -937,7 +733,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 set_uniform(*shader_manager, "texture_metallic", moss_roughness_texture.gl_texture_frame); // this does not exist.
                 set_uniform(*shader_manager, "texture_ambient_occlusion", moss_ambient_occlusion_texture.gl_texture_frame);
                 set_uniform(*shader_manager, "texture_displacement", moss_displacement_texture.gl_texture_frame);
-
 
                 auto& model_buffer = f_model_buffers["dodecahedron"];
 
@@ -1097,6 +892,10 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             glBindVertexArray(NONE_VAO);
             set_shader(*shader_manager, "none");
         }
+
+        // post step 3: restore default settings.
+        glLineWidth(2.0f);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
    }
     // step 4: render HUD
     {   

@@ -34,7 +34,7 @@ struct Xform_State
 
 struct Entity
 {
-    // things we thought about
+    // things we thought about (set by spawn_entity).
     entity_id id;
     Entity_Type type;
     glm::vec3 position;
@@ -46,10 +46,15 @@ struct Entity
 	int32_t damage;
 
 	// relation
-	entity_id parent_id;
+	entity_id parent_entity;
 
 
     // things we need to decide on
+    int splash_damage;
+    int splash_radius;
+    entity_id target_entity;
+
+
     char mesh_name[64];
     bool visible;
     generation generation; // this should actually be a counter for this particular entity ID (i.e. what generation is this?) instead of for this particular entity.
@@ -66,13 +71,18 @@ struct Entity_Manager
 	using Entity_Array = Bucket_Array<Entity, BUCKET_CAPACITY>;
 
 	// owning
-	Entity_Array entities;
+	Entity_Array entities{};
 	// non-owning
 	std::map<Entity_Type, std::vector<bucket*>> buckets_by_type;
 	std::vector<Entity*> scheduled_for_destruction;
 
-	uint32_t next_entity_id = 0;
+	uint32_t next_entity_id{0};
+
+	// To be figured out.
+	uint32_t player_entity_id{};
+	Entity* player_entity_ptr;
 };
+
 
 struct Entity_Range
 {
@@ -90,6 +100,106 @@ struct Entity_Range
 	entity_iterator end() {return {true, buckets};}
 
 };
+
+
+inline uint32_t get_next_entity_id(Entity_Manager& entity_manager)
+{
+	uint32_t id = entity_manager.next_entity_id;
+	entity_manager.next_entity_id += 1;
+
+	return id;
+}
+
+
+inline Entity& get_main_player_entity(Entity_Manager& entity_manager)
+{
+	assert(entity_manager.player_entity_id);
+	assert(entity_manager.player_entity_ptr);
+
+	return *(entity_manager.player_entity_ptr);
+}
+
+inline void set_main_player_entity(Entity_Manager& entity_manager, Entity& entity)
+{
+	entity_manager.player_entity_id = entity.id;
+	entity_manager.player_entity_ptr = &entity;
+}
+
+
+//@FIXME(Sjors): unite spawn_entities and create_default_entities.
+// Only things currently listed in _sure_ are set.
+inline Entity& spawn_entity(Entity_Manager& entity_manager, Entity_Type type)
+{
+	using bucket = Bucket<Entity, BUCKET_CAPACITY>;
+	
+	bucket* target_bucket = nullptr;
+	// are there any non-full buckets of this particular type?
+	for (auto bucket_ptr:  entity_manager.buckets_by_type[type])
+	{
+		if (bucket_ptr->size != bucket_ptr->capacity)
+		{
+			target_bucket = bucket_ptr;
+			break;
+		}
+	}
+
+	// are there any buckets of this entity type?
+	// if no bucket found:
+	if (nullptr == target_bucket)
+	{
+		//@memory
+		target_bucket = new bucket();
+		add_bucket_by_handle(entity_manager.entities, target_bucket); // handoff
+		entity_manager.buckets_by_type[type].push_back(target_bucket);
+	}
+
+	for (size_t idx = 0; idx != BUCKET_CAPACITY; ++idx)
+	{
+		if (!target_bucket->occupied[idx]) 
+		{
+			uint32_t id = get_next_entity_id(entity_manager);
+			
+			Entity entity{};
+			entity.id = id;
+			entity.type = type;
+			entity.position = glm::vec3(0.0f, id, 0.0f);
+
+
+			// this is actually an implementational detail. Not very nice.
+			entity.bucket_id = target_bucket->bucket_id;
+
+
+			target_bucket->data[idx] = entity;
+			target_bucket->occupied[idx] = true;
+			target_bucket->size += 1;
+			
+			return target_bucket->data[idx];
+		}		
+	}
+}
+
+inline Entity& create_player_entity(Entity_Manager& entity_manager)
+{
+	auto& player_entity = spawn_entity(entity_manager, Entity_Type::Player);
+
+	player_entity.can_take_damage = true;
+	player_entity.health = 100;
+	player_entity.damage = 0;
+	player_entity.parent_entity = 0; // world and/or server
+
+	player_entity.splash_damage = 0;
+	player_entity.splash_radius = 0;
+	player_entity.target_entity = 0;
+
+	//@Memory(Sjors):strcpy...
+	strcpy(player_entity.mesh_name, "none");
+	player_entity.visible = false;
+	player_entity.scheduled_for_destruction = false;
+
+	return player_entity;
+}
+
+
 
 //@FIXME(Sjors): what if it's empty?
 inline Entity_Range all_entities(Entity_Manager& entity_manager)
@@ -120,58 +230,6 @@ inline size_t count_by_type(Entity_Manager& entity_manager, Entity_Type entity_t
 }
 
 
-//@FIXME(Sjors): unite spawn_entities and create_default_entities
-inline Entity& spawn_entity(Entity_Manager& entity_manager, Entity_Type type)
-{
-	using bucket = Bucket<Entity, BUCKET_CAPACITY>;
-	
-	bucket* target_bucket = nullptr;
-	// are there any non-full buckets of this particular type?
-	for (auto bucket_ptr:  entity_manager.buckets_by_type[type])
-	{
-		if (bucket_ptr->size != bucket_ptr->capacity)
-		{
-			target_bucket = bucket_ptr;
-			break;
-		}
-	}
-
-	// are there any buckets of this entity type?
-	// if no bucket found:
-	if (nullptr == target_bucket)
-	{
-		//@memory
-		target_bucket = new bucket();
-		add_bucket_by_handle(entity_manager.entities, target_bucket); // handoff
-		entity_manager.buckets_by_type[type].push_back(target_bucket);
-	}
-
-	for (size_t idx = 0; idx != BUCKET_CAPACITY; ++idx)
-	{
-		if (!target_bucket->occupied[idx]) 
-		{
-			uint32_t id = entity_manager.next_entity_id;
-			entity_manager.next_entity_id += 1;
-			Entity entity{};
-			entity.id = id;
-			entity.type = type;
-			entity.position = glm::vec3(0.0f, id, 0.0f);
-
-			// unsure things go here.
-			entity.can_take_damage = true;
-			entity.health = 100;
-			// this is actually an implementational detail. Not very nice.
-			entity.bucket_id = target_bucket->bucket_id;
-
-
-			target_bucket->data[idx] = entity;
-			target_bucket->occupied[idx] = true;
-			target_bucket->size += 1;
-			
-			return target_bucket->data[idx];
-		}		
-	}
-}
 
 inline void create_default_entity(Entity_Manager& entity_manager, Entity_Type type)
 {
@@ -202,8 +260,7 @@ inline void create_default_entity(Entity_Manager& entity_manager, Entity_Type ty
 	{
 		if (!target_bucket->occupied[idx]) 
 		{
-			uint32_t id = entity_manager.next_entity_id;
-			entity_manager.next_entity_id += 1;
+			uint32_t id = get_next_entity_id(entity_manager);
 			Entity entity{};
 			entity.id = id;
 			entity.type = type;

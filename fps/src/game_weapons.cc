@@ -44,21 +44,20 @@ namespace
 // }
 
 
-// it seems bolt_velocity is 900.
 Entity& fire_rocket(Entity_Manager& entity_manager, Entity& self, glm::vec3 start, glm::vec3 direction)
 {
 	Entity& bolt = spawn_entity(entity_manager, Entity_Type::Rocket);
 	bolt.type = Entity_Type::Rocket;
-	bolt.parent_id = self.id;
+	bolt.parent_entity = self.id;
 	bolt.damage = 100;
 	//@Fixme(Sjors): strcpy..
 	std::strcpy(bolt.mesh_name,"cube");
 	bolt.position = start;
 	bolt.movement_vector = direction * wp_rocket_speed;
 
-	// bolt.splash_damage = 100;
-	// bolt.splash_radius = 120;
-	// bolt.target_ent = 0;
-	// bolt.next_think = current_time + 1500ms?;
+	bolt.splash_damage = 100;
+	bolt.splash_radius = 120;
+	bolt.target_entity = 0;
+	
 	return bolt;
 }

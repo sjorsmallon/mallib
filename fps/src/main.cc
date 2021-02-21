@@ -88,14 +88,16 @@ int main()
     load_alpha_png_texture(texture_manager, "crosshair");
 
     auto entity_manager = Entity_Manager();
-    for (size_t idx = 0; idx != 10; ++idx) create_default_entity(entity_manager, Entity_Type::Cube);
 
     init_sound_system();
+    set_sound_path("../assets/sounds/");
     load_sound("chicken.wav");
     load_sound("plop.wav");
     load_sound("plop_shorter_runup.wav");
     load_sound("applause.ogg");
-    load_sound("dk_barrel_blast.ogg");
+    load_sound("weapons/rocket_launcher/dk_barrel_blast.ogg");
+    load_sound("weapons/bananade/grenade_thoomp.wav");
+
     load_sound("finger_snap.wav");
 
     //@Fixme(Sjors): create a render manager?
@@ -109,7 +111,7 @@ int main()
 
     Game_State game_state{};
     game_state.game_mode = GM_GAME;
-    game_init();
+    game_init(entity_manager);
     
     Particle_Cache particle_cache{}; // uh, allocating this on the stack is maybe a bad idea.
 
@@ -138,7 +140,7 @@ int main()
         maybe_watch_files(file_watcher, frame_timer.start);
 
         frame_dt = frame_timer.dt;
-        frame_count +=1;
+        frame_count += 1;
     }
 
     //@todo: delete glfw?

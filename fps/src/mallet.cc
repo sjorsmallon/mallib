@@ -17,6 +17,11 @@ namespace
 	// e.g.:
 	// :/ AAABB
 	// { * <--- here
+	// an AABB section is :
+	// {
+	//   min f f f
+	//   max f f f
+	// }
 	void parse_AABB_section(Map& map, File_Reader& file_reader, std::string& line)
 	{
 		std::vector<Mallet_AABB> AABBs;
@@ -103,12 +108,19 @@ void draw_AABBs()
 	Draw_Style draw_style{};
 
 	draw_style.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-	
-	for (auto&& aabb: f_default_map.AABBs)
+	// draw_style.wireframe = true;
+	for (size_t idx = 0; idx != 3; ++idx)
 	{
+		auto& aabb = f_default_map.AABBs[idx];
 		draw_AABB(aabb.min, aabb.max, draw_style);
-
 	}
+
+	// draw floor in different color
+	draw_style.color = glm::vec4(0.9f, 0.0f ,0.6f, 1.0f);
+	// draw_style.wireframe = true;
+	draw_style.line_width = 2.0f;
+
+	draw_AABB(f_default_map.AABBs[3].min, f_default_map.AABBs[3].max, draw_style);
 }
 
 

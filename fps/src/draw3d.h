@@ -31,20 +31,37 @@ inline void draw_AABB(glm::vec3 min, glm::vec3 max, Draw_Style style)
     // point 1 is max,
     // point 8 is min.
 
-    glm::vec3 p1 = max; // front top right
+    // glm::vec3 p1 = max; // front top right
+    // glm::vec3 p2 = glm::vec3(min.x, max.y, max.z); // front top left
+    // glm::vec3 p3 = glm::vec3(max.x, min.y, max.z); // front bot right
+    // glm::vec3 p4 = glm::vec3(min.x, min.y, max.z); // front bot left
+
+    // glm::vec3 p5 = glm::vec3(max.x, max.y, min.z); // back top right
+    // glm::vec3 p6 = glm::vec3(min.x, max.y, min.z); // back top left
+    // glm::vec3 p7 = glm::vec3(max.x, min.y, min.z); // back bot right
+    // glm::vec3 p8 = min; // back bot left
+    // std::vector<glm::vec3> positions{
+    //     p4, p3, p7,
+    //     p8, p5, p3,
+    //     p1, p4, p2,
+    //     p7, p6, p5,
+    //     p2, p1};
+
+
+    glm::vec3 p0 = glm::vec3(min.x, min.y, max.z); // front bot left
+    glm::vec3 p1 = glm::vec3(max.x, min.y, max.z); // front bot right
     glm::vec3 p2 = glm::vec3(min.x, max.y, max.z); // front top left
-    glm::vec3 p3 = glm::vec3(max.x, min.y, max.z); // front bot right
-    glm::vec3 p4 = glm::vec3(min.x, min.y, max.z); // front bot left
-    glm::vec3 p5 = glm::vec3(max.x, max.y, min.z); // back top right
+    glm::vec3 p3 = max;
+    glm::vec3 p4 = min;
+    glm::vec3 p5 = glm::vec3(max.x, min.y, min.z); // back bot right
     glm::vec3 p6 = glm::vec3(min.x, max.y, min.z); // back top left
-    glm::vec3 p7 = glm::vec3(max.x, min.y, min.z); // back bot right
-    glm::vec3 p8 = min; // back bot left
+    glm::vec3 p7 = glm::vec3(max.x, max.y, min.z); // back top right;
+
     std::vector<glm::vec3> positions{
-        p4, p3, p7,
-        p8, p5, p3,
-        p1, p4, p2,
-        p7, p6, p5,
-        p2, p1};
+        p7, p6, p3, p2, p0, p6, p4, 
+        p7, p5, p3, p1, p0, p5, p4
+    };
+
 
 
     Draw_Request draw_request{};
