@@ -33,6 +33,9 @@ const int NUM_LIGHTS = 32;
 unsigned int DEBUG_POSITION_VAO = INVALID_VAO;
 unsigned int DEBUG_POSITION_VBO = INVALID_VBO;
 
+const int MAX_COLOR_ATTTACHMENTS = 8;
+
+
 
 struct gl_state_t
 {
@@ -56,6 +59,33 @@ struct Model_Buffer
     std::vector<glm::mat4> model_matrix_buffer;
 };
 
+
+enum Buffer_Format : uint8_t
+{
+    INVALID = 0,
+    R8,
+    RG8,
+    RGB8,
+    RGBA8,
+    RG16F,
+    RGBA16F,
+    RGBA32F,
+    Depth16
+    Depth16S8,
+    Depth24S8,
+    Depth24X8,
+    Depth32F
+};
+
+struct Framebuffer
+{
+    unsigned int fbo;
+    float width;
+    float height;
+    std::array<Buffer_Format, MAX_COLOR_ATTTACHMENTS> color_formats;
+    Buffer_format depth_stencil_format;
+};
+
 namespace
 {
     //information about gl. 
@@ -63,7 +93,6 @@ namespace
 
     // draw_request
     std::vector<Draw_Request> f_debug_draw_requests;
-
     std::map<std::string, Model_Buffer> f_model_buffers;
 
     // cvars
@@ -92,14 +121,8 @@ namespace
     unsigned int g_depth_map_tfbo;
 
     //--- textures for framebuffers
-    // @IC(Sjors): these are not necessary. They are bound once to the deferred geometry framebuffer.    
-    // unsigned int position_tfbo;
-    // unsigned int normal_tfbo;
-    // unsigned int albedo_specular_tfbo;
-    // unsigned int roughness_tfbo;
-    // unsigned int metallic_tfbo;
-    // unsigned int ambient_occlusion_tfbo;
-    // unsigned int tnormal_tfbo;
+
+
 
     //--- uniform buffers
     unsigned int light_ubo;
@@ -610,6 +633,13 @@ namespace
         f_model_buffers[model_name] = model_buffer;
     }
 }
+
+void draw_model(const char* model_name, glm::vec3 position, glm::vec4 q_orientation, float scale)
+{
+    //@Memory(sjors): just push back the model matrix for now.
+    auto& model  = get_model_buffer(model_name);
+}
+
 
 void submit_debug_draw_request(Draw_Request& draw_request)
 {
