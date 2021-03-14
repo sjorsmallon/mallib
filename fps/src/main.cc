@@ -131,7 +131,7 @@ int main()
         game_render(game_state, particle_cache);
         game_end_frame(game_state, entity_manager);
 
-        if (game_state.game_mode == GM_EDITOR) render_debug_ui(window_manager);
+        if (game_state.game_mode == GM_EDITOR) render_debug_ui();
 
         swap_buffers(window_manager);
         timer_stop(frame_timer);

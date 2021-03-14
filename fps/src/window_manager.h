@@ -25,6 +25,6 @@ struct Window_Manager
 void create_main_window(Window_Manager& window_manager, const char* title, const int window_width, const int window_height);
 void poll_input(Window_Manager& window_manager);
 void swap_buffers(const Window_Manager& window_manager);
-void render_debug_ui(const Window_Manager& window_manager);
+// void render_debug_ui(const Window_Manager& window_manager);
 
 #endif

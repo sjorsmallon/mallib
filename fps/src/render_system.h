@@ -34,9 +34,16 @@ void init_render_system(Shader_Manager& shader_manager,
 
 // per frame
 void render(const Camera camera, Particle_Cache& particle_cache);
-
+void render_debug_ui();
 
 void submit_debug_draw_request(Draw_Request& draw_request);
+
+
+void draw_model(const char* model_name,
+                glm::vec3 position,
+                glm::vec4 q_orientation,
+                const float scale);
+
 
 
 

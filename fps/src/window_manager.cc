@@ -244,49 +244,49 @@ void swap_buffers(const Window_Manager& window_manager)
 //@dependencies:
 // -  main_window pointer
 // - logr::console_log
-void render_debug_ui(const Window_Manager& window_manager)
-{
+// void render_debug_ui(const Window_Manager& window_manager)
+// {
     // unhide the cursor.
     // glfwSetInputMode(window_manager.main_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); 
-    {
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+    // {
+    //     ImGui_ImplOpenGL3_NewFrame();
+    //     ImGui_ImplGlfw_NewFrame();
+    //     ImGui::NewFrame();
 
-        // Debug Menu
-        {
-            ImGui::Begin("General Settings");
-            if (ImGui::Button("Vsync on")) glfwSwapInterval(1);
-            if (ImGui::Button("Vsync off")) glfwSwapInterval(0);
-            ImGui::End();
+    //     // Debug Menu
+    //     {
+    //         ImGui::Begin("General Settings");
+    //         if (ImGui::Button("Vsync on")) glfwSwapInterval(1);
+    //         if (ImGui::Button("Vsync off")) glfwSwapInterval(0);
+    //         ImGui::End();
 
-            {
-                ImGui::Begin("Timed Functions");
-                for (auto& [key, value]: Timed_Function::timed_functions)
-                ImGui::Text("%s : %f", key.c_str(), value.duration);
-                ImGui::End();
-            }
+    //         {
+    //             ImGui::Begin("Timed Functions");
+    //             for (auto& [key, value]: Timed_Function::timed_functions)
+    //             ImGui::Text("%s : %f", key.c_str(), value.duration);
+    //             ImGui::End();
+    //         }
 
-            {
-                ImGui::Begin("Debug Menu"); 
-                for (auto& debug_variables: logr::debug_variables())
-                    ImGui::InputFloat(debug_variables.name, debug_variables.value, debug_variables.min, debug_variables.max, "%.3f");
+    //         {
+    //             ImGui::Begin("Debug Menu"); 
+    //             for (auto& debug_variables: logr::debug_variables())
+    //                 ImGui::InputFloat(debug_variables.name, debug_variables.value, debug_variables.min, debug_variables.max, "%.3f");
 
-                ImGui::End();
-            }
+    //             ImGui::End();
+    //         }
             
 
-        }
+    //     }
 
-        ImGui::EndFrame();
-        ImGui::Render();
-        int display_w, display_h;
-        glfwGetFramebufferSize(window_manager.main_window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
+    //     ImGui::EndFrame();
+    //     ImGui::Render();
+    //     int display_w, display_h;
+    //     glfwGetFramebufferSize(window_manager.main_window, &display_w, &display_h);
+    //     glViewport(0, 0, display_w, display_h);
 
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    }
+    //     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    // }
     // glfwSetInputMode(window_manager.main_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
-}
+// }
 
 

@@ -1,13 +1,21 @@
 #include "render_system.h"
+
+
+// external libraries
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/transform.hpp> 
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
 
+// stl
 #include <set>
 
+// internal libraries
 #include "camera.h"
 #include "logr.h"
 #include "light.h"
@@ -16,7 +24,6 @@
 #include "asset_manager.h"
 #include "entity_manager.h"
 #include "timed_function.h"
-
 #include "math.h" // M_PI
 
 const int INVALID_VAO = -1;
@@ -36,7 +43,6 @@ unsigned int DEBUG_POSITION_VBO = INVALID_VBO;
 const int MAX_COLOR_ATTTACHMENTS = 8;
 
 
-
 struct gl_state_t
 {
     int32_t max_texture_image_units;
@@ -48,6 +54,7 @@ struct gl_state_t
     int32_t max_geometry_uniform_blocks;
     int32_t max_fragment_uniform_blocks;
     int32_t max_frame_buffer_color_attachments;
+    int32_t max_draw_buffers;
 };
 
 struct Model_Buffer
@@ -56,7 +63,7 @@ struct Model_Buffer
     unsigned int VBO;
     unsigned int model_matrix_VBO;
     size_t vertex_count;
-    std::vector<glm::mat4> model_matrix_buffer;
+    std::vector<glm::mat4> model_matrix_buffer = std::vector<glm::mat4>(256);
 };
 
 
@@ -70,7 +77,7 @@ enum Buffer_Format : uint8_t
     RG16F,
     RGBA16F,
     RGBA32F,
-    Depth16
+    Depth16,
     Depth16S8,
     Depth24S8,
     Depth24X8,
@@ -83,7 +90,10 @@ struct Framebuffer
     float width;
     float height;
     std::array<Buffer_Format, MAX_COLOR_ATTTACHMENTS> color_formats;
-    Buffer_format depth_stencil_format;
+    Buffer_Format depth_stencil_format;
+
+    //debug: mappings for the extensions?
+
 };
 
 namespace
@@ -102,7 +112,7 @@ namespace
 
     const float g_fov = 110.0f;
     const float g_projection_z_near_plane = 0.1f;
-    const float g_projection_z_far_plane = 8192.0f;
+    const float g_projection_z_far_plane = 8192.0f; // should be the maximum diag distance of the map.
 
     // "members"
     Shader_Manager*   shader_manager;
@@ -111,17 +121,9 @@ namespace
     Entity_Manager*   entity_manager;
 
     // openGL record keeping
-
     //--- frame buffers
     unsigned int geometry_fbo; 
     unsigned int depth_rbo;
-    // shadow
-    unsigned int depth_map_fbo;
-    // shadow texture buffer
-    unsigned int g_depth_map_tfbo;
-
-    //--- textures for framebuffers
-
 
 
     //--- uniform buffers
@@ -137,18 +139,6 @@ namespace
     unsigned int g_viewmodel_vbo;
     
     size_t g_viewmodel_vertex_count;
-
-    unsigned int g_floor_vao;
-    unsigned int g_floor_vbo;
-
-
-    unsigned int g_wall_vao;
-    unsigned int g_wall_vbo;
-    unsigned int g_wall_model_vbo;
-    unsigned int g_wall_mvp_vbo;
-    std::vector<glm::mat4> g_wall_model_matrices(256);
-    std::vector<glm::mat4> g_wall_mvp_matrices(256);
-
 
     // openGL error callback
     void GLAPIENTRY opengl_message_callback(
@@ -235,7 +225,10 @@ namespace
             logr::report("[OpenGL] max Fragment uniform blocks: {} \n", gl_state.max_fragment_uniform_blocks);
 
             glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &gl_state.max_frame_buffer_color_attachments);
-            logr::report("[OpenGL] max fragment uniform blocks: {}\n", gl_state.max_fragment_uniform_blocks);   
+            logr::report("[OpenGL] max fragment uniform blocks: {}\n", gl_state.max_fragment_uniform_blocks);  
+
+            glGetIntegerv(GL_MAX_DRAW_BUFFERS, &gl_state.max_draw_buffers);
+            logr::report("[OpenGL] max draw buffers: {}\n", gl_state.max_draw_buffers); 
 
             // assign it to the file scoped variable. We could use the f_gl_state immediately,
             // but I may want to move this around without too much hassle;
@@ -356,7 +349,7 @@ namespace
 
 
             // - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-            unsigned int attachments[8] = {
+            unsigned int attachments[MAX_COLOR_ATTTACHMENTS] = {
                 GL_COLOR_ATTACHMENT0, // fragment position
                 GL_COLOR_ATTACHMENT1, // fragment normal
                 GL_COLOR_ATTACHMENT2, // albedo_specular
@@ -366,7 +359,7 @@ namespace
                 GL_COLOR_ATTACHMENT6, // displacement
                 GL_COLOR_ATTACHMENT7}; // texture_normal
 
-            glDrawBuffers(8, attachments);
+            glDrawBuffers(MAX_COLOR_ATTTACHMENTS, attachments);
               
             // then also add render buffer object as depth buffer and check for completeness.
             unsigned int depth_rbo;
@@ -479,9 +472,21 @@ namespace
 
         // init vertex attributes. {0: position (xyz), 1: texture coords (uv)}
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glVertexAttribPointer(
+             0,         // attribute index / id
+             3,         // vec3 float count
+             GL_FLOAT,  // type
+             GL_FALSE, // normalize?
+             5 * sizeof(float), //stride
+             (void*)0); // offset
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glVertexAttribPointer(
+            1, 
+            2, 
+            GL_FLOAT, 
+            GL_FALSE, 
+            5 * sizeof(float), 
+            (void*)(3 * sizeof(float)));
         glBindVertexArray(0);
     }
 
@@ -513,6 +518,15 @@ namespace
         glBindBuffer(GL_ARRAY_BUFFER, NONE_VBO);
         glBindVertexArray(NONE_VAO);
     }
+
+
+    Model_Buffer& get_model_buffer(const char* model_name)
+    {
+        assert(f_model_buffers.find(model_name) != f_model_buffers.end());
+
+        return f_model_buffers[model_name];
+    }
+
 
     //@Globals:
     //  NONE_VAO
@@ -634,10 +648,21 @@ namespace
     }
 }
 
-void draw_model(const char* model_name, glm::vec3 position, glm::vec4 q_orientation, float scale)
+void draw_model(const char* model_name, glm::vec3 position, glm::vec4 q_orientation, const float scale_in)
 {
+    logr::report_warning("draw_model is incomplete!\n");
+
     //@Memory(sjors): just push back the model matrix for now.
-    auto& model  = get_model_buffer(model_name);
+
+    auto& model_buffer  = get_model_buffer(model_name);
+    glm::mat4 model_matrix{};
+    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(scale_in));
+    glm::mat4 translate = glm::translate(glm::mat4(1.0f), position);
+    // glm::mat4 rotate = glm::from_quaternion(q_orientation);
+    glm::mat4 rotate = glm::mat4(1.0f);
+
+    model_matrix = translate * rotate * scale;
+    model_buffer.model_matrix_buffer.push_back(model_matrix);
 }
 
 
@@ -673,7 +698,7 @@ void init_render_system(
 
     //@cleanup: how to do this?
     auto& dodecahedron_obj = get_obj(*asset_manager, "dodecahedron");
-    create_interleaved_XNU_model_buffer("dodecahedron", dodecahedron_obj.interleaved_XNU, 128);
+    create_interleaved_XNU_model_buffer("dodecahedron", dodecahedron_obj.interleaved_XNU, 256);
 
 }
 
@@ -685,13 +710,6 @@ void render_NDC_quad()
 {  
     glBindVertexArray(g_screen_quad_vao);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    glBindVertexArray(0);
-}
-
-void render_floor()
-{
-    glBindVertexArray(g_floor_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 }
 
@@ -711,12 +729,11 @@ void render_hud()
     glBindVertexArray(0);
 }
 
-
 // @dependencies:
 // shader_manager, texture_manager
 // camera
 /// - particles
-// cvars: g_fov, g_aspect_ratio, g_projection_z_near_plane, g_projection_z_far_plane
+//    cvars: g_fov, g_aspect_ratio, g_projection_z_near_plane, g_projection_z_far_plane
 /// - lights
 /// - the geometry that needs to be rendered (either via submission or other)
 void render(const Camera camera, Particle_Cache& particle_cache)
@@ -765,18 +782,16 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 set_uniform(*shader_manager, "texture_displacement", moss_displacement_texture.gl_texture_frame);
 
                 auto& model_buffer = f_model_buffers["dodecahedron"];
+                logr::report("model_buffer.model_matrix_buffer.capacity(): {}\n", model_buffer.model_matrix_buffer.capacity());
 
                 size_t entity_count = 0;
                 for (auto&& entity: by_type(*entity_manager, Entity_Type::Cube))
                 {
-                    if (entity_count >= model_buffer.model_matrix_buffer.size()) logr::report_warning("woops. index out of range!\n");
-                    auto& model_matrix = model_buffer.model_matrix_buffer[entity_count];
-
                     glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(20.0f));
                     glm::mat4 translate = glm::translate(glm::mat4(1.0f), entity.position);
                     glm::mat4 rotate = glm::mat4(1.0f);
-                    model_matrix = translate * rotate * scale;
-
+                    glm::mat4 model_matrix = translate * rotate * scale;
+                    model_buffer.model_matrix_buffer.push_back(model_matrix);
                     entity_count += 1;
                 }
                 glNamedBufferData(
@@ -831,6 +846,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         glm::vec4 camera_position = glm::vec4(camera.position, 1.0f); 
         set_uniform(*shader_manager, "view_position", glm::vec4(camera_position));
 
+        // update lights
         { 
             static float time = 0.0f;
             static float y_position = 0.0f;
@@ -849,12 +865,12 @@ void render(const Camera camera, Particle_Cache& particle_cache)
             lights[0].linear = 0.1f;
             lights[0].quadratic = 0.2f;
 
+            //@Note(Sjors): while not necessary to bind the buffer
+            // when using glnamedbufferdata to update the buffer. it IS important to still bind it before rendering the
+            // NDC quad, since any glDraw* call will take the currently bound array / index buffer.
+            glBindBuffer(GL_UNIFORM_BUFFER, light_ubo);
+            glNamedBufferData(light_ubo, lights.size() * sizeof(Light),  lights.data(), GL_DYNAMIC_DRAW);
         }
-        //@Note(Sjors): while not necessary to bind the buffer
-        // when using glnamedbufferdata to update the buffer. it IS important to still bind it before rendering the
-        // NDC quad, since any glDraw* call will take the currently bound array / index buffer.
-        glBindBuffer(GL_UNIFORM_BUFFER, light_ubo);
-        glNamedBufferData(light_ubo, lights.size() * sizeof(Light),  lights.data(), GL_DYNAMIC_DRAW);
 
         render_NDC_quad();
     }
@@ -941,6 +957,62 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         glDisable(GL_BLEND);
     }
 
-    set_shader(*shader_manager, "none");
-    glBindVertexArray(0);
+    // void end_frame()
+    {
+        set_shader(*shader_manager, "none");
+        glBindVertexArray(0);
+
+        // clean model buffer matrices.
+        for(auto& [key, model_buffer]: f_model_buffers)
+        {
+            model_buffer.model_matrix_buffer.clear();
+        }
+    }
+}
+
+
+
+
+
+void render_debug_ui()
+{
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    // Debug Menu
+    {
+        // general settings
+        {
+            // ImGui::Begin("General Settings");
+            // if (ImGui::Button("Vsync on")) glfwSwapInterval(1);
+            // if (ImGui::Button("Vsync off")) glfwSwapInterval(0);
+            // ImGui::End();
+        }
+
+        // Timed Functions
+        {
+            ImGui::Begin("Timed Functions");
+            for (auto& [key, value]: Timed_Function::timed_functions)
+            ImGui::Text("%s : %f", key.c_str(), value.duration);
+            ImGui::End();
+        }
+
+        // Debug Menu
+        {
+            ImGui::Begin("Debug Menu"); 
+            for (auto& debug_variables: logr::debug_variables())
+                ImGui::InputFloat(debug_variables.name, debug_variables.value, debug_variables.min, debug_variables.max, "%.3f");
+
+            ImGui::End();
+        }
+            
+
+    }
+
+    ImGui::EndFrame();
+    ImGui::Render();
+    glViewport(0, 0, g_window_width, g_window_height);
+
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
