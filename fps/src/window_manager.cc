@@ -210,7 +210,7 @@ void poll_input(Window_Manager& window_manager)
     // that we could continue to do something else.
     // The point being that I don't know how to deal with individual keypresses (what if we want to deal with being held?)
     // swap the pointers of current keyboard state and previous keyboard state.
-    // std::swap(window_manager.input.keyboard_state,window_manager.input.prev_keyboard_state);
+    // std::swap(window_manager.input.keyboard_state,window_manageþr.input.prev_keyboard_state);
 
     // swap mouse buttons
     window_manager.input.prev_mouse_left = window_manager.input.mouse_left; 

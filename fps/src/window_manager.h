@@ -27,4 +27,5 @@ void poll_input(Window_Manager& window_manager);
 void swap_buffers(const Window_Manager& window_manager);
 // void render_debug_ui(const Window_Manager& window_manager);
 
+
 #endif

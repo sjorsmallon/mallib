@@ -42,6 +42,19 @@ unsigned int DEBUG_POSITION_VBO = INVALID_VBO;
 
 const int MAX_COLOR_ATTTACHMENTS = 8;
 
+const int DEFAULT_MODELBUFFER_INSTANCE_COUNT = 256;
+
+
+struct Model_Buffer
+{
+    unsigned int VAO;
+    unsigned int VBO;
+    unsigned int model_matrix_VBO;
+    size_t vertex_count;
+    std::vector<glm::mat4> model_matrix_buffer = std::vector<glm::mat4>(DEFAULT_MODELBUFFER_INSTANCE_COUNT);
+};
+
+
 
 struct gl_state_t
 {
@@ -55,15 +68,6 @@ struct gl_state_t
     int32_t max_fragment_uniform_blocks;
     int32_t max_frame_buffer_color_attachments;
     int32_t max_draw_buffers;
-};
-
-struct Model_Buffer
-{
-    unsigned int VAO;
-    unsigned int VBO;
-    unsigned int model_matrix_VBO;
-    size_t vertex_count;
-    std::vector<glm::mat4> model_matrix_buffer = std::vector<glm::mat4>(256);
 };
 
 
@@ -698,11 +702,9 @@ void init_render_system(
 
     //@cleanup: how to do this?
     auto& dodecahedron_obj = get_obj(*asset_manager, "dodecahedron");
-    create_interleaved_XNU_model_buffer("dodecahedron", dodecahedron_obj.interleaved_XNU, 256);
+    create_interleaved_XNU_model_buffer("dodecahedron", dodecahedron_obj.interleaved_XNU, DEFAULT_MODELBUFFER_INSTANCE_COUNT); // 256
 
 }
-
-
 
 // render_NDC_quad() renders a 1x1 XY quad in NDC
 // -----------------------------------------
@@ -782,7 +784,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
                 set_uniform(*shader_manager, "texture_displacement", moss_displacement_texture.gl_texture_frame);
 
                 auto& model_buffer = f_model_buffers["dodecahedron"];
-                logr::report("model_buffer.model_matrix_buffer.capacity(): {}\n", model_buffer.model_matrix_buffer.capacity());
 
                 size_t entity_count = 0;
                 for (auto&& entity: by_type(*entity_manager, Entity_Type::Cube))
@@ -821,6 +822,8 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     // @Volatile(Sjors): if this changes, the deferred_lighting shader step should change as well.
     std::vector<Light> lights(NUM_LIGHTS);
 
+
+
     //  2.post deferred PBR lighting pass:
     { 
         const auto& position_tfbo_texture =          get_texture(*texture_manager, "position_tfbo");
@@ -842,6 +845,7 @@ void render(const Camera camera, Particle_Cache& particle_cache)
         set_uniform(*shader_manager,"fb_ambient_occlusion", ambient_occlusion_tfbo_texture.gl_texture_frame);
         // set_uniform(*shader_manager,"fb_displacement",   displacement_tfbo_texture.gl_texture_frame); // disabled
         set_uniform(*shader_manager,"fb_tnormal",           tnormal_tfbo_texture.gl_texture_frame);
+
 
         glm::vec4 camera_position = glm::vec4(camera.position, 1.0f); 
         set_uniform(*shader_manager, "view_position", glm::vec4(camera_position));
@@ -970,10 +974,6 @@ void render(const Camera camera, Particle_Cache& particle_cache)
     }
 }
 
-
-
-
-
 void render_debug_ui()
 {
     ImGui_ImplOpenGL3_NewFrame();
@@ -1000,11 +1000,11 @@ void render_debug_ui()
 
         // Debug Menu
         {
-            ImGui::Begin("Debug Menu"); 
-            for (auto& debug_variables: logr::debug_variables())
-                ImGui::InputFloat(debug_variables.name, debug_variables.value, debug_variables.min, debug_variables.max, "%.3f");
+            // ImGui::Begin("Debug Menu"); 
+            // for (auto& debug_variables: logr::debug_variables())
+            //     ImGui::InputFloat(debug_variables.name, debug_variables.value, debug_variables.min, debug_variables.max, "%.3f");
 
-            ImGui::End();
+            // ImGui::End();
         }
             
 

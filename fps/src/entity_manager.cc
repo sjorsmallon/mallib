@@ -29,11 +29,6 @@ size_t count_by_type(Entity_Manager& entity_manager, Entity_Type entity_type)
 	return entity_count;
 }
 
-Entity& create_entity(Entity_manager& entity_manager, Entity_Type type)
-{
-	
-}
-
 void create_entity(Entity_Manager& entity_manager, Entity_Type type)
 {
 	using bucket = Bucket<Entity, BUCKET_CAPACITY>;

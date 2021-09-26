@@ -61,9 +61,7 @@ inline void draw_AABB(glm::vec3 min, glm::vec3 max, Draw_Style style)
         p7, p6, p3, p2, p0, p6, p4, 
         p7, p5, p3, p1, p0, p5, p4
     };
-
-
-
+    
     Draw_Request draw_request{};
     draw_request.primitive = GL_TRIANGLE_STRIP;
     draw_request.color = style.color;
@@ -72,7 +70,7 @@ inline void draw_AABB(glm::vec3 min, glm::vec3 max, Draw_Style style)
     draw_request.line_width = style.line_width;
     draw_request.wireframe = style.wireframe;
     //@Memory(Sjors): copy?
-    draw_request.vertices = positions;
+    draw_request.vertices = std::move(positions);
 
     // submit to be drawn as triangle strip.
     submit_debug_draw_request(draw_request);

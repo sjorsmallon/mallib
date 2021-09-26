@@ -76,20 +76,20 @@ namespace logr
 	std::vector<std::string>& frame_log();
 	void clear_frame_log();
 
-
-	struct Debug_Variable
-	{
-		const char* name;
-		float* value;
-		float min = 0.0f;
-		float max = 1.0f;
-	};
-	std::vector<Debug_Variable>& debug_variables();
-	inline void add_float_input(const char* name, float* value, const float min, const float max)
-	{
-		Debug_Variable debug_variable{name, value, min, max};
-		logr::debug_variables().push_back(debug_variable);
-	}
+	//@TODO(SMIA): this does not really mesh well with CVAR. think of a way to do this better.
+	// struct Debug_Variable
+	// {
+	// 	const char* name;
+	// 	float* value;
+	// 	float min = 0.0f;
+	// 	float max = 1.0f;
+	// };
+	// std::vector<Debug_Variable>& debug_variables();
+	// inline void add_float_input(const char* name, float* value, const float min, const float max)
+	// {
+	// 	Debug_Variable debug_variable{name, value, min, max};
+	// 	logr::debug_variables().push_back(debug_variable);
+	// }
 
 };
 
@@ -121,17 +121,6 @@ inline void logr::vreport_warning_once(const char* format, fmt::format_args args
 	}
 	
 }
-
-
-
-// inline void logr::(const char* format, fmt::format_args args)
-// {
-// 	logr::frame_log().push_back(fmt::format(format, args));
-// }
-// inline void logr::vconsole(const char* format, fmt::format_args args)
-// {
-// 	logr::console_log().push_back(fmt::format(format, args));
-// }
 
 
 // custom formatters.

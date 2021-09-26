@@ -22,12 +22,12 @@ std::map<std::string, std::string>& logr::once_warnings()
 }
 
 
-std::vector<logr::Debug_Variable>& logr::debug_variables()
-{
-	static std::vector<logr::Debug_Variable> debug_variables;
+// std::vector<logr::Debug_Variable>& logr::debug_variables()
+// {
+// 	static std::vector<logr::Debug_Variable> debug_variables;
 
-	return debug_variables;
-}
+// 	return debug_variables;
+// }
 
 
 void logr::clear_frame_log()

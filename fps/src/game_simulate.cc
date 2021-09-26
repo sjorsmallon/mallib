@@ -119,63 +119,16 @@ namespace
         return camera;
     }
 
-
-    // calculate average (cluster) position, move away from "closest neighbour", swarm behavior.
-    //@Dependencies:
-    // g_wanted_distance; 
-    // g_wanted_height;
     void evaluate_flying_units(Entity_Manager& entity_manager, const float dt)
     {
         timed_function("evaluate_flying_units");
-        glm::vec3 sum{};
-        size_t entity_count = 0;
-        for (auto&& entity: by_type(entity_manager, Entity_Type::Cube))
-        {   
-            sum += entity.position;
-            entity_count += 1;
-        }
-
-        glm::vec3 average_position{};
-        if (entity_count > 0) average_position = sum / static_cast<float>(entity_count);
-
-
-        auto& player = get_main_player_entity(entity_manager);
+        auto& guy = get_main_player_entity(entity_manager);
 
         for (auto&& entity: by_type(entity_manager, Entity_Type::Cube))
         {
-
-            glm::vec3 focus_direction      = glm::normalize(player.position - entity.position);
-            glm::vec3 cohesion_direction   = glm::normalize(average_position - entity.position);
-            glm::vec3 height_direction     = glm::vec3(0.0f,1.0f,0.0f);
-            glm::vec3 cluster_center_to_player_direction = glm::normalize(player.position - average_position);
-
-            bool enable_cohesion = true;
-            bool enable_height = true;
-            bool enable_separation = false;
-            bool enable_focus = true;
-            bool enable_previous_momentum = true;
-            bool enable_center_to_player = true;
-
-            glm::vec3 direction_vector{};
-            if (enable_cohesion)    direction_vector += cohesion_direction * g_cohesion;
-            if (enable_height)      direction_vector += height_direction;
-
-            if (enable_focus)               direction_vector += focus_direction;
-            if (enable_center_to_player)    direction_vector += cluster_center_to_player_direction;
-
-            direction_vector = glm::normalize(direction_vector);
-            
-            if (enable_previous_momentum)
-            {
-                glm::vec3 old_direction_vector = entity.movement_vector;
-                direction_vector = glm::normalize(0.1f * direction_vector + 0.9f * old_direction_vector);
-            }   
-
-            if (entity_count == 1) direction_vector = focus_direction;
-
-            entity.position = entity.position + (direction_vector * g_dodecahedron_velocity * dt);  
+            glm::vec3 direction_vector =  glm::normalize(guy.position - entity.position);
+            entity.position = entity.position + (direction_vector);  
             entity.movement_vector = direction_vector;
-
         }
     }
 
@@ -186,6 +139,8 @@ namespace
 
         for(auto&& entity: by_type(entity_manager, Entity_Type::Cube))
         {
+            if (entity.scheduled_for_destruction) continue;
+
             if (!ray_intersects_sphere(camera.position, camera.front, entity.position, sphere_radius)) continue;
         
             // we hit!
@@ -227,9 +182,8 @@ void game_simulate(Game_State& game_state, const double dt, const Input& input, 
         if (!all_enemies_killed) 
         {
             // BEFORE MOVING ANYTHING, check shot intersection, since we clicked at the position we _are_ in
-            // and target that _are _ in a particular position
+            // and target that _are_ in a particular position
             if (input.mouse_left) evaluate_shot(entity_manager, game_state.camera);
-
             //@Note(Sjors): it is imperative that the player gets updated first, since that 
             // is the bottleneck we have to be dealing with in the next frames. (after, we can go wide).
         }

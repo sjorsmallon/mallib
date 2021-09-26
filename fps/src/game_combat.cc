@@ -5,10 +5,10 @@
 
 namespace
 {
+	//@Note(SMIA): quake defaults
 	float g_knockback = 1000.f;
 	float g_knockback_damage_threshold = 200.f;
-
-	float g_self_damage_scale = 0.25f;	
+	float g_self_damage_scale = 0.5f;	
 }
 
 
@@ -85,7 +85,7 @@ void damage(Entity& target, Entity& inflictor, Entity& attacker,const glm::vec3 
 
 		}
 
-		// always give 0.25 if hurting self
+		// always give less if hurting self
 		// calculated after knockback, so rocket jumping works
 		if (target.id == attacker.id)
 		{
