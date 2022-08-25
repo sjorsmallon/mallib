@@ -79,7 +79,7 @@ struct Entity_Manager
 	uint32_t next_entity_id{0};
 
 	// To be figured out.
-	uint32_t player_entity_id{};
+	uint32_t player_entity_id{1};
 	Entity* player_entity_ptr;
 };
 
@@ -113,7 +113,7 @@ inline uint32_t get_next_entity_id(Entity_Manager& entity_manager)
 
 inline Entity& get_main_player_entity(Entity_Manager& entity_manager)
 {
-	assert(entity_manager.player_entity_id);
+	assert(entity_manager.player_entity_id != 0);
 	assert(entity_manager.player_entity_ptr);
 
 	return *(entity_manager.player_entity_ptr);

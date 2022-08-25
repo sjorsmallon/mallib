@@ -13,8 +13,8 @@ void add_command(const char* command_name, Command_Function function, Flags flag
 	// fails if the command already exists.
 	if (f_commands.find(command_name) != f_commands.end())
 	{
-		std::cerr << "[add_command] command already exists!\n";
-		// logr::report_warning("[add_command] Command already exists!\n");
+		std::cerr << "[add_command] command" << command_name << "already exists!\n";
+		// logr::report_warning("[add_command] command {} already exists!\n", command_name);
 		return;
 	}
 	// otherwise we add the command.

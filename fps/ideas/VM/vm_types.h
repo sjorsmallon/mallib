@@ -10,7 +10,15 @@ enum Instruction
 	INST_SET_AGILITY = 0x02,
 	INST_PLAY_SOUND = 0x03,
 	INST_SPAWN_PARTICLES = 0x04,
-	INST_LITERAL = 0x05
+	INST_LITERAL = 0x05,
+	INST_GET_HEALTH = 0x06,
+	INST_GET_WISDOM = 0x07,
+	INST_GET_AGILITY = 0x08,
+	// arithmetic
+	INST_ADD = 0x09,
+	INST_SUB = 0x0A,
+	INST_MUL = 0x0B,
+	INST_DIV = 0x0C
 };
 
 inline void set_health(int wizard_id, int amount)
@@ -32,6 +40,26 @@ inline void play_sound(int sound_id)
 	std::cerr<< "play_sound\n";
 
 }
+
+inline int get_health(int wizard_id)
+{
+	std::cerr << "getting the wizard health \n";
+	return 100;	
+}
+
+inline int get_wisdom(int wizard_id)
+{
+	std::cerr << "getting the wizard wisdom \n";
+	return 50;
+}
+
+inline int get_agility(int wizard_id)
+{
+	std::cerr << "getting the wizard agility\n";
+	return 123;
+}
+
+
 inline void spawn_particles(int particle_type)
 {	
 	std::cerr<< "spawn_particles\n";
@@ -60,7 +88,6 @@ struct VM
 
 					break;
 				}
-
 				case INST_SET_WISDOM:
 				{
 					int amount = pop();
@@ -96,6 +123,25 @@ struct VM
 					push(value);
 				  	break;
 				}
+				case INST_GET_HEALTH:
+				{
+					int wizard_id = pop();
+					push(get_health(wizard_id));
+					break;
+				}
+				case INST_GET_WISDOM:
+				{
+					int wizard_id = pop();
+					push(get_wisdom(wizard_id));
+					break;
+				}
+				case INST_GET_AGILITY:
+				{
+					int wizard_id = pop();
+					push(get_agility(wizard_id));
+					break;
+				}
+
 				default:
 				{
 					std::cerr <<"[error] hitting default. exiting...\n";

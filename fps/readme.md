@@ -1,5 +1,11 @@
 
 # TO DO
+ - fix the player entity thing that prevents us from building.
+ - fix the loop such that the renderer is out of it.
+ - fix the entity spawning system and the bucket system, add free list for entities for each bucket.
+ - add generation to each entity so that we can distinguish whether entity handles are still the same.
+ - load map from memory.
+ - fix collision detection with walking up slopes etc?
 
 ## timed
 - apply friction only on ground (1)
@@ -13,6 +19,7 @@
 - toon shader (2) (10-11-2020)
 
 ## untimed
+- HRTF
 - add pbr
 - make logr console a ring buffer
 - add draw_3d api, think about how to scope the buffers 

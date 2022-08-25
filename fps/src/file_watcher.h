@@ -12,11 +12,13 @@
 // Define available file changes
 enum class File_Status {created, modified, erased};
 
+using file_timestamp = std::filesystem::file_time_type ;
+
 
 struct File_Watcher
 {
 	std::vector<std::string> folders;
-    std::map<std::string, std::filesystem::file_time_type> paths = std::map<std::string, std::filesystem::file_time_type>();
+    std::map<std::string, file_timestamp> paths = std::map<std::string, file_timestamp>();
     std::map<std::string, std::function<void(const std::string&)>> actions;
     std::chrono::duration<float, std::milli> interval;
     std::chrono::time_point<std::chrono::system_clock> last_time_checked;
@@ -30,10 +32,10 @@ struct File_Watcher
 inline void watch_folder(
 	File_Watcher& file_watcher,
 	const char* folder_path,
-	std::chrono::duration<float, std::milli> interval_in,
+	std::chrono::duration<float, std::milli> interval,
 	const std::function<void(const std::string& filename)> &action)
 {
-	file_watcher.interval = interval_in;
+	file_watcher.interval = interval;
 	file_watcher.last_time_checked = std::chrono::system_clock::now();
 
     assert(std::filesystem::is_directory(folder_path));
@@ -45,7 +47,6 @@ inline void watch_folder(
     }
 }
 
-
 inline void check_files_for_change(File_Watcher& file_watcher)
 {
     // checks for deleted files., but don't do anything with that information.
@@ -55,7 +56,6 @@ inline void check_files_for_change(File_Watcher& file_watcher)
         {
             if (!std::filesystem::exists(it->first))
             {
-                // action(it->first, File_Status::erased);
                 it = file_watcher.paths.erase(it);
             }
             else
@@ -71,15 +71,6 @@ inline void check_files_for_change(File_Watcher& file_watcher)
 	    for(auto &file : std::filesystem::recursive_directory_iterator(folder))
 	    {
 	        auto current_file_last_write_time = std::filesystem::last_write_time(file);
-
-	        // File creation
-	        // if(!contains(file.path().string()))
-	        // {
-	        //     file_watcher.paths[file.path().string()] = current_file_last_write_time;
-	        //     action(file.path().string(), File_Status::created);
-	        // // File modification
-	        // }
-	        // else 
 	        {
 	            if(file_watcher.paths[file.path().string()] != current_file_last_write_time)
 	            {

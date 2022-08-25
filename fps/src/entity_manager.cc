@@ -29,6 +29,9 @@ size_t count_by_type(Entity_Manager& entity_manager, Entity_Type entity_type)
 	return entity_count;
 }
 
+
+//@FIXME(SMIA): I do not think that create_entity needs to be aware of how entities are stored?)
+// what is the abstraction layer we should retain here? too much memory mgmt?
 void create_entity(Entity_Manager& entity_manager, Entity_Type type)
 {
 	using bucket = Bucket<Entity, BUCKET_CAPACITY>;

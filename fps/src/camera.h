@@ -24,7 +24,6 @@ struct Camera_Path
 	std::vector<glm::vec3> path;
 };
 
-// std::map<std::string, Draw_Data> draw_data;
 inline glm::mat4 create_view_matrix_from_camera(const Camera& camera)
 {
     return glm::lookAt(camera.position, camera.position + camera.front, camera.up);
@@ -47,4 +46,4 @@ inline Camera default_camera()
 
 
 
-#endif
+#endif // INCLUDED_CAMERA_

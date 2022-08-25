@@ -4,7 +4,6 @@
 #include "mallet.h"
 #include "plane.h"
 
-
 #include "window_manager.h"
 #include "shader_manager.h"
 #include "texture_manager.h"
@@ -30,8 +29,6 @@ using namespace std::literals::chrono_literals;
 
 const int window_width = 1920;
 const int window_height = 1080;
-const int debug_window_width = 850;
-const int debug_window_height = 1000;
 
 int main()
 {
@@ -39,6 +36,8 @@ int main()
     load_map_from_file("../assets/maps/AABB.map");
 
     auto window_manager = Window_Manager();
+    //@FIXME(SMIA): create_main_window does not make sense, we can just create a window and say
+    // whether it should be in focus or not.
     create_main_window(window_manager, "fps", window_width, window_height);
 
     auto shader_manager = Shader_Manager();
@@ -50,7 +49,6 @@ int main()
     load_shader(shader_manager, "post_deferred_pbr");
     load_shader(shader_manager, "screen_space");
     load_shader(shader_manager, "debug_position_world");
-
 
     //@Fixme(Sjors): this is an ugly hack to enable the file_watcher lambda
     // to access the shader manager.
@@ -71,7 +69,6 @@ int main()
 
     auto texture_manager = Texture_Manager();
     set_texture_path(texture_manager, "../assets/textures/");
-
     load_png_texture(texture_manager, "painted_metal/painted_metal_2K_color");
     load_png_texture(texture_manager, "painted_metal/painted_metal_2K_roughness");
     load_png_texture(texture_manager, "painted_metal/painted_metal_2K_normal");
@@ -84,7 +81,8 @@ int main()
     load_png_texture(texture_manager, "moss/moss_2K_normal");
     load_png_texture(texture_manager, "moss/moss_2K_displacement");
     load_png_texture(texture_manager, "moss/moss_2K_ambient_occlusion");
-    
+
+    // what is the difference here? how do we know which textures are transparent upon drawing?
     load_alpha_png_texture(texture_manager, "crosshair");
 
     auto entity_manager = Entity_Manager();
