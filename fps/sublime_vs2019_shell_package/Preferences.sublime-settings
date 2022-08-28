@@ -1,0 +1,12 @@
+{
+	"font_size": 18,
+	"color_scheme": "Packages/Solarized Color Scheme/Solarized (dark).sublime-color-scheme",
+	"ignored_packages":
+	[
+		"Vintage",
+	],
+	"theme": "Adaptive.sublime-theme",
+	"vc_vars_cmd": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat",
+	"vc_vars_arch": "amd64",
+	"vc_vars64_cmd": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat"
+}
